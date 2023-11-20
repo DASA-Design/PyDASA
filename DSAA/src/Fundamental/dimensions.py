@@ -45,6 +45,23 @@ DIM_ERR_MSG = "Invalid dimensions and exponents!, both must be the same length"
 # fundamenta dimensional unit class
 @dataclass
 class Dimensions:
+    """ _summary_
+
+    :raises ValueError: _description_
+    :raises ValueError: _description_
+    :raises ValueError: _description_
+    :raises ValueError: _description_
+    :raises ValueError: _description_
+    :raises ValueError: _description_
+    :raises ValueError: _description_
+    :raises ValueError: _description_
+    :raises ValueError: _description_
+    :raises ValueError: _description_
+    :raises ValueError: _description_
+    :raises err: _description_
+    :return: _description_
+    :rtype: _type_
+    """
     domain: str = VALID_DOMAINS_LT[0]
     expression: Optional[str] = ""
     dimensions: Optional[list[str]] = field(default_factory=list)
@@ -73,6 +90,11 @@ class Dimensions:
             self.dvector = list()
 
     def _check_physical(self):
+        """_check_physical _summary_
+
+        :raises ValueError: _description_
+        :raises ValueError: _description_
+        """
         # check if the expression is valid in the physical domain
         if self.dimensions is not None:
             for dimension in self.dimensions:
@@ -84,6 +106,11 @@ class Dimensions:
         self._check_exponents_n_dimensions()
 
     def _check_logical(self):
+        """_check_logical _summary_
+
+        :raises ValueError: _description_
+        :raises ValueError: _description_
+        """
         # check if the expression is valid in the logical domain
         if self.dimensions is not None:
             for dimension in self.dimensions:
@@ -95,6 +122,11 @@ class Dimensions:
         self._check_exponents_n_dimensions()
 
     def _check_exponents_n_dimensions(self):
+        """_check_exponents_n_dimensions _summary_
+
+        :raises ValueError: _description_
+        :raises ValueError: _description_
+        """
         # check if the exponents is valid in the physical domain
         if self.exponents is not None:
             for exponents in self.exponents:
@@ -110,6 +142,12 @@ class Dimensions:
             raise ValueError("Exponents is None")
 
     def _select_working_dimensions(self):
+        """_select_working_dimensions _summary_
+
+        :raises ValueError: _description_
+        :return: _description_
+        :rtype: _type_
+        """
         working_dims = None
         if self.domain == VALID_DOMAINS_LT[0]:      # physical
             working_dims = list(FDU_DICT.keys())
@@ -120,6 +158,12 @@ class Dimensions:
         return working_dims
 
     def _select_regex(self):
+        """_select_regex _summary_
+
+        :raises ValueError: _description_
+        :return: _description_
+        :rtype: _type_
+        """
         work_regex = None
         if self.domain == VALID_DOMAINS_LT[0]:      # physical
             work_regex = FDU_REGEX
@@ -130,6 +174,14 @@ class Dimensions:
         return work_regex
 
     def _safe_str_to_int(self, exp: str):
+        """_safe_str_to_int _summary_
+
+        :param exp: _description_
+        :type exp: str
+        :raises ValueError: _description_
+        :return: _description_
+        :rtype: _type_
+        """
         try:
             ans = int(exp)
             return ans
@@ -138,7 +190,8 @@ class Dimensions:
             raise ValueError(err_msg)
 
     def complement_expression(self):
-
+        """complement_expression _summary_
+        """
         # select working dimensions
         working_dims = self._select_working_dimensions()
 
@@ -161,6 +214,13 @@ class Dimensions:
         self.exponents = [vector[1] for vector in self.dvector]
 
     def parse_expression(self, expression: str = None):
+        """parse_expression _summary_
+
+        :param expression: _description_, defaults to None
+        :type expression: str, optional
+        :raises ValueError: _description_
+        :raises err: _description_
+        """
         try:
             # parse the expression
             # if there is a new expression

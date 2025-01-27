@@ -1,0 +1,922 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2025, @SFAM, Uniandes, DISC, Bogotá D.C. Colombia
+# This file is distributed under the same license as the PyDASA package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PyDASA \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-01-26 22:00-0500\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: es\n"
+"Language-Team: es <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.16.0\n"
+
+#: ../../src.PyDASA.Structs.Lists.rst:2
+msgid "src.PyDASA.Structs.Lists package"
+msgstr ""
+
+#: ../../src.PyDASA.Structs.Lists.rst:5
+msgid "Submodules"
+msgstr ""
+
+#: ../../src.PyDASA.Structs.Lists.rst:8
+msgid "src.PyDASA.Structs.Lists.arl module"
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl:1
+msgid ""
+"Este ADT representa una estructura de datos lineal, específicamente un "
+"arreglo dinámico (**ArrayList**). El arreglo dinámico es una estructura "
+"de datos que permite almacenar un conjunto de elementos del mismo tipo, "
+"en la cual se puede acceder y procesar sus elementos utilizando las "
+"funciones propias de la estructura."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl:3 src.PyDASA.Structs.Lists.dll:3
+#: src.PyDASA.Structs.Lists.sll:3
+msgid ""
+"*IMPORTANTE:* Este código y sus especificaciones para Python están "
+"basados en las implementaciones propuestas por los siguientes "
+"autores/libros:"
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl:5 src.PyDASA.Structs.Lists.dll:5
+#: src.PyDASA.Structs.Lists.sll:5
+msgid "Algorithms, 4th Edition, Robert Sedgewick y Kevin Wayne."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl:6 src.PyDASA.Structs.Lists.dll:6
+#: src.PyDASA.Structs.Lists.sll:6
+msgid ""
+"Data Structure and Algorithms in Python, M.T. Goodrich, R. Tamassia, M.H."
+" Goldwasser."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList:1
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked:1
+#: src.PyDASA.Structs.Lists.sll.SingleLinked:1
+msgid "Bases: :py:class:`~typing.Generic`\\ [:py:obj:`~src.PyDASA.Utils.dflt.T`]"
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList:1
+msgid ""
+"**ArrayList** representa la estructura de datos para arreglos dinamicos "
+"(*ArrayList*), Implementada con Generic[T] y @dataclass para que sea una "
+"estructura de datos genérica."
+msgstr ""
+
+#: ../../src.PyDASA.Structs.Lists.rst
+msgid "Parameters"
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList:3
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked:3
+#: src.PyDASA.Structs.Lists.sll.SingleLinked:3
+msgid ""
+"TAD (Tipo Abstracto de Datos) o ADT (Abstract Data Type) para una "
+"estructura de datos genéricas en python."
+msgstr ""
+
+#: ../../src.PyDASA.Structs.Lists.rst
+msgid "Returns"
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList:6
+msgid "ADT de tipo *ArrayList* o Arreglo Dinámico."
+msgstr ""
+
+#: ../../src.PyDASA.Structs.Lists.rst
+msgid "Return type"
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.add_element:1
+msgid ""
+"*add_element()* adiciona un elemento en una posición especifica del "
+"*ArrayList*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.add_element:3
+#: src.PyDASA.Structs.Lists.arl.ArrayList.add_first:3
+#: src.PyDASA.Structs.Lists.arl.ArrayList.add_last:3
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.add_element:3
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.add_first:3
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.add_last:3
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.add_element:3
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.add_first:3
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.add_last:3
+msgid "elemento que se desea agregar a la estructura."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.add_element:5
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.add_element:5
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.add_element:5
+msgid "posición en la que se desea agregar el elemento."
+msgstr ""
+
+#: ../../src.PyDASA.Structs.Lists.rst
+msgid "Raises"
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.add_element:8
+#: src.PyDASA.Structs.Lists.arl.ArrayList.change_info:9
+#: src.PyDASA.Structs.Lists.arl.ArrayList.get_element:7
+#: src.PyDASA.Structs.Lists.arl.ArrayList.remove_element:7
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.add_element:8
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.change_info:9
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.get_element:7
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.remove_element:7
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.add_element:8
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.change_info:9
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.get_element:7
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.remove_element:7
+msgid "error si la posición es inválida."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.add_element:9
+#: src.PyDASA.Structs.Lists.arl.ArrayList.change_info:8
+#: src.PyDASA.Structs.Lists.arl.ArrayList.exchange:8
+#: src.PyDASA.Structs.Lists.arl.ArrayList.get_element:6
+#: src.PyDASA.Structs.Lists.arl.ArrayList.get_first:3
+#: src.PyDASA.Structs.Lists.arl.ArrayList.get_last:3
+#: src.PyDASA.Structs.Lists.arl.ArrayList.remove_element:6
+#: src.PyDASA.Structs.Lists.arl.ArrayList.remove_first:3
+#: src.PyDASA.Structs.Lists.arl.ArrayList.remove_last:3
+#: src.PyDASA.Structs.Lists.arl.ArrayList.sublist:8
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.add_element:9
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.change_info:8
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.exchange:8
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.get_element:6
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.get_first:3
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.get_last:3
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.remove_element:6
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.remove_first:3
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.remove_last:3
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.sublist:8
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.add_element:9
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.change_info:8
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.exchange:8
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.get_element:6
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.get_first:3
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.get_last:3
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.remove_element:6
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.remove_first:3
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.remove_last:3
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.sublist:8
+msgid "error si la estructura está vacía."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.add_first:1
+msgid "*add_first()* adiciona un elemento al inicio del *ArrayList*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.add_first:6
+#: src.PyDASA.Structs.Lists.arl.ArrayList.add_last:6
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.add_first:6
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.add_last:6
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.add_first:6
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.add_last:6
+msgid ""
+"si la operación no se puede realizar, se invoca la función "
+"*_handle_error()* para manejar el error."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.add_last:1
+msgid "*add_last()* adiciona un elemento al final del *ArrayList*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.change_info:1
+msgid ""
+"*change_info()* cambia la información de un elemento en la posición "
+"especificada del *ArrayList*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.change_info:3
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.change_info:3
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.change_info:3
+msgid "nueva información que se desea para el elemento."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.change_info:5
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.change_info:5
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.change_info:5
+msgid "posición del elemento que se desea cambiar."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.clone:1
+msgid ""
+"*clone()* copia los elementos contenidos en estructura *ArrayList* en una"
+" nueva estructura."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.clone:3
+msgid ""
+"copia independiente de la estructura *ArrayList* con la misma función de "
+"comparación y llave de la estructura original."
+msgstr ""
+
+#: ../../docstring of src.PyDASA.Structs.Lists.arl.ArrayList.cmp_function:1
+msgid ""
+"Función de comparación personalizable por el usuario para reconocer los "
+"elementos dentro del *ArrayList*. Por defecto es la función "
+"*lt_default_cmp_funcion()* propia de *DISClib*, puede ser un parametro al"
+" crear la estructura."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.compare_elements:1
+msgid ""
+"*compare_elements()* compara dos elementos dentro del *ArrayList* según "
+"la función de comparación de la estructura."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.compare_elements:3
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.compare_elements:3
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.compare_elements:3
+msgid "Primer elemento a comparar."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.compare_elements:5
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.compare_elements:5
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.compare_elements:5
+msgid "Segundo elemento a comparar."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.compare_elements:8
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.compare_elements:8
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.compare_elements:8
+msgid "error si la función de comparación no está definida."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.compare_elements:10
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.compare_elements:10
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.compare_elements:10
+msgid ""
+"-1 si elem1 es menor que elem2, 0 si son iguales, 1 si elem1 es mayor que"
+" elem2."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.concat:1
+msgid ""
+"*concat()* concatena dos estructuras de datos *ArrayList* para crear una "
+"estructura con los elementos de las dos estructuras."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.concat:3
+msgid ""
+"estructura de datos *ArrayList* que se desea concatenar con la estructura"
+" original."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.concat:6
+msgid "error si la estructura que se desea concatenar no es un *ArrayList*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.concat:7
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.concat:7
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.concat:7
+msgid ""
+"error si la llave de la estructura que se desea unir no es la misma que "
+"la llave de la estructura original."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.concat:8
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.concat:8
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.concat:8
+msgid ""
+"error si la función de comparación de la estructura que se desea unir no "
+"es la misma que la función de comparación de la estructura original."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.concat:10
+msgid ""
+"Estructura de datos original *ArrayList* que contiene los elementos de "
+"las dos estructuras originales."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.default_cmp_function:1
+msgid ""
+"*default_cmp_function()* es la función de comparación por defecto para "
+"comparar elementos dentro del *ArrayList*, es una función crucial para "
+"que la estructura funcione correctamente."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.default_cmp_function:3
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.default_cmp_function:3
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.default_cmp_function:3
+msgid "primer elemento a comparar."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.default_cmp_function:5
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.default_cmp_function:5
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.default_cmp_function:5
+msgid "segundo elemento a comparar."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.default_cmp_function:8
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.default_cmp_function:8
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.default_cmp_function:8
+msgid ""
+"respuesta de la comparación entre los elementos, 0 si son iguales, 1 si "
+"elm1 es mayor que elm2, -1 si elm1 es menor."
+msgstr ""
+
+#: ../../docstring of src.PyDASA.Structs.Lists.arl.ArrayList.elements:1
+msgid "Lista nativa de Python que contiene los elementos de la estructura."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.exchange:1
+msgid ""
+"*exchange()* intercambia la información de dos elementos en dos "
+"posiciones especificadas del *ArrayList*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.exchange:3
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.exchange:3
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.exchange:3
+msgid "posición del primer elemento."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.exchange:5
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.exchange:5
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.exchange:5
+msgid "posición del segundo elemento."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.exchange:9
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.exchange:9
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.exchange:9
+msgid "error si la posición del primer elemento es inválida."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.exchange:10
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.exchange:10
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.exchange:10
+msgid "error si la posición del segundo elemento es inválida."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.find:1
+msgid ""
+"*find()* busca el elemento dentro del *ArrayList* y devuelve su posición "
+"o -1 si no lo encuentra."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.find:3
+msgid "elemento que se desea revisar en el *ArrayList*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.find:6
+msgid "la posición del elemento en el *ArrayList*, -1 si no está."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.get_element:1
+msgid ""
+"*get_element()* lee un elemento en una posición especifica del "
+"*ArrayList*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.get_element:3
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.get_element:3
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.get_element:3
+msgid "posición del elemento que se desea leer."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.get_element:9
+msgid "el elemento en la posición especifica del *ArrayList*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.get_first:1
+msgid "*get_first()* lee el primer elemento del *ArrayList*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.get_first:5
+msgid "el primer elemento del *ArrayList*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.get_last:1
+msgid "*get_last()* lee el último elemento del *ArrayList*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.get_last:5
+msgid "el ultimo elemento del *ArrayList*."
+msgstr ""
+
+#: ../../docstring of src.PyDASA.Structs.Lists.arl.ArrayList.iodata:1
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.iodata:1
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.iodata:1
+msgid ""
+"Lista nativa de Python personalizable por el usuario para inicializar la "
+"estructura. Por defecto es *None* y el usuario puede incluirla como "
+"argumento al crear la estructura."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.is_empty:1
+msgid "*is_empty()* revisa si el *ArrayList* está vacío."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.is_empty:3
+msgid "operador que indica si la estructura *ArrayList* está vacía."
+msgstr ""
+
+#: ../../docstring of src.PyDASA.Structs.Lists.arl.ArrayList.key:1
+msgid ""
+"Nombre de la llave personalizable por el usuario utilizada para reconocer"
+" los elementos dentro del *ArrayList*. Por defecto es la llave de "
+"diccionario (*dict*) *DEFAULT_DICT_KEY = 'id'* propia de *DISClib*, puede"
+" ser un parametro al crear la estructura."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.remove_element:1
+msgid ""
+"*remove_element()* elimina un elemento en una posición especifica del "
+"*ArrayList*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.remove_element:3
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.remove_element:3
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.remove_element:3
+msgid "posición del elemento que se desea eliminar."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.remove_element:9
+msgid "el elemento eliminado del *ArrayList*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.remove_first:1
+msgid "*remove_first()* elimina el primer elemento del *ArrayList*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.remove_first:5
+msgid "el primer elemento eliminado del *ArrayList*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.remove_last:1
+msgid "*remove_last()* elimina el último elemento del *ArrayList*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.remove_last:5
+msgid "el ultimo elemento eliminado del *ArrayList*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.size:1
+msgid ""
+"*size()* devuelve el número de elementos que actualmente contiene el "
+"*ArrayList*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.size:3
+msgid "tamaño de la estructura *ArrayList*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.sublist:1
+msgid ""
+"*sublist()* crea una sublista de la estructura según dos posiciones "
+"dentro del *ArrayList* original."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.sublist:3
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.sublist:3
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.sublist:3
+msgid "posición inicial de la sublista."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.sublist:5
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.sublist:5
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.sublist:5
+msgid "posición final de la sublista."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.sublist:9
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.sublist:9
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.sublist:9
+msgid "error si la posición inicial o final son inválidas."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.arl.ArrayList.sublist:11
+#: src.PyDASA.Structs.Lists.dll.DoubleLinked.sublist:11
+#: src.PyDASA.Structs.Lists.sll.SingleLinked.sublist:11
+msgid ""
+"una sublista de la estructura original con la función de comparación y la"
+" llave de la estructura original."
+msgstr ""
+
+#: ../../src.PyDASA.Structs.Lists.rst:16
+msgid "src.PyDASA.Structs.Lists.dll module"
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.dll:1
+msgid ""
+"Este ADT representa una estructura de datos lineal, específicamente una "
+"lista doblemente enlazada/encadenada (**DoubleLinked**). Esta estructura "
+"de datos es una secuencia de nodos enlazados, donde cada nodo contiene un"
+" elemento de información, una referencia al siguiente, y al anterior nodo"
+" en la secuencia. Esto le permite a la lista un crecimiento y reducción "
+"dinámico en la memoria disponible."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.dll.DoubleLinked:1
+msgid ""
+"**DoubleLinked** representa una estructura de datos para una lista "
+"doblemente enlazada/encadenada (*DoubleLinked*). Implementada con "
+"Generic[T] y @dataclass para que sea una estructura de datos genérica."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.dll.DoubleLinked:6
+msgid "ADT de tipo *DoubleLinked* o Lista Doblemente Encadenada."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.dll.DoubleLinked.add_element:1
+msgid ""
+"*add_element()* adiciona un elemento en una posición especifica del "
+"*DoubleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.dll.DoubleLinked.add_first:1
+msgid "*add_first()* adiciona un elemento al inicio del *DoubleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.dll.DoubleLinked.add_last:1
+msgid "*add_last()* adiciona un elemento al final del *DoubleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.dll.DoubleLinked.change_info:1
+msgid ""
+"*change_info()* cambia la información de un elemento en la posición "
+"especificada del *DoubleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.dll.DoubleLinked.clone:1
+msgid "*clone()* crea una copia de la estructura de datos *DoubleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.dll.DoubleLinked.clone:3
+msgid "copia de la estructura de datos *DoubleLinked*."
+msgstr ""
+
+#: ../../docstring of src.PyDASA.Structs.Lists.dll.DoubleLinked.cmp_function:1
+msgid ""
+"Función de comparación personalizable por el usuario para reconocer los "
+"elementos dentro del *DoubleLinked*. Por defecto es la función "
+"*lt_default_cmp_funcion()* propia de *DISClib*, puede ser un parametro al"
+" crear la estructura."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.dll.DoubleLinked.compare_elements:1
+msgid ""
+"*compare_elements()* compara dos elementos dentro del *DoubleLinked* "
+"según la función de comparación de la estructura."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.dll.DoubleLinked.concat:1
+msgid ""
+"*concat()* concatena dos estructuras de datos *DoubleLinked* para crear "
+"una estructura con los elementos de las dos estructuras."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.dll.DoubleLinked.concat:3
+msgid ""
+"estructura de datos *DoubleLinked* que se desea concatenar con la "
+"estructura original."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.dll.DoubleLinked.concat:6
+msgid "error si la estructura que se desea concatenar no es un *DoubleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.dll.DoubleLinked.concat:10
+msgid ""
+"Estructura de datos original *DoubleLinked* que contiene los elementos de"
+" las dos estructuras originales."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.dll.DoubleLinked.default_cmp_function:1
+msgid ""
+"*default_cmp_function()* es la función de comparación por defecto para "
+"comparar elementos dentro del *DoubleLinked*, es una función crucial para"
+" que la estructura funcione correctamente."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.dll.DoubleLinked.exchange:1
+msgid ""
+"*exchange()* intercambia la información de dos elementos en dos "
+"posiciones especificadas del *DoubleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.dll.DoubleLinked.find:1
+msgid ""
+"*find()* busca el elemento dentro del *DoubleLinked* y devuelve su "
+"posición o -1 si no lo encuentra."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.dll.DoubleLinked.find:3
+msgid "elemento que se desea revisar en el *DoubleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.dll.DoubleLinked.find:6
+msgid "la posición del elemento en el *DoubleLinked*, -1 si no está."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.dll.DoubleLinked.get_element:1
+msgid ""
+"*get_element()* lee un elemento en una posición especifica del "
+"*DoubleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.dll.DoubleLinked.get_element:9
+msgid "el elemento en la posición especifica del *DoubleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.dll.DoubleLinked.get_first:1
+msgid "*get_first()* lee el primer elemento del *DoubleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.dll.DoubleLinked.get_first:5
+msgid "el primer elemento del *DoubleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.dll.DoubleLinked.get_last:1
+msgid "*get_last()* lee el último elemento del *DoubleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.dll.DoubleLinked.get_last:5
+msgid "el ultimo elemento del *DoubleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.dll.DoubleLinked.is_empty:1
+msgid "*is_empty()* revisa si el *DoubleLinked* está vacío."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.dll.DoubleLinked.is_empty:3
+msgid "operador que indica si la estructura *DoubleLinked* está vacía."
+msgstr ""
+
+#: ../../docstring of src.PyDASA.Structs.Lists.dll.DoubleLinked.key:1
+msgid ""
+"Nombre de la llave personalizable por el usuario utilizada para reconocer"
+" los elementos dentro del *DoubleLinked*. Por defecto es la llave de "
+"diccionario (*dict*) *DEFAULT_DICT_KEY = 'id'* propia de *DISClib*, puede"
+" ser un parametro al crear la estructura."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.dll.DoubleLinked.remove_element:1
+msgid ""
+"*remove_element()* elimina un elemento en una posición especifica del "
+"*DoubleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.dll.DoubleLinked.remove_element:9
+msgid "el elemento eliminado del *DoubleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.dll.DoubleLinked.remove_first:1
+msgid "*remove_first()* elimina el primer elemento del *DoubleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.dll.DoubleLinked.remove_first:5
+msgid "el primer elemento eliminado del *DoubleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.dll.DoubleLinked.remove_last:1
+msgid "*remove_last()* elimina el último elemento del *DoubleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.dll.DoubleLinked.remove_last:5
+msgid "el ultimo elemento eliminado del *DoubleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.dll.DoubleLinked.size:1
+msgid ""
+"*size()* devuelve el número de elementos que actualmente contiene el "
+"*DoubleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.dll.DoubleLinked.size:3
+msgid "tamaño de la estructura *DoubleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.dll.DoubleLinked.sublist:1
+msgid ""
+"*sublist()* crea una sublista de la estructura según dos posiciones "
+"dentro del *DoubleLinked* original."
+msgstr ""
+
+#: ../../src.PyDASA.Structs.Lists.rst:24
+msgid "src.PyDASA.Structs.Lists.sll module"
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.sll:1
+msgid ""
+"Este ADT representa una estructura de datos lineal, específicamente una "
+"lista sensillamente enlazada/encadenada (**SingleLinked**). Esta "
+"estructura de datos es una secuencia de nodos enlazados, donde cada nodo "
+"contiene un elemento de información y una referencia al siguiente nodo en"
+" la secuencia. Esto le permite a la lista un crecimiento y reducción "
+"dinámico en la memoria disponible."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.sll.SingleLinked:1
+msgid ""
+"**SingleLinked** representa una estructura de datos dinámica de tipo "
+"lista sensillamente encadenada (*SingleLinked*), Implementada con "
+"Generic[T] y @dataclass para que sea una estructura de datos genérica."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.sll.SingleLinked:6
+msgid "ADT de tipo *SingleLinked* o Lista Sensillamente Encadenada."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.sll.SingleLinked.add_element:1
+msgid ""
+"*add_element()* adiciona un elemento en una posición especifica del "
+"*SingleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.sll.SingleLinked.add_first:1
+msgid "*add_first()* adiciona un elemento al inicio del *SingleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.sll.SingleLinked.add_last:1
+msgid "*add_last()* adiciona un elemento al final del *SingleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.sll.SingleLinked.change_info:1
+msgid ""
+"*change_info()* cambia la información de un elemento en la posición "
+"especificada del *SingleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.sll.SingleLinked.clone:1
+msgid "*clone()* crea una copia de la estructura de datos *SingleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.sll.SingleLinked.clone:3
+msgid ""
+"copia de la estructura de datos *SingleLinked* con la misma función de "
+"comparación y llave de la estructura original."
+msgstr ""
+
+#: ../../docstring of src.PyDASA.Structs.Lists.sll.SingleLinked.cmp_function:1
+msgid ""
+"Función de comparación personalizable por el usuario para reconocer los "
+"elementos dentro del *SingleLinked*. Por defecto es la función "
+"*lt_default_cmp_funcion()* propia de *DISClib*, puede ser un parametro al"
+" crear la estructura."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.sll.SingleLinked.compare_elements:1
+msgid ""
+"*compare_elements()* compara dos elementos dentro del *SingleLinked* "
+"según la función de comparación de la estructura."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.sll.SingleLinked.concat:1
+msgid ""
+"*concat()* concatena dos estructuras de datos *SingleLinked* para crear "
+"una estructura con los elementos de las dos estructuras."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.sll.SingleLinked.concat:3
+msgid ""
+"estructura de datos *SingleLinked* que se desea concatenar con la "
+"estructura original."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.sll.SingleLinked.concat:6
+msgid "error si la estructura que se desea concatenar no es un *SingleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.sll.SingleLinked.concat:10
+msgid ""
+"Estructura de datos original *SingleLinked* que contiene los elementos de"
+" las dos estructuras originales."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.sll.SingleLinked.default_cmp_function:1
+msgid ""
+"*default_cmp_function()* es la función de comparación por defecto para "
+"comparar elementos dentro del *SingleLinked*, es una función crucial para"
+" que la estructura funcione correctamente."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.sll.SingleLinked.exchange:1
+msgid ""
+"*exchange()* intercambia la información de dos elementos en dos "
+"posiciones especificadas del *SingleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.sll.SingleLinked.find:1
+msgid ""
+"*find()* busca el elemento dentro del *SingleLinked* y devuelve su "
+"posición o -1 si no lo encuentra."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.sll.SingleLinked.find:3
+msgid "elemento que se desea revisar en el *SingleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.sll.SingleLinked.find:6
+msgid "la posición del elemento en el *SingleLinked*, -1 si no está."
+msgstr ""
+
+#: ../../docstring of src.PyDASA.Structs.Lists.sll.SingleLinked.first:1
+msgid "Representa la referencia en memoria al primer nodo del *SingleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.sll.SingleLinked.get_element:1
+msgid ""
+"*get_element()* lee un elemento en una posición especifica del "
+"*SingleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.sll.SingleLinked.get_element:9
+msgid "el elemento en la posición especifica del *SingleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.sll.SingleLinked.get_first:1
+msgid "*get_first()* lee el primer elemento del *SingleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.sll.SingleLinked.get_first:5
+msgid "el primer elemento del *SingleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.sll.SingleLinked.get_last:1
+msgid "*get_last()* lee el último elemento del *SingleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.sll.SingleLinked.get_last:5
+msgid "el ultimo elemento del *SingleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.sll.SingleLinked.is_empty:1
+msgid "*is_empty()* revisa si el *SingleLinked* está vacío."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.sll.SingleLinked.is_empty:3
+msgid "operador que indica si la estructura *SingleLinked* está vacía."
+msgstr ""
+
+#: ../../docstring of src.PyDASA.Structs.Lists.sll.SingleLinked.key:1
+msgid ""
+"Nombre de la llave personalizable por el usuario utilizada para reconocer"
+" los elementos dentro del *SingleLinked*. Por defecto es la llave de "
+"diccionario (*dict*)*DEFAULT_DICT_KEY = 'id'* propia de *DISClib*, puede "
+"ser un parametro al crear la estructura."
+msgstr ""
+
+#: ../../docstring of src.PyDASA.Structs.Lists.sll.SingleLinked.last:1
+msgid "Representa la referencia en memoria al último nodo del *SingleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.sll.SingleLinked.remove_element:1
+msgid ""
+"*remove_element()* elimina un elemento en una posición especifica del "
+"*SingleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.sll.SingleLinked.remove_element:9
+msgid "el elemento eliminado del *SingleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.sll.SingleLinked.remove_first:1
+msgid "*remove_first()* elimina el primer elemento del *SingleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.sll.SingleLinked.remove_first:5
+msgid "el primer elemento eliminado del *SingleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.sll.SingleLinked.remove_last:1
+msgid "*remove_last()* elimina el último elemento del *SingleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.sll.SingleLinked.remove_last:5
+msgid "el ultimo elemento eliminado del *SingleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.sll.SingleLinked.size:1
+msgid ""
+"*size()* devuelve el número de elementos que actualmente contiene el "
+"*SingleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.sll.SingleLinked.size:3
+msgid "tamaño de la estructura *SingleLinked*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Lists.sll.SingleLinked.sublist:1
+msgid ""
+"*sublist()* crea una sublista de la estructura según dos posiciones "
+"dentro del *SingleLinked* original."
+msgstr ""
+
+#: ../../src.PyDASA.Structs.Lists.rst:32
+msgid "Module contents"
+msgstr ""
+

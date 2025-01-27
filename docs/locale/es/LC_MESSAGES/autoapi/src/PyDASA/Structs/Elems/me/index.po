@@ -1,0 +1,214 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2025, @SFAM, Uniandes, DISC, Bogotá D.C. Colombia
+# This file is distributed under the same license as the PyDASA package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PyDASA \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-01-26 22:00-0500\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: es\n"
+"Language-Team: es <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.16.0\n"
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst:2
+msgid "src.PyDASA.Structs.Elems.me"
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst:8
+msgid ""
+"Este ADT representa la registro de un Mapa no Ordenado (**MapEntry**), el"
+" cual es una estructura de datos para almacenar la información en parejas"
+" de llave-valor (key-value). La llave (*key*) es un identificador único "
+"para cada valor (*value*) almacenado en el Mapa no Ordenado (*Map*). Por "
+"su parte, el valor (*value*) puede ser cualquier tipo de dato."
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst:10
+msgid ""
+"En el caso de las tablas de Hash, la llave (*key*) es el resultado de "
+"aplicar una función hash al valor (*value*) almacenado en el Mapa no "
+"Ordenado (*Map*). Esta estructura de datos es fundamental para "
+"implementar otros mapas no ordenados como: tablas de símbolos, "
+"diccionarios, entre otros."
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst:12
+msgid ""
+"*DISCLib* utiliza el *MapEntry* para guardar la información de las tablas"
+" de Hash por Encadenamiento Separado (*SeparateChaining*) y las tablas "
+"por Sondeo Lineal (*LinearProbing)."
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst:14
+msgid ""
+"*IMPORTANTE:* Este código y sus especificaciones para Python están "
+"basados en las implementaciones propuestas por los siguientes "
+"autores/libros:"
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst:16
+msgid "Algorithms, 4th Edition, Robert Sedgewick y Kevin Wayne."
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst:17
+msgid ""
+"Data Structure and Algorithms in Python, M.T. Goodrich, R. Tamassia, M.H."
+" Goldwasser."
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst:22
+msgid "Classes"
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst:28:<autosummary>:1
+msgid ":py:obj:`MapEntry <src.PyDASA.Structs.Elems.me.MapEntry>`\\"
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst:37
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst:28:<autosummary>:1
+msgid ""
+"**MapEntry** representa un registro de un mapa no ordenado, contiene la "
+"llave (*key*) y el valor (*value*). Donde la llave es única para cada "
+"valor y el valor puede ser cualquier tipo de dato."
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst:30
+msgid "Module Contents"
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst:34
+msgid ""
+"Bases: :py:obj:`src.PyDASA.Structs.Elems.node.Node`, :py:obj:`Generic`\\ "
+"[\\ :py:obj:`src.PyDASA.Utils.dflt.T`\\ ]"
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst
+msgid "Parameters"
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst:39
+msgid ""
+"TAD (Tipo Abstracto de Datos) o ADT (Abstract Data Type) para una "
+"estructura de datos genéricas en python."
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst
+msgid "Returns"
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst:42
+msgid "ADT de tipo *MapEntry* o registro de un mapa no ordenado."
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst
+msgid "Return type"
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst:51
+msgid "Es la llave del registro del mapa."
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst:59
+msgid "Es el valor del registro del mapa."
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst:64
+msgid ""
+"*_handle_error()* función privada para manejar los errores que se "
+"presentan en la clase MapEntry."
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst:66
+msgid ""
+"Si se presenta un error en el MapEntry, se formatea el error según el "
+"contexto (paquete/clase) y la función que lo generó, y lo reenvia al "
+"componente superior en la jerarquía de llamados para manejarlo segun se "
+"considere conveniente."
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst:68
+msgid "Excepción que se generó en el MapEntry."
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst:75
+msgid ""
+"*_check_key_type()* función privada que verifica que la información de la"
+" llave (key) del registro del mapa sea del tipo especificado."
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst:77
+msgid "llave que se quiere verificar en el registro del mapa."
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst
+msgid "Raises"
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst:80
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst:94
+msgid "error si la información del registro del mapa no es del tipo adecuado."
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst:82
+msgid ""
+"operador que indica si el tipo de dato de la llave es el mismo que el "
+"tipo de dato de la llave que ya contiene la estructura de datos."
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst:89
+msgid ""
+"*_check_value_type()* función privada que verifica que la información del"
+" valor (value) en el registro del mapa sea del tipo especificado."
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst:91
+msgid "valor que se quiere verificar en el registro del mapa."
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst:96
+msgid ""
+"operador que indica si el tipo de dato del valor es el mismo que el tipo "
+"de dato de los elementos que ya contiene la estructura de datos."
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst:103
+msgid "*set_key()* introduce una nueva llave 'key' al registro del mapa."
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst:105
+msgid "la nueva llave del registro del mapa."
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst:112
+msgid "*set_value()* introduce un nuevo valor 'value' al registro del mapa."
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst:114
+msgid "el nuevo valor del registro del mapa."
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst:121
+msgid "*get_key()* recupera la llave 'key' contenida en el registro del mapa."
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst:123
+msgid "la llave del registro del mapa."
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst:130
+msgid "*get_value()* recupera el valor 'value' contenido en el registro del mapa."
+msgstr ""
+
+#: ../../autoapi/src/PyDASA/Structs/Elems/me/index.rst:132
+msgid "el valor del registro del mapa."
+msgstr ""
+

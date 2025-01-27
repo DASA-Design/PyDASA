@@ -1,0 +1,343 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2025, @SFAM, Uniandes, DISC, Bogotá D.C. Colombia
+# This file is distributed under the same license as the PyDASA package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PyDASA \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-01-26 22:00-0500\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: es\n"
+"Language-Team: es <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.16.0\n"
+
+#: ../../src.PyDASA.Utils.rst:2
+msgid "src.PyDASA.Utils package"
+msgstr ""
+
+#: ../../src.PyDASA.Utils.rst:5
+msgid "Subpackages"
+msgstr ""
+
+#: ../../src.PyDASA.Utils.rst:13
+msgid "Submodules"
+msgstr ""
+
+#: ../../src.PyDASA.Utils.rst:16
+msgid "src.PyDASA.Utils.cfg module"
+msgstr ""
+
+#: ../../src.PyDASA.Utils.rst:24
+msgid "src.PyDASA.Utils.cstm module"
+msgstr ""
+
+#: ../../src.PyDASA.Utils.rst:32
+msgid "src.PyDASA.Utils.dflt module"
+msgstr ""
+
+#: of src.PyDASA.Utils.dflt:1
+msgid ""
+"# ENGLISH Module for default global variables and comparison functions "
+"for use by all *PyDASA* and its Data Structs."
+msgstr ""
+
+#: of src.PyDASA.Utils.dflt:4
+msgid ""
+"*IMPORTANT:* This code and its specifications for Python are based on the"
+" implementations proposed by the following authors/books:"
+msgstr ""
+
+#: of src.PyDASA.Utils.dflt:6
+msgid "Algorithms, 4th Edition, Robert Sedgewick and Kevin Wayne."
+msgstr ""
+
+#: of src.PyDASA.Utils.dflt:7 src.PyDASA.Utils.nos:6
+msgid ""
+"Data Structure and Algorithms in Python, M.T. Goodrich, R. Tamassia, M.H."
+" Goldwasser."
+msgstr ""
+
+#: ../../docstring of src.PyDASA.Utils.dflt.DEFAULT_DICT_KEY:1
+msgid "Llave por defecto para comparar diccionarios dentro de los ADTs."
+msgstr ""
+
+#: ../../docstring of src.PyDASA.Utils.dflt.DEFAULT_PRIME:1
+msgid ""
+"Número primo grande por defecto para la función de compresión MAD en las "
+"tablas de Hash."
+msgstr ""
+
+#: of src.PyDASA.Utils.dflt.T:1
+msgid ""
+"Variable nativa de Python para definir una estructura de datos genérica "
+"en los ADTs."
+msgstr ""
+
+#: ../../docstring of src.PyDASA.Utils.dflt.VALID_DATA_TYPE_LT:1
+msgid ""
+"Tuple with the native data types in Python that are comparable in the "
+"structures. Tupla con los tipos de datos nativos en Python que son "
+"comparables en los ADTs."
+msgstr ""
+
+#: ../../docstring of src.PyDASA.Utils.dflt.VALID_IO_TYPE:1
+msgid ""
+"Tupla con los tipos de datos nativos en Python que son válidos para "
+"entrada y salida de datos al inicializar un ADT."
+msgstr ""
+
+#: of src.PyDASA.Utils.dflt.bt_default_cmp_funcion:1
+msgid "bt_default_cmp_funcion _summary_"
+msgstr ""
+
+#: ../../src.PyDASA.Utils.rst
+msgid "Parameters"
+msgstr ""
+
+#: of src.PyDASA.Utils.dflt.bt_default_cmp_funcion:3
+#: src.PyDASA.Utils.dflt.bt_default_cmp_funcion:5
+#: src.PyDASA.Utils.dflt.bt_default_cmp_funcion:7
+#: src.PyDASA.Utils.dflt.bt_default_cmp_funcion:10
+msgid "_description_"
+msgstr ""
+
+#: ../../src.PyDASA.Utils.rst
+msgid "Returns"
+msgstr ""
+
+#: ../../src.PyDASA.Utils.rst
+msgid "Return type"
+msgstr ""
+
+#: of src.PyDASA.Utils.dflt.ht_default_cmp_funcion:1
+#: src.PyDASA.Utils.dflt.ht_default_cmp_funcion_old:1
+msgid ""
+"*ht_default_cmp_funcion()* función de comparación por defecto para los "
+"elementos del ADT Map (HashTable). pueden ser de tipo nativo o definido "
+"por el usuario."
+msgstr ""
+
+#: of src.PyDASA.Utils.dflt.ht_default_cmp_funcion:3
+#: src.PyDASA.Utils.dflt.ht_default_cmp_funcion_old:3
+msgid "la llave (key) de la primera entrada (pareja llave-valor) a comparar."
+msgstr ""
+
+#: of src.PyDASA.Utils.dflt.ht_default_cmp_funcion:5
+#: src.PyDASA.Utils.dflt.ht_default_cmp_funcion_old:5
+msgid ""
+"segunda entrada (pareja llave-valor) a comparar de tipo *MapEntry*. puede"
+" contener cualquier tipo de estructura, dato o ADT."
+msgstr ""
+
+#: ../../src.PyDASA.Utils.rst
+msgid "Raises"
+msgstr ""
+
+#: of src.PyDASA.Utils.dflt.ht_default_cmp_funcion:8
+#: src.PyDASA.Utils.dflt.ht_default_cmp_funcion_old:8
+msgid "error de tipo de dato si las llaves no son comparables."
+msgstr ""
+
+#: of src.PyDASA.Utils.dflt.ht_default_cmp_funcion:10
+#: src.PyDASA.Utils.dflt.ht_default_cmp_funcion_old:10
+msgid ""
+"retorna -1 si key1 es menor que la llave de entry2, 0 si las llaves son "
+"iguales y 1 si la llave key1 es mayor que la llave de entry2."
+msgstr ""
+
+#: of src.PyDASA.Utils.dflt.lt_default_cmp_funcion:1
+msgid ""
+"*lt_default_cmp_funcion()* función de comparación por defecto para los "
+"elementos del ADT List (ArrayList, SingleLinked, DoubleLinked). pueden "
+"ser de tipo nativo o definido por el usuario."
+msgstr ""
+
+#: of src.PyDASA.Utils.dflt.lt_default_cmp_funcion:3
+msgid ""
+"llave para comparar los elementos de tipo diccionario que entrega el ADT "
+"List."
+msgstr ""
+
+#: of src.PyDASA.Utils.dflt.lt_default_cmp_funcion:5
+msgid "primer elemento a comparar."
+msgstr ""
+
+#: of src.PyDASA.Utils.dflt.lt_default_cmp_funcion:7
+msgid "segundo elemento a comparar."
+msgstr ""
+
+#: of src.PyDASA.Utils.dflt.lt_default_cmp_funcion:10
+msgid ""
+"error de tipo de dato si los elementos de tipo nativo en Python no son "
+"comparables."
+msgstr ""
+
+#: of src.PyDASA.Utils.dflt.lt_default_cmp_funcion:11
+msgid "error de clave si la llave para comparar los diccionarios no existe."
+msgstr ""
+
+#: of src.PyDASA.Utils.dflt.lt_default_cmp_funcion:12
+msgid "error de tipo de dato si los elementos no son comparables."
+msgstr ""
+
+#: of src.PyDASA.Utils.dflt.lt_default_cmp_funcion:14
+msgid ""
+"retorna -1 si elm1 es menor que elm2, 0 si son iguales y 1 si elm1 es "
+"mayor que elm2."
+msgstr ""
+
+#: ../../src.PyDASA.Utils.rst:40
+msgid "src.PyDASA.Utils.err module"
+msgstr ""
+
+#: of src.PyDASA.Utils.err:1
+msgid ""
+"# EN General error handling module for Data Structures and Algorithms in "
+"Python (PyDASA) package."
+msgstr ""
+
+#: of src.PyDASA.Utils.err:4
+msgid ""
+"# SPA Módulo comum para manejar errores en las estructuras de datos y "
+"algoritmos en Python (PyDASA)."
+msgstr ""
+
+#: of src.PyDASA.Utils.err.error_handler:1
+msgid ""
+"*error_handler()* recibe el contexto, nombre de la función y la excepción"
+" para lanzar un mensaje de error detallado y el traceback."
+msgstr ""
+
+#: of src.PyDASA.Utils.err.error_handler:3
+msgid "nombre del contexto donde ocurrió el error."
+msgstr ""
+
+#: of src.PyDASA.Utils.err.error_handler:5
+msgid "nombre de la función donde ocurrió el error."
+msgstr ""
+
+#: of src.PyDASA.Utils.err.error_handler:7
+msgid "excepción lanzada."
+msgstr ""
+
+#: of src.PyDASA.Utils.err.error_handler:10
+msgid "excepción con el mensaje de error detallado y el traceback."
+msgstr ""
+
+#: ../../src.PyDASA.Utils.rst:48
+msgid "src.PyDASA.Utils.mem module"
+msgstr ""
+
+#: ../../src.PyDASA.Utils.rst:56
+msgid "src.PyDASA.Utils.nos module"
+msgstr ""
+
+#: of src.PyDASA.Utils.nos:1
+msgid ""
+"Módulo con funciones de utilidad para el manejo de datos en los mapas no "
+"ordenados en *DISClib*. Especificamente para tablas de Hash por "
+"Encadenamiento Separado (Separate Chaining) y tablas de Hash por Sondeo "
+"Lineal (Linear Probing)."
+msgstr ""
+
+#: of src.PyDASA.Utils.nos:3
+msgid ""
+"*IMPORTANTE:* Este código y sus especificaciones para Python están "
+"basados en las implementaciones propuestas por los siguientes "
+"autores/libros:"
+msgstr ""
+
+#: of src.PyDASA.Utils.nos:5
+msgid "Algorithms, 4th Edition, Robert Sedgewick y Kevin Wayne."
+msgstr ""
+
+#: of src.PyDASA.Utils.nos:8
+msgid ""
+"*NOTA:* código contribuido por Sanjit_Prasad en "
+"https://www.geeksforgeeks.org/prime-numbers/"
+msgstr ""
+
+#: of src.PyDASA.Utils.nos.hash_compress:1
+msgid ""
+"*hash_compress()* función de compresión para los índices de las tablas de"
+" Hash utilizando el método MAD (Multiply-Add-and-Divide). MAD se define "
+"como: hash_compress(y) = ((a*y + b) % p) % M, donde:"
+msgstr ""
+
+#: of src.PyDASA.Utils.nos.hash_compress:3
+msgid ""
+"a (scale) y b (shift) enteros aleatoreos dentro del intervalo [0,p-1], "
+"con a > 0 p (prime) es un primo mayor a M, M (capacity) es el tamaño de "
+"la tabla, primo"
+msgstr ""
+
+#: of src.PyDASA.Utils.nos.hash_compress:7
+msgid ""
+"llave para calcular el índice en la tabla de Hash, Puede ser cualquier "
+"tipo de dato nativo en Python o definido por el usuario."
+msgstr ""
+
+#: of src.PyDASA.Utils.nos.hash_compress:9
+msgid "pendiente de la función de compresión."
+msgstr ""
+
+#: of src.PyDASA.Utils.nos.hash_compress:11
+msgid "desplazamiento de la función de compresión."
+msgstr ""
+
+#: of src.PyDASA.Utils.nos.hash_compress:13
+msgid "número  primo mucho mayor a la capacidad de la tabla de Hash."
+msgstr ""
+
+#: of src.PyDASA.Utils.nos.hash_compress:15
+msgid "tamaño de la tabla de Hash, es un número primo para evitar colisiones."
+msgstr ""
+
+#: of src.PyDASA.Utils.nos.hash_compress:18
+msgid "el índice del elemento en la tabla de Hash."
+msgstr ""
+
+#: of src.PyDASA.Utils.nos.is_prime:1
+msgid "*is_prime()* revisa si un número es primo o no."
+msgstr ""
+
+#: of src.PyDASA.Utils.nos.is_prime:3
+msgid "número entero para verificar si es primo."
+msgstr ""
+
+#: of src.PyDASA.Utils.nos.is_prime:6
+msgid "si el número es primo o no."
+msgstr ""
+
+#: of src.PyDASA.Utils.nos.next_prime:1
+msgid "*next_prime()* devuelve el siguiente número primo mayor que n."
+msgstr ""
+
+#: of src.PyDASA.Utils.nos.next_prime:3 src.PyDASA.Utils.nos.previous_prime:3
+msgid "número entero para calcular el siguiente número primo."
+msgstr ""
+
+#: of src.PyDASA.Utils.nos.next_prime:6
+msgid "el siguiente número primo mayor que n."
+msgstr ""
+
+#: of src.PyDASA.Utils.nos.previous_prime:1
+msgid "*previous_prime()* devuelve el número primo anterior a n."
+msgstr ""
+
+#: of src.PyDASA.Utils.nos.previous_prime:6
+msgid "el siguiente número primo menor que n."
+msgstr ""
+
+#: ../../src.PyDASA.Utils.rst:64
+msgid "Module contents"
+msgstr ""
+

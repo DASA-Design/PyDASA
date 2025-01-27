@@ -1,10 +1,10 @@
+# -*- coding: utf-8 -*-
 """
-Módulo para manejar errores genéricos en los ADTs y todo *DISCLib*.
+# EN
+General error handling module for Data Structures and Algorithms in Python (PyDASA) package.
 
-*IMPORTANTE:* Este código y sus especificaciones para Python están basados en las implementaciones propuestas por los siguientes autores/libros:
-
-    #. Algorithms, 4th Edition, Robert Sedgewick y Kevin Wayne.
-    #. Data Structure and Algorithms in Python, M.T. Goodrich, R. Tamassia, M.H. Goldwasser.
+# SPA
+Módulo comum para manejar errores en las estructuras de datos y algoritmos en Python (PyDASA).
 """
 # native python modules
 # import typing for defining the type of the elements

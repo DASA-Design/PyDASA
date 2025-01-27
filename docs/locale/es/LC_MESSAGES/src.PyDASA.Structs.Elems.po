@@ -1,0 +1,458 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2025, @SFAM, Uniandes, DISC, Bogotá D.C. Colombia
+# This file is distributed under the same license as the PyDASA package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PyDASA \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-01-26 22:00-0500\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: es\n"
+"Language-Team: es <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.16.0\n"
+
+#: ../../src.PyDASA.Structs.Elems.rst:2
+msgid "src.PyDASA.Structs.Elems package"
+msgstr ""
+
+#: ../../src.PyDASA.Structs.Elems.rst:5
+msgid "Submodules"
+msgstr ""
+
+#: ../../src.PyDASA.Structs.Elems.rst:8
+msgid "src.PyDASA.Structs.Elems.bte module"
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte:1
+msgid ""
+"Los ADTs en este módulo representan los nodos para diferentes tipos de "
+"árboles binarios o mapas ordenados. Estos incluyen los nodos para árboles"
+" de búsqueda (**BSTNode**), nodos para árboles rojo-negro (**RBTNode**), "
+"nodos para árboles AVL (**AVLNode**) y nodos árboles K-d (**KDTNode**)."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte:3
+msgid ""
+"Estos nodos se utilizan respectivamente en los ADT de árboles binarios de"
+" búsqueda o BST (Binary Search Tree), árboles rojo-negro o RBT (Red-Black"
+" Tree), árboles rojo-negro orientados a la izquierda p LLRBT (Left-"
+"Leaning Red-Black Tree), árboles AVL (Adelson-Velsky & Landis Tree) y "
+"árboles k-dimensionales (K-d Tree)"
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte:5
+msgid ""
+"En **DISCLib** las estructuras están asociadas a las implementaciones en "
+"**BSTree**, **RBTree**, **LLRBTree**, **AVLTree** y **KDTree**."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte:7 src.PyDASA.Structs.Elems.ltn:5
+#: src.PyDASA.Structs.Elems.me:7 src.PyDASA.Structs.Elems.node:3
+msgid ""
+"*IMPORTANTE:* Este código y sus especificaciones para Python están "
+"basados en las implementaciones propuestas por los siguientes "
+"autores/libros:"
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte:9 src.PyDASA.Structs.Elems.ltn:7
+#: src.PyDASA.Structs.Elems.me:9 src.PyDASA.Structs.Elems.node:5
+msgid "Algorithms, 4th Edition, Robert Sedgewick y Kevin Wayne."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte:10 src.PyDASA.Structs.Elems.ltn:8
+#: src.PyDASA.Structs.Elems.me:10 src.PyDASA.Structs.Elems.node:6
+msgid ""
+"Data Structure and Algorithms in Python, M.T. Goodrich, R. Tamassia, M.H."
+" Goldwasser."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte.AVLNode:1
+#: src.PyDASA.Structs.Elems.bte.KDTNode:1
+#: src.PyDASA.Structs.Elems.bte.RBTNode:1
+msgid ""
+"Bases: :py:class:`~src.PyDASA.Structs.Elems.bte.BSTNode`, "
+":py:class:`~typing.Generic`\\ [:py:obj:`~src.PyDASA.Utils.dflt.T`]"
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte.AVLNode:1
+msgid ""
+"**AVLNode** representa un nodo de un árbol AVL (Adelson-Velsky & Landis "
+"Tree). Basada en el ADT *BSTNode* que contiene la información del nodo "
+"(pareja llave-valor)."
+msgstr ""
+
+#: ../../src.PyDASA.Structs.Elems.rst
+msgid "Parameters"
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte.AVLNode:3
+#: src.PyDASA.Structs.Elems.bte.KDTNode:3
+#: src.PyDASA.Structs.Elems.bte.RBTNode:3
+msgid "ADT base para implementar un nodo para un árbol binario de búsqueda."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte.AVLNode:5
+#: src.PyDASA.Structs.Elems.bte.BSTNode:5
+#: src.PyDASA.Structs.Elems.bte.KDTNode:5
+#: src.PyDASA.Structs.Elems.bte.RBTNode:5
+#: src.PyDASA.Structs.Elems.ltn.DoubleNode:5
+#: src.PyDASA.Structs.Elems.ltn.SingleNode:5
+#: src.PyDASA.Structs.Elems.me.MapEntry:3 src.PyDASA.Structs.Elems.node.Node:3
+msgid ""
+"TAD (Tipo Abstracto de Datos) o ADT (Abstract Data Type) para una "
+"estructura de datos genéricas en python."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte.AVLNode.height:1
+msgid "*height()* recupera el factor de balance del nodo."
+msgstr ""
+
+#: ../../src.PyDASA.Structs.Elems.rst
+msgid "Returns"
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte.AVLNode.height:3
+msgid "factor de balance del nodo."
+msgstr ""
+
+#: ../../src.PyDASA.Structs.Elems.rst
+msgid "Return type"
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte.AVLNode.left_height:1
+msgid "*left_height()* recupera la altura del subárbol izquierdo del nodo."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte.AVLNode.left_height:3
+msgid "altura del subárbol izquierdo del nodo."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte.AVLNode.right_height:1
+msgid "*right_height()* recupera la altura del subárbol derecho del nodo."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte.AVLNode.right_height:3
+msgid "altura del subárbol derecho del nodo."
+msgstr ""
+
+#: ../../docstring of src.PyDASA.Structs.Elems.bte.BLACK:1
+#: src.PyDASA.Structs.Elems.bte.RED:1
+msgid "Variable para representar el color negro en un nodo RBT."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte.BSTNode:1
+msgid ""
+"Bases: :py:class:`~src.PyDASA.Structs.Elems.me.MapEntry`, "
+":py:class:`~typing.Generic`\\ [:py:obj:`~src.PyDASA.Utils.dflt.T`]"
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte.BSTNode:1
+msgid ""
+"**BSTNode** representa un nodo de un árbol binario de búsqueda o BST "
+"(Binary Search Tree). Basada en el ADT *MapEntry* que contiene la "
+"información del nodo (pareja llave-valor)."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte.BSTNode:3
+msgid "ADT base para implementar una pareja llave-valor."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte.BSTNode:8
+msgid "ADT para un *BSTNode* o nodo para un árbol binario de búsqueda."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte.BSTNode.left:1
+msgid ""
+"*left()* recupera la referencia al nodo izquierdo del árbol. Si no existe"
+" retorna *None*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte.BSTNode.left:3
+msgid "referencia al nodo izquierdo del árbol si existe."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte.BSTNode.right:1
+msgid ""
+"*right()* recupera la referencia al nodo derecho del árbol. Si no existe "
+"retorna *None*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte.BSTNode.right:3
+msgid "referencia al nodo derecho del árbol si existe."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte.BSTNode.size:1
+msgid "*size()* recupera el tamaño del subárbol que cuelga de este nodo."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte.BSTNode.size:3
+msgid "tamaño del subárbol que cuelga de este nodo."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte.KDTNode:1
+msgid ""
+"**KDTreeNode** representa un nodo de un árbol k-dimensionales o K-d Tree."
+" Basada en el ADT *BSTNode* que contiene la información del nodo (pareja "
+"llave-valor)."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte.KDTNode.get_dimension:1
+msgid ""
+"*get_dimension()* recupera la dimensión para dividir el nodo. Si no "
+"existe retorna *None*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte.KDTNode.get_dimension:3
+msgid "dimensión para dividir el nodo si existe."
+msgstr ""
+
+#: ../../docstring of src.PyDASA.Structs.Elems.bte.KDTNode.split_dim:1
+msgid ""
+"Dimensión para dividir el nodo (si es *None*, dividir en la dimensión más"
+" grande)."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte.RBTNode:1
+msgid ""
+"**RBTNode** representa un nodo de un árbol rojo-negro (RBT: Red-Black "
+"Tree), o un árbol rojo-negro orientados a la izquierda (LLRBT: Left-"
+"Leaning Red-Black Tree) que contiene la información del nodo (pareja "
+"llave-valor)."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte.RBTNode.color:1
+msgid "*color()* recupera el color del nodo."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte.RBTNode.color:3
+#: src.PyDASA.Structs.Elems.bte.RBTNode.set_color:3
+msgid "color del nodo."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte.RBTNode.is_red:1
+msgid "*is_red()* informa si el nodo es rojo."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte.RBTNode.is_red:3
+msgid "True si el nodo es rojo, False de lo contrario."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte.RBTNode.parent:1
+msgid ""
+"*parent()* recupera la referencia al nodo padre del árbol. Si no existe "
+"retorna *None*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte.RBTNode.parent:3
+msgid "referencia al nodo padre del árbol si existe."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.bte.RBTNode.set_color:1
+msgid "*set_color()* establece el color del nodo."
+msgstr ""
+
+#: ../../src.PyDASA.Structs.Elems.rst:16
+msgid "src.PyDASA.Structs.Elems.ltn module"
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.ltn:1
+msgid ""
+"Estos ADTs representan los nodos para una lista sencillamente encadenada "
+"(**SingleNode**) y una lista doblemente encadenada (**DoubleNode**)."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.ltn:3
+msgid ""
+"Estos nodos se utilizan respectivamente en las estructuras dinámicas de "
+"lista sencillamente encadenada (**LinkedList**) y lista doblemente "
+"encadenada (**DoubleLinkedList**). Las cuales NO tienen un tamaño fijo y "
+"pueden crecer indefinidamente en la memoria disponible."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.ltn.DoubleNode:1
+msgid ""
+"Bases: :py:class:`~src.PyDASA.Structs.Elems.ltn.SingleNode`, "
+":py:class:`~typing.Generic`\\ [:py:obj:`~src.PyDASA.Utils.dflt.T`]"
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.ltn.DoubleNode:1
+msgid ""
+"**DoubleNode** representa un nodo de una lista doblemente encadenada. "
+"Basada en el ADT *SingleNode* que contiene la información del nodo."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.ltn.DoubleNode:3
+#: src.PyDASA.Structs.Elems.ltn.SingleNode:3
+msgid "ADT base para implementar un nodo con información genérica."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.ltn.DoubleNode:8
+msgid "ADT para un *DoubleNode* o nodo para una lista doblemente encadenada."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.ltn.DoubleNode.prev:1
+msgid ""
+"*prev()* recupera la referencia al anterior *DoubleNode* de la lista. Si "
+"no existe retorna *None*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.ltn.DoubleNode.prev:3
+msgid "referencia al anterior *DoubleNode* si existe."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.ltn.SingleNode:1
+#: src.PyDASA.Structs.Elems.me.MapEntry:1
+msgid ""
+"Bases: :py:class:`~src.PyDASA.Structs.Elems.node.Node`, "
+":py:class:`~typing.Generic`\\ [:py:obj:`~src.PyDASA.Utils.dflt.T`]"
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.ltn.SingleNode:1
+msgid ""
+"**SingleNode** representa un nodo de una lista sencillamente encadenada. "
+"Basada en el ADT *Node* que contiene la información del nodo."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.ltn.SingleNode:8
+msgid "ADT para un *SingleNode* o nodo para una lista sencillamente encadenada."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.ltn.SingleNode.next:1
+msgid ""
+"*next()* recupera la referencia el siguiente nodo de la lista. Si no "
+"existe retorna *None*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.ltn.SingleNode.next:3
+msgid "referencia al siguiente *Node* de la lista si existe."
+msgstr ""
+
+#: ../../src.PyDASA.Structs.Elems.rst:24
+msgid "src.PyDASA.Structs.Elems.me module"
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.me:1
+msgid ""
+"Este ADT representa la registro de un Mapa no Ordenado (**MapEntry**), el"
+" cual es una estructura de datos para almacenar la información en parejas"
+" de llave-valor (key-value). La llave (*key*) es un identificador único "
+"para cada valor (*value*) almacenado en el Mapa no Ordenado (*Map*). Por "
+"su parte, el valor (*value*) puede ser cualquier tipo de dato."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.me:3
+msgid ""
+"En el caso de las tablas de Hash, la llave (*key*) es el resultado de "
+"aplicar una función hash al valor (*value*) almacenado en el Mapa no "
+"Ordenado (*Map*). Esta estructura de datos es fundamental para "
+"implementar otros mapas no ordenados como: tablas de símbolos, "
+"diccionarios, entre otros."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.me:5
+msgid ""
+"*DISCLib* utiliza el *MapEntry* para guardar la información de las tablas"
+" de Hash por Encadenamiento Separado (*SeparateChaining*) y las tablas "
+"por Sondeo Lineal (*LinearProbing)."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.me.MapEntry:1
+msgid ""
+"**MapEntry** representa un registro de un mapa no ordenado, contiene la "
+"llave (*key*) y el valor (*value*). Donde la llave es única para cada "
+"valor y el valor puede ser cualquier tipo de dato."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.me.MapEntry:6
+msgid "ADT de tipo *MapEntry* o registro de un mapa no ordenado."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.me.MapEntry.get_key:1
+msgid "*get_key()* recupera la llave 'key' contenida en el registro del mapa."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.me.MapEntry.get_key:3
+msgid "la llave del registro del mapa."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.me.MapEntry.get_value:1
+msgid "*get_value()* recupera el valor 'value' contenido en el registro del mapa."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.me.MapEntry.get_value:3
+msgid "el valor del registro del mapa."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.me.MapEntry.set_key:1
+msgid "*set_key()* introduce una nueva llave 'key' al registro del mapa."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.me.MapEntry.set_key:3
+msgid "la nueva llave del registro del mapa."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.me.MapEntry.set_value:1
+msgid "*set_value()* introduce un nuevo valor 'value' al registro del mapa."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.me.MapEntry.set_value:3
+msgid "el nuevo valor del registro del mapa."
+msgstr ""
+
+#: ../../src.PyDASA.Structs.Elems.rst:32
+msgid "src.PyDASA.Structs.Elems.node module"
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.node:1
+msgid ""
+"Este ADT representa un nodo **Node** de información de una estructura de "
+"datos dinámica, las cuales pueden ser: listas sencillas, listas "
+"doblemente encadenadas, pilas, colas, BST, RBT, entre otras."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.node.Node:1
+msgid "Bases: :py:class:`~typing.Generic`\\ [:py:obj:`~src.PyDASA.Utils.dflt.T`]"
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.node.Node:1
+msgid ""
+"**Node** Es el ADT que representar la información de un nodo de una "
+"estructura de datos dinámica y las funciones basicas para acceder a ella."
+" Puede utilizarse para representar un nodo de una lista sencilla o "
+"doblemente encadenada."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.node.Node:6
+msgid "ADT de tipo *Node* o nodo de información."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.node.Node.value:1
+msgid "get_data(), get(), get_val())."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.node.Node.value:3
+msgid "información de *Node*."
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.node.Node.value
+msgid "type"
+msgstr ""
+
+#: of src.PyDASA.Structs.Elems.node.Node.value:6
+msgid ""
+"*get_info()* recupera la información de *Node* como si fuera un *getter* "
+"(i.e."
+msgstr ""
+
+#: ../../src.PyDASA.Structs.Elems.rst:40
+msgid "Module contents"
+msgstr ""
+

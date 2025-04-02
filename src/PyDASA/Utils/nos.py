@@ -1,33 +1,33 @@
-﻿"""
-Módulo con funciones de utilidad para el manejo de datos en los mapas no ordenados en *DISClib*. Especificamente para tablas de Hash por Encadenamiento Separado (Separate Chaining) y tablas de Hash por Sondeo Lineal (Linear Probing).
+﻿# -*- coding: utf-8 -*-
+"""
+Module with utility functions for handling data in the maps of *PyDASA*. Specifically for Separate Chaining and Linear Probing Hash Tables.
 
-*IMPORTANTE:* Este código y sus especificaciones para Python están basados en las implementaciones propuestas por los siguientes autores/libros:
+*IMPORTANT:* This code and its specifications for Python are based on the implementations proposed by the following authors/books:
 
-    #. Algorithms, 4th Edition, Robert Sedgewick y Kevin Wayne.
+    #. Algorithms, 4th Edition, Robert Sedgewick and Kevin Wayne.
     #. Data Structure and Algorithms in Python, M.T. Goodrich, R. Tamassia, M.H. Goldwasser.
 
-*NOTA:* código contribuido por Sanjit_Prasad en https://www.geeksforgeeks.org/prime-numbers/
+*NOTE:* code contributed by Sanjit_Prasad in https://www.geeksforgeeks.org/prime-numbers/
 """
-
-
 # python native modules
-# math module for getting the prime numbers
+# math module handles mathematical functions
 import math
 
 # custom modules
-# error handler and datatypes
+# dflt module handles the default global variables and comparison functions for use by all *PyDASA* and its Data Structs.
 from src.PyDASA.Utils.dflt import T
 from src.PyDASA.Utils.dflt import VALID_IO_TYPE
+# import global variables
 
 
 def is_prime(n: int) -> bool:
-    """*is_prime()* revisa si un número es primo o no.
+    """*is_prime()* checks if a number is prime or not. Original code from Sanjit_Prasad.
 
     Args:
-        n (int): número entero para verificar si es primo.
+        n (int): number to check if it is prime.
 
     Returns:
-        bool: si el número es primo o no.
+        bool: True if the number is prime, False otherwise.
     """
     # we asume that the number is prime
     # Corner cases
@@ -53,13 +53,13 @@ def is_prime(n: int) -> bool:
 
 
 def next_prime(n: int) -> int:
-    """*next_prime()* devuelve el siguiente número primo mayor que n.
+    """*next_prime()* returns the next prime number greater than n.
 
     Args:
-        n (int): número entero para calcular el siguiente número primo.
+        n (int): number to check if it is prime.
 
     Returns:
-        int: el siguiente número primo mayor que n.
+        int: the next prime number greater than n.
     """
     # base case
     if n < 2:
@@ -80,13 +80,13 @@ def next_prime(n: int) -> int:
 
 
 def previous_prime(n: int) -> int:
-    """*previous_prime()* devuelve el número primo anterior a n.
+    """*previous_prime()* returns the previous prime number less than n.
 
     Args:
-        n (int): número entero para calcular el siguiente número primo.
+        n (int): number to check if it is prime.
 
     Returns:
-        int: el siguiente número primo menor que n.
+        int: the previous prime number less than n.
     """
     # base case
     if n < 2:
@@ -104,27 +104,27 @@ def previous_prime(n: int) -> int:
             found = True
 
 
-def hash_compress(key: T,
-                  scale: int,
-                  shift: int,
-                  prime: int,
-                  mcapacity: int) -> int:
+def mad_hash(key: T,
+             scale: int,
+             shift: int,
+             prime: int,
+             mcap: int) -> int:
+    """*mad_hash()* function to compress the indices of the Hash tables using the MAD (Multiply-Add-and-Divide) method.
 
-    """*hash_compress()* función de compresión para los índices de las tablas de Hash utilizando el método MAD (Multiply-Add-and-Divide).
-    MAD se define como: hash_compress(y) = ((a*y + b) % p) % M, donde:
-        a (scale) y b (shift) enteros aleatoreos dentro del intervalo [0,p-1], con a > 0
-        p (prime) es un primo mayor a M,
-        M (capacity) es el tamaño de la tabla, primo
+    MAD is defined as: mad_hash(y) = ((a*y + b) % p) % M, where:
+        a (scale) and b (shift) are random integers in the range [0,p-1], with a > 0
+        p (prime) is a prime number greater than M,
+        M (capacity) is the size of the table, prime
 
     Args:
-        key (T): llave para calcular el índice en la tabla de Hash, Puede ser cualquier tipo de dato nativo en Python o definido por el usuario.
-        scale (int): pendiente de la función de compresión.
-        shift (int): desplazamiento de la función de compresión.
-        prime (int): número  primo mucho mayor a la capacidad de la tabla de Hash.
-        mcapacity (int): tamaño de la tabla de Hash, es un número primo para evitar colisiones.
+        key (T): key to calculate the index in the Hash table, Can be any native data type in Python or user-defined.
+        scale (int): line slope of the compression function.
+        shift (int): offset of the compression function.
+        prime (int): prime number much greater than the capacity of the Hash table.
+        mcap (int): size of the Hash table, it is a prime number to avoid collisions.
 
     Returns:
-        int: el índice del elemento en la tabla de Hash.
+        int: the index of the element in the Hash table.
     """
     # TODO is easier if we cast the dynamic keys to strings?
     # if it is a dynamic data type, we cast it to string
@@ -134,5 +134,5 @@ def hash_compress(key: T,
     # getting the hash from the key
     hkey = hash(key)
     # calculating the index with the MAD compression function
-    idx = int((abs(scale * hkey + shift) % prime) % mcapacity)
+    idx = int((abs(scale * hkey + shift) % prime) % mcap)
     return idx

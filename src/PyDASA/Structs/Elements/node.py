@@ -75,19 +75,19 @@ class Node(Generic[T]):
 
     # public methods
     @property
-    def value(self) -> T:
+    def val(self) -> T:
         # def get(self) -> T:
-        """*get_info()* recupera la información de *Node* como si fuera un *getter* (i.e.: get_data(), get(), get_val()).
+        """*val()* recupera la información de *Node* como si fuera un *getter* (i.e.: get_data(), get(), get_val()).
 
         Returns:
             T: información de *Node*.
         """
         return self._value
 
-    @value.setter
-    def value(self, data: T) -> None:
+    @val.setter
+    def val(self, data: T) -> None:
         # def set(self, data: T) -> None:
-        """*value()* establece la información de *Node* como si fuera un *setter* (i.e.: set_data(), set(), set_val()).
+        """*val()* establece la información de *Node* como si fuera un *setter* (i.e.: set_data(), set(), set_val()).
 
         Args:
             data (T): información que se desea actualizar en *Node*.

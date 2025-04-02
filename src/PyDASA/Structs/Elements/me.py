@@ -21,7 +21,7 @@ from typing import Generic, Optional
 import inspect
 
 # custom modules
-from src.PyDASA.Structs.Elems.node import Node
+from src.PyDASA.Structs.Elements.node import Node
 # generic error handling and type checking
 from src.PyDASA.Utils.err import error_handler
 from src.PyDASA.Utils.dflt import T

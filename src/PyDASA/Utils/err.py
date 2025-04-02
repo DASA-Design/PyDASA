@@ -1,30 +1,40 @@
 # -*- coding: utf-8 -*-
 """
-# EN
-General error handling module for Data Structures and Algorithms in Python (PyDASA) package.
-
-# SPA
-Módulo comum para manejar errores en las estructuras de datos y algoritmos en Python (PyDASA).
+General error handling module/function for the PyDASA Data Structures and Algorithms in PyDASA package.
 """
 # native python modules
-# import typing for defining the type of the elements
-
 # custom modules
 # import global variables
 
 
-def error_handler(context: str,
-                  func_name: str,
+def error_handler(ctx: str,
+                  fname: str,
                   err: Exception) -> None:
-    """*error_handler()* recibe el contexto, nombre de la función y la excepción para lanzar un mensaje de error detallado y el traceback.
+    """*error_handler()* to process the context (package/class), function name (method), and the error (exception) that was raised to format a detailed error message and traceback.
 
     Args:
-        context (str): nombre del contexto donde ocurrió el error.
-        func_name (str): nombre de la función donde ocurrió el error.
-        err (Exception): excepción lanzada.
+        ctx (str): Python _context_ where the error occurred (package/class).
+        fname (str): Name of the function (method) where the error occurred.
+        err (Exception): Python _exception_ that was raised.
 
     Raises:
-        type: excepción con el mensaje de error detallado y el traceback.
+        type: Exception with the detailed error message and traceback.
     """
-    err_msg = f"Error in {context}.{func_name}: {err}"
+    # check if the context is a valid string
+    if not isinstance(ctx, str):
+        _msg = f"Invalid context: {ctx}, "
+        _msg += "context must be a string"
+        raise TypeError(_msg)
+    # check if the function name is a valid string
+    if not isinstance(fname, str):
+        _msg = f"Invalid function name: {fname}, "
+        _msg += "function name must be a string"
+        raise TypeError(_msg)
+    # check if the error is a valid exception
+    if not isinstance(err, Exception):
+        _msg = f"Invalid error: {err}, "
+        _msg += "error must be an exception"
+        raise TypeError(_msg)
+    # check if the context is not empty
+    err_msg = f"Error in {ctx}.{fname}: {err}"
     raise type(err)(err_msg).with_traceback(err.__traceback__)

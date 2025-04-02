@@ -17,7 +17,7 @@ import inspect
 
 # custom modules
 # node class for the linked list
-from src.PyDASA.Structs.Elems.ltn import SingleNode
+from src.PyDASA.Structs.Elements.ltn import SingleNode
 # generic error handling and type checking
 from src.PyDASA.Utils.err import error_handler
 from src.PyDASA.Utils.dflt import lt_default_cmp_funcion

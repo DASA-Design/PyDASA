@@ -1,5 +1,5 @@
-﻿"""
-# ENGLISH
+﻿# -*- coding: utf-8 -*-
+"""
 Module for default global variables and comparison functions for use by all *PyDASA* and its Data Structs.
 
 *IMPORTANT:* This code and its specifications for Python are based on the implementations proposed by the following authors/books:
@@ -10,17 +10,15 @@ Module for default global variables and comparison functions for use by all *PyD
 
 
 # python native modules
-# import dataclass for defining the node type
 from dataclasses import dataclass
-# import typing for defining the type of the node
 from typing import TypeVar
 
 # custom modules
-# hash table entry class for the default cmp function
+# import global variables
 
 # valid data types for the node
-# :data: VALID_DATA_TYPE_LT
-VALID_DATA_TYPE_LT: tuple = (
+# :data: VLD_DTYPE_LT
+VLD_DTYPE_LT: tuple = (
     int,
     float,
     str,
@@ -33,14 +31,13 @@ VALID_DATA_TYPE_LT: tuple = (
 )
 """
 Tuple with the native data types in Python that are comparable in the structures.
-Tupla con los tipos de datos nativos en Python que son comparables en los ADTs.
 """
 
 # default key for comparing dictionaries
-# :data: DEFAULT_DICT_KEY
-DEFAULT_DICT_KEY: str = "id"
+# :data: DFLT_DICT_KEY
+DFLT_DICT_KEY: str = "_id"
 """
-Llave por defecto para comparar diccionarios dentro de los ADTs.
+Default key field for comparing dictionaries in the structures.
 """
 
 # allowed input/output types for the ADTs
@@ -51,14 +48,14 @@ VALID_IO_TYPE: tuple = (
     set,
 )
 """
-Tupla con los tipos de datos nativos en Python que son válidos para entrada y salida de datos al inicializar un ADT.
+Tuple with the allowed input/output types for the ADTs. Useful for loading and saving data in the ADTs with the *load* and *save* file methods.
 """
 
 # default big prime number for MAD compression in hash tables
-# :data: DEFAULT_PRIME
-DEFAULT_PRIME: int = 109345121
+# :data: DFLT_PRIME
+DFLT_PRIME: int = 109345121
 """
-Número primo grande por defecto para la función de compresión MAD en las tablas de Hash.
+Default big prime number for MAD compression in hash tables. This number is used to calculate the hash value of the keys in the hash table.
 """
 
 
@@ -66,193 +63,121 @@ Número primo grande por defecto para la función de compresión MAD en las tabl
 # :data: T: TypeVar
 T = TypeVar("T")
 """
-Variable nativa de Python para definir una estructura de datos genérica en los ADTs.
+Type for the element stored in the list. This is used to define the type of the elements in the list and its methods.
+
+This is used to define the type of the elements in the list and its methods.
 """
 
 
-def lt_default_cmp_funcion(key: str, elm1, elm2) -> int:
-    """*lt_default_cmp_funcion()* función de comparación por defecto para los elementos del ADT List (ArrayList, SingleLinked, DoubleLinked). pueden ser de tipo nativo o definido por el usuario.
+def dflt_cmp_func_lt(key: str, elm1, elm2) -> int:
+    """*lt_default_cmp_funcion()* default comparison function for the elements of the ADT List (ArrayList, SingleLinked, DoubleLinked). can be of native type or user-defined.
 
     Args:
-        key (str): llave para comparar los elementos de tipo diccionario que entrega el ADT List.
-        elm1 (any): primer elemento a comparar.
-        elm2 (any): segundo elemento a comparar.
+        key (str): Key for comparing dictionary elements.
+        elm1 (any): First element to compare.
+        elm2 (any): Second element to compare.
 
     Raises:
-        TypeError: error de tipo de dato si los elementos de tipo nativo en Python no son comparables.
-        KeyError: error de clave si la llave para comparar los diccionarios no existe.
-        TypeError: error de tipo de dato si los elementos no son comparables.
+        TypeError: If elements are of different types or not comparable.
+        KeyError: If the key is not found in dictionary elements.
 
     Returns:
-        int: retorna -1 si elm1 es menor que elm2, 0 si son iguales y 1 si elm1 es mayor que elm2.
+        int: -1 if elm1 < elm2, 0 if elm1 == elm2, 1 if elm1 > elm2.
     """
-    # TODO can be improved
-    elm1_type = isinstance(elm1, VALID_DATA_TYPE_LT)
-    elm2_type = isinstance(elm2, VALID_DATA_TYPE_LT)
-    # if the elements are from different types, raise an exception
+    # Ensure elements are of the same type
     if type(elm1) is not type(elm2):
-        err_msg = f"Invalid comparison between {type(elm1)} and "
-        err_msg += f"{type(elm2)} elements"
-        raise TypeError(err_msg)
-    # if there is a defined key
-    elif key is not None:
-        # if elements are dictionaries, compare their main key
-        if isinstance(elm1, dict) and isinstance(elm2, dict):
-            key1 = elm1.get(DEFAULT_DICT_KEY)
-            key2 = elm2.get(DEFAULT_DICT_KEY)
-            if None in [key1, key2]:
-                err_msg = f"Invalid key: {DEFAULT_DICT_KEY}, "
-                err_msg += "Key not found in one or both elements"
-                raise KeyError(err_msg)
-            # comparing elements
-            else:
-                # if one is less than the other, return -1
-                if key1 < key2:
-                    return -1
-                # if they are equal, return 0
-                elif key1 == key2:
-                    return 0
-                # if one is greater than the other, return 1
-                elif key1 > key2:
-                    return 1
-                # otherwise, raise an exception
-                else:
-                    err_msg = f"Invalid comparison between {key1} and "
-                    err_msg += f"{key2} keys in elements."
-                    raise TypeError(err_msg)
-        # if elements are native types, compare them directly
-        elif elm1_type and elm2_type:
-            # if one is less than the other, return -1
-            if elm1 < elm2:
-                return -1
-            # if one is greater than the other, return 1
-            elif elm1 > elm2:
-                return 1
-            # otherwise, they are equal, return 0
-            else:
-                return 0
+        _msg = f"Invalid comparison between {type(elm1)} and "
+        _msg += f"{type(elm2)} elements"
+        raise TypeError(_msg)
+
+    # Handle dictionary comparison using the provided key
+    if key and isinstance(elm1, dict) and isinstance(elm2, dict):
+        key1, key2 = elm1.get(DFLT_DICT_KEY), elm2.get(DFLT_DICT_KEY)
+        if key1 is None or key2 is None:
+            _msg = f"Invalid key: {DFLT_DICT_KEY}, "
+            _msg += "Key not found in one or both elements"
+            raise KeyError(_msg)
+        if key1 < key2:
+            return -1
+        elif key1 == key2:
+            return 0
+        elif key1 > key2:
+            return 1
+        # TODO check this simplified logic
+        # return (key1 > key2) - (key1 < key2)  # Simplified comparison logic
+
+    # Handle native type comparison
+    if isinstance(elm1, VLD_DTYPE_LT) and isinstance(elm2, VLD_DTYPE_LT):
+        if elm1 < elm2:
+            return -1
+        elif elm1 == elm2:
+            return 0
+        elif elm1 > elm2:
+            return 1
+        # TODO check this simplified logic
+        # return (elm1 > elm2) - (elm1 < elm2)  # Simplified comparison logic
+
+    # Raise error if elements are not comparable
+    _msg = f"Elements of type {type(elm1)} and {type(elm2)} are not comparable"
+    raise TypeError(_msg)
 
 
-def ht_default_cmp_funcion_old(key1: T, entry2) -> int:
-    """*ht_default_cmp_funcion()* función de comparación por defecto para los elementos del ADT Map (HashTable). pueden ser de tipo nativo o definido por el usuario.
+def dflt_cmp_func_ht(key: str, ekey1: T, entry2) -> int:
+    """*dflt_cmp_func_ht()* default comparison function for the elements of the ADT Map (Hash Table). can be of native type or user-defined.
 
     Args:
-        key1 (T): la llave (key) de la primera entrada (pareja llave-valor) a comparar.
-        entry2 (MapEntry): segunda entrada (pareja llave-valor) a comparar de tipo *MapEntry*. puede contener cualquier tipo de estructura, dato o ADT.
+        key (str): Key for comparing dictionary elements.
+        ekey1 (T): Key of the first entry (key-value pair) to compare.
+        entry2 (MapEntry): Second entry (key-value pair) to compare.
 
     Raises:
-        TypeError: error de tipo de dato si las llaves no son comparables.
+        TypeError: If the keys are of different types or not comparable.
+        KeyError: If the key is not found in dictionary elements.
 
     Returns:
-        int: retorna -1 si key1 es menor que la llave de entry2, 0 si las llaves son iguales y 1 si la llave key1 es mayor que la llave de entry2.
+        int: -1 if ekey1 < ekey2, 0 if ekey1 == ekey2, 1 if ekey1 > ekey2.
     """
-    # TODO to improve or delete, remain to check
-    key2 = entry2.get_key()
-    if type(key1) is not type(key2):
-        err_msg = f"Invalid comparison between {type(key1)} and "
-        err_msg += f"{type(key2)} keys"
-        raise TypeError(err_msg)
-    if (key1 == key2):
-        return 0
-    elif (key1 > key2):
-        return 1
-    return -1
-
-
-def ht_default_cmp_funcion(key: str, ekey1: T, entry2) -> int:
-    """*ht_default_cmp_funcion()* función de comparación por defecto para los elementos del ADT Map (HashTable). pueden ser de tipo nativo o definido por el usuario.
-
-    Args:
-        key1 (T): la llave (key) de la primera entrada (pareja llave-valor) a comparar.
-        entry2 (MapEntry): segunda entrada (pareja llave-valor) a comparar de tipo *MapEntry*. puede contener cualquier tipo de estructura, dato o ADT.
-
-    Raises:
-        TypeError: error de tipo de dato si las llaves no son comparables.
-
-    Returns:
-        int: retorna -1 si key1 es menor que la llave de entry2, 0 si las llaves son iguales y 1 si la llave key1 es mayor que la llave de entry2.
-    """
-    # TODO to improve or delete, remain to check
     ekey2 = entry2.get_key()
-    ekey1_type = isinstance(ekey1, VALID_DATA_TYPE_LT)
-    ekey2_type = isinstance(ekey2, VALID_DATA_TYPE_LT)
-    # if the elements are from different types, raise an exception
+
+    # Ensure keys are of the same type
     if type(ekey1) is not type(ekey2):
-        err_msg = f"Invalid comparison between {type(ekey1)} and "
-        err_msg += f"{type(ekey2)} elements"
-        raise TypeError(err_msg)
-    # if there is a defined key
-    elif key is not None:
-        # if elements are dictionaries, compare their main key
-        if isinstance(ekey1, dict) and isinstance(ekey2, dict):
-            key1 = ekey1.get(DEFAULT_DICT_KEY)
-            key2 = ekey2.get(DEFAULT_DICT_KEY)
-            if None in [key1, key2]:
-                err_msg = f"Invalid key: {DEFAULT_DICT_KEY}, "
-                err_msg += "Key not found in one or both elements"
-                raise KeyError(err_msg)
-            # comparing elements
-            else:
-                # if one is less than the other, return -1
-                if key1 < key2:
-                    return -1
-                # if they are equal, return 0
-                elif key1 == key2:
-                    return 0
-                # if one is greater than the other, return 1
-                elif key1 > key2:
-                    return 1
-                # otherwise, raise an exception
-                else:
-                    err_msg = f"Invalid comparison between {key1} and "
-                    err_msg += f"{key2} keys in elements."
-                    raise TypeError(err_msg)
-        elif isinstance(ekey1, tuple) and isinstance(ekey2, tuple):
-            # change tuples to lists to compare them
-            ekey1 = list(ekey1)
-            ekey2 = list(ekey2)
-            # if one is less than the other, return -1
-            if ekey1 < ekey2:
-                return -1
-            # if they are equal, return 0
-            elif ekey1 == ekey2:
-                return 0
-            # if one is greater than the other, return 1
-            elif ekey1 > ekey2:
-                return 1
-            # otherwise, raise an exception
-            else:
-                err_msg = f"Invalid comparison between {ekey1} and "
-                err_msg += f"{ekey2} keys in elements."
-                raise TypeError(err_msg)
-        # if elements are native types, compare them directly
-        if ekey1_type and ekey2_type:
-            # if one is less than the other, return -1
-            if ekey1 < ekey2:
-                return -1
-            # if one is greater than the other, return 1
-            elif ekey1 > ekey2:
-                return 1
-            # otherwise, they are equal, return 0
-            else:
-                return 0
+        _msg = f"Invalid comparison between {type(ekey1)} and "
+        _msg += f"{type(ekey2)} elements"
+        raise TypeError(_msg)
 
+    # Handle dictionary comparison using the provided key
+    if key and isinstance(ekey1, dict) and isinstance(ekey2, dict):
+        key1, key2 = ekey1.get(DFLT_DICT_KEY), ekey2.get(DFLT_DICT_KEY)
+        if None in [key1, key2]:
+            _msg = f"Invalid key: {DFLT_DICT_KEY}, "
+            _msg += "Key not found in one or both elements"
+            raise KeyError(_msg)
+        return (key1 > key2) - (key1 < key2)  # Simplified comparison logic
 
-def bt_default_cmp_funcion(key: str, key1: T, key2: T) -> int:
-    """bt_default_cmp_funcion _summary_
+    # Handle tuple comparison
+    # TODO tuple comparision could be redundant with VLD_DTYPE_LT present
+    if isinstance(ekey1, tuple) and isinstance(ekey2, tuple):
+        if ekey1 == ekey2:
+            return 0
+        elif ekey1 < ekey2:
+            return -1
+        elif ekey1 > ekey2:
+            return 1
+        # TODO check this simplified logic
+        # return (list(ekey1) > list(ekey2)) - (list(ekey1) < list(ekey2))
 
-    Args:
-        key (str): _description_
-        key1 (T): _description_
-        key2 (T): _description_
+    # Handle native type comparison
+    if isinstance(ekey1, VLD_DTYPE_LT) and isinstance(ekey2, VLD_DTYPE_LT):
+        if ekey1 < ekey2:
+            return -1
+        elif ekey1 == ekey2:
+            return 0
+        elif ekey1 > ekey2:
+            return 1
+        # TODO check this simplified logic
+        return (ekey1 > ekey2) - (ekey1 < ekey2)  # Simplified comparison logic
 
-    Returns:
-        int: _description_
-    """
-    # FIXME update for new DISCLib version!!!
-    if key1 == key2:
-        return 0
-    elif key1 < key2:
-        return -1
-    else:
-        return 1
+    # Raise error if keys are not comparable
+    _msg = f"Elements of type {type(ekey1)}"
+    _msg += f" and {type(ekey2)} are not comparable"
+    raise TypeError(_msg)

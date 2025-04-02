@@ -19,7 +19,7 @@ from typing import Optional, Generic
 # generic error handling and type checking
 from src.PyDASA.Utils.err import error_handler
 from src.PyDASA.Utils.dflt import T
-from src.PyDASA.Structs.Elems.node import Node
+from src.PyDASA.Structs.Elements.node import Node
 
 # checking custom modules
 assert error_handler

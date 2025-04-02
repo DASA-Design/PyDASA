@@ -68,7 +68,7 @@ msgid "*is_prime()* revisa si un número es primo o no."
 msgstr ""
 
 #: ../../autoapi/src/PyDASA/Utils/nos/index.rst:29:<autosummary>:1
-msgid ":py:obj:`next_prime <src.PyDASA.Utils.nos.next_prime>`\\ \\(→ int\\)"
+msgid ":py:obj:`next_prime <Src.PyDASA.Utils.nos.next_prime>`\\ \\(→ int\\)"
 msgstr ""
 
 #: ../../autoapi/src/PyDASA/Utils/nos/index.rst:46

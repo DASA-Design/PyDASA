@@ -17,13 +17,13 @@ import inspect
 
 # custom modules
 # node class for the linked list
-from src.PyDASA.Structs.Elements.ltn import SingleNode
+from Src.PyDASA.Structs.Elements.ltn import SingleNode
 # generic error handling and type checking
-from src.PyDASA.Utils.err import error_handler
-from src.PyDASA.Utils.dflt import lt_default_cmp_funcion
-from src.PyDASA.Utils.dflt import T
-from src.PyDASA.Utils.dflt import DEFAULT_DICT_KEY
-from src.PyDASA.Utils.dflt import VALID_IO_TYPE
+from Src.PyDASA.Utils.err import error_handler
+from Src.PyDASA.Utils.dflt import lt_default_cmp_funcion
+from Src.PyDASA.Utils.dflt import T
+from Src.PyDASA.Utils.dflt import DEFAULT_DICT_KEY
+from Src.PyDASA.Utils.dflt import VALID_IO_TYPE
 
 # checking custom modules
 assert error_handler

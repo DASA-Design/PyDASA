@@ -72,13 +72,23 @@ class Node(Generic[T]):
             bool: True if the type of the element is the same as the type of the *Node*. False otherwise.
         """
         if not isinstance(elm, type(self._data)):
-            err_msg = f"Invalid data type: {type(self._data)} "
-            err_msg += f"for struct configured with {type(elm)}"
-            raise TypeError(err_msg)
+            _msg = f"Invalid data type: {type(elm)} "
+            _msg += f"Node configured with {type(self._data)}"
+            raise TypeError(_msg)
         return True
 
-    def set(self, data: T) -> None:
-        """*set()* function that sets the data in the *Node*.
+    @property
+    def data(self) -> T:
+        """*data* Property to read the data in the *Node*. Acts as a getter (*get()*) for the *_data* attribute.
+
+        Returns:
+            T: data stored in the *Node*.
+        """
+        return self._data
+
+    @data.setter
+    def data(self, data: T) -> None:
+        """*data* Property to write the data in the *Node*. Acts as a setter (*set()*) for the *_data* attribute.
 
         Args:
             data (T): data to be set in the *Node*.
@@ -86,14 +96,6 @@ class Node(Generic[T]):
         if self._data is not None:
             self._check_type(data)
         self._data = data
-
-    def get(self) -> T:
-        """*get()* function that gets the data in the *Node*.
-
-        Returns:
-            T: data stored in the *Node*.
-        """
-        return self._data
 
 
 @dataclass
@@ -116,14 +118,25 @@ class SLNode(Node, Generic[T]):
     next node of the same type. By default, it is set to None.
     """
 
+    @property
     def next(self) -> Optional["SLNode[T]"]:
-        """"*next()* function that gets the next node of the same type.
-        This function is used to traverse the linked list.
+        """"*next()* Property to read the next node in the list. Acts as a getter (*get()*) for the *_next* attribute.
 
         Returns:
             Optional["SLNode[T]"]: reference to the next node of the list. If there is no next node, it returns None.
         """
         return self._next
+
+    @next.setter
+    def next(self, node: Optional["SLNode[T]"]) -> None:
+        """*next()* Property to write the next node in the list. Acts as a setter (*set()*) for the *_next* attribute.
+
+        Args:
+            node (Optional["SLNode[T]"]): reference to the next node of the list.
+        """
+        if node is not None:
+            self._check_type(node.data)
+        self._next = node
 
 
 @dataclass
@@ -144,5 +157,22 @@ class DLNode(SLNode, Generic[T]):
     # :attr: _prev
     _prev: Optional["DLNode[T]"] = None
 
+    @property
     def prev(self) -> Optional["DLNode[T]"]:
+        """*prev()* Property to read the previous node in the list. Acts as a getter (*get()*) for the *_prev* attribute.
+
+        Returns:
+            node (Optional["DLNode[T]"]): reference to the previous node of the list.
+        """
         return self._prev
+
+    @prev.setter
+    def prev(self, node: Optional["DLNode[T]"]) -> None:
+        """*prev()* Property to write the previous node in the list. Acts as a setter (*set()*) for the *_prev* attribute.
+
+        Args:
+            node (Optional["DLNode[T]"]): reference to the previous node of the list.
+        """
+        if node is not None:
+            self._check_type(node.data)
+        self._prev = node

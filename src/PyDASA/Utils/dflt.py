@@ -41,8 +41,8 @@ Default key field for comparing dictionaries in the structures.
 """
 
 # allowed input/output types for the ADTs
-# :data: VALID_IO_TYPE
-VALID_IO_TYPE: tuple = (
+# :data: VLD_IODATA_LT
+VLD_IODATA_LT: tuple = (
     list,
     tuple,
     set,

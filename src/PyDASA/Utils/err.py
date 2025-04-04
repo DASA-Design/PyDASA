@@ -7,34 +7,36 @@ General error handling module/function for the PyDASA Data Structures and Algori
 # import global variables
 
 
-def error_handler(ctx: str,
-                  fname: str,
-                  err: Exception) -> None:
-    """*error_handler()* to process the context (package/class), function name (method), and the error (exception) that was raised to format a detailed error message and traceback.
+def handle_error(context: str,
+                 function_name: str,
+                 exception: Exception) -> None:
+    """Handles errors by formatting a detailed error message and traceback.
 
     Args:
-        ctx (str): Python _context_ where the error occurred (package/class).
-        fname (str): Name of the function (method) where the error occurred.
-        err (Exception): Python _exception_ that was raised.
+        context (str): The context (e.g., package/class) where the error occurred.
+        function_name (str): The name of the function or method where the error occurred.
+        exception (Exception): The exception that was raised.
 
     Raises:
-        type: Exception with the detailed error message and traceback.
+        Exception: A new exception with a detailed error message and traceback.
     """
-    # check if the context is a valid string
-    if not isinstance(ctx, str):
-        _msg = f"Invalid context: {ctx}, "
-        _msg += "context must be a string"
+    # Validate the context
+    if not isinstance(context, str):
+        _msg = f"Invalid context: {context}. Context must be a string."
         raise TypeError(_msg)
-    # check if the function name is a valid string
-    if not isinstance(fname, str):
-        _msg = f"Invalid function name: {fname}, "
-        _msg += "function name must be a string"
+
+    # Validate the function name
+    if not isinstance(function_name, str):
+        _msg = f"Invalid function name: {function_name}. "
+        _msg += "Function name must be a string."
         raise TypeError(_msg)
-    # check if the error is a valid exception
-    if not isinstance(err, Exception):
-        _msg = f"Invalid error: {err}, "
-        _msg += "error must be an exception"
+
+    # Validate the exception
+    if not isinstance(exception, Exception):
+        _msg = f"Invalid exception: {exception}. "
+        _msg += "Exception must be an instance of Exception."
         raise TypeError(_msg)
-    # check if the context is not empty
-    err_msg = f"Error in {ctx}.{fname}: {err}"
-    raise type(err)(err_msg).with_traceback(err.__traceback__)
+
+    # Format and raise the error with additional context
+    _err_msg = f"Error in {context}.{function_name}: {exception}"
+    raise type(exception)(_err_msg).with_traceback(exception.__traceback__)

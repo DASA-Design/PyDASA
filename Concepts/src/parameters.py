@@ -152,7 +152,7 @@ class Parameter(Generic[T]):
         # get the length of the list
         dims_lt_len = len(dims_lt)
         # create default list of zeros with the FDU length
-        dim_pow_lt = len(FDU)*[0]
+        dim_pow_lt = len(FDU) * [0]
         # working vars
         i = 0
         digit_pattern = re.compile(EXP_PATTERN_STR)

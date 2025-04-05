@@ -9,7 +9,7 @@ Module to represent the **FDU** or **Fundamental Dimensional Unit** data structu
 
 # native python modules
 # import dataclass for defining the node class
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 # import modules for defining the MapEntry type
 from typing import Generic
 
@@ -51,31 +51,31 @@ class FDU(Generic[T]):
     """
     # Private attributes with validation logic
     # :attr: _id
-    _id: str = field(init=False, repr=False)
+    _id: str = ""
     """
     ID of the FDU. It must be alphanumeric. Useful for identifying the FDU in the system and dimensional matrix construction.
     """
 
     # :attr: _symbol
-    _symbol: str = field(init=False, repr=False)
+    _symbol: str = ""
     """
     Symbol of the FDU. It must be alphanumeric (preferably a single character + Latin or Greek letter). Useful for user-friendly representation of the FDU.
     """
 
     # :attr: _framework
-    _framework: str = field(init=False, repr=False)
+    _framework: str = "PHYSICAL"
     """
     Framework of the FDU. It can be one of the following: `PHYSICAL`, `DIGITAL`, or `CUSTOM`. Useful for identifying the framework of the FDU.
     """
 
     # Public attributes
     # :attr: name
-    name: str
+    name: str = ""
     """
     Name of the FDU. User-friendly name of the FDU.
     """
     # :attr: description
-    description: str
+    description: str = ""
     """
     Description of the FDU. It is a string with a small summary of the FDU.
     """
@@ -161,9 +161,9 @@ class FDU(Generic[T]):
         Returns:
             str: String representation of the FDU object.
         """
-        _fdu = f"FDU(id={self._id}, "
-        _fdu += f"symbol={self._symbol}, "
-        _fdu += f"framework={self._framework}, "
-        _fdu += f"name={self.name}, "
-        _fdu += f"description={self.description})"
+        _fdu = f"FDU(id='{self._id}', "
+        _fdu += f"symbol='{self._symbol}', "
+        _fdu += f"framework='{self._framework}', "
+        _fdu += f"name='{self.name}', "
+        _fdu += f"description='{self.description}')"
         return _fdu

@@ -45,8 +45,8 @@ class Node(Generic[T]):
     data stored in the node. By default, it is set to None.
     """
 
-    def _error(self, err: Exception) -> None:
-        """*_error()* function that handles the errors that can occur in the *Node*.
+    def _error_handler(self, err: Exception) -> None:
+        """*_error_handler()* function that handles the errors that can occur in the *Node*.
 
         if an error occurs in *SingleLinked*, it formats the error according to the context (package/module/class), the function (method) that generated it, and sends it to the upper component in the *DataStruct* hierarchy to handle it as the user considers appropriate.
 
@@ -97,6 +97,17 @@ class Node(Generic[T]):
             self._check_type(data)
         self._data = data
 
+    def __str__(self) -> str:
+        """*__str__()* function to return a string representation of the *Node*.
+
+        Returns:
+            str: string representation of the *Node*.
+        """
+        _str = f"{self.__class__.__name__}("
+        _str += f"data={self._data}, "
+        _str += ")"
+        return _str
+
 
 @dataclass
 class SLNode(Node, Generic[T]):
@@ -138,6 +149,18 @@ class SLNode(Node, Generic[T]):
             self._check_type(node.data)
         self._next = node
 
+    def __str__(self) -> str:
+        """*__str__()* function to return a string representation of the *SLNode*.
+
+        Returns:
+            str: string representation of the *SLNode*.
+        """
+        _str = f"{self.__class__.__name__}("
+        _str += f"data={self._data}, "
+        _str += f"next={self._next}"
+        _str += ")"
+        return _str
+
 
 @dataclass
 class DLNode(SLNode, Generic[T]):
@@ -176,3 +199,16 @@ class DLNode(SLNode, Generic[T]):
         if node is not None:
             self._check_type(node.data)
         self._prev = node
+
+    def __str__(self) -> str:
+        """*__str__()* function to return a string representation of the *DLNode*.
+
+        Returns:
+            str: string representation of the *DLNode*.
+        """
+        _str = f"{self.__class__.__name__}("
+        _str += f"data={self._data}, "
+        _str += f"next={self._next}, "
+        _str += f"prev={self._prev}"
+        _str += ")"
+        return _str

@@ -22,11 +22,11 @@ import random
 # generic error handling and type checking
 from Src.PyDASA.DataStructs.Tables.htme import MapEntry
 from Src.PyDASA.DataStructs.Lists.arlt import ArrayList
-from Src.PyDASA.DataStructs.Lists.sllt import SingleLinked
+from Src.PyDASA.DataStructs.Lists.sllt import SingleLinkedList
 # util functions for the hash table
 from Src.PyDASA.Utils.nos import next_prime, previous_prime
 from Src.PyDASA.Utils.nos import mad_hash
-from Src.PyDASA.Utils.err import handle_error as error
+from Src.PyDASA.Utils.err import error_handler as error
 # default cmp function for the hash table
 from Src.PyDASA.Utils.dflt import dflt_cmp_func_ht
 # default data type for the hash table
@@ -40,7 +40,7 @@ from Src.PyDASA.Utils.dflt import DFLT_PRIME
 # checking custom modules
 assert MapEntry
 assert ArrayList
-assert SingleLinked
+assert SingleLinkedList
 assert next_prime
 assert previous_prime
 assert mad_hash
@@ -73,11 +73,11 @@ Minimum load factor (*alpha*) for the *SeparateChainingTable*, by default is 2.0
 
 
 @dataclass
-class Bucket(SingleLinked, Generic[T]):
-    """**Bucket** class to represent a bucket in the **Hash Table** with the *Separate Chaining* method. The structure is based (inherits) on a custom singly linked list (*SingleLinked*) for *PyDASA*.
+class Bucket(SingleLinkedList, Generic[T]):
+    """**Bucket** class to represent a bucket in the **Hash Table** with the *Separate Chaining* method. The structure is based (inherits) on a custom singly linked list (*SingleLinkedList*) for *PyDASA*.
 
     Args:
-        SingleLinked (T): *PyDASA* class for a single linked list.
+        SingleLinkedList (T): *PyDASA* class for a single linked list.
         Generic (T): Generic type for a Python data structure.
     """
     # keep as is...
@@ -239,11 +239,11 @@ class SeparateChainingTable(Generic[T]):
             i = 0
             # bulding buckets in the hash table
             while i < self.mcapacity:
-                # bucket is a SingleLinked list
-                bucket = Bucket(cmp_function=self.cmp_function,
-                                key=self.key)
+                # bucket is a SingleLinkedList list
+                _bucket = Bucket(cmp_function=self.cmp_function,
+                                 key=self.key)
                 # add the bucket to the hash table
-                self.hash_table.add_last(bucket)
+                self.hash_table.append(_bucket)
                 i += 1
 
             # setting the current load factor
@@ -265,359 +265,316 @@ class SeparateChainingTable(Generic[T]):
             # if self._size != self.nentries:
             #     self.nentries = self._size
         except Exception as err:
-            self._handle_error(err)
+            self._error_handler(err)
 
     def default_compare(self, key1: T, entry2: MapEntry) -> int:
-        """*default_compare()* es la función de comparación por defecto para comparar la llave de un elemento vs. el registro (pareja llave-valor) o *MapEntry* que se desea agregar al *SeparateChainingTable*, es una función crucial para que la estructura funcione correctamente.
+        """*default_compare()* Default comparison function for the *SeparateChainingTable* and its *MapEntry* objects. Compares the key of the *MapEntry* with the provided key *key1* and reurns:
+            - 0 if they are equal.
+            - 1 if the *MapEntry* key is less than *key1*.
+            - -1 if the *MapEntry* key is greater than *key1*.
 
         Args:
-            key1 (Any): llave (*key*) del primer registro a comparar.
-            entry2 (MapEntry): segundo registro (pareja llave-valor) a comparar.
+            key1 (T): Key from the first *MapEntry* to compare.
+            entry2 (MapEntry): Second *MapEntry* to compare.
 
         Returns:
-            int: respuesta de la comparación entre los elementos, 0 si las llaves (*key*) son iguales, 1 si key1 es mayor que la llave (*key*) de entry2, -1 si key1 es menor.
+            int: Comparison result.
         """
-        # FIXME: aki voyyyyy!!!!!!!!!!!!!!!!
         try:
             # using the default compare function for the key
             return dflt_cmp_func_ht(self.key, key1, entry2)
         except Exception as err:
-            self._handle_error(err)
+            self._error_handler(err)
 
-    def _handle_error(self, err: Exception) -> None:
-        """*_handle_error()* función propia de la estructura que maneja los errores que se pueden presentar en el *SeparateChainingTable*.
-
-        Si se presenta un error en *SeparateChainingTable*, se formatea el error según el contexto (paquete/módulo/clase), la función (método) que lo generó y lo reenvia al componente superior en la jerarquía *DISCLib* para manejarlo segun se considere conveniente el usuario.
-
-        Args:
-            err (Exception): Excepción que se generó en el *SeparateChainingTable*.
-        """
-        # TODO check usability of this function
-        cur_context = self.__class__.__name__
-        cur_function = inspect.currentframe().f_code.co_name
-        error(cur_context, cur_function, err)
-
-    def _check_type(self, entry: MapEntry) -> bool:
-        """*_check_type()* función propia de la estructura que revisa si el tipo de dato del registro (pareja llave-valor) que se desea agregar al *SeparateChainingTable* es del mismo tipo contenido dentro de los *MapEntry* del *SeparateChainingTable*.
-
-        Args:
-            element (T): elemento que se desea procesar en *SeparateChainingTable*.
-
-        Raises:
-            TypeError: error si el tipo de dato del elemento que se desea agregar no es el mismo que el tipo de dato de los elementos que ya contiene el *SeparateChainingTable*.
-
-        Returns:
-            bool: operador que indica si el ADT *SeparateChainingTable* es del mismo tipo que el elemento que se desea procesar.
-        """
-        # TODO check usability of this function
-        # if datastruct is empty, set the entry type
-        key = entry.get_key()
-        value = entry.get_value()
-        if self.is_empty():
-            self._key_type = type(key)
-            self._value_type = type(value)
-        # check if the new entry is the same type as the other entries
-        elif self._key_type is not type(key):
-            err_msg = f"Invalid key type: {type(key)} "
-            err_msg += f"for struct configured with type: {self._key_type}"
-            raise TypeError(err_msg)
-        elif self._value_type is not type(value):
-            err_msg = f"Invalid value type: {type(value)} "
-            err_msg += f"for struct configured with type: {self._value_type}"
-            raise TypeError(err_msg)
-        # otherwise, the type is valid
-        return True
-
-    def _check_key_type(self, entry: MapEntry) -> bool:
-        """*_check_key_type()* función propia de la estructura que revisa si el tipo de dato de la llave del registro (pareja llave-valor) que se desea agregar al *SeparateChainingTable* es del mismo tipo contenido dentro de los *MapEntry* del *SeparateChainingTable*.
-
-        Args:
-            element (T): elemento que se desea procesar en *SeparateChainingTable*.
-
-        Raises:
-            TypeError: error si el tipo de dato de la llave que se desea agregar no es el mismo que el tipo de dato de las llaves que ya contiene el *SeparateChainingTable*.
-
-        Returns:
-            bool: operador que indica si la llave del ADT *SeparateChainingTable* es del mismo tipo que la llave que se desea procesar.
-        """
-        # TODO check usability of this function
-        key = entry.get_key()
-        # if the new entry is the same type as the other entries
-        if self._key_type is not type(key):
-            err_msg = f"Invalid key type: {type(key)} "
-            err_msg += f"for struct configured with type: {self._key_type}"
-            raise TypeError(err_msg)
-        # otherwise, the type is valid
-        return True
-
-    # @property
-    def is_empty(self) -> bool:
-        """*is_empty()* revisa si el *SeparateChainingTable* está vacío.
-
-        Returns:
-            bool: operador que indica si la estructura *SeparateChainingTable* está vacía.
-        """
-        # TODO change the method name to "empty" or @property "empty"?
-        try:
-            return self._size == 0
-        except Exception as err:
-            self._handle_error(err)
-
-    # @property
+    @property
     def size(self) -> int:
-        """*size()* devuelve el numero de entradas *MapEntry* que actualmente contiene el *SeparateChainingTable*.
+        """*size* Property to retrieve the number if entries (n) in the *SeparateChainingTable*.
+        Returns:
+            int: Number of entries (n) in the *SeparateChainingTable*.
+        """
+        return self._size
+
+    @property
+    def empty(self) -> bool:
+        """*empty* Property to check if the *SeparateChainingTable* has entries or not.
 
         Returns:
-            int: tamaño de la estructura *SeparateChainingTable*.
+            bool: True if the *SeparateChainingTable* is empty, False otherwise.
         """
-        # TODO change the method to @property "size"?
-        try:
-            return self._size
-        except Exception as err:
-            self._handle_error(err)
+        return self._size == 0
 
-    def contains(self, key: T) -> bool:
-        """*contains()* responde si el *SeparateChainingTable* contiene un registro *MapEntry* con la llave *key*.
-
-        Args:
-            key (T): llave del registro (pareja llave-valor) que se desea buscar en el *SeparateChainingTable*.
-
-        Raises:
-            IndexError: error si la estructura está vacía.
+    @property
+    def collisions(self) -> int:
+        """*collisions* Property to retrieve the number of collisions in the *SeparateChainingTable*.
 
         Returns:
-            bool: operador que indica si el *SeparateChainingTable* contiene o no un registro con la llave *key*.
+            int: Number of collisions in the *SeparateChainingTable*.
+        """
+        return self._collisions
+
+    def clear(self) -> None:
+        """*clear()* function to reset the *SeparateChainingTable* to its initial state. It clears all the entries in the hash table and resets the size, collisions and current load factor.
         """
         try:
-            if self.is_empty():
-                raise IndexError("Empty data structure")
-            else:
-                # assume the entry is not in the structure
-                found = False
-                # use the MAD compression function to get the hash key
-                hkey = mad_hash(key,
-                                     self._scale,
-                                     self._shift,
-                                     self.prime,
-                                     self.mcapacity)
-                # look into the bucket
-                bucket = self.hash_table.get_element(hkey)
-                idx = bucket.find(key)
-                # if the entry is in the bucket, return True
-                if idx > -1:
-                    found = True
-                return found
+            # reset the size, collisions and current load factor
+            self._size = 0
+            self._collisions = 0
+            self._cur_alpha = 0
+            # clear the bukets in the hash table
+            for _bucket in self.hash_table:
+                _bucket.clear()
+            # clear the hash table itself
+            self.hash_table.clear()
         except Exception as err:
-            self._handle_error(err)
+            self._error_handler(err)
 
-    def put(self, key: T, value: T) -> None:
-        """*put()* agrega un nuevo registro *MapEntry* al *SeparateChainingTable*, si la llave *key* ya existe en el *SeparateChainingTable* se reemplaza su valor *value*.
+    def insert(self, key: T, value: T) -> None:
+        """insert _summary_
 
         Args:
-            key (T): llave asociada la nuevo *MapEntry*.
-            value (T): el valor asociado al nuevo *MapEntry*.
-
-        Raises:
-            Exception: si la operación no se puede realizar, se invoca la función *_handle_error()* para manejar el error.
+            key (T): _description_
+            value (T): _description_
         """
         try:
             # create a new entry for the hash table
-            new_entry = MapEntry(key, value)
+            _new_entry = MapEntry(key, value)
+            _idx = -1
             # cheking the type of the entry
-            if self._check_type(new_entry):
+            if self._check_type(_new_entry):
                 # get the hash key for the entry
-                hkey = mad_hash(key,
-                                     self._scale,
-                                     self._shift,
-                                     self.prime,
-                                     self.mcapacity)
+                _hash = mad_hash(key,
+                                 self._scale,
+                                 self._shift,
+                                 self.prime,
+                                 self.mcapacity)
 
                 # checking the bucket
-                bucket = self.hash_table.get_element(hkey)
-                idx = bucket.find(key)
+                _bucket = self.hash_table.get(_hash)
+                # check if the bucket is empty
+                if not _bucket.empty:
+                    _idx = _bucket.index_of(key)
                 # the entry is not in the bucket, add it and a collision
                 # the entry is already in the bucket, update it
-                if idx > -1:
-                    bucket.change_info(new_entry, idx)
+                if _idx > -1:
+                    _bucket.update(_idx, _new_entry)
                 # otherwise, is a new entry
                 else:
-                    if not bucket.is_empty():
+                    if _bucket.size >= 1:
                         self._collisions += 1
-                    bucket.add_last(new_entry)
+                    _bucket.append(_new_entry)
                     self._size += 1
                     self._cur_alpha = self._size / self.mcapacity
                 # check if the structure needs to be rehashed
                 if self._cur_alpha >= self.max_alpha:
-                    self.rehash()
+                    self.resize()
         except Exception as err:
-            self._handle_error(err)
+            self._error_handler(err)
 
-    def get(self, key: T) -> Optional[MapEntry]:
-        """*get()* recupera el registro *MapEntry* cuya llave *key* sea igual a la que se encuentra dentro del *SeparateChainingTable*, si no existe un registro con la llave, devuelve *None*.
+    def get_entry(self, key: T) -> Optional[MapEntry]:
+        """get_entry _summary_
 
         Args:
-            key (T): llave asociada al *MapEntry* que se desea buscar.
+            key (T): _description_
 
         Raises:
-            IndexError: error si la estructura está vacía.
+            IndexError: _description_
 
         Returns:
-            Optional[MapEntry]: *MapEntry* asociado a la llave *key* que se desea. *None* si no se encuentra.
+            Optional[MapEntry]: _description_
         """
         try:
-            if self.is_empty():
+            if self.empty:
                 raise IndexError("Empty data structure")
-            else:
-                # assume the entry is not in the structure
-                entry = None
-                # get the hash key for the entry
-                hkey = mad_hash(key,
-                                     self._scale,
-                                     self._shift,
-                                     self.prime,
-                                     self.mcapacity)
+            # assume the entry is not in the structure
+            entry = None
+            idx = -1
+            # get the hash key for the entry
+            _hash = mad_hash(key,
+                             self._scale,
+                             self._shift,
+                             self.prime,
+                             self.mcapacity)
 
-                # checking the bucket
-                bucket = self.hash_table.get_element(hkey)
-                idx = bucket.find(key)
-                # if the entry is in the bucket, return it
-                if idx > -1:
-                    entry = bucket.get_element(idx)
-                return entry
-        except Exception as err:
-            self._handle_error(err)
-
-    def check_bucket(self, key: T) -> Optional[Bucket]:
-        """*check_bucket()* revisa el *Bucket* asociado a la llave *key* dentro del *SeparateChainingTable*. Recupera todo el *Bucket* asociado a la llave y si no existe, devuelve *None*.
-
-        Args:
-            key (T): llave asociada al *Bucket* que se desea revisar
-
-        Raises:
-            IndexError: error si la estructura está vacía.
-
-        Returns:
-            Optional[Bucket]: *Bucket* asociado a la llave *key* que se desea. *None* si no se encuentra.
-        """
-        try:
-            if self.is_empty():
-                raise IndexError("Empty data structure")
-            else:
-                # assume the entry is not in the structure
-                bucket = None
-                # get the hash key for the entry
-                hkey = mad_hash(key,
-                                     self._scale,
-                                     self._shift,
-                                     self.prime,
-                                     self.mcapacity)
-
-                # checking the bucket
-                bucket = self.hash_table.get_element(hkey)
-                return bucket
-        except Exception as err:
-            self._handle_error(err)
-
-    def remove(self, key: T) -> Optional[MapEntry]:
-        """*remove()* elimina el registro *MapEntry* cuya llave *key* sea igual a la que se encuentra dentro del *SeparateChainingTable*, si no existe un registro con la llave, genera un error.
-
-        Args:
-            key (T): llave asociada al *MapEntry* que se desea eliminar.
-
-        Raises:
-            IndexError: error si la estructura está vacía.
-            IndexError: error si el registro que se desea eliminar no existe dentro del *SeparateChainingTable*.
-
-        Returns:
-            Optional[MapEntry]: registro *MapEntry* que se eliminó del *SeparateChainingTable*. *None* si no existe el registro asociada a la llave *key*.
-        """
-        try:
-            if self.is_empty():
-                raise IndexError("Empty data structure")
-            else:
-                entry = None
-                # get the hash key for the entry
-                hkey = mad_hash(key,
-                                     self._scale,
-                                     self._shift,
-                                     self.prime,
-                                     self.mcapacity)
-
-                # checking the bucket
-                bucket = self.hash_table.get_element(hkey)
-                if not bucket.is_empty():
-                    idx = bucket.find(key)
-                    if idx >= 0:
-                        entry = bucket.remove_element(idx)
-                        self._size -= 1
-                        self._cur_alpha = self._size / self.mcapacity
-                    # TODO maybe i don't need this
-                    else:
-                        raise IndexError(f"Entry for Key: {key} not found")
-            if self._cur_alpha < self.min_alpha:
-                self.rehash()
+            # checking the bucket
+            _bucket = self.hash_table.get(_hash)
+            # check if the bucket is empty
+            if not _bucket.empty:
+                idx = _bucket.index_of(key)
+            # if the entry is in the bucket, return it
+            if idx > -1:
+                entry = _bucket.get(idx)
             return entry
         except Exception as err:
-            self._handle_error(err)
+            self._error_handler(err)
 
-    def keys(self) -> SingleLinked[T]:
-        """*keys()* devuelve una lista (*SingleLinked*) con todas las llaves (*key*) de los registros (*MapEntry*) del *SeparateChainingTable*.
+    def get_bucket(self, key: T) -> Optional[Bucket]:
+        """get_bucket _summary_
 
-        Returns:
-            SingleLinked[T]: lista (*SingleLinked*) con todas las llaves (*key*) del *SeparateChainingTable*.
-        """
-        try:
-            keys_lt = SingleLinked(key=self.key)
-            # TODO improve with SingleLinked concat() method?
-            for bucket in self.hash_table:
-                if not bucket.is_empty():
-                    for entry in bucket:
-                        keys_lt.add_last(entry.get_key())
-            return keys_lt
-        except Exception as err:
-            self._handle_error(err)
+        Args:
+            key (T): _description_
 
-    def values(self) -> SingleLinked[T]:
-        """*values()* devuelve una lista (*SingleLinked*) con todos los valores de los registros (*MapEntry*) del *SeparateChainingTable*.
+        Raises:
+            IndexError: _description_
 
         Returns:
-            SingleLinked[T]: lista (*SingleLinked*) con todos los valores (*value*) del *SeparateChainingTable*.
+            Optional[Bucket]: _description_
         """
         try:
-            values_lt = SingleLinked(key=self.key)
-            # TODO improve with SingleLinked concat() method?
-            for bucket in self.hash_table:
-                if not bucket.is_empty():
-                    for entry in bucket:
-                        values_lt.add_last(entry.get_value())
-            return values_lt
-        except Exception as err:
-            self._handle_error(err)
+            if self.empty:
+                raise IndexError("Empty data structure")
+            # assume the entry is not in the structure
+            _bucket = None
+            # get the hash key for the entry
+            _hash = mad_hash(key,
+                             self._scale,
+                             self._shift,
+                             self.prime,
+                             self.mcapacity)
 
-    def entries(self) -> SingleLinked[T]:
-        """*entries()* devuelve una lista (*SingleLinked*) con tuplas de todas los registros (*MapEntry*) del *SeparateChainingTable*. Cada tupla contiene en la primera posición la llave (*key*) y en la segunda posición el valor (*value*) del registro.
+            # recover the bucket
+            _bucket = self.hash_table.get(_hash)
+            # ceck if the bucket is empty
+            if _bucket.empty:
+                _bucket = None
+            # otherwise, return the bucket
+            return _bucket
+        except Exception as err:
+            self._error_handler(err)
+
+    def is_present(self, key: T) -> bool:
+        """is_present _summary_
+
+        Args:
+            key (T): _description_
+
+        Raises:
+            IndexError: _description_
 
         Returns:
-            SingleLinked[T]: lista (*SingleLinked*) de tuplas con todas los registros del *SeparateChainingTable*.
+            bool: _description_
         """
         try:
-            entries_lt = SingleLinked(key=self.key)
-            # TODO improve with SingleLinked concat() method?
-            for bucket in self.hash_table:
-                if not bucket.is_empty():
-                    for entry in bucket:
-                        data = (entry.get_key(), entry.get_value())
-                        entries_lt.add_last(data)
-            return entries_lt
+            if self.empty:
+                raise IndexError("Empty data structure")
+            # assume the entry is not in the structure
+            found = False
+            # use the MAD compression function to get the hash key
+            _hash = mad_hash(key,
+                             self._scale,
+                             self._shift,
+                             self.prime,
+                             self.mcapacity)
+            # look into the bucket
+            _bucket = self.hash_table.get(_hash)
+            _idx = _bucket.index_of(key)
+            # if the entry is in the bucket, return True
+            if _idx > -1:
+                found = True
+            return found
         except Exception as err:
-            self._handle_error(err)
+            self._error_handler(err)
 
-    def rehash(self) -> None:
-        """*rehash()* reconstruye la tabla de hash con una nueva capacidad (*M*) y un nuevo factor de carga (*alpha*) según los límites configurados por los parametros *max_alpha* y *min_alpha*.
+    def delete(self, key: T) -> Optional[MapEntry]:
+        """delete _summary_
 
-        Si el factor de carga (*alpha*) es mayor que el límite superior (*max_alpha*), se duplica la capacidad (*M*) buscando el siguiente número primo (*P*) reconstruyendo la tabla.
+        Args:
+            key (T): _description_
 
-        Si el factor de carga (*alpha) es menor que el límite inferior (*min_alpha*), se reduce a la mitad la capacidad (*M*) de la tabla buscando el siguiente número primo (*P*) reconstruyendo la tabla.
+        Raises:
+            IndexError: _description_
+            IndexError: _description_
+
+        Returns:
+            Optional[MapEntry]: _description_
+        """
+        try:
+            if self.empty:
+                raise IndexError("Empty data structure")
+            # assume the entry is not in the structure
+            _entry = None
+            _idx = -1
+            # get the hash key for the entry
+            _hash = mad_hash(key,
+                             self._scale,
+                             self._shift,
+                             self.prime,
+                             self.mcapacity)
+            # checking the bucket
+            _bucket = self.hash_table.get(_hash)
+            # check if the bucket is not empty
+            if not _bucket.empty:
+                _idx = _bucket.index_of(key)
+                # if the entry is in the bucket, remove it
+                if _idx > -1:
+                    _entry = _bucket.remove(_idx)
+                    self.hash_table.update(_bucket, _hash)
+                    # updating collisions
+                    if _bucket.size > 1:
+                        self._collisions -= 1
+                    # updating size and alpha
+                    self._size -= 1
+                    self._cur_alpha = self._size / self.mcapacity
+                # Otherwise, the entry is not in the map
+                # TODO maybe i don't need this
+                else:
+                    raise IndexError(f"Entry for Key: {key} not found")
+            if self._cur_alpha < self.min_alpha:
+                self.resize()
+            return _entry
+        except Exception as err:
+            self._error_handler(err)
+
+    def keys(self) -> SingleLinkedList[T]:
+        """keys _summary_
+
+        Returns:
+            SingleLinkedList[T]: _description_
+        """
+        try:
+            _keys_lt = SingleLinkedList(key=self.key)
+            for _bucket in self.hash_table:
+                if not _bucket.empty:
+                    for _entry in _bucket:
+                        _keys_lt.append(_entry.key)
+            return _keys_lt
+        except Exception as err:
+            self._error_handler(err)
+
+    def values(self) -> SingleLinkedList[T]:
+        """values _summary_
+
+        Returns:
+            SingleLinkedList[T]: _description_
+        """
+        try:
+            _values_lt = SingleLinkedList(key=self.key)
+            for _bucket in self.hash_table:
+                if not _bucket.empty:
+                    for _entry in _bucket:
+                        _values_lt.append(_entry.value)
+            return _values_lt
+        except Exception as err:
+            self._error_handler(err)
+
+    def entries(self) -> SingleLinkedList[T]:
+        """entries _summary_
+
+        Returns:
+            SingleLinkedList[T]: _description_
+        """
+        try:
+            _entries_lt = SingleLinkedList(key=self.key)
+            for _bucket in self.hash_table:
+                if not _bucket.empty:
+                    for _entry in _bucket:
+                        _data = (_entry.key, _entry.value)
+                        _entries_lt.append(_data)
+            return _entries_lt
+        except Exception as err:
+            self._error_handler(err)
+
+    def resize(self) -> None:
+        """resize _summary_
         """
         try:
             # check if the structure is rehashable
@@ -649,10 +606,10 @@ class SeparateChainingTable(Generic[T]):
                 # Create the empty buckets in thenew hash table
                 i = 0
                 while i < self.mcapacity:
-                    # bucket is a SingleLinked list
+                    # bucket is a SingleLinkedList list
                     bucket = Bucket(cmp_function=self.cmp_function,
                                     key=self.key)
-                    new_table.add_last(bucket)
+                    new_table.append(bucket)
                     i += 1
 
                 # replace the old table with the new one
@@ -660,18 +617,143 @@ class SeparateChainingTable(Generic[T]):
 
                 # iterate over the old table
                 for bucket in old_table:
-                    if not bucket.is_empty():
+                    if not bucket.empty:
                         for entry in bucket:
-                            key = entry.get_key()
-                            value = entry.get_value()
-                            self.put(key, value)
+                            key = entry.key
+                            value = entry.value
+                            self.insert(key, value)
         except Exception as err:
-            self._handle_error(err)
+            self._error_handler(err)
 
-    def __len__(self) -> int:
-        """*__len__()* función nativa de Python personalizada para el *SeparateChainingTable*. Permite utilizar la función *len()* de Python para recuperar el tamaño del *SeparateChainingTable*.
+    def _error_handler(self, err: Exception) -> None:
+        """*_error_handler()* to process the context (package/class), function name (method), and the error (exception) that was raised to format a detailed error message and traceback.
+
+        Args:
+            err (Exception): Python raised exception.
+        """
+        _context = self.__class__.__name__
+        _function_name = inspect.currentframe().f_code.co_name
+        error(_context, _function_name, err)
+
+    def _check_type(self, entry: MapEntry) -> bool:
+        """*_check_type()* función propia de la estructura que revisa si el tipo de dato del registro (pareja llave-valor) que se desea agregar al *SeparateChainingTable* es del mismo tipo contenido dentro de los *MapEntry* del *SeparateChainingTable*.
+
+        Args:
+            element (T): elemento que se desea procesar en *SeparateChainingTable*.
+
+        Raises:
+            TypeError: error si el tipo de dato del elemento que se desea agregar no es el mismo que el tipo de dato de los elementos que ya contiene el *SeparateChainingTable*.
 
         Returns:
-            int: tamaño del *SeparateChainingTable*.
+            bool: operador que indica si el ADT *SeparateChainingTable* es del mismo tipo que el elemento que se desea procesar.
+        """
+        # TODO check usability of this function
+        # if datastruct is empty, set the entry type
+        key = entry.key
+        value = entry.value
+        if self.empty:
+            self._key_type = type(key)
+            self._value_type = type(value)
+        # check if the new entry is the same type as the other entries
+        elif self._key_type is not type(key):
+            err_msg = f"Invalid key type: {type(key)} "
+            err_msg += f"for struct configured with type: {self._key_type}"
+            raise TypeError(err_msg)
+        elif self._value_type is not type(value):
+            err_msg = f"Invalid value type: {type(value)} "
+            err_msg += f"for struct configured with type: {self._value_type}"
+            raise TypeError(err_msg)
+        # otherwise, the type is valid
+        return True
+
+    def _validate_key_type(self, entry: MapEntry) -> bool:
+        """_validate_key_type _summary_
+
+        Args:
+            entry (MapEntry): _description_
+
+        Raises:
+            TypeError: _description_
+
+        Returns:
+            bool: _description_
+        """
+        # TODO check usability of this function
+        key = entry.key
+        # if the new entry is the same type as the other entries
+        if self._key_type is not type(key):
+            err_msg = f"Invalid key type: {type(key)} "
+            err_msg += f"for struct configured with type: {self._key_type}"
+            raise TypeError(err_msg)
+        # otherwise, the type is valid
+        return True
+
+    def _validate_value_type(self, entry: MapEntry) -> bool:
+        """_validate_value_type _summary_
+
+        Args:
+            entry (MapEntry): _description_
+
+        Raises:
+            TypeError: _description_
+
+        Returns:
+            bool: _description_
+        """
+        # TODO check usability of this function
+        value = entry.value
+        # if the new entry is the same type as the other entries
+        if self._value_type is not type(value):
+            err_msg = f"Invalid value type: {type(value)} "
+            err_msg += f"for struct configured with type: {self._value_type}"
+            raise TypeError(err_msg)
+        # otherwise, the type is valid
+        return True
+
+    def __str__(self) -> str:
+
+        # Get the name, parameters, and return type of the cmp_function
+        if self.cmp_function and callable(self.cmp_function):
+            cmp_function_name = self.cmp_function.__name__
+            cmp_function_signature = str(inspect.signature(self.cmp_function))
+        else:
+            cmp_function_name = str(self.cmp_function)
+            cmp_function_signature = "()"
+
+        _ht_summary = f"{self.hash_table.__class__.__name__}("
+        _ht_summary += f"key='{self.hash_table.key}', "
+        _ht_summary += f"size={self.hash_table.size}, "
+        _b_sum = ""
+        for buck in self.hash_table:
+            _b_sum += str(buck) + ", "
+        _ht_summary += f"buckets=[{_b_sum}], "
+        _ht_summary += f"cmp_function = {cmp_function_name}{cmp_function_signature})"
+        _ht_summary += ")"
+
+        _str = f"{self.__class__.__name__}("
+        _str += f"rehashable={self.rehashable}, "
+        _str += f"nentries={self.nentries}, "
+        _str += f"mcapacity={self.mcapacity}, "
+        _str += f"alpha={self.alpha}, "
+        _str += f"key='{self.key}', "
+        _str += f"prime={self.prime}, "
+        _str += f"scale={self._scale}, "
+        _str += f"shift={self._shift}, "
+        _str += f"min_alpha={self.min_alpha}, "
+        _str += f"max_alpha={self.max_alpha}, "
+        _str += f"size={self._size}, "
+        _str += f"collisions={self._collisions}, "
+        _str += f"key_type={self._key_type}, "
+        _str += f"value_type={self._value_type}, "
+        _str += f"hash_table={_ht_summary}, "
+        _str += f"cmp_function={cmp_function_name}{cmp_function_signature}), "
+        _str += ")"
+        return _str
+
+    def __len__(self) -> int:
+        """__len__ _summary_
+
+        Returns:
+            int: _description_
         """
         return self._size

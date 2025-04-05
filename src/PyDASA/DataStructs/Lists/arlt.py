@@ -18,7 +18,7 @@ import inspect
 
 # custom modules
 # generic error handling and type checking
-from Src.PyDASA.Utils.err import handle_error as error
+from Src.PyDASA.Utils.err import error_handler as error
 from Src.PyDASA.Utils.dflt import dflt_cmp_func_lt
 from Src.PyDASA.Utils.dflt import T
 from Src.PyDASA.Utils.dflt import DFLT_DICT_KEY
@@ -138,7 +138,7 @@ class ArrayList(Generic[T]):
         return self._size == 0
 
     def clear(self) -> None:
-        """*clear()* clears the *ArrayList* by removing all elements and resetting the size to 0.
+        """*clear()* reset the *ArrayList* by removing all elements and resetting the size to 0.
 
         NOTE: This method is used to empty the *ArrayList* without deleting the object itself.
         """
@@ -521,3 +521,25 @@ class ArrayList(Generic[T]):
             int: the number of elements in the *ArrayList*.
         """
         return self._size
+
+    def __str__(self) -> str:
+        """*__str__()* to get the string representation of the *ArrayList*. This method returns a string with the elements of the list.
+
+        Returns:
+            str: the string representation of the *ArrayList*.
+        """
+        # Get the name, parameters, and return type of the cmp_function
+        if self.cmp_function and callable(self.cmp_function):
+            cmp_function_name = self.cmp_function.__name__
+            cmp_function_signature = str(inspect.signature(self.cmp_function))
+        else:
+            cmp_function_name = str(self.cmp_function)
+            cmp_function_signature = "()"
+
+        _str = f"{self.__class__.__name__}("
+        _str += f"key='{self.key}', "
+        _str += f"size={self._size}, "
+        _str += f"elements={self._elements}, "
+        _str += f"cmp_function={cmp_function_name}{cmp_function_signature})"
+        _str += ")"
+        return _str

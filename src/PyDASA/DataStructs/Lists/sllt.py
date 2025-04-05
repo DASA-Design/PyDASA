@@ -20,7 +20,7 @@ import inspect
 # node class for the linked list
 from Src.PyDASA.DataStructs.Lists.ndlt import SLNode
 # generic error handling and type checking
-from Src.PyDASA.Utils.err import handle_error as error
+from Src.PyDASA.Utils.err import error_handler as error
 from Src.PyDASA.Utils.dflt import dflt_cmp_func_lt
 from Src.PyDASA.Utils.dflt import T
 from Src.PyDASA.Utils.dflt import DFLT_DICT_KEY
@@ -35,14 +35,14 @@ assert VLD_IODATA_LT
 
 
 @dataclass
-class SingleLinked(Generic[T]):
-    """**SingleLinked** implements a single linked list data structure for PyDASA.
+class SingleLinkedList(Generic[T]):
+    """**SingleLinkedList** implements a single linked list data structure for PyDASA.
 
     Args:
         Generic (T): Generic type for a Python data structure.
 
     Returns:
-        SingleLinked: a generic single linked list data structure with the following attributes:
+        SingleLinkedList: a generic single linked list data structure with the following attributes:
             - **cmp_function**: function to compare elements in the list.
             - **key**: key to identify the elements in the list.
             - **first**: reference to the first node of the list.
@@ -61,14 +61,14 @@ class SingleLinked(Generic[T]):
     # :attr: _first
     _first: Optional[SLNode[T]] = None
     """
-    Reference to the first node of the *SingleLinked*.
+    Reference to the first node of the *SingleLinkedList*.
     """
 
     # reference to the last node of the list
     # :attr: _last
     _last: Optional[SLNode[T]] = None
     """
-    Reference to the last node of the *SingleLinked*.
+    Reference to the last node of the *SingleLinkedList*.
     """
 
     # the key is used to compare elements, not defined by default
@@ -93,7 +93,7 @@ class SingleLinked(Generic[T]):
     """
 
     def __post_init__(self) -> None:
-        """*__post_init__()* Initializes the *SingleLinked* after creation by setting attributes like *cmp_function*, *key*, *first*, *last*, and *iodata*.
+        """*__post_init__()* Initializes the *SingleLinkedList* after creation by setting attributes like *cmp_function*, *key*, *first*, *last*, and *iodata*.
 
         *NOTE:* Special method called automatically after object creation.
         """
@@ -160,7 +160,7 @@ class SingleLinked(Generic[T]):
         self._size = 0
 
     def prepend(self, elm: T) -> None:
-        """*prepend()* adds an element to the beginning of the *SingleLinked*.
+        """*prepend()* adds an element to the beginning of the *SingleLinkedList*.
 
         Args:
             elm (T): element to be added to the beginning of the structure.
@@ -176,7 +176,7 @@ class SingleLinked(Generic[T]):
             self._size += 1
 
     def append(self, elm: T) -> None:
-        """*append()* adds an element to the end of the *SingleLinked*.
+        """*append()* adds an element to the end of the *SingleLinkedList*.
 
         Args:
             elm (T): element to be added to the end of the structure.
@@ -186,14 +186,14 @@ class SingleLinked(Generic[T]):
             # create a new node
             _new = SLNode(elm)
             if self.size == 0:
-                self.first = _new
+                self._first = _new
             else:
-                self.last.next = _new
-            self.last = _new
+                self._last.next = _new
+            self._last = _new
             self._size += 1
 
     def insert(self, elm: T, pos: int) -> None:
-        """*insert()* adds an element to the *SingleLinked* at a specific position.
+        """*insert()* adds an element to the *SingleLinkedList* at a specific position.
 
         Args:
             elm (T): element to be added to the structure.
@@ -240,13 +240,13 @@ class SingleLinked(Generic[T]):
 
     @property
     def first(self) -> T:
-        """*first* Property to read the first element of the *SingleLinked*.
+        """*first* Property to read the first element of the *SingleLinkedList*.
 
         Raises:
             IndexError: error if the structure is empty.
 
         Returns:
-            T: the first element of the *SingleLinked*.
+            T: the first element of the *SingleLinkedList*.
         """
         _data = None
         if self.empty:
@@ -257,13 +257,13 @@ class SingleLinked(Generic[T]):
 
     @property
     def last(self) -> T:
-        """*last* Property to read the last element of the *SingleLinked*.
+        """*last* Property to read the last element of the *SingleLinkedList*.
 
         Raises:
             Exception: error if the structure is empty.
 
         Returns:
-             T: the last element of the *SingleLinked*.
+             T: the last element of the *SingleLinkedList*.
         """
         _data = None
         if self.empty:
@@ -273,7 +273,7 @@ class SingleLinked(Generic[T]):
         return _data
 
     def get(self, pos: int) -> T:
-        """*get()* retrieves an element from the *SingleLinked* at a specific position.
+        """*get()* retrieves an element from the *SingleLinkedList* at a specific position.
 
         Args:
             pos (int): position of the element to be retrieved.
@@ -283,7 +283,7 @@ class SingleLinked(Generic[T]):
             IndexError: error if the position is invalid.
 
         Returns:
-            T: the element at the specified position in the *SingleLinked*.
+            T: the element at the specified position in the *SingleLinkedList*.
         """
         _data = None
         if self.empty:
@@ -301,9 +301,9 @@ class SingleLinked(Generic[T]):
         return _data
 
     def __getitem__(self, pos: int) -> Optional[T]:
-        """*__getitem__()* retrieves an element from the *SingleLinked* at a specific position.
+        """*__getitem__()* retrieves an element from the *SingleLinkedList* at a specific position.
 
-        NOTE: This method is used to access the elements of the *SingleLinked* using the square brackets notation.
+        NOTE: This method is used to access the elements of the *SingleLinkedList* using the square brackets notation.
 
         Args:
             pos (int): position of the element to be retrieved.
@@ -313,7 +313,7 @@ class SingleLinked(Generic[T]):
             IndexError: error if the position is invalid.
 
         Returns:
-            Optional[T]: the element at the specified position in the *SingleLinked*.
+            Optional[T]: the element at the specified position in the *SingleLinkedList*.
         """
         _data = None
         if self.empty:
@@ -331,13 +331,13 @@ class SingleLinked(Generic[T]):
         return _data
 
     def pop_first(self) -> T:
-        """*pop_first()* removes the first element from the *SingleLinked*.
+        """*pop_first()* removes the first element from the *SingleLinkedList*.
 
         Raises:
             IndexError: error if the structure is empty.
 
         Returns:
-            T: the first element of the *SingleLinked*.
+            T: the first element of the *SingleLinkedList*.
         """
         _data = None
         # check if the list is empty
@@ -356,13 +356,13 @@ class SingleLinked(Generic[T]):
         return _data
 
     def pop_last(self) -> T:
-        """*pop_last()* removes the last element from the *SingleLinked*.
+        """*pop_last()* removes the last element from the *SingleLinkedList*.
 
         Raises:
             IndexError: error if the structure is empty.
 
         Returns:
-            T: the last element of the *SingleLinked*.
+            T: the last element of the *SingleLinkedList*.
         """
         _data = None
         # Check if the list is empty
@@ -388,7 +388,7 @@ class SingleLinked(Generic[T]):
         return _data
 
     def remove(self, pos: int) -> T:
-        """*remove()* removes an element from the *SingleLinked* at a specific position.
+        """*remove()* removes an element from the *SingleLinkedList* at a specific position.
 
         Args:
             pos (int): position of the element to be removed.
@@ -398,7 +398,7 @@ class SingleLinked(Generic[T]):
             IndexError: error if the position is invalid.
 
         Returns:
-            T: the element removed from the *SingleLinked*.
+            T: the element removed from the *SingleLinkedList*.
         """
         _data = None
         # check if the list is empty
@@ -431,7 +431,7 @@ class SingleLinked(Generic[T]):
         return _data
 
     def compare(self, elem1: T, elem2: T) -> int:
-        """*compare()* compares two elements using the comparison function defined in the *SingleLinked*.
+        """*compare()* compares two elements using the comparison function defined in the *SingleLinkedList*.
 
         Args:
             elem1 (T): first element to compare.
@@ -450,13 +450,13 @@ class SingleLinked(Generic[T]):
         return self.cmp_function(elem1, elem2)
 
     def index_of(self, elm: T) -> int:
-        """*index_of()* searches for the first occurrence of an element in the *SingleLinked*. If the element is found, it returns its index; otherwise, it returns -1.
+        """*index_of()* searches for the first occurrence of an element in the *SingleLinkedList*. If the element is found, it returns its index; otherwise, it returns -1.
 
         Args:
-            elm (T): element to search for in the *SingleLinked*.
+            elm (T): element to search for in the *SingleLinkedList*.
 
         Returns:
-            int: index of the element in the *SingleLinked* or -1 if not found.
+            int: index of the element in the *SingleLinkedList* or -1 if not found.
         """
         if self.empty:
             raise IndexError("Empty data structure")
@@ -476,7 +476,7 @@ class SingleLinked(Generic[T]):
         return _idx
 
     def update(self, new_data: T, pos: int) -> None:
-        """*update()* updates an element in the *SingleLinked* at a specific position.
+        """*update()* updates an element in the *SingleLinkedList* at a specific position.
 
         Args:
             new_data (T): new data to be updated in the structure.
@@ -500,7 +500,7 @@ class SingleLinked(Generic[T]):
             _cur.data = new_data
 
     def swap(self, pos1: int, pos2: int) -> None:
-        """*swap()* swaps two elements in the *SingleLinked* at specific positions. This method exchanges the elements at the given positions.
+        """*swap()* swaps two elements in the *SingleLinkedList* at specific positions. This method exchanges the elements at the given positions.
 
 
         Args:
@@ -523,8 +523,8 @@ class SingleLinked(Generic[T]):
         self.update(info_pos2, pos1)
         self.update(info_pos1, pos2)
 
-    def sublist(self, start: int, end: int) -> "SingleLinked[T]":
-        """*sublist()* creates a new *SingleLinked* containing a sublist of elements from the original *SingleLinked*. The sublist is defined by the start and end indices.
+    def sublist(self, start: int, end: int) -> "SingleLinkedList[T]":
+        """*sublist()* creates a new *SingleLinkedList* containing a sublist of elements from the original *SingleLinkedList*. The sublist is defined by the start and end indices.
 
         NOTE: The start index is inclusive, and the end index is inclusive.
 
@@ -537,14 +537,14 @@ class SingleLinked(Generic[T]):
             IndexError: error if the start or end index are invalid.
 
         Returns:
-            SingleLinked[T]: a new *SingleLinked* containing the sublist of elements.
+            SingleLinkedList[T]: a new *SingleLinkedList* containing the sublist of elements.
         """
         if self.empty:
             raise IndexError("Empty data structure")
         elif start < 0 or end > self.size - 1 or start > end:
             raise IndexError(f"Invalid range: between [{start}, {end}]")
-        sub_lt = SingleLinked(cmp_function=self.cmp_function,
-                              key=self.key)
+        sub_lt = SingleLinkedList(cmp_function=self.cmp_function,
+                                  key=self.key)
         i = 0
         _cur = self.first
         while i != end + 1:
@@ -554,24 +554,24 @@ class SingleLinked(Generic[T]):
             i += 1
         return sub_lt
 
-    def concat(self, other: "SingleLinked[T]") -> "SingleLinked[T]":
-        """*concat()* concatenates two *SingleLinked* objects. The elements of the second list are added to the end of the first list.
+    def concat(self, other: "SingleLinkedList[T]") -> "SingleLinkedList[T]":
+        """*concat()* concatenates two *SingleLinkedList* objects. The elements of the second list are added to the end of the first list.
 
         NOTE: The *cmp_function* and *key* attributes of the two lists must be the same.
 
         Args:
-            other (SingleLinked[T]): the second *SingleLinked* to be concatenated.
+            other (SingleLinkedList[T]): the second *SingleLinkedList* to be concatenated.
 
         Raises:
-            TypeError: error if the *other* argument is not an *SingleLinked*.
+            TypeError: error if the *other* argument is not an *SingleLinkedList*.
             TypeError: error if the *key* attributes are not the same.
             TypeError: error if the *cmp_function* are not the same.
 
         Returns:
-            SingleLinked[T]: the concatenated *SingleLinked* in the first list.
+            SingleLinkedList[T]: the concatenated *SingleLinkedList* in the first list.
         """
-        if not isinstance(other, SingleLinked):
-            _msg = f"Structure is not an SingleLinked: {type(other)}"
+        if not isinstance(other, SingleLinkedList):
+            _msg = f"Structure is not an SingleLinkedList: {type(other)}"
             raise TypeError(_msg)
         if self.key != other.key:
             raise TypeError(f"Invalid key: {self.key} != {other.key}")
@@ -589,17 +589,17 @@ class SingleLinked(Generic[T]):
         self._size = self.size + other.size
         return self
 
-    def clone(self) -> "SingleLinked[T]":
-        """*clone()* creates a copy of the *SingleLinked*. The new list is independent of the original list.
+    def clone(self) -> "SingleLinkedList[T]":
+        """*clone()* creates a copy of the *SingleLinkedList*. The new list is independent of the original list.
 
         NOTE: The elements of the new list are the same as the original list, but they are not references to the same objects.
 
         Returns:
-            SingleLinked[T]: a new *SingleLinked* with the same elements as the original list.
+            SingleLinkedList[T]: a new *SingleLinkedList* with the same elements as the original list.
         """
         # create new list
-        copy_lt = SingleLinked(cmp_function=self.cmp_function,
-                               key=self.key)
+        copy_lt = SingleLinkedList(cmp_function=self.cmp_function,
+                                   key=self.key)
         # get the first node of the original list
         _cur = self.first
         # traverse the list and add the elements to the new list
@@ -634,7 +634,7 @@ class SingleLinked(Generic[T]):
         # if the structure is not empty, check the first element type
         if not self.empty:
             # raise an exception if the type is not valid at the first element
-            if not isinstance(elm, type(self.first.data)):
+            if not isinstance(elm, type(self._first.data)):
                 _msg = f"Invalid data type: {type(elm)} "
                 _msg += f"!= {type(self.first.data)} "
                 raise TypeError(_msg)
@@ -642,7 +642,7 @@ class SingleLinked(Generic[T]):
         return True
 
     def __iter__(self) -> Iterator[T]:
-        """*__iter__()* to iterate over the elements of the *SingleLinked*. This method returns an iterator object that can be used to iterate over the elements of the list.
+        """*__iter__()* to iterate over the elements of the *SingleLinkedList*. This method returns an iterator object that can be used to iterate over the elements of the list.
 
         NOTE: This is used to iterate over the nodes of the list using a for loop.
 
@@ -659,9 +659,32 @@ class SingleLinked(Generic[T]):
             self._error_handler(err)
 
     def __len__(self) -> int:
-        """*__len__()* to get the number of elements in the *SingleLinked*. This method returns the size of the list.
+        """*__len__()* to get the number of elements in the *SingleLinkedList*. This method returns the size of the list.
 
         Returns:
-            int: the number of elements in the *SingleLinked*.
+            int: the number of elements in the *SingleLinkedList*.
         """
         return self._size
+
+    def __str__(self) -> str:
+        """*__str__()* to get the string representation of the *SingleLinkedList*. This method returns a string with the elements of the list separated by commas.
+
+        Returns:
+            str: string representation of the *SingleLinkedList*.
+        """
+        # Get the name, parameters, and return type of the cmp_function
+        if self.cmp_function and callable(self.cmp_function):
+            cmp_function_name = self.cmp_function.__name__
+            cmp_function_signature = str(inspect.signature(self.cmp_function))
+        else:
+            cmp_function_name = str(self.cmp_function)
+            cmp_function_signature = "()"
+
+        _str = f"{self.__class__.__name__}("
+        _str += f"key='{self.key}', "
+        _str += f"size={self._size}, "
+        _str += f"first={self._first}, "
+        _str += f"last={self._last}, "
+        _str += f"cmp_function={cmp_function_name}{cmp_function_signature})"
+        _str += ")"
+        return _str

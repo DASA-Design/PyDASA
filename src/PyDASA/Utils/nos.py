@@ -16,7 +16,7 @@ import math
 # custom modules
 # dflt module handles the default global variables and comparison functions for use by all *PyDASA* and its Data Structs.
 from Src.PyDASA.Utils.dflt import T
-from Src.PyDASA.Utils.dflt import VALID_IO_TYPE
+from Src.PyDASA.Utils.dflt import VLD_IODATA_LT
 # import global variables
 
 
@@ -129,7 +129,7 @@ def mad_hash(key: T,
     # TODO is easier if we cast the dynamic keys to strings?
     # if it is a dynamic data type, we cast it to string
     # data types are (dict, list, set, tuple)
-    if isinstance(key, VALID_IO_TYPE) or isinstance(key, dict):
+    if isinstance(key, VLD_IODATA_LT) or isinstance(key, dict):
         key = str(key)
     # getting the hash from the key
     hkey = hash(key)

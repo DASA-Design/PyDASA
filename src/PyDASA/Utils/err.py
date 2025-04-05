@@ -7,9 +7,9 @@ General error handling module/function for the PyDASA Data Structures and Algori
 # import global variables
 
 
-def handle_error(context: str,
-                 function_name: str,
-                 exception: Exception) -> None:
+def error_handler(context: str,
+                  function_name: str,
+                  exception: Exception) -> None:
     """Handles errors by formatting a detailed error message and traceback.
 
     Args:

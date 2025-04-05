@@ -137,3 +137,14 @@ class MapEntry(Generic[T]):
         # check already set value type
         if self._value is not None and self._validate_value_type(value):
             self._value = value
+
+    def __str__(self) -> str:
+        """*__str__()* function to return a string representation of the *MapEntry*.
+
+        Returns:
+            str: string representation of the *MapEntry*.
+        """
+        _str = f"{self.__class__.__name__}("
+        _str += f"key={self._key}, "
+        _str += f"value={self._value})"
+        return _str

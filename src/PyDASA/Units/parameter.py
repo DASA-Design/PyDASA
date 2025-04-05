@@ -76,13 +76,13 @@ class Parameter(Generic[T]):
     """
 
     # :attr: _framework
-    _framework: str = ""
+    _framework: str = "PHYSICAL"
     """
     Framework of the FDU. It can be one of the following: `PHYSICAL`, `DIGITAL`, or `CUSTOM`. Useful for identifying the framework of the FDU.
     """
 
     # :attr: _category`
-    _category: str = ""
+    _category: str = "INPUT"
     """
     The parameter category. It can be one of the following: `INPUT`, `OUTPUT`, or `CONTROL`. Useful for identifying the order of its column in the dimensional matrix.
     """
@@ -265,15 +265,19 @@ class Parameter(Generic[T]):
         Returns:
             str: String representation of the Parameter object.
         """
-        _str = f"Parameter ID: {self._id}, "
-        _str += f"Symbol: {self._symbol}, "
-        _str += f"Framework: {self._framework}, "
-        _str += f"Dimensions: {self._dimensions}, "
-        _str += f"Category: {self._category}, "
-        _str += f"Units of Measure: {self._units_of_measure}, "
-        _str += f"Name: {self.name}, "
-        _str += f"Description: {self.description}, "
-        _str += f"Relevance: {self.relevance}"
+        # get class name
+        _class_name = self.__class__.__name__
+        _str = f"{_class_name}("
+        _str += f"id='{self._id}', "
+        _str += f"symbol='{self._symbol}', "
+        _str += f"framework='{self._framework}', "
+        _str += f"dimensions='{self._dimensions}', "
+        _str += f"category='{self._category}', "
+        _str += f"unit_of_meassure='{self._units_of_measure}', "
+        _str += f"name='{self.name}', "
+        _str += f"description='{self.description}', "
+        _str += f"relevance={self.relevance}"
+        _str += ")"
         return _str
 
 
@@ -313,7 +317,7 @@ class Variable(Parameter):
     """
 
     # :attr: _step
-    _step: Optional[float] = 1 / 10000
+    _step: Optional[float] = 1 / 1000
     """
     step value of the parameter. It is a very small float value. It is used for sensitivity analysis and simulations.
     """
@@ -489,11 +493,22 @@ class Variable(Parameter):
         Returns:
             str: String representation of the Variable object.
         """
+        # get parent class name
+        _parent_class_name = super().__class__.__name__
+        # get class name
+        _class_name = self.__class__.__name__
+        # get the class representation
         _str = super().__str__()
-        _str += f", Min Value: {self._min_value}, "
-        _str += f"Max Value: {self._max_value}, "
-        _str += f"Step: {self._step}, "
-        _str += f"Standard Unit of Measure: {self._std_unit_of_meassure}, "
-        _str += f"Standard Min Value: {self._std_min_value}, "
-        _str += f"Standard Max Value: {self._std_max_value}"
+        # replace the parent class name with the class name
+        _str = _str.replace(_parent_class_name, _class_name)
+        # remove last bracket
+        _str = _str[:-1]
+        # add the class name
+        _str += f", min_value: {self._min_value}, "
+        _str += f"max_value: {self._max_value}, "
+        _str += f"step: {self._step}, "
+        _str += f"std_unit_of_meassure: {self._std_unit_of_meassure}, "
+        _str += f"std_min_value: {self._std_min_value}, "
+        _str += f"std_max_value: {self._std_max_value}"
+        _str += ")"
         return _str

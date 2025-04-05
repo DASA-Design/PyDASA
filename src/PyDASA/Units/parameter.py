@@ -10,7 +10,7 @@ Module to represent Parameters and Variables in Dimensional Analysis for *PyDASA
 # native python modules
 # import dataclass for defining the node class
 from typing import Optional
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 # import modules for defining the MapEntry type
 from typing import Generic
 
@@ -20,7 +20,7 @@ from Src.PyDASA.Utils.err import error_handler as error
 from Src.PyDASA.Utils.dflt import T
 
 # importing the FDU class for creating the FDU object
-# TODO do i need this import latteR?
+# TODO do i need this import latter?
 # from Src.PyDASA.Units.fdu import FDU
 
 # importing the FDU_FWK_TP for creating the FDU object
@@ -64,50 +64,50 @@ class Parameter(Generic[T]):
 
     # Private attributes with validation logic
     # :attr: _id
-    _id: str = field(init=False, repr=False)
+    _id: str = ""
     """
     ID of the FDU. It must be alphanumeric. Useful for identifying the FDU in the system and dimensional matrix construction.
     """
 
     # :attr: _symbol
-    _symbol: str = field(init=False, repr=False)
+    _symbol: str = ""
     """
     Symbol of the FDU. It must be alphanumeric (preferably a single character + Latin or Greek letter). Useful for user-friendly representation of the FDU.
     """
 
     # :attr: _framework
-    _framework: str = field(init=False, repr=False)
+    _framework: str = ""
     """
     Framework of the FDU. It can be one of the following: `PHYSICAL`, `DIGITAL`, or `CUSTOM`. Useful for identifying the framework of the FDU.
     """
 
     # :attr: _category`
-    _category: str = field(init=False, repr=False)
+    _category: str = ""
     """
     The parameter category. It can be one of the following: `INPUT`, `OUTPUT`, or `CONTROL`. Useful for identifying the order of its column in the dimensional matrix.
     """
 
     # :attr: _dimensions
-    _dimensions: str = field(init=False, repr=False)
+    _dimensions: str = ""
     """
     Dimensions of the parameter. It is a string with the FDU (Fundamental Dimensional Unit) of the parameter. It is used to calculate the dimensional matrix rows.
     """
 
     # :attr: _units_of_measure
-    _units_of_measure: str = field(init=False, repr=False)
+    _units_of_measure: str = ""
     """
     Original unit of meassure the phenomena parameter is measured in. It is a string with with dimensional units of measure. It is used to convert the parameter to the standard unit of measure.
     """
 
     # Public attributes
     # :attr: name
-    name: str
+    name: str = ""
     """
     Name of the parameter. User-friendly name of the parameter.
     """
 
     # :attr: description
-    description: str
+    description: str = ""
     """
     Description of the parameter. It is a string with a small summary of the parameter.
     """
@@ -283,64 +283,60 @@ class Variable(Parameter):
 
     # Private attributes with validation logic
     # :attr: _max_value
-    _min_value: Optional[float] = field(init=False, repr=False)
+    _min_value: Optional[float] = 0.0
     """
-    TODO add description
+    Minimum value of the parameter. It is a float value.
     """
 
     # :attr: _max_value
-    _max_value: Optional[float] = field(init=False, repr=False)
+    _max_value: Optional[float] = 0.0
     """
-    TODO add description
+    Maximum value of the parameter. It is a float value.
     """
 
     # :attr: _std_unit_of_meassure
-    _std_unit_of_meassure: Optional[str] = field(init=False, repr=False)
+    _std_unit_of_meassure: Optional[str] = ""
     """
-    TODO add description
+    Standarized unit of measure of the parameter. It is a string with the dimensional units of measure. e.g `m/s`, `kg/m3`, etc.
     """
 
     # :attr: _std_min_value
-    _std_min_value: Optional[float] = field(init=False, repr=False)
+    _std_min_value: Optional[float] = 0.0
     """
-    TODO add description
+    Standardized minimum value of the parameter, after converting units of measure. It is a float value.
     """
 
     # :attr: _std_max_value
-    _std_max_value: Optional[float] = field(init=False, repr=False)
+    _std_max_value: Optional[float] = 0.0
     """
-    TODO add description
+    Standardized maximum value of the parameter, after converting units of measure. It is a float value.
     """
 
     # :attr: _step
-    _step: Optional[float] = field(init=False, repr=False)
+    _step: Optional[float] = 1 / 10000
     """
-    TODO add description
+    step value of the parameter. It is a very small float value. It is used for sensitivity analysis and simulations.
     """
 
     @property
     def min_value(self) -> Optional[float]:
-        """min_value _summary_
-        
-        TODO add description
+        """*min_value* Property to get the minimum value of the parameter. It is a float value.
 
         Returns:
-            Optional[float]: _description_
+            Optional[float]: minimum value of the parameter.
         """
         return self._min_value
 
     @min_value.setter
     def min_value(self, value: Optional[float]) -> None:
-        """min_value _summary_
-
-        TODO add description
+        """*min_value* Property to set the minimum value of the parameter. It is a float value.
 
         Args:
-            value (Optional[float]): _description_
+            value (Optional[float]): Minimum value of the parameter.
 
         Raises:
-            ValueError: _description_
-            ValueError: _description_
+            ValueError: error if the value is not a number.
+            ValueError: error if the value is greater than the maximum value.
         """
         if value is not None and not isinstance(value, (int, float)):
             raise ValueError("Minimum value must be a number.")
@@ -352,27 +348,23 @@ class Variable(Parameter):
 
     @property
     def max_value(self) -> Optional[float]:
-        """max_value _summary_
-
-        TODO add description
+        """*max_value* Property to get the maximum value of the parameter. It is a float value.
 
         Returns:
-            Optional[float]: _description_
+            Optional[float]: maximum value of the parameter.
         """
         return self._max_value
 
     @max_value.setter
     def max_value(self, value: Optional[float]) -> None:
-        """max_value _summary_
-
-        TODO add description
+        """*max_value* Property to set the maximum value of the parameter. It is a float value.
 
         Args:
-            value (Optional[float]): _description_
+            value (Optional[float]): maximum value of the parameter.
 
         Raises:
-            ValueError: _description_
-            ValueError: _description_
+            ValueError: error if the value is not a number.
+            ValueError: error if the value is less than the minimum value.
         """
         if value is not None and not isinstance(value, (int, float)):
             raise ValueError("Maximum value must be a number.")
@@ -384,28 +376,24 @@ class Variable(Parameter):
 
     @property
     def step(self) -> Optional[float]:
-        """step _summary_
-
-        TODO add description
+        """*step* Property to get the step value of the parameter. It is used for sensitivity analysis and simulations.
 
         Returns:
-            Optional[float]: _description_
+            Optional[float]: step value of the parameter.
         """
         return self._step
 
     @step.setter
     def step(self, value: Optional[float]) -> None:
-        """step _summary_
-
-        TODO add description
+        """*step* Property to set the step value of the parameter. It is used for sensitivity analysis and simulations.
 
         Args:
-            value (Optional[float]): _description_
+            value (Optional[float]): step value of the parameter.
 
         Raises:
-            ValueError: _description_
-            ValueError: _description_
-            ValueError: _description_
+            ValueError: error if the value is not a number.
+            ValueError: error if the value is zero.
+            ValueError: error if the value is greater than or equal to the range of values.
         """
         if value is not None and not isinstance(value, (int, float)):
             raise ValueError("Step must be a number.")
@@ -420,26 +408,22 @@ class Variable(Parameter):
 
     @property
     def std_unit_of_meassure(self) -> Optional[str]:
-        """std_unit_of_meassure _summary_
-
-        TODO add description
+        """*std_unit_of_meassure* Property to get the standardized unit of measure of the parameter.
 
         Returns:
-            Optional[str]: _description_
+            Optional[str]: standardized unit of measure of the parameter.
         """
         return self._std_unit_of_meassure
 
     @std_unit_of_meassure.setter
     def std_unit_of_meassure(self, value: Optional[str]) -> None:
-        """std_unit_of_meassure _summary_
-
-        TODO add description
+        """*std_unit_of_meassure* Property to set the standardized unit of measure of the parameter.
 
         Args:
-            value (Optional[str]): _description_
+            value (Optional[str]): standardized unit of measure of the parameter.
 
         Raises:
-            ValueError: _description_
+            ValueError: error if the value is an empty string.
         """
         if value is not None and not value.strip():
             raise ValueError("Standard unit of measure cannot be empty.")
@@ -447,27 +431,23 @@ class Variable(Parameter):
 
     @property
     def std_min_value(self) -> Optional[float]:
-        """std_min_value _summary_
-
-        TODO add description
+        """*std_min_value* Property to get the standardized minimum value of the parameter.
 
         Returns:
-            Optional[float]: _description_
+            Optional[float]: standardized minimum value of the parameter.
         """
         return self._std_min_value
 
     @std_min_value.setter
     def std_min_value(self, value: Optional[float]) -> None:
-        """std_min_value _summary_
-
-        TODO add description
+        """*std_min_value* Property to set the standardized minimum value of the parameter.
 
         Args:
-            value (Optional[float]): _description_
+            value (Optional[float]): standardized minimum value of the parameter.
 
         Raises:
-            ValueError: _description_
-            ValueError: _description_
+            ValueError: error if the value is not a number.
+            ValueError: error if the value is greater than the maximum value.
         """
         if value is not None and not isinstance(value, (int, float)):
             raise ValueError("Standard minimum value must be a number.")
@@ -479,24 +459,20 @@ class Variable(Parameter):
 
     @property
     def std_max_value(self) -> Optional[float]:
-        """std_max_value _summary_
-
-        TODO add description
+        """*std_max_value* Property to get the standardized maximum value of the parameter.
 
         Returns:
-            Optional[float]: _description_
+            Optional[float]: standardized maximum value of the parameter.
         """
         return self._std_max_value
 
     @std_max_value.setter
     def std_max_value(self, value: Optional[float]) -> None:
-        """ _summary_
-
-        TODO add description
+        """*std_max_value* Property to set the standardized maximum value of the parameter.
 
         Raises:
-            ValueError: _description_
-            ValueError: _description_
+            ValueError: error if the value is not a number.
+            ValueError: error if the value is less than the minimum value.
         """
         if value is not None and not isinstance(value, (int, float)):
             raise ValueError("Standard maximum value must be a number.")

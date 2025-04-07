@@ -22,6 +22,7 @@ from Src.PyDASA.Utils.cfg import DFLT_NO_POW_REGEX
 from Src.PyDASA.Utils.cfg import DFLT_FDU_SYM_REGEX
 
 # importing PyDASA's custom regex for FDU
+from Src.PyDASA.Utils import cfg as cfg
 from Src.PyDASA.Utils.cfg import CSTM_FDU_PREC_LT
 from Src.PyDASA.Utils.cfg import CSTM_FDU_REGEX
 from Src.PyDASA.Utils.cfg import CSTM_POW_REGEX
@@ -252,7 +253,7 @@ class RegexManager(Generic[T]):
         global CSTM_FDU_SYM_REGEX
 
         # update global variables with the custom regex patterns
-        CSTM_FDU_PREC_LT = self._fdu_precedence_lt
+        cfg.CSTM_FDU_PREC_LT = self._fdu_precedence_lt
         CSTM_FDU_REGEX = self._fdu_regex
         CSTM_POW_REGEX = self._fdu_pow_regex
         CSTM_NO_POW_REGEX = self._fdu_no_pow_regex

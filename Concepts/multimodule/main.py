@@ -1,12 +1,17 @@
 ﻿# main.py
-import module_a
-import module_b
+from module_a import ClassA
+from module_b import ClassB
 import config
 
-print("Initial DEBUG_MODE:", config.DEBUG_MODE)
-module_a.run()
 
-module_b.enable_debug()
+a = ClassA()
+b = ClassB()
+
+print("Initial DEBUG_MODE:", config.DEBUG_MODE)
+
+a.run()
+
+b.enable_debug()
 
 print("Updated DEBUG_MODE:", config.DEBUG_MODE)
-module_a.run()
+a.run()

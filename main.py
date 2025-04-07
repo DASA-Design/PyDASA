@@ -14,6 +14,8 @@ from Src.PyDASA.Utils.cfg import DFLT_NO_POW_REGEX
 from Src.PyDASA.Utils.cfg import DFLT_FDU_SYM_REGEX
 
 # custom regex for FDU
+from Src.PyDASA.Utils import cfg as cfg
+# its how we import the custom regex for FDU!!!!!
 from Src.PyDASA.Utils.cfg import CSTM_FDU_PREC_LT
 from Src.PyDASA.Utils.cfg import CSTM_FDU_REGEX
 from Src.PyDASA.Utils.cfg import CSTM_POW_REGEX
@@ -62,7 +64,7 @@ print("\tDFLT_NO_POW_REGEX:", DFLT_NO_POW_REGEX)
 print("\tDFLT_FDU_SYM_REGEX:", DFLT_FDU_SYM_REGEX)
 
 print("\n==== Custom Regex ====")
-print("\tCSTM_FDU_PREC_LT:", CSTM_FDU_PREC_LT)
+print("\tCSTM_FDU_PREC_LT:", cfg.CSTM_FDU_PREC_LT)
 print("\tCSTM_FDU_REGEX:", CSTM_FDU_REGEX)
 print("\tCSTM_POW_REGEX:", CSTM_POW_REGEX)
 print("\tCSTM_NO_POW_REGEX:", CSTM_NO_POW_REGEX)

@@ -43,23 +43,19 @@ class FDU(Generic[T]):
 
     Returns:
         FDU: A FDU object with the following attributes:
-            - `_id`: The ID of the FDU.
+            - `_prec`: The ID of the FDU.
             - `_symbol`: The symbol of the FDU.
             - `_framework`: The framework of the FDU. It can be one of the following: `PHYSICAL`, `DIGITAL`, or `CUSTOM`.
             - `name`: The name of the FDU.
             - `description`: The description of the FDU.
     """
-    # Private attributes with validation logic
-    # :attr: _id
-    _id: str = ""
-    """
-    ID of the FDU. It must be alphanumeric. Useful for identifying the FDU in the system and dimensional matrix construction.
-    """
 
+    # Private attributes with validation logic
+    # Unique FDU symbol in the system
     # :attr: _symbol
     _symbol: str = ""
     """
-    Symbol of the FDU. It must be alphanumeric (preferably a single character + Latin or Greek letter). Useful for user-friendly representation of the FDU.
+    Unique FDU's symbol. It must be a single alphanumeric character (preferably a single Latin or Greek letter).
     """
 
     # :attr: _framework
@@ -68,40 +64,27 @@ class FDU(Generic[T]):
     Framework of the FDU. It can be one of the following: `PHYSICAL`, `DIGITAL`, or `CUSTOM`. Useful for identifying the framework of the FDU.
     """
 
+    # Precedence of the FDU in the dimensional matrix
+    # :attr: _prec
+    _prec: int = -1
+    """
+    ID of the FDU. It must be a unique alphanumeric. Useful for identifying the FDU in the system and dimensional matrix construction.
+    """
+
     # Public attributes
+    # Name of the FDU
     # :attr: name
     name: str = ""
     """
     Name of the FDU. User-friendly name of the FDU.
     """
+
+    # Description of the FDU
     # :attr: description
     description: str = ""
     """
     Description of the FDU. It is a string with a small summary of the FDU.
     """
-
-    @property
-    def id(self) -> str:
-        """*id* property to get the ID of the FDU.
-
-        Returns:
-            str: ID of the FDU.
-        """
-        return self._id
-
-    @id.setter
-    def id(self, value: str) -> None:
-        """*id* property to set the ID of the FDU. It must be alphanumeric.
-
-        Args:
-            value (str): ID of the FDU.
-
-        Raises:
-            ValueError: If the ID is not alphanumeric.
-        """
-        if not value.isalnum():
-            raise ValueError("ID must be alphanumeric.")
-        self._id = value
 
     @property
     def symbol(self) -> str:
@@ -122,12 +105,41 @@ class FDU(Generic[T]):
         Raises:
             ValueError: If the symbol is not alphanumeric.
         """
-        if not value.isalnum():
-            _msg = "Symbol must be alphanumeric. "
+        if not value.isalnum() or len(value) != 1:
+            _msg = "Symbol must be a single alphanumeric character. "
             _msg += f"Provided: {value}"
             _msg += "Preferably a Latin or Greek letter."
             raise ValueError(_msg)
         self._symbol = value
+
+    @property
+    def precedence(self) -> int:
+        """*precedence* property to get the row order of the FDU in the dimensional matrix.
+
+        Returns:
+            int: Precedence of the FDU.
+        """
+        return self._prec
+
+    @precedence.setter
+    def precedence(self, value: int) -> None:
+        """*precedence* property to order the FDU in the rows of the dimensional matrix.
+
+        Args:
+            value (int): Precedence of the FDU. Must be a non-negative integer.
+
+        Raises:
+            ValueError: If the ID is not alphanumeric.
+        """
+        if not isinstance(value, int) or value < 0:
+            _msg = "Precedence must be a non-negative integer. "
+            _msg += f"Provided: {value}"
+            raise ValueError(_msg)
+        if value != int(value):
+            _msg = "Precedence must be an integer. "
+            _msg += f"Provided: {value}"
+            raise ValueError(_msg)
+        self._prec = value
 
     @property
     def framework(self) -> str:
@@ -161,9 +173,10 @@ class FDU(Generic[T]):
         Returns:
             str: String representation of the FDU object.
         """
-        _fdu = f"FDU(id='{self._id}', "
-        _fdu += f"symbol='{self._symbol}', "
-        _fdu += f"framework='{self._framework}', "
-        _fdu += f"name='{self.name}', "
-        _fdu += f"description='{self.description}')"
-        return _fdu
+        _str = f"{self.__class__.__name__}("
+        _str += f"symbol='{self._symbol}', "
+        _str += f"precedence='{self._prec}', "
+        _str += f"framework='{self._framework}', "
+        _str += f"name='{self.name}', "
+        _str += f"description='{self.description}')"
+        return _str

@@ -9,8 +9,8 @@ Module to represent Parameters and Variables in Dimensional Analysis for *PyDASA
 
 # native python modules
 # import dataclass for defining the node class
-from typing import Optional
-from dataclasses import dataclass
+from typing import Optional, List
+from dataclasses import dataclass, field
 # import modules for defining the MapEntry type
 from typing import Generic
 
@@ -51,7 +51,7 @@ class Parameter(Generic[T]):
 
     Returns:
         Parameter: A Parameter object with the following attributes:
-            - `_id`: The ID of the Parameter.
+            - `_idx`: The ID of the Parameter.
             - `_symbol`: The symbol of the Parameter.
             - `_framework`: The framework of the Parameter. It can be one of the following: `PHYSICAL`, `DIGITAL`, or `CUSTOM`.
             - `_dimensions`: The dimensions of the Parameter.
@@ -63,36 +63,62 @@ class Parameter(Generic[T]):
     """
 
     # Private attributes with validation logic
-    # :attr: _id
-    _id: str = ""
+    # :attr: _idx
+    _idx: int = -1
     """
-    ID of the FDU. It must be alphanumeric. Useful for identifying the FDU in the system and dimensional matrix construction.
+    Index of the parameter. It is the unique integer for the order of the column of the parameter in the dimensional matrix.
     """
 
+    # Symbol of the FDU
     # :attr: _symbol
     _symbol: str = ""
     """
     Symbol of the FDU. It must be alphanumeric (preferably a single character + Latin or Greek letter). Useful for user-friendly representation of the FDU.
     """
 
+    # Working framework of the FDU
     # :attr: _framework
     _framework: str = "PHYSICAL"
     """
     Framework of the FDU. It can be one of the following: `PHYSICAL`, `DIGITAL`, or `CUSTOM`. Useful for identifying the framework of the FDU.
     """
 
+    # Category of the parameter, can be: `INPUT`, `OUTPUT`, or `CONTROL`
     # :attr: _category`
     _category: str = "INPUT"
     """
     The parameter category. It can be one of the following: `INPUT`, `OUTPUT`, or `CONTROL`. Useful for identifying the order of its column in the dimensional matrix.
     """
 
+    # user input dimensional expression for the parameter
     # :attr: _dimensions
     _dimensions: str = ""
     """
-    Dimensions of the parameter. It is a string with the FDU (Fundamental Dimensional Unit) of the parameter. It is used to calculate the dimensional matrix rows.
+    User-defined dimensional expression for the parameter. It is a string with the FDU of the parameter. i.e.: [T^2*L^-1] to [T^2*L].
     """
 
+    # user dimensional expression
+    # :attr: _dim_expr
+    _dim_expr: Optional[str] = None
+    """
+    Dimensional expression for analysis. It is a string with propper parenthesis and exponents. It is used to calculate the dimensional matrix columns. i.e.: from [T^2*L^-1] to [T^(2)*L^(-1)].
+    """
+
+    # dimensional expression for the sympy regex procesor
+    # :attr: _dim_sym_expr
+    _dim_sym_expr: Optional[str] = None
+    """
+    Symbolic processed dimensional expression for analysis. It is a string suitable for Sympy processing. It is used to calculate the dimensional matrix columns. i.e.: from [T^(2)*L^(-1)] to [T**2*L**(-1)].
+    """
+
+    # list with the dimensions exponent coefficients as integers
+    # :attr: _exp_dim_lt
+    _exp_dim_lt: Optional[List[int]] = field(default_factory=list)
+    """
+    Dimensioan list of the parameter. It is a list of numbers (integers or floats) with the exponents of the dimensions in the parameter. It is used as the columns of the dimensional matrix. i.e.: from [T^2*L^-1] to [2, -1].
+    """
+
+    # public attributes
     # :attr: _units_of_measure
     _units_of_measure: str = ""
     """
@@ -119,17 +145,17 @@ class Parameter(Generic[T]):
     """
 
     @property
-    def id(self) -> str:
-        """*id* property to get the ID of the Parameter.
+    def idx(self) -> str:
+        """*idx* property to get the ID of the Parameter.
 
         Returns:
             str: ID of the Parameter.
         """
-        return self._id
+        return self._idx
 
-    @id.setter
-    def id(self, value: str) -> None:
-        """*id* property to set the ID of the Parameter. It must be alphanumeric.
+    @idx.setter
+    def idx(self, value: str) -> None:
+        """*idx* property to set the ID of the Parameter. It must be alphanumeric.
 
         Args:
             value (str): ID of the Parameter.
@@ -139,7 +165,7 @@ class Parameter(Generic[T]):
         """
         if not value.isalnum():
             raise ValueError("ID must be alphanumeric.")
-        self._id = value
+        self._idx = value
 
     @property
     def symbol(self) -> str:
@@ -236,6 +262,78 @@ class Parameter(Generic[T]):
         self._dimensions = value
 
     @property
+    def dim_expr(self) -> Optional[str]:
+        """*dim_expr* property to get the dimensional expression of the parameter.
+
+        Returns:
+            Optional[str]: Dimensional expression of the parameter. It is a string with propper parenthesis and exponents.
+        """
+        return self._dim_expr
+
+    @dim_expr.setter
+    def dim_expr(self, value: str) -> None:
+        """*dim_expr* _summary_
+
+        Args:
+            value (str): _description_
+
+        Raises:
+            ValueError: _description_
+        """
+        # TODO complete with regex validation!!!
+        if value is not None and not value.strip():
+            raise ValueError("Dimensional expression cannot be empty.")
+        self._dim_expr = value
+
+    @property
+    def dim_sym_expr(self) -> Optional[str]:
+        """*dim_sym_expr* property to get the symbolic processed dimensional expression of the parameter.
+
+        Returns:
+            Optional[str]: Dimensional expression of the parameter. It is a string suitable for Sympy processing.
+        """
+        return self._dim_sym_expr
+
+    @dim_sym_expr.setter
+    def dim_sym_expr(self, value: str) -> None:
+        """*dim_sym_expr* _summary_
+
+        Args:
+            value (str): _description_
+
+        Raises:
+            ValueError: _description_
+        """
+        # TODO complete with regex validation!!!
+        if value is not None and not value.strip():
+            raise ValueError("Dimensional expression cannot be empty.")
+        self._dim_sym_expr = value
+
+    @property
+    def exp_dim_lt(self) -> Optional[List[int]]:
+        """*exp_dim_lt* property to get the list of dimensions exponent coefficients as integers.
+
+        Returns:
+            Optional[List[int]]: List of integers with the exponents of the dimensions in the parameter.
+        """
+        return self._exp_dim_lt
+
+    @exp_dim_lt.setter
+    def exp_dim_lt(self, value: List[int]) -> None:
+        """*exp_dim_lt* _summary_
+
+        Args:
+            value (List[int]): _description_
+
+        Raises:
+            ValueError: _description_
+        """
+        # TODO complete with regex validation, and check if the elements are numbers!!!
+        if value is not None and not isinstance(value, list):
+            raise ValueError("Exponents list must be a list of integers.")
+        self._exp_dim_lt = value
+
+    @property
     def units_of_measure(self) -> str:
         """*units_of_measure* property to get the units of measure of the parameter.
 
@@ -268,11 +366,14 @@ class Parameter(Generic[T]):
         # get class name
         _class_name = self.__class__.__name__
         _str = f"{_class_name}("
-        _str += f"id='{self._id}', "
+        _str += f"idx='{self._idx}', "
         _str += f"symbol='{self._symbol}', "
         _str += f"framework='{self._framework}', "
-        _str += f"dimensions='{self._dimensions}', "
         _str += f"category='{self._category}', "
+        _str += f"dimensions='{self._dimensions}', "
+        _str += f"dim_expr='{self._dim_expr}', "
+        _str += f"dim_sym_expr='{self._dim_sym_expr}', "
+        _str += f"exp_dim_lt='{self._exp_dim_lt}', "
         _str += f"unit_of_meassure='{self._units_of_measure}', "
         _str += f"name='{self.name}', "
         _str += f"description='{self.description}', "

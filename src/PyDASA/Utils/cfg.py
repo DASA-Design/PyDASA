@@ -1,1 +1,109 @@
-﻿
+﻿# -*- coding: utf-8 -*-
+"""
+Configuration module for Fundamental Dimensional Units (FDUs), Parameters, and Variables in *PyDASA*. Includes regex patterns for validating dimensions and the traditional FDU list.
+
+It can handle both physical and digital dimensions, as well as custom dimensions through the use of the CSTM_* variables.
+
+*IMPORTANT:* This code and its specifications for Python are based on the theory and subject developed by the following authors/books:
+
+    # H.Gorter, *Dimensionalanalyse: Eine Theoririe der physikalischen Dimensionen mit Anwendungen*
+"""
+# python native modules
+# from dataclasses import dataclass
+# from typing import TypeVar
+
+# global variables
+
+# Fundamental Dimensional Units (FDU) precedence list
+# :attr: FDU_PREC_LT
+FDU_PREC_LT: list = ["L", "M", "T", "θ", "I", "N", "J"]
+"""
+List of FDUs in precedence order for the dimensional matrix. i.e: 'M*L^-1*T^-2'
+
+Defines the row order in the dimensional matrix and validates parameter/variable dimensions in *PyDASA*. The traditional FDUs are:
+    - length [L]: the distance between two points in space.
+    - mass [M]: the amount of matter in an object.
+    - time [T]: the duration of an event or the interval between two events.
+    - temperature [θ]: the measure of the average kinetic energy of particles in a substance.
+    - electric current [I]: the flow of electric charge in a circuit.
+    - amount of substance [N]: the quantity of entities (atoms, molecules, etc.) in a sample.
+    - luminous intensity [J]: the measure of the perceived power of light emitted by a source in a given direction.
+"""
+
+# regex pattern for matching FDUs
+# :attr: DFLT_FDU_REGEX
+DFLT_FDU_REGEX: str = rf"^[{''.join(FDU_PREC_LT)}](\^-?\d+)?(\*[{''.join(FDU_PREC_LT)}](?:\^-?\d+)?)*$"
+# DFLT_FDU_REGEX: str = r"^[LMTθINJ](\^-?\d+)?(\*[LMTθINJ](?:\^-?\d+)?)*$"
+"""
+Default Regex pattern to match FDUs in *PyDASA*. i.e.: from 'M*L^-1*T^-2' to 'M^(1)*L^(-1)*T^(-2)'.
+"""
+
+# regex pattern for matching dimensions with exponent
+# :attr: POW_REGEX
+DFLT_POW_REGEX: str = r"\-?\d+"   # r'\^(-?\d+)'
+"""
+Default Regex pattern to match FDUs in *PyDASA* with exponents in the dimensions of parameters and variables. i.e.: 'M*L^-1*T^-2' to 'M^(1)*L^(-1)*T^(-2)'.
+"""
+
+# regex pattern for matching dimensions WITHOUT exponent
+# :attr: NO_POW_REGEX
+DFLT_NO_POW_REGEX: str = rf"[{''.join(FDU_PREC_LT)}](?!\^)"
+"""
+Default Regex pattern to match FDUs without exponents in parameter or variable dimensions. i.e.: 'M*L^-1*T^-2' to 'M^(1)*L^(-1)*T^(-2)'.
+"""
+
+# regex pattern for matching FDUs in Sympy symbolic processor
+# :attr: FDU_SYM_REGEX
+DFLT_FDU_SYM_REGEX: str = rf"[{''.join(FDU_PREC_LT)}]"
+"""
+Default Regex pattern to match FDU symbols in *PyDASA*. i.e.: from 'M^(1)*L^(-1)*T^(-2)' to 'L**(-1)* M**(1)* T**(-2)'
+"""
+
+#  Custom Fundamental Dimensional Units (FDU) precedence list
+#  :attr: CSTM_FDU_PREC_LT
+CSTM_FDU_PREC_LT: list = []
+"""
+Custom FDUs precedence list for the dimensional matrix. It can be used to define custom dimensions in *PyDASA*. i.e: 'FDU_PREC_LT = [D, T, C]'.
+"""
+
+# Custom regex pattern for matching FDUs
+# :attr: CSTM_FDU_REGEX
+CSTM_FDU_REGEX: str = ""
+# CSTM_FDU_REGEX: str = rf"^[{''.join(CSTM_FDU_PREC_LT)}](\^-?\d+)?(\*[{''.join(CSTM_FDU_PREC_LT)}](?:\^-?\d+)?)*$"
+"""
+Custom Regex pattern to match FDUs in *PyDASA*. i.e.: from [T^2*D^-1] to [T^2*D^(-1)].
+"""
+
+# Custom regex pattern for matching dimensions with exponent
+# :attr: CSTM_POW_REGEX
+CSTM_POW_REGEX: str = DFLT_POW_REGEX
+"""
+Custom Regex pattern to match FDUs in *PyDASA* with exponents in the dimensions of parameters and variables. i.e.: [T^2*D^-1] to [T^(2)*D^(-1)].
+"""
+
+# Custom regex pattern for matching dimensions WITHOUT exponent
+# :attr: CSTM_POW_REGEX
+CSTM_NO_POW_REGEX: str = ""
+# CSTM_NO_POW_REGEX: str = rf"[{''.join(CSTM_FDU_PREC_LT)}](?!\^)"
+"""
+Custom Regex pattern to match FDUs without exponents in parameter or variable dimensions. i.e.: [T^2*D^-1] to [T^(2)*D^(-1)].
+"""
+
+# Custom regex pattern for matching dimensions in Sympy symbolic processor
+# :attr: CSTM_NO_POW_REGEX
+CSTM_FDU_SYM_REGEX: str = ""
+# CSTM_FDU_SYM_REGEX: str = rf"[{''.join(CSTM_FDU_PREC_LT)}]"
+"""
+Custom Regex pattern to match FDU symbols in *PyDASA*. i.e.: [T*D] to [T^1*D^1].
+"""
+
+# prints to check the regex patterns
+# print("FDU_PREC_LT:", FDU_PREC_LT)
+# print("DFLT_FDU_REGEX:", DFLT_FDU_REGEX)
+# print("POW_REGEX:", POW_REGEX)
+# print("NO_POW_REGEX:", NO_POW_REGEX)
+# print("FDU_SYM_REGEX:", FDU_SYM_REGEX)
+# print("CSTM_FDU_PREC_LT:", CSTM_FDU_PREC_LT)
+# print("CSTM_FDU_REGEX:", CSTM_FDU_REGEX)
+# print("CSTM_NO_POW_REGEX:", CSTM_NO_POW_REGEX)
+# print("CSTM_FDU_SYM_REGEX:", CSTM_FDU_SYM_REGEX)

@@ -6,22 +6,8 @@ from Src.PyDASA.DataStructs.Tables.scht import Bucket
 
 # for FDU regex management
 from Src.PyDASA.Utils.cstm import RegexManager
-# default regex for FDU
-from Src.PyDASA.Utils.cfg import FDU_PREC_LT
-from Src.PyDASA.Utils.cfg import DFLT_FDU_REGEX
-from Src.PyDASA.Utils.cfg import DFLT_POW_REGEX
-from Src.PyDASA.Utils.cfg import DFLT_NO_POW_REGEX
-from Src.PyDASA.Utils.cfg import DFLT_FDU_SYM_REGEX
-
-# custom regex for FDU
-from Src.PyDASA.Utils import cfg as cfg
-# its how we import the custom regex for FDU!!!!!
-from Src.PyDASA.Utils.cfg import CSTM_FDU_PREC_LT
-from Src.PyDASA.Utils.cfg import CSTM_FDU_REGEX
-from Src.PyDASA.Utils.cfg import CSTM_POW_REGEX
-from Src.PyDASA.Utils.cfg import CSTM_NO_POW_REGEX
-from Src.PyDASA.Utils.cfg import CSTM_FDU_SYM_REGEX
-
+# complete module withe the FDU's regex
+from Src.PyDASA.Utils import cfg as config
 
 from Src.PyDASA.Units.fdu import FDU
 from Src.PyDASA.Units.params import Parameter, Variable
@@ -54,18 +40,20 @@ v = Variable()
 rm = RegexManager(custom=True,
                   _fdu_precedence_lt=["T", "D", "C"],)
 print(rm)
-rm.update_global_vars()
+# rm.update_global_vars()
 
+# default regex for FDU
 print("\n==== Default Regex ====")
-print("\tFDU_PREC_LT:", FDU_PREC_LT)
-print("\tDFLT_FDU_REGEX:", DFLT_FDU_REGEX)
-print("\tDFLT_POW_REGEX:", DFLT_POW_REGEX)
-print("\tDFLT_NO_POW_REGEX:", DFLT_NO_POW_REGEX)
-print("\tDFLT_FDU_SYM_REGEX:", DFLT_FDU_SYM_REGEX)
+print("\tFDU_PREC_LT:", config.FDU_PREC_LT)
+print("\tDFLT_FDU_REGEX:", config.DFLT_FDU_REGEX)
+print("\tDFLT_POW_REGEX:", config.DFLT_POW_REGEX)
+print("\tDFLT_NO_POW_REGEX:", config.DFLT_NO_POW_REGEX)
+print("\tDFLT_FDU_SYM_REGEX:", config.DFLT_FDU_SYM_REGEX)
 
+# custom regex for FDU
 print("\n==== Custom Regex ====")
-print("\tCSTM_FDU_PREC_LT:", cfg.CSTM_FDU_PREC_LT)
-print("\tCSTM_FDU_REGEX:", CSTM_FDU_REGEX)
-print("\tCSTM_POW_REGEX:", CSTM_POW_REGEX)
-print("\tCSTM_NO_POW_REGEX:", CSTM_NO_POW_REGEX)
-print("\tCSTM_FDU_SYM_REGEX:", CSTM_FDU_SYM_REGEX)
+print("\tCSTM_FDU_PREC_LT:", config.CSTM_FDU_PREC_LT)
+print("\tCSTM_FDU_REGEX:", config.CSTM_FDU_REGEX)
+print("\tCSTM_POW_REGEX:", config.CSTM_POW_REGEX)
+print("\tCSTM_NO_POW_REGEX:", config.CSTM_NO_POW_REGEX)
+print("\tCSTM_FDU_SYM_REGEX:", config.CSTM_FDU_SYM_REGEX)

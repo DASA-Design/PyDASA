@@ -1,11 +1,15 @@
 ﻿# -*- coding: utf-8 -*-
 """
-Module to manage the regex patterns for dimension validation for the Fundamental Dimensional Unit (FDU) in *PyDASA*.
+Module **RegexManager** manages the regular expressions (regex) for validating the Fundamental Dimensional Unit (FDU) in *PyDASA*. It use a default or traditional dimensional system; plus, an optional custom regex for the user to define their own FDUs.
+
+*IMPORTANT:* This code and its specifications for Python are based on the theory and subject developed by the following authors/books:
+
+    # H.Gorter, *Dimensionalanalyse: Eine Theoririe der physikalischen Dimensionen mit Anwendungen*
 """
 
 # native python modules
 # import dataclass for defining the node class
-from typing import Optional, List, Generic
+from typing import List, Generic
 from dataclasses import dataclass, field
 # import modules for defining the MapEntry type
 
@@ -22,12 +26,8 @@ from Src.PyDASA.Utils.cfg import DFLT_NO_POW_REGEX
 from Src.PyDASA.Utils.cfg import DFLT_FDU_SYM_REGEX
 
 # importing PyDASA's custom regex for FDU
-from Src.PyDASA.Utils import cfg as cfg
-from Src.PyDASA.Utils.cfg import CSTM_FDU_PREC_LT
-from Src.PyDASA.Utils.cfg import CSTM_FDU_REGEX
-from Src.PyDASA.Utils.cfg import CSTM_POW_REGEX
-from Src.PyDASA.Utils.cfg import CSTM_NO_POW_REGEX
-from Src.PyDASA.Utils.cfg import CSTM_FDU_SYM_REGEX
+# using the 'as' allows shared variable edition
+from Src.PyDASA.Utils import cfg as config
 
 # checking custom modules
 assert error
@@ -36,85 +36,122 @@ assert T
 
 @dataclass
 class RegexManager(Generic[T]):
-    """Manages the selection, validation, use, and retrieval of regex patterns for dimensional analysis in *PyDASA*.
+    """*RegexManager* class for managing the regex patterns for Fundamental Dimensional Units (FDU) in *PyDASA*.
+
+    Args:
+        Generic (T): Generic type for a Python data structure.
+
+    Returns:
+        RegexManager: A RegexManager object with the following attributes:
+            - `custom`: A boolean flag indicating if a custom regex is being used.
+            - `_fdu_precedence_lt`: A list of strings representing the FDUs precedence list.
+            - `_fdu_regex`: A string representing the FDUs matching regex pattern.
+            - `_fdu_pow_regex`: A string representing the FDUs matching regex pattern for dimensions with exponent.
+            - `_fdu_no_pow_regex`: A string representing the FDUs matching regex pattern for dimensions without exponent.
+            - `_fdu_sym_regex`: A string representing the FDUs matching regex pattern for dimensions in Sympy symbolic processor.
+        All private attributes are initialized with default, use the @property decorator to access and validate their user input.
     """
 
     # Custom flag to indicate if a custom regex is being used
     # :attr: custom
     custom: bool = False
     """
-    TODO complete docstring
+    Custom flag to indicate if a custom FDU regex is being used. If True, the user can define their own FDUs and regex patterns.
     """
 
     # FDUs precedence list for the regex
     # :attr: _fdu_precedence_lt
     _fdu_precedence_lt: List[str] = field(default_factory=lambda: FDU_PREC_LT)
     """
-    TODO complete docstring
+    The FDU's precedence list for the regex. It is a list of strings with the FDUs in precedence order for creating the dimensional matrix.
     """
 
     # FDUs matching regex pattern
     # :attr: _fdu_regex
     _fdu_regex: str = field(default_factory=lambda: DFLT_FDU_REGEX)
     """
-    TODO complete docstring
+    Main FDU regex pattern for matching FDUs in *PyDASA*. It is a string for matching FDUs from a formula or parameter into the dimensional matrix.
     """
 
     # FDUs matching regex pattern for dimensions with exponent
     # :attr: _fdu_pow_regex
     _fdu_pow_regex: str = field(default_factory=lambda: DFLT_POW_REGEX)
     """
-    TODO complete docstring
+    Regex pattern for matching FDUs with exponents in *PyDASA*. It is a string  for matching FDUs with exponents from a formula or parameter into the dimensional matrix.
     """
 
     # FDUs matching regex pattern for dimensions without exponent
     # :attr: _fdu_no_pow_regex
     _fdu_no_pow_regex: str = field(default_factory=lambda: DFLT_NO_POW_REGEX)
     """
-    TODO complete docstring
+    Regex pattern for matching FDUs without exponents in *PyDASA*. It is a string for matching FDUs without exponents from a formula or parameter into the dimensional matrix.
+
+    IMPORTAN: This is the ONLY regex that doesnt change with the custom regex.
     """
 
     # FDUs matching regex pattern for dimensions in Sympy symbolic processor
     # :attr: _fdu_sym_regex
     _fdu_sym_regex: str = field(default_factory=lambda: DFLT_FDU_SYM_REGEX)
     """
-    TODO complete docstring
+    Regex pattern for matching FDUs in Sympy symbolic processor. It is a string for matching FDUs in Latex/str format into Python's Sympy symbolic processor for the dimensional matrix.
     """
 
     def __post_init__(self) -> None:
-        """__post_init__ _summary_
+        """*__post_init__* method to configure the the *RegexManager* instance after initialization.
 
         Raises:
-            ValueError: _description_
+            ValueError: If the FDUs precedence list is empty or contains invalid characters.
         """
-        # TODO add docstring
-        # check for valid dimensions
+        # check if the user is using custom regex
         if self.custom:
-            print("Custom regex patterns are being used.")
+            self.setup_cstm_regex()
 
-            # dimensional precedence list
-            # check for valid custom dimensional precedence list
-            self.fdu_precedence_lt = self._fdu_precedence_lt
+    def setup_cstm_regex(self) -> None:
+        """*setup_cstm_regex()* setup the custom regex patterns for FDUs in *PyDASA* based on the user-defined FDU precedence list.
 
-            # compile dimensional regex patterns
-            self._fdu_regex = rf"^[{''.join(self.fdu_precedence_lt)}](\^-?\d+)?(\*[{''.join(self.fdu_precedence_lt)}](?:\^-?\d+)?)*$"
-            # check for valid dimensional custom regex
-            self.fdu_regex = self._fdu_regex
+        This method is called after the constructor of the *RegexManager* class if the user has defined desired.
+        """
+        # compile the custom regex patterns for FDUs
+        self._compile_cstm_regex()
+        # update the global variables with the custom regex patterns
+        self._update_global_vars()
 
-            # compile dimensional regex patterns with exponent
-            self._fdu_pow_regex = DFLT_POW_REGEX
-            # check for valid dimensional custom regex
-            self.fdu_pow_regex = self._fdu_pow_regex
+    def _compile_cstm_regex(self) -> None:
+        """*_compile_cstm_regex()* compile custom regex patterns for FDUs in *PyDASA* based on the user-defined FDU precedence list.
+        """
+        # dimensional precedence list
+        # check for valid custom dimensional precedence list
+        self.fdu_precedence_lt = self._fdu_precedence_lt
 
-            # compile dimensional regex patterns without exponent
-            self._fdu_no_pow_regex = rf"[{''.join(self.fdu_precedence_lt)}](?!\^)"
-            # check for valid dimensional custom regex
-            self.fdu_no_pow_regex = self._fdu_no_pow_regex
+        # compile dimensional regex patterns
+        self._fdu_regex = rf"^[{''.join(self.fdu_precedence_lt)}](\^-?\d+)?(\*[{''.join(self.fdu_precedence_lt)}](?:\^-?\d+)?)*$"
+        # check for valid dimensional custom regex
+        self.fdu_regex = self._fdu_regex
 
-            # compile dimensional regex patterns in Sympy symbolic processor
-            self._fdu_sym_regex = rf"[{''.join(self.fdu_precedence_lt)}]"
-            # check for valid dimensional custom regex
-            self.fdu_sym_regex = self._fdu_sym_regex
+        # compile dimensional regex patterns with exponent
+        self._fdu_pow_regex = DFLT_POW_REGEX
+        # check for valid dimensional custom regex
+        self.fdu_pow_regex = self._fdu_pow_regex
+
+        # compile dimensional regex patterns without exponent
+        self._fdu_no_pow_regex = rf"[{''.join(self.fdu_precedence_lt)}](?!\^)"
+        # check for valid dimensional custom regex
+        self.fdu_no_pow_regex = self._fdu_no_pow_regex
+
+        # compile dimensional regex patterns in Sympy symbolic processor
+        self._fdu_sym_regex = rf"[{''.join(self.fdu_precedence_lt)}]"
+        # check for valid dimensional custom regex
+        self.fdu_sym_regex = self._fdu_sym_regex
+
+    def _update_global_vars(self) -> None:
+        """*update_global_vars()* updates the global variables with the custom regex patterns compiled with the FDU's precedence list of the user.
+        """
+        # update global variables with the custom regex patterns
+        config.CSTM_FDU_PREC_LT = self._fdu_precedence_lt
+        config.CSTM_FDU_REGEX = self._fdu_regex
+        config.CSTM_POW_REGEX = self._fdu_pow_regex
+        config.CSTM_NO_POW_REGEX = self._fdu_no_pow_regex
+        config.CSTM_FDU_SYM_REGEX = self._fdu_sym_regex
 
     @property
     def fdu_precedence_lt(self) -> List[str]:
@@ -240,21 +277,3 @@ class RegexManager(Generic[T]):
             _msg += f"Provided: {value}"
             raise ValueError(_msg)
         self._fdu_sym_regex = value
-
-    def update_global_vars(self) -> None:
-        """update_global_vars _summary_
-        """
-        # TODO add docstring
-        # FIXME this is not updating the global variables in the module!!!
-        global CSTM_FDU_PREC_LT
-        global CSTM_FDU_REGEX
-        global CSTM_POW_REGEX
-        global CSTM_NO_POW_REGEX
-        global CSTM_FDU_SYM_REGEX
-
-        # update global variables with the custom regex patterns
-        cfg.CSTM_FDU_PREC_LT = self._fdu_precedence_lt
-        CSTM_FDU_REGEX = self._fdu_regex
-        CSTM_POW_REGEX = self._fdu_pow_regex
-        CSTM_NO_POW_REGEX = self._fdu_no_pow_regex
-        CSTM_FDU_SYM_REGEX = self._fdu_sym_regex

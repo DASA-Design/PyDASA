@@ -523,7 +523,7 @@ class ArrayList(Generic[T]):
         return self._size
 
     def __str__(self) -> str:
-        """*__str__()* to get the string representation of the *ArrayList*. This method returns a string with the elements of the list.
+        """*__str__()* get the string representation of the *ArrayList*. This method returns a string with the elements of the list.
 
         Returns:
             str: the string representation of the *ArrayList*.

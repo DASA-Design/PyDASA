@@ -18,20 +18,12 @@ from typing import Generic
 from Src.PyDASA.Utils.err import error_handler as error
 from Src.PyDASA.Utils.dflt import T
 
+# import global variables
+from Src.PyDASA.Utils.cfg import FDU_FWK_DT
+
 # checking custom modules
 assert error
 assert T
-
-# Set of supported Fundamental Dimensional Units (FDU)
-# :data: FDU_FWK_DT
-FDU_FWK_DT = {
-    "PHYSICAL": "Traditional physical units",
-    "DIGITAL": "Software Architecture units",
-    "CUSTOM": "Custom units",
-}
-"""
-Dictionary with the supported Fundamental Dimensional Units (FDU) in *PyDASA*.
-"""
 
 
 @dataclass

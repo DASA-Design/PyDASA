@@ -38,13 +38,20 @@ v = Variable()
 # print(v)
 
 rm = RegexManager(custom=True,
-                  _fdu_precedence_lt=["T", "D", "C"],)
+                  _fdu_prec_lt=["T", "D", "C"],)
 print(rm)
 # rm.update_global_vars()
 
+p1 = Parameter(name="p1",
+               description="pressure",
+               _sym="P_{1}",
+               _fwk="PHYSICAL",
+               _cat="INPUT",
+               _dimensions="C^2*T^-2",)
+
 # default regex for FDU
 print("\n==== Default Regex ====")
-print("\tFDU_PREC_LT:", config.FDU_PREC_LT)
+print("\tDFLT_FDU_PREC_LT:", config.DFLT_FDU_PREC_LT)
 print("\tDFLT_FDU_REGEX:", config.DFLT_FDU_REGEX)
 print("\tDFLT_POW_REGEX:", config.DFLT_POW_REGEX)
 print("\tDFLT_NO_POW_REGEX:", config.DFLT_NO_POW_REGEX)
@@ -52,8 +59,8 @@ print("\tDFLT_FDU_SYM_REGEX:", config.DFLT_FDU_SYM_REGEX)
 
 # custom regex for FDU
 print("\n==== Custom Regex ====")
-print("\tCSTM_FDU_PREC_LT:", config.CSTM_FDU_PREC_LT)
-print("\tCSTM_FDU_REGEX:", config.CSTM_FDU_REGEX)
-print("\tCSTM_POW_REGEX:", config.CSTM_POW_REGEX)
-print("\tCSTM_NO_POW_REGEX:", config.CSTM_NO_POW_REGEX)
-print("\tCSTM_FDU_SYM_REGEX:", config.CSTM_FDU_SYM_REGEX)
+print("\tWKNG_DFLT_FDU_PREC_LT:", config.WKNG_FDU_PREC_LT)
+print("\tWKNG_FDU_REGEX:", config.WKNG_FDU_REGEX)
+print("\tWKNG_POW_REGEX:", config.WKNG_POW_REGEX)
+print("\tWKNG_NO_POW_REGEX:", config.WKNG_NO_POW_REGEX)
+print("\tWKNG_FDU_SYM_REGEX:", config.WKNG_FDU_SYM_REGEX)

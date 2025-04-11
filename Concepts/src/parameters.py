@@ -75,29 +75,27 @@ class Parameter(Generic[T]):
             self.description = self.description.capitalize()
 
     def validate(self, dims: str, pattern: str) -> bool:
-        """validate _summary_
+        """ validate Validates the dimensions against a regex pattern.
 
         Args:
-            dims (str): _description_
-            pattern (str): _description_
+            dims (str): Dimensional representation to validate.
+            pattern (str): Regex pattern to validate against.
 
         Returns:
-            bool: _description_
+            bool: True if the dimensions match the pattern, False otherwise.
         """
-        # TODO add docstring
         valid = bool(re.match(pattern, dims))
         return valid
 
     def _setup_exp_dims(self, dims: str) -> str:
-        """setup_exp_dims _summary_
+        """ _setup_exp_dims Formats the dimensions by adding parentheses to exponents and defaulting missing exponents to 1.
 
         Args:
-            dims (str): _description_
+            dims (str): Dimensional representation to format.
 
         Returns:
-            str: _description_
+            str: Formatted dimensional representation.
         """
-        # TODO add docstring
         # add parentheses to powers in dimensions
         exp_pattern = re.compile(DIGIT_POW_RE)
         _expr_dims = exp_pattern.sub(lambda m: f"({m.group(0)})", dims)
@@ -108,45 +106,41 @@ class Parameter(Generic[T]):
         return _expr_dims
 
     def _sort_exp_dims(self, dims: str) -> str:
-        """_sort_exp_dims _summary_
+        """ _sort_exp_dims Sorts the dimensions in the order of the Fundamental Dimensional Units (FDUs).
 
         Args:
-            dims (str): _description_
+            dims (str): Dimensional representation to sort.
 
         Returns:
-            str: _description_
+            str: Sorted dimensional representation.
         """
-        # TODO add docstring
-        # TODO change the sort method to insertion sort
         dims_lt = dims.split("*")
         dims_lt.sort(key=lambda dim: FDU.index(dim[0]))
         _expr_dims = "*".join(dims_lt)
         return _expr_dims
 
     def _setup_sym_dims(self, expr_dims: str) -> str:
-        """_setup_sym_dims _summary_
+        """ _setup_sym_dims Converts the dimensions into a SymPy-compatible expression.
 
         Args:
-            expr_dims (str): _description_
+            expr_dims (str): Formatted dimensional representation.
 
         Returns:
-            str: _description_
+            str: SymPy-compatible dimensional representation.
         """
-        # TODO add docstring
         _sym_dims = expr_dims.replace("*", "* ")
         _sym_dims = _sym_dims.replace("^", "**")
         return _sym_dims
 
     def _setup_pow_dim_lt(self, sym_dims: str) -> List[int]:
-        """_setup_pow_dim_lt _summary_
+        """ _setup_pow_dim_lt Computes the list of dimension exponent coefficients for the dimensional matrix.
 
         Args:
-            sym_dims (str): _description_
+            sym_dims (str): SymPy-compatible dimensional representation.
 
         Returns:
-            List[int]: _description_
+            List[int]: List of exponent coefficients for each FDU.
         """
-        # TODO add docstring
         # split the sympy expression into a list of dimensions
         dims_lt = sym_dims.split("* ")
         # get the length of the list
@@ -174,15 +168,15 @@ class Parameter(Generic[T]):
         return dim_pow_lt
 
     def _find_pattern(self, sym: str, pattern: str) -> str:
-        """_find_pattern _summary_
+        """ _find_pattern Finds a pattern in a given string.
 
         Args:
-            sym (str): _description_
+            sym (str): String to search in.
+            pattern (str): Regex pattern to search for.
 
         Returns:
-            str: _description_
+            str: Matched pattern or None if no match is found.
         """
-        # TODO add docstring
         find = re.compile(pattern)
         matches = find.findall(sym)
         if matches:

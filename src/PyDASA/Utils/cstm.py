@@ -1,6 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
 """
-Module **RegexManager** manages the regular expressions (regex) for validating the Fundamental Dimensional Unit (FDU) in *PyDASA*. It use a default or traditional dimensional system; plus, an optional custom regex for the user to define their own FDUs.
+Module **RegexManager** manages the regular expressions (regex) for validating the Fundamental Dimensional Unit (FDU) in *PyDASA*. It use a default or traditional dimensional system; plus, a working (custom or otherwise) regex for the user to define their own FDUs.
 
 *IMPORTANT:* This code and its specifications for Python are based on the theory and subject developed by the following authors/books:
 
@@ -19,7 +19,7 @@ from Src.PyDASA.Utils.err import error_handler as error
 from Src.PyDASA.Utils.dflt import T
 
 # importing PyDASA's default regex for FDU
-from Src.PyDASA.Utils.cfg import FDU_PREC_LT
+from Src.PyDASA.Utils.cfg import DFLT_FDU_PREC_LT
 from Src.PyDASA.Utils.cfg import DFLT_FDU_REGEX
 from Src.PyDASA.Utils.cfg import DFLT_POW_REGEX
 from Src.PyDASA.Utils.cfg import DFLT_NO_POW_REGEX
@@ -44,7 +44,7 @@ class RegexManager(Generic[T]):
     Returns:
         RegexManager: A RegexManager object with the following attributes:
             - `custom`: A boolean flag indicating if a custom regex is being used.
-            - `_fdu_precedence_lt`: A list of strings representing the FDUs precedence list.
+            - `_fdu_prec_lt`: A list of strings representing the FDUs precedence list.
             - `_fdu_regex`: A string representing the FDUs matching regex pattern.
             - `_fdu_pow_regex`: A string representing the FDUs matching regex pattern for dimensions with exponent.
             - `_fdu_no_pow_regex`: A string representing the FDUs matching regex pattern for dimensions without exponent.
@@ -60,8 +60,8 @@ class RegexManager(Generic[T]):
     """
 
     # FDUs precedence list for the regex
-    # :attr: _fdu_precedence_lt
-    _fdu_precedence_lt: List[str] = field(default_factory=lambda: FDU_PREC_LT)
+    # :attr: _fdu_prec_lt
+    _fdu_prec_lt: List[str] = field(default_factory=lambda: DFLT_FDU_PREC_LT)
     """
     The FDU's precedence list for the regex. It is a list of strings with the FDUs in precedence order for creating the dimensional matrix.
     """
@@ -104,27 +104,27 @@ class RegexManager(Generic[T]):
         """
         # check if the user is using custom regex
         if self.custom:
-            self.setup_cstm_regex()
+            self.setup_wkng_regex()
 
-    def setup_cstm_regex(self) -> None:
-        """*setup_cstm_regex()* setup the custom regex patterns for FDUs in *PyDASA* based on the user-defined FDU precedence list.
+    def setup_wkng_regex(self) -> None:
+        """*setup_wkng_regex()* setup the working (custom or otherwise) regex patterns for FDUs in *PyDASA* based on the user-defined FDU precedence list.
 
         This method is called after the constructor of the *RegexManager* class if the user has defined desired.
         """
         # compile the custom regex patterns for FDUs
-        self._compile_cstm_regex()
+        self._compile_wkng_vars()
         # update the global variables with the custom regex patterns
-        self._update_global_vars()
+        self._update_wkng_vars()
 
-    def _compile_cstm_regex(self) -> None:
-        """*_compile_cstm_regex()* compile custom regex patterns for FDUs in *PyDASA* based on the user-defined FDU precedence list.
+    def _compile_wkng_vars(self) -> None:
+        """*_compile_wkng_vars()* compile working (custom or otherwise) regex patterns for FDUs in *PyDASA* based on the user-defined FDU precedence list.
         """
         # dimensional precedence list
         # check for valid custom dimensional precedence list
-        self.fdu_precedence_lt = self._fdu_precedence_lt
+        self.fdu_prec_lt = self._fdu_prec_lt
 
         # compile dimensional regex patterns
-        self._fdu_regex = rf"^[{''.join(self.fdu_precedence_lt)}](\^-?\d+)?(\*[{''.join(self.fdu_precedence_lt)}](?:\^-?\d+)?)*$"
+        self._fdu_regex = rf"^[{''.join(self.fdu_prec_lt)}](\^-?\d+)?(\*[{''.join(self.fdu_prec_lt)}](?:\^-?\d+)?)*$"
         # check for valid dimensional custom regex
         self.fdu_regex = self._fdu_regex
 
@@ -134,37 +134,37 @@ class RegexManager(Generic[T]):
         self.fdu_pow_regex = self._fdu_pow_regex
 
         # compile dimensional regex patterns without exponent
-        self._fdu_no_pow_regex = rf"[{''.join(self.fdu_precedence_lt)}](?!\^)"
+        self._fdu_no_pow_regex = rf"[{''.join(self.fdu_prec_lt)}](?!\^)"
         # check for valid dimensional custom regex
         self.fdu_no_pow_regex = self._fdu_no_pow_regex
 
         # compile dimensional regex patterns in Sympy symbolic processor
-        self._fdu_sym_regex = rf"[{''.join(self.fdu_precedence_lt)}]"
+        self._fdu_sym_regex = rf"[{''.join(self.fdu_prec_lt)}]"
         # check for valid dimensional custom regex
         self.fdu_sym_regex = self._fdu_sym_regex
 
-    def _update_global_vars(self) -> None:
-        """*update_global_vars()* updates the global variables with the custom regex patterns compiled with the FDU's precedence list of the user.
+    def _update_wkng_vars(self) -> None:
+        """*_update_wkng_vars()* updates the global variables with the working (custom or otherwise) regex patterns compiled with the FDU's precedence list of the user.
         """
         # update global variables with the custom regex patterns
-        config.CSTM_FDU_PREC_LT = self._fdu_precedence_lt
-        config.CSTM_FDU_REGEX = self._fdu_regex
-        config.CSTM_POW_REGEX = self._fdu_pow_regex
-        config.CSTM_NO_POW_REGEX = self._fdu_no_pow_regex
-        config.CSTM_FDU_SYM_REGEX = self._fdu_sym_regex
+        config.WKNG_FDU_PREC_LT = self._fdu_prec_lt
+        config.WKNG_FDU_REGEX = self._fdu_regex
+        config.WKNG_POW_REGEX = self._fdu_pow_regex
+        config.WKNG_NO_POW_REGEX = self._fdu_no_pow_regex
+        config.WKNG_FDU_SYM_REGEX = self._fdu_sym_regex
 
     @property
-    def fdu_precedence_lt(self) -> List[str]:
-        """*fdu_precedence_lt* property to get the FDUs precedence list.
+    def fdu_prec_lt(self) -> List[str]:
+        """*fdu_prec_lt* property to get the FDUs precedence list.
 
         Returns:
             List[str]: FDUs precedence list.
         """
-        return self._fdu_precedence_lt
+        return self._fdu_prec_lt
 
-    @fdu_precedence_lt.setter
-    def fdu_precedence_lt(self, value: List[str]) -> None:
-        """*fdu_precedence_lt* property to set the FDUs precedence list.
+    @fdu_prec_lt.setter
+    def fdu_prec_lt(self, value: List[str]) -> None:
+        """*fdu_prec_lt* property to set the FDUs precedence list.
 
         Args:
             value (List[str]): FDUs precedence list.
@@ -176,7 +176,7 @@ class RegexManager(Generic[T]):
             _msg = "FDUs precedence list must be a non-empty list of strings. "
             _msg += f"Provided: {value}"
             raise ValueError(_msg)
-        self._fdu_precedence_lt = value
+        self._fdu_prec_lt = value
 
     @property
     def fdu_regex(self) -> str:
@@ -277,3 +277,26 @@ class RegexManager(Generic[T]):
             _msg += f"Provided: {value}"
             raise ValueError(_msg)
         self._fdu_sym_regex = value
+
+    def __str__(self) -> str:
+        """*__str__* get the string representation of the *RegexManager* instance.
+
+        Returns:
+            str: String representation of the *RegexManager* instance.
+        """
+        # TODO this is the best str method, extend it ot other classes!!!
+        _str = f"{self.__class__.__name__}("
+        # _str = f"{self.__class__.__name__}(\n"
+        for attr, value in vars(self).items():
+            # Remove leading underscore from attribute names
+            attr_name = attr.lstrip("_")
+            if isinstance(value, str):
+                _str += f"{attr_name}='{value}', "
+                # _str += f"\t{attr_name}='{value}',\n"
+            else:
+                _str += f"{attr_name}={value}, "
+                # _str += f"\t{attr_name}={value},\n"
+        # removingf last ', ' from the string
+        _str = _str[:-2]
+        _str += ")"
+        return _str

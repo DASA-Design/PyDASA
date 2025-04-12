@@ -27,10 +27,12 @@ from Src.PyDASA.Utils import cfg as config
 # TODO do i need this import in future version?
 # from Src.PyDASA.Units.fdu import FDU
 
-# TODO do i need this import???
-# importing the FDU_FWK_TP for creating the FDU object
 from Src.PyDASA.Utils.cfg import FDU_FWK_DT
 from Src.PyDASA.Utils.cfg import PARAMS_FWK_DT
+
+# TODO do i need this import???
+# importing the FDU_FWK_TP for creating the FDU object
+
 
 # checking custom modules
 assert error
@@ -39,18 +41,18 @@ assert T
 
 @dataclass
 class Parameter(Generic[T]):
-    """**Parameter** class for creating a **Parameter** in *PyDASA*. Fundamental for the process of Dimensional Analysis and creating Dimensionless Coefficients.
+    """*Parameter* class for creating a *Parameter* in *PyDASA*. Fundamental for the process of Dimensional Analysis and creating Dimensionless Coefficients.
 
     Args:
         Generic (T): Generic type for a Python data structure.
 
     Returns:
-        Parameter: A Parameter object with the following attributes:
+        Parameter: A *Parameter* object with the following attributes:
             - `_idx`: The ID of the Parameter.
             - `_sym`: The symbol of the Parameter.
             - `_fwk`: The framework of the Parameter. It can be one of the following: `PHYSICAL`, `DIGITAL`, or `CUSTOM`.
-            - `_dimensions`: The dimensions of the Parameter.
-            - `_units`: The units of measure of the Parameter.
+            - `_dims`: The dimensions of the Parameter.
+            - `_units`: The Units of Measure of the Parameter.
             - `_cat`: The category of the Parameter. It can be one of the following: `INPUT`, `OUTPUT`, or `CONTROL`.
             - `name`: The name of the Parameter.
             - `description`: The description of the Parameter.
@@ -61,117 +63,123 @@ class Parameter(Generic[T]):
     # :attr: _idx
     _idx: int = -1
     """
-    Index of the parameter. It is the unique integer for the order of the column of the parameter in the dimensional matrix.
+    Index of the parameter. It is the unique integer for the column's order in the dimensional matrix.
     """
 
     # Symbol of the FDU
     # :attr: _sym
     _sym: str = ""
     """
-    Symbol of the FDU. It must be alphanumeric (preferably a single character + Latin or Greek letter). Useful for user-friendly representation of the FDU.
+    Symbol of the *Parameter*. It must be alphanumeric (preferably a single character + Latin or Greek letter). Useful for user-friendly representation of the instance.
     """
 
     # Working framework of the FDU
     # :attr: _fwk
     _fwk: str = "PHYSICAL"
     """
-    Framework of the FDU. It can be one of the following: `PHYSICAL`, `DIGITAL`, or `CUSTOM`. Useful for identifying the framework of the FDU.
+    Framework the *Parameter* follows in accordance with the FDU. It can be one of the following: `PHYSICAL`, `DIGITAL`, or `CUSTOM`. Parameters and FDUs must be in the same framework.
     """
 
     # Category of the parameter, can be: `INPUT`, `OUTPUT`, or `CONTROL`
     # :attr: _cat`
     _cat: str = "INPUT"
     """
-    The parameter category. It can be one of the following: `INPUT`, `OUTPUT`, or `CONTROL`. Useful for identifying the order of its column in the dimensional matrix.
+    Category of the *Parameter*. It is a string specifing the parameter's behavior in the dimensional matrix. It can be one of the following: `INPUT`, `OUTPUT`, or `CONTROL` for fundamental parameters, desired parameters, or in-phenomena parameters respectively.
     """
 
     # user input dimensional expression for the parameter
-    # :attr: _dimensions
-    _dimensions: str = ""
+    # :attr: _dims
+    _dims: str = ""
     """
-    User-defined dimensional expression for the Parameter. It is a string with the FDU of the parameter. i.e.: [T^2*L^-1] or [T^2*L].
-    """
+    Dimensional representation of the *Parameter*. It is a user-defined string with the FDU formula of the parameter. i.e.: [T^2*L^-1] or [T^2*L].
+"""
 
     # user dimensional expression
     # :attr: _dim_exp
     _dim_exp: Optional[str] = None
     """
-    Dimensional expression for analysis. It is a string with propper parenthesis and exponents. It is used to calculate the dimensional matrix columns. i.e.: from [T^2*L^-1] to [T^(2)*L^(-1)].
+    Dimensional Expression of the *Parameter* for analysis. Iti is a standarized string with propper parenthesis and exponents. It is used to calculate the dimensional matrix columns. i.e.: from [T^2*L^-1] to [L^(-1)*T^(2)].
     """
 
     # dimensional expression for the sympy regex procesor
     # :attr: _sym_exp
     _sym_exp: Optional[str] = None
     """
-    Symbolic processed dimensional expression for analysis. It is a string suitable for Sympy processing. It is used to calculate the dimensional matrix columns. i.e.: from [T^(2)*L^(-1)] to [T**2*L**(-1)].
+    Symbolic Dimensional Expression of the *Parameter* for analysis. It is a string suitable for Sympy processing. It is used to calculate the dimensional matrix columns. i.e.: from [T^2*L^-1] to [T**2*L**(-1)].
     """
 
     # list with the dimensions exponent coefficients as integers
     # :attr: _dim_col
     _dim_col: Optional[List[int]] = field(default_factory=list)
     """
-    Dimensioan list of the parameter. It is a list of numbers (integers or floats) with the exponents of the dimensions in the parameter. It is used as the columns of the dimensional matrix. i.e.: from [T^2*L^-1] to [2, -1].
+    Dimensional Column (list) of the *Parameter* for analysis. It is a list of integers with the exponents of the dimensions in the parameter. It is the actual column of the dimensional matrix. i.e.: from [T^2*L^-1] to [2, -1].
     """
 
     # public attributes
     # :attr: _units
     _units: str = ""
     """
-    Original unit of meassure the phenomena parameter is measured in. It is a string with with dimensional units of measure. It is used to convert the parameter to the standard unit of measure.
+    Units of Meassure of the *Parameter*. It is a user-defined string with the original dimensional Units of Measure parameter was defined in. i.e.: `m/s`, `kg/m3`, bit/s, etc.
     """
 
     # Public attributes
     # :attr: name
     name: str = ""
     """
-    Name of the parameter. User-friendly name of the parameter.
+    Name of the *Parameter*. User-friendly name of the parameter.
     """
 
     # :attr: description
     description: str = ""
     """
-    Description of the parameter. It is a string with a small summary of the parameter.
+    Description of the *Parameter*. It is a small summary of the parameter.
     """
 
     # :attr: _relevance
     relevance: bool = False
     """
-    Boolean value indicating if the parameter is relevant or not. It is used to identify what parameter goes into creating the dimensional matrix
+    Boolean value indicating if the *Parameter* is relevant or not. It is used to identify whether the parameter is inside the main dimensional matrix or not.
     """
 
     def __post_init__(self) -> None:
-        # # check for valid dimensions
-        if self._dimensions != "":
-            if not self._validate_regex(self.dimensions, config.WKNG_FDU_REGEX):
+        """*__post_init__* method to initialize the *Parameter* object. It is called after the object is created. It validates the dimensions and sets up the dimensional expression, symbolic expression, and dimensional column.
+
+        Raises:
+            ValueError: error if the dimensions string doen't follow the FDU regex pattern.
+        """
+        # check for valid dimensions
+        if self._dims != "":
+            if not self._validate(self.dims, config.WKNG_FDU_REGEX):
                 _msg = f"Invalid dimensions in Parameter '{self.name}' "
-                _msg += f"Check FDUs in: {self._dimensions}."
+                _msg += f"Check FDUs in: {self._dims}."
                 _msg += " in acordance with the FDU precedence list:, "
                 _msg += f"'{config.WKNG_FDU_PREC_LT}'/"
                 raise ValueError(_msg)
 
             # prepare the parameter for dimensional analysis
-            # set up dimensions in uppercase
-            self._dim_exp = self._standarize_dimensions(self._dimensions)
-            print(self._dim_exp)
-
-            # sort dimensions in the dimensional precedence order
-            self._dim_exp = self._sort_dimensions(self._dim_exp)
-            print(self._dim_exp)
-
-            # set up expression for sympy
-            self._sym_exp = self._set_sym_dimension(self._dim_exp)
-            print(self._sym_exp)
-
-            # setup dimension pow list for dimensional analysis
-            self._dim_col = self._set_dimensional_col(self._sym_exp)
-            print(self._dim_col)
+            self._prep_dims()
 
         # if description is not empty, capitalize it
         if self.description != "":
             self.description = self.description.capitalize()
 
-    def _validate_regex(self, dims: str, regex: str) -> bool:
-        """*_validate_regex* validates the dimensions of the parameter.
+    def _prep_dims(self) -> None:
+        """*_prep_dims* prepares the dimensions of the *Parameter* for dimensional analysis. It validates the dimensions and sets up the dimensional expression, symbolic expression, and dimensional column.
+        """
+        # set up dimensions in uppercase
+        self._dim_exp = self._std_dims(self._dims)
+
+        # sort dimensions in the dimensional precedence order
+        self._dim_exp = self._sort_dims(self._dim_exp)
+
+        # set up expression for sympy
+        self._sym_exp = self._set_sym(self._dim_exp)
+
+        # setup dimension pow list for dimensional analysis
+        self._dim_col = self._set_col(self._sym_exp)
+
+    def _validate(self, dims: str, regex: str) -> bool:
+        """*_validate* validates the dimensions of the *Parameter*.
 
         Args:
             dims (str): Dimensions of the parameter. It is a string with the FDU formula of the parameter. i.e.: [T^2*L^-1]
@@ -183,8 +191,8 @@ class Parameter(Generic[T]):
         _valid = bool(re.match(regex, dims))
         return _valid
 
-    def _find_pattern(self, sym: str, pattern: str) -> str:
-        """*_find_pattern* finds the pattern in the standarize symbolic string.
+    def _findall(self, sym: str, pattern: str) -> str:
+        """*_findall* finds the pattern in the standarize symbolic string.
 
         Args:
             sym (str): Standarized symbolic string to search for the pattern.
@@ -200,14 +208,14 @@ class Parameter(Generic[T]):
         else:
             return None
 
-    def _standarize_dimensions(self, dims: str) -> str:
-        """*_standarize_dimensions* standarizes the dimensions of the parameter. It adds parentheses to the powers, and adds ^1 to the * operations.
+    def _std_dims(self, dims: str) -> str:
+        """*_std_dims* standarizes the dimensions of the *Parameter*. It adds parentheses to the powers, and adds ^1 to the * operations.
 
         Args:
-            dims (str): Dimensions of the parameter. It is a string with the FDU formula of the parameter. i.e.: [T^2*L^-1]
+            dims (str): Dimensions of the *Parameter*. It is a string with the FDU formula of the parameter. i.e.: [T^2*L^-1]
 
         Returns:
-            str: Standarized dimensions of the parameter. It is a string with the FDU formula of the parameter. i.e.: [T^(2)*L^(-1)]
+            str: Standarized dimensions of the *Parameter*. It is a string with the FDU formula of the parameter. i.e.: [T^(2)*L^(-1)]
         """
         # add parentheses to powers in dimensions
         _regex_pat = re.compile(config.WKNG_POW_REGEX)
@@ -218,14 +226,14 @@ class Parameter(Generic[T]):
         # return standarized dimensions
         return _dims
 
-    def _sort_dimensions(self, dims: str) -> str:
-        """*_sort_dimensions* sorts the dimensions of the parameter in the dimensional precedence order. Crucrial to create a consistent dimensional matrix.
+    def _sort_dims(self, dims: str) -> str:
+        """*_sort_dims* sorts the dimensions of the *Parameter* in the dimensional precedence order. Crucrial to create a consistent dimensional matrix.
 
         Args:
-            dims (str): Dimensions of the parameter. It is a string with the FDU formula of the parameter. i.e.: [T^2*L^-1]
+            dims (str): Dimensions of the *Parameter*. It is a string with the FDU formula of the parameter. i.e.: [T^2*L^-1]
 
         Returns:
-            str: Sorted dimensions of the parameter. It is a string with the FDU formula of the parameter. i.e.: [L^(-1)*T^(2)]
+            str: Sorted dimensions of the *Parameter*. It is a string with the FDU formula of the parameter. i.e.: [L^(-1)*T^(2)]
         """
         # TODO maybe add a custom sort?
         # TODO move '*' as global operator to cfg module?
@@ -237,55 +245,50 @@ class Parameter(Generic[T]):
         _dims = "*".join(_dims_lt)
         return _dims
 
-    def _set_sym_dimension(self, dims: str) -> str:
-        """*_set_sym_dimension* sets the dimensional expression special characters such as '^' and '*' to '**' and '* ' respectively. for sympy processing.
+    def _set_sym(self, dims: str) -> str:
+        """*_set_sym* sets the dimensional expression special characters such as '^' and '*' to '**' and '* ' respectively. for sympy processing.
 
         Args:
-            dims (str): Dimensions of the parameter. It is a string with the FDU formula of the parameter. i.e.: [T^2*L^-1]
+            dims (str): Dimensions of the *Parameter*. It is a string with the FDU formula of the parameter. i.e.: [T^2*L^-1]
 
         Returns:
-            str: Symbolic dimensions of the parameter. It is a string with the FDU formula of the parameter. i.e.: [T**2*L**(-1)]
+            str: Symbolic dimensions of the *Parameter*. It is a string with the FDU formula of the parameter. i.e.: [T**2* L**(-1)]
         """
-        # replace '*' with '* ' for sympy processing
         # TODO move '*' and '* ' as global operator to cfg module?
+        # TODO do I use also regex for this?
+        # replace '*' with '* ' for sympy processing
         _dims = dims.replace("*", "* ")
         # replace '^' with '**' for sympy processing
-        # TODO move '^' and '**' as global operator to cfg module?
         _dims = _dims.replace("^", "**")
         return _dims
 
-    def _set_dimensional_col(self, dims: str) -> List[int]:
-        """*_set_dimensional_col* sets the dimensional column of the parameter. It is a list of integers with the exponents of the dimensions of the Parameter. It is used to create the dimensional matrix.
+    def _set_col(self, dims: str) -> List[int]:
+        """*_set_col* sets the dimensional column of the *Parameter*. It is a list of integers with the exponents of the dimensions of the Parameter. It is used to create the dimensional matrix.
 
         Args:
-            dims (str): Standarized dimensions of the parameter. It is a string with the FDU formula of the parameter. i.e.: [T^(2)*L^(-1)]
+            dims (str): Standarized dimensions of the *Parameter*. It is a string with the FDU formula of the parameter. i.e.: [T^(2)*L^(-1)]
 
         Returns:
-            List[int]: list of integers with the exponents of the dimensions of the parameter. It is used to create the dimensional matrix. i.e.: [2, -1]
+            List[int]: list of integers with the exponents of the dimensions of the *Parameter*. It is used to create the dimensional matrix. i.e.: [2, -1]
         """
         # TODO check this algorithm for improvement
         # split the sympy expression into a list of dimensions
         _dims_lt = dims.split("* ")
         # set the default list of zeros with the FDU length
         _dimensional_col = len(config.WKNG_FDU_PREC_LT) * [0]
-        print(_dimensional_col)
         # working vars
         i = 0
-        print(config.WKNG_POW_REGEX)
-        _regex_pat = re.compile(r"\-?\d+")
         while i < len(_dims_lt):
             # get the dimension
             _t_sym = _dims_lt[i]
-            print(_t_sym)
             # match the exponent of the dimension
-            _t_pow = _regex_pat.findall(_t_sym)
-            print(_t_pow)
+            _t_pow = self._findall(_t_sym,
+                                   config.WKNG_POW_REGEX)
             # find the fdu and its index
-            _t_dim = self._find_pattern(_t_sym, config.WKNG_FDU_SYM_REGEX)
-            print(_t_dim)
+            _t_dim = self._findall(_t_sym,
+                                   config.WKNG_FDU_SYM_REGEX)
             _t_idx = config.WKNG_FDU_PREC_LT.index(_t_dim[0])
             # update the dimension column with the exponent of the dimension
-            print(_t_idx, _t_pow[0])
             _dimensional_col[_t_idx] = int(_t_pow[0])
             # increment the index
             i += 1
@@ -294,39 +297,48 @@ class Parameter(Generic[T]):
 
     @property
     def idx(self) -> str:
-        """*idx* property to get Parameter's index in the dimensional matrix.
+        """*idx* property to get *Parameter's* index in the dimensional matrix.
 
         Returns:
-            str: ID of the Parameter.
+            str: ID of the *Parameter*.
         """
         return self._idx
 
     @idx.setter
     def idx(self, value: str) -> None:
-        """*idx* property to set the Parameter's index in the dimensional matrix. It must be alphanumeric.
+        """*idx* property to set the *Parameter's* index in the dimensional matrix. It must be alphanumeric.
 
         Args:
-            value (str): ID of the Parameter.
+            value (str): ID of the *Parameter*.
 
         Raises:
-            ValueError: error if the ID is not alphanumeric.
+            ValueError: error if the Index is not an integer.
         """
-        if not value.isalnum():
-            raise ValueError("ID must be alphanumeric.")
+        if not isinstance(value, int):
+            _msg = "Index must be an integer, "
+            _msg += f"Provided type: {type(value)}"
+            raise ValueError(_msg)
         self._idx = value
 
     @property
     def sym(self) -> str:
-        """*sym* property to get the symbol of the FDU.
+        """*sym* property to get the symbol of the *Parameter*.
 
         Returns:
-            str: Symbol of the FDU.
+            str: Symbol of the *Parameter*. It is a string with the FDU formula of the parameter. i.e.: [T^2*L^-1]
         """
         return self._sym
 
     @sym.setter
     def sym(self, value: str) -> None:
+        """*sym* property to set the symbol of *Parameter*. It must be alphanumeric (preferably a single character + Latin or Greek letter).
 
+        Args:
+            value (str): Symbol of the *Parameter*. i.e: m1 for mass 1, d1 for data 1, etc.
+
+        Raises:
+            ValueError: _description_
+        """
         if not value.isalnum():
             _msg = "Symbol must be alphanumeric. "
             _msg += f"Provided: {value}"
@@ -336,19 +348,19 @@ class Parameter(Generic[T]):
 
     @property
     def fwk(self) -> str:
-        """*fwk* property to get the framework of the FDU.
+        """*fwk* property to get the framework of the *Parameter*.
 
         Returns:
-            str: Framework of the FDU. It can be one of the following: `PHYSICAL`, `DIGITAL`, or `CUSTOM`.
+            str: Framework of the *Parameter*. It can be one of the following: `PHYSICAL`, `DIGITAL`, or `CUSTOM`.
         """
         return self._fwk
 
     @fwk.setter
     def fwk(self, value: str) -> None:
-        """*fwk* property of the allowed framework of the FDU.
+        """*fwk* property of the framework of the *Parameter*. It must be one of the following: `PHYSICAL`, `DIGITAL`, or `CUSTOM`.
 
         Args:
-            value (str): Framework of the parameter (related to the FDU). It can be one of the following: `PHYSICAL`, `DIGITAL`, or `CUSTOM`.
+            value (str): Framework of the *Parameter*. Must be the same as the FDU framework.
 
         Raises:
             ValueError: If the framework is not one of the allowed values.
@@ -362,19 +374,19 @@ class Parameter(Generic[T]):
 
     @property
     def cat(self) -> str:
-        """*cat* property to get the category of the parameter.
+        """*cat* property to get the category of the *Parameter*.
 
         Returns:
-            str: Category of the parameter. It can be one of the following: `INPUT`, `OUTPUT`, or `CONTROL`.
+            str: Category of the *Parameter*.
         """
         return self._cat
 
     @cat.setter
     def cat(self, value: str) -> None:
-        """*cat* property to set the category of the parameter. It must be one of the following: `INPUT`, `OUTPUT`, or `CONTROL`.
+        """*cat* property to set the category of the *Parameter*.
 
         Args:
-            value (str): Category of the parameter. It can be one of the following: `INPUT`, `OUTPUT`, or `CONTROL`.
+            value (str): Category of the *Parameter*. It can must one of the following: `INPUT`, `OUTPUT`, or `CONTROL`.
 
         Raises:
             ValueError: error if the category is not one of the allowed values.
@@ -387,94 +399,96 @@ class Parameter(Generic[T]):
         self._cat = value.upper()
 
     @property
-    def dimensions(self) -> str:
-        """*dimensions* property to get the dimensions of the parameter.
+    def dims(self) -> str:
+        """*dims* property to get the dimensions of the *Parameter*. It is a string with the FDU (Fundamental Dimensional Unit) of the parameter.
 
         Returns:
-            str: Dimensions of the parameter. It is a string with the FDU (Fundamental Dimensional Unit) of the parameter.
+            str: Dimensions of the *Parameter*. i.e.: [T^2*L^-1]
         """
-        return self._dimensions
+        return self._dims
 
-    @dimensions.setter
-    def dimensions(self, value: str) -> None:
-        """*dimensions* property to set the dimensions of the parameter. It is a string with the FDU (Fundamental Dimensional Unit) of the parameter.
+    @dims.setter
+    def dims(self, value: str) -> None:
+        """*dims* property to set the dimensions of the *Parameter*. It is a string with the FDU (Fundamental Dimensional Unit) of the parameter.
 
         Args:
-            value (str): Dimensions of the parameter. It is a string with the FDU (Fundamental Dimensional Unit) of the parameter.
+            value (str): Dimensions of the *Parameter*. i.e.: [T^2*L^-1]
 
         Raises:
             ValueError: error if the dimensions string is empty.
         """
         if not value.strip():
             raise ValueError("Dimensions cannot be empty.")
-        self._dimensions = value
+        self._dims = value
+        # automatically prepare the dimensions for analysis
+        self._prep_dims()
 
     @property
     def dim_exp(self) -> Optional[str]:
-        """*dim_exp* property to get the dimensional expression of the parameter.
+        """*dim_exp* property to get the dimensional expression of the *Parameter*. It is a string with propper parenthesis and exponents.
 
         Returns:
-            Optional[str]: Dimensional expression of the parameter. It is a string with propper parenthesis and exponents.
+            Optional[str]: Dimensional expression of the *Parameter*. i.e.: [L^(-1)*T^(2)]
         """
         return self._dim_exp
 
     @dim_exp.setter
     def dim_exp(self, value: str) -> None:
-        """*dim_exp* _summary_
+        """*dim_exp* property to set the dimensional expression of the *Parameter*. It is a string with propper parenthesis and exponents.
 
         Args:
-            value (str): _description_
+            value (str): Dimensional expression of the *Parameter*. i.e.: [L^(-1)*T^(2)]
 
         Raises:
-            ValueError: _description_
+            ValueError: error if the dimensional expression string is empty.
         """
-        # TODO complete with regex validation!!!
+        # TODO complete with stricter regex validation!!!
         if value is not None and not value.strip():
             raise ValueError("Dimensional expression cannot be empty.")
         self._dim_exp = value
 
     @property
     def sym_exp(self) -> Optional[str]:
-        """*sym_exp* property to get the symbolic processed dimensional expression of the parameter.
+        """*sym_exp* property to get the symbolic processed dimensional expression of the *Parameter*. It is a string suitable for Sympy processing.
 
         Returns:
-            Optional[str]: Dimensional expression of the parameter. It is a string suitable for Sympy processing.
+            Optional[str]: Dimensional expression of the *Parameter* for sympy processing. i.e.: [T**2*L**(-1)]
         """
         return self._sym_exp
 
     @sym_exp.setter
     def sym_exp(self, value: str) -> None:
-        """*sym_exp* _summary_
+        """*sym_exp* property to set the symbolic processed dimensional expression of the *Parameter*. It is a string suitable for Sympy processing.
 
         Args:
-            value (str): _description_
+            value (str): Dimensional expression of the *Parameter* for sympy processing. i.e.: [T**2*L**(-1)]
 
         Raises:
-            ValueError: _description_
+            ValueError: error if the dimensional expression string is empty.
         """
-        # TODO complete with regex validation!!!
+        # TODO complete with stricter regex validation!!!
         if value is not None and not value.strip():
             raise ValueError("Dimensional expression cannot be empty.")
         self._sym_exp = value
 
     @property
     def dim_col(self) -> Optional[List[int]]:
-        """*dim_col* property to get the list of dimensions exponent coefficients as integers.
+        """*dim_col* property to get the dimensional column (list) of the *Parameter*. It is a list of integers with the exponents of the dimensions in the parameter. It is the actual column of the dimensional matrix.
 
         Returns:
-            Optional[List[int]]: List of integers with the exponents of the dimensions in the parameter.
+            Optional[List[int]]: List of integers with the exponents of the dimensions in the parameter. i.e.: [2, -1]
         """
         return self._dim_col
 
     @dim_col.setter
     def dim_col(self, value: List[int]) -> None:
-        """*dim_col* _summary_
+        """*dim_col* property to set the dimensional column (list) of the *Parameter*. It is a list of integers with the exponents of the dimensions in the parameter. It is the actual column of the dimensional matrix.
 
         Args:
-            value (List[int]): _description_
+            value (List[int]): List of integers with the exponents of the dimensions in the parameter. i.e..: [2, -1]
 
         Raises:
-            ValueError: _description_
+            ValueError: error if the value is not a list of integers.
         """
         # TODO complete with regex validation, and check if the elements are numbers!!!
         if value is not None and not isinstance(value, list):
@@ -483,33 +497,49 @@ class Parameter(Generic[T]):
 
     @property
     def units(self) -> str:
-        """*units* property to get the units of measure of the parameter.
+        """*units* property with the Units of Measure of the *Parameter*. It is a string with the dimensional Units of Measure.
 
         Returns:
-            str: Units of measure of the parameter. It is a string with the dimensional units of measure.
+            str: Units of measure of the *Parameter*. i.e.: `m/s`, `kg/m3`, etc.
         """
         return self._units
 
     @units.setter
     def units(self, value: str) -> None:
-        """*units* property to set the units of measure of the parameter. It is a string with the dimensional units of measure.
+        """*units* property to set the Units of Measure of the *Parameter*. It is a string with the dimensional Units of Measure.
 
         Args:
-            value (str): Units of measure of the parameter. It is a string with the dimensional units of measure i.e `m/s`, `kg/m3`, etc.
+            value (str): Units of measure of the *Parameter*. i.e `m/s`, `kg/m3`, etc.
 
         Raises:
-            ValueError: error if the units of measure string is empty.
+            ValueError: error if the Units of Measure string is empty.
         """
         if not value.strip():
-            raise ValueError("Unit of measure cannot be empty.")
+            raise ValueError("Unit of Measure cannot be empty.")
         self._units = value
 
+    def clear(self) -> None:
+        """*clear* it resets all the attributes of the *Parameter* object to their default values. It is used to clear the object for reuse.
+        """
+        self._idx = -1
+        self._sym = ""
+        self._fwk = "PHYSICAL"
+        self._cat = "INPUT"
+        self._dims = ""
+        self._dim_exp = None
+        self._sym_exp = None
+        self._dim_col = None
+        self._units = ""
+        self.name = ""
+        self.description = ""
+        self.relevance = False
+
     def __str__(self) -> str:
-        """*__str__* returns a string representation of the Parameter object.
-        It includes the ID, symbol, framework, dimensions, category, units of measure, name, description, and relevance.
+        """*__str__* returns a string representation of the *Parameter* object.
+        It includes the ID, symbol, framework, dimensions, category, Units of Measure, name, description, and relevance.
 
         Returns:
-            str: String representation of the Parameter object.
+            str: String representation of the *Parameter* object.
         """
         # get class name
         _class_name = self.__class__.__name__
@@ -518,11 +548,11 @@ class Parameter(Generic[T]):
         _str += f"sym='{self._sym}', "
         _str += f"fwk='{self._fwk}', "
         _str += f"cat='{self._cat}', "
-        _str += f"dimensions='{self._dimensions}', "
+        _str += f"dims='{self._dims}', "
         _str += f"dim_exp='{self._dim_exp}', "
         _str += f"sym_exp='{self._sym_exp}', "
         _str += f"dim_col='{self._dim_col}', "
-        _str += f"unit_of_meassure='{self._units}', "
+        _str += f"units='{self._units}', "
         _str += f"name='{self.name}', "
         _str += f"description='{self.description}', "
         _str += f"relevance={self.relevance}"
@@ -532,175 +562,143 @@ class Parameter(Generic[T]):
 
 @dataclass
 class Variable(Parameter):
-    """Extends Parameter with additional attributes for min/max values, step, and standard unit of measure. Useful for sensitivity analysis and simulations."""
+    """**Variable** extends *Parameter* with additional attributes for min/max values, step, and standard Unit of Measure. Useful for sensitivity analysis and simulations."""
 
     # Private attributes with validation logic
     # :attr: _min
-    _min: Optional[float] = 0.0
+    _min: Optional[float] = None
     """
-    Minimum value of the parameter. It is a float value.
+    Minimum range of the *Variable*. It is a float value.
     """
 
     # :attr: _max
-    _max: Optional[float] = 0.0
+    _max: Optional[float] = None
     """
-    Maximum value of the parameter. It is a float value.
+    Maximum range of the *Variable*. It is a float value.
     """
 
     # :attr: _std_units
     _std_units: Optional[str] = ""
     """
-    Standarized unit of measure of the parameter. It is a string with the dimensional units of measure. e.g `m/s`, `kg/m3`, etc.
+    Standarized Unit of Measure of the *Variable*. It is a string with the dimensional Units of Measure. e.g `m/s`, `kg/m3`, etc.
     """
 
     # :attr: _std_min
-    _std_min: Optional[float] = 0.0
+    _std_min: Optional[float] = None
     """
-    Standardized minimum value of the parameter, after converting units of measure. It is a float value.
+    Standardized minimum range of the *Variable*, after converting Units of Measure. It is a float value.
     """
 
     # :attr: _std_max
-    _std_max: Optional[float] = 0.0
+    _std_max: Optional[float] = None
     """
-    Standardized maximum value of the parameter, after converting units of measure. It is a float value.
+    Standardized maximum varangelue of the *Variable*, after converting Units of Measure. It is a float value.
     """
 
-    # :attr: _step
-    _step: Optional[float] = 1 / 1000
+    # :attr: _std_step
+    _std_step: Optional[float] = 1 / 1000
     """
-    step value of the parameter. It is a very small float value. It is used for sensitivity analysis and simulations.
+    step value of the *Variable*. It is a very small float value. It is used for sensitivity analysis and simulations.
     """
 
     @property
     def min(self) -> Optional[float]:
-        """*min* Property to get the minimum value of the parameter. It is a float value.
+        """*min* Property to get the minimum range of the *Variable*. It is a float value.
 
         Returns:
-            Optional[float]: minimum value of the parameter.
+            Optional[float]: minimum range of the *Variable*.
         """
         return self._min
 
     @min.setter
     def min(self, value: Optional[float]) -> None:
-        """*min* Property to set the minimum value of the parameter. It is a float value.
+        """*min* Property to set the minimum range of the *Variable*. It is a float value.
 
         Args:
-            value (Optional[float]): Minimum value of the parameter.
+            value (Optional[float]): Minimum value of the pa*Variable*ameter.
 
         Raises:
             ValueError: error if the value is not a number.
-            ValueError: error if the value is greater than the maximum value.
+            ValueError: error if the value is greater than the maximum range.
         """
         if value is not None and not isinstance(value, (int, float)):
-            raise ValueError("Minimum value must be a number.")
+            raise ValueError("Minimum range must be a number.")
         if value > self._max:
-            _msg = f"Minimum value {value} cannot be greater"
-            _msg = f" than maximum value {self._max}."
+            _msg = f"Minimum range {value} cannot be greater"
+            _msg = f" than maximum range {self._max}."
             raise ValueError(_msg)
         self._min = value
 
     @property
     def max(self) -> Optional[float]:
-        """*max* Property to get the maximum value of the parameter. It is a float value.
+        """*max* Property to get the maximum value of the *Variable*. It is a float value.
 
         Returns:
-            Optional[float]: maximum value of the parameter.
+            Optional[float]: maximum value of the *Variable*.
         """
         return self._max
 
     @max.setter
     def max(self, value: Optional[float]) -> None:
-        """*max* Property to set the maximum value of the parameter. It is a float value.
+        """*max* Property to set the maximum value of the *Variable*. It is a float value.
 
         Args:
-            value (Optional[float]): maximum value of the parameter.
+            value (Optional[float]): maximum value of the *Variable*.
 
         Raises:
             ValueError: error if the value is not a number.
-            ValueError: error if the value is less than the minimum value.
+            ValueError: error if the value is less than the minimum range.
         """
         if value is not None and not isinstance(value, (int, float)):
             raise ValueError("Maximum value must be a number.")
         if value < self._min:
-            _msg = f"Maximum value {value} cannot be less"
-            _msg = f" than minimum value {self._min}."
+            _msg = f"Maximum range {value} cannot be less"
+            _msg = f" than minimum range {self._min}."
             raise ValueError(_msg)
         self._max = value
 
     @property
-    def step(self) -> Optional[float]:
-        """*step* Property to get the step value of the parameter. It is used for sensitivity analysis and simulations.
-
-        Returns:
-            Optional[float]: step value of the parameter.
-        """
-        return self._step
-
-    @step.setter
-    def step(self, value: Optional[float]) -> None:
-        """*step* Property to set the step value of the parameter. It is used for sensitivity analysis and simulations.
-
-        Args:
-            value (Optional[float]): step value of the parameter.
-
-        Raises:
-            ValueError: error if the value is not a number.
-            ValueError: error if the value is zero.
-            ValueError: error if the value is greater than or equal to the range of values.
-        """
-        if value is not None and not isinstance(value, (int, float)):
-            raise ValueError("Step must be a number.")
-        if value == 0:
-            raise ValueError("Step cannot be zero.")
-        if value >= self._max - self._min:
-            _msg = f"Step {value} cannot be greater than or equal to"
-            _msg = f" the range of values {self._max - self._min}."
-            _msg += f"between {self._min} and {self._max}."
-            raise ValueError(_msg)
-        self._step = value
-
-    @property
     def std_units(self) -> Optional[str]:
-        """*std_units* Property to get the standardized unit of measure of the parameter.
+        """*std_units* Property to get the standardized Unit of Measure of the *Variable*.
 
         Returns:
-            Optional[str]: standardized unit of measure of the parameter.
+            Optional[str]: standardized Unit of Measure of the *Variable*.
         """
         return self._std_units
 
     @std_units.setter
     def std_units(self, value: Optional[str]) -> None:
-        """*std_units* Property to set the standardized unit of measure of the parameter.
+        """*std_units* Property to set the standardized Unit of Measure of the *Variable*.
 
         Args:
-            value (Optional[str]): standardized unit of measure of the parameter.
+            value (Optional[str]): standardized Unit of Measure of the *Variable*.
 
         Raises:
             ValueError: error if the value is an empty string.
         """
         if value is not None and not value.strip():
-            raise ValueError("Standard unit of measure cannot be empty.")
+            raise ValueError("Standard Unit of Measure cannot be empty.")
         self._std_units = value
 
     @property
     def std_min(self) -> Optional[float]:
-        """*std_min* Property to get the standardized minimum value of the parameter.
+        """*std_min* Property to get the standardized minimum value of the *Variable*.
 
         Returns:
-            Optional[float]: standardized minimum value of the parameter.
+            Optional[float]: standardized minimum value of the *Variable*.
         """
         return self._std_min
 
     @std_min.setter
     def std_min(self, value: Optional[float]) -> None:
-        """*std_min* Property to set the standardized minimum value of the parameter.
+        """*std_min* Property to set the standardized minimum range of the *Variable*.
 
         Args:
-            value (Optional[float]): standardized minimum value of the parameter.
+            value (Optional[float]): standardized minimum range of the *Variable*.
 
         Raises:
             ValueError: error if the value is not a number.
-            ValueError: error if the value is greater than the maximum value.
+            ValueError: error if the value is greater than the maximum range.
         """
         if value is not None and not isinstance(value, (int, float)):
             raise ValueError("Standard minimum value must be a number.")
@@ -712,35 +710,78 @@ class Variable(Parameter):
 
     @property
     def std_max(self) -> Optional[float]:
-        """*std_max* Property to get the standardized maximum value of the parameter.
+        """*std_max* Property to get the standardized maximum range of the *Variable*.
 
         Returns:
-            Optional[float]: standardized maximum value of the parameter.
+            Optional[float]: standardized maximum value of the *Variable*.
         """
         return self._std_max
 
     @std_max.setter
     def std_max(self, value: Optional[float]) -> None:
-        """*std_max* Property to set the standardized maximum value of the parameter.
+        """*std_max* Property to set the standardized maximum range of the *Variable*.
 
         Raises:
             ValueError: error if the value is not a number.
-            ValueError: error if the value is less than the minimum value.
+            ValueError: error if the value is less than the minimum range.
         """
         if value is not None and not isinstance(value, (int, float)):
             raise ValueError("Standard maximum value must be a number.")
         if value < self._std_min:
-            _msg = f"Standard maximum value {value} cannot be less"
-            _msg = f" than standard minimum value {self._std_min}."
+            _msg = f"Standard maximum *Variable* {value} cannot be less"
+            _msg = f" than standard minimum *Variable* {self._std_min}."
             raise ValueError(_msg)
         self._std_max = value
 
-    def __str__(self) -> str:
-        """*__str__* returns a string representation of the Variable object.
-        It includes the ID, symbol, framework, dimensions, category, units of measure, name, description, relevance, and min/max values.
+    @property
+    def std_step(self) -> Optional[float]:
+        """*std_step* Property to get the standarized step value of the *Variable*. It is used for sensitivity analysis and simulations.
 
         Returns:
-            str: String representation of the Variable object.
+            Optional[float]: standarized step value of the *Variable*.
+        """
+        return self._std_step
+
+    @std_step.setter
+    def std_step(self, value: Optional[float]) -> None:
+        """*std_step* Property to set the standarized step value of the *Variable*. It is used for sensitivity analysis and simulations.
+
+        Args:
+            value (Optional[float]): standarized step value of the *Variable*.
+
+        Raises:
+            ValueError: error if the value is not a number.
+            ValueError: error if the value is zero.
+            ValueError: error if the value is greater than or equal to the standarized range between minimum and maximum values.
+        """
+        if value is not None and not isinstance(value, (int, float)):
+            raise ValueError("Step must be a number.")
+        if value == 0:
+            raise ValueError("Step cannot be zero.")
+        if value >= self._std_max - self._std_min:
+            _msg = f"Step {value} cannot be greater than or equal to"
+            _msg = f" the range of values {self._std_max - self._std_min}."
+            _msg += f"between {self._std_min} and {self._std_max}."
+            raise ValueError(_msg)
+        self._std_step = value
+
+    def clear(self) -> None:
+        """*clear* it resets all the attributes of the *Variable* object to their default values. It is used to clear the object for reuse.
+        """
+        super().clear()
+        self._min = None
+        self._max = None
+        self._std_units = ""
+        self._std_min = None
+        self._std_max = None
+        self._std_step = 1 / 1000
+
+    def __str__(self) -> str:
+        """*__str__* returns a string representation of the *Variable* object.
+        It includes the ID, symbol, framework, dimensions, category, Units of Measure, name, description, relevance, and min/max values.
+
+        Returns:
+            str: String representation of the *Variable* object.
         """
         # get parent class name
         _parent_class_name = super().__class__.__name__
@@ -755,9 +796,9 @@ class Variable(Parameter):
         # add the class name
         _str += f", min: {self._min}, "
         _str += f"max: {self._max}, "
-        _str += f"step: {self._step}, "
         _str += f"std_units: {self._std_units}, "
         _str += f"std_min: {self._std_min}, "
-        _str += f"std_max: {self._std_max}"
+        _str += f"std_max: {self._std_max}, "
+        _str += f"std_step: {self._std_step}"
         _str += ")"
         return _str

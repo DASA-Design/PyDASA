@@ -42,12 +42,15 @@ rm = RegexManager(custom=True,
 print(rm)
 # rm.update_global_vars()
 
-p1 = Parameter(name="p1",
-               description="pressure",
-               _sym="P_{1}",
-               _fwk="PHYSICAL",
+p1 = Parameter(name="U_1",
+               description="Service Rate",
+               _sym="U_{1}",
+               _fwk="DIGITAL",
+               _idx=1,
                _cat="INPUT",
-               _dimensions="C^2*T^-2",)
+               _units="kPa",
+               _dims="C*T^-1",)
+print(p1)
 
 # default regex for FDU
 print("\n==== Default Regex ====")
@@ -64,3 +67,5 @@ print("\tWKNG_FDU_REGEX:", config.WKNG_FDU_REGEX)
 print("\tWKNG_POW_REGEX:", config.WKNG_POW_REGEX)
 print("\tWKNG_NO_POW_REGEX:", config.WKNG_NO_POW_REGEX)
 print("\tWKNG_FDU_SYM_REGEX:", config.WKNG_FDU_SYM_REGEX)
+
+# print(p1)

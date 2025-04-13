@@ -1,5 +1,6 @@
 ﻿from Src.PyDASA.DataStructs.Lists.arlt import ArrayList
 from Src.PyDASA.DataStructs.Lists.sllt import SingleLinkedList
+from Src.PyDASA.DataStructs.Lists.ndlt import Node, SLNode, DLNode
 from Src.PyDASA.DataStructs.Tables.htme import MapEntry
 from Src.PyDASA.DataStructs.Tables.scht import SeparateChainingTable
 from Src.PyDASA.DataStructs.Tables.scht import Bucket
@@ -13,44 +14,54 @@ from Src.PyDASA.Units.fdu import FDU
 from Src.PyDASA.Units.params import Parameter, Variable
 
 
-a = ArrayList(iodata=[1, 2, 3])
-# print(a, "\n\n\n\n")
+def test_cmp(a, b) -> int:
+    """Test comparison function."""
+    if a < b:
+        print(f"{a} < {b}")
+        return -1
+    elif a == b:
+        print(f"{a} == {b}")
+        return 0
+    elif a > b:
+        print(f"{a} > {b}")
+        return 1
+    else:
+        raise TypeError(f"Invalid comparison between {type(a)} and {type(b)}")
+
+
+a = ArrayList(iodata=[1, 2, 3],
+              cmp_function=test_cmp)
+print(a, "\n")
 
 b = SingleLinkedList(iodata=[1, 2, 3])
-# print(b)
+print(b, "\n")
+print(b.last, b.first, b.get(0), "\n")
+print(b.index_of(2), b.index_of(4), "\n")
+# print(b.pop_first(), b, "\n")
+# n = DLNode(_data=1)
+# print(n, "\n")
 
-m = MapEntry()
-# print(m)
+# m = MapEntry()
+# print(m, "\n")
 
 c = Bucket()
-# print(c)
+print(c, "\n")
+_data = (
+    {"_id": 1, "_data": 1},
+    {"_id": 2, "_data": 2},
+    {"_id": 3, "_data": 3},
+)
+c = Bucket(iodata=_data)
+print(c, "\n")
+print(c.get(1), "\n")
+print(c.get(2), "\n")
 
-ht = SeparateChainingTable()
-# print(ht)
+a = ArrayList(iodata=_data,
+              cmp_function=test_cmp)
+print(a, "\n")
 
-fdu = FDU()
-# print(fdu)
-
-p = Parameter()
-# print(p)
-
-v = Variable()
-# print(v)
-
-rm = RegexManager(custom=True,
-                  _fdu_prec_lt=["T", "D", "C"],)
-print(rm)
-# rm.update_global_vars()
-
-p1 = Parameter(name="U_1",
-               description="Service Rate",
-               _sym="U_{1}",
-               _fwk="DIGITAL",
-               _idx=1,
-               _cat="INPUT",
-               _units="kPa",
-               _dims="C*T^-1",)
-print(p1)
+ht = SeparateChainingTable(iodata=_data)
+print(ht, "\n")
 
 # default regex for FDU
 print("\n==== Default Regex ====")
@@ -68,4 +79,26 @@ print("\tWKNG_POW_REGEX:", config.WKNG_POW_REGEX)
 print("\tWKNG_NO_POW_REGEX:", config.WKNG_NO_POW_REGEX)
 print("\tWKNG_FDU_SYM_REGEX:", config.WKNG_FDU_SYM_REGEX)
 
-# print(p1)
+fdu = FDU()
+print(fdu, "\n")
+
+p = Parameter()
+print(p, "\n")
+
+v = Variable()
+print(v, "\n")
+
+rm = RegexManager(custom=True,
+                  _fdu_prec_lt=["T", "D", "C"],)
+print(rm, "\n")
+# rm.update_global_vars()
+
+p1 = Parameter(name="U_1",
+               description="Service Rate",
+               _sym="U_{1}",
+               _fwk="DIGITAL",
+               _idx=1,
+               _cat="INPUT",
+               _units="kPa",
+               _dims="C*T^-1",)
+print(p1, "\n")

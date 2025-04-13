@@ -2,7 +2,7 @@
 """
 Module with utility functions for handling data in the maps of *PyDASA*. Specifically for Separate Chaining and Linear Probing Hash Tables.
 
-*IMPORTANT:* This code and its specifications for Python are based on the implementations proposed by the following authors/books:
+*IMPORTANT:* based on the implementations proposed by the following authors/books:
 
     #. Algorithms, 4th Edition, Robert Sedgewick and Kevin Wayne.
     #. Data Structure and Algorithms in Python, M.T. Goodrich, R. Tamassia, M.H. Goldwasser.

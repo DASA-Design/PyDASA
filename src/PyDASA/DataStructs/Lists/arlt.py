@@ -2,7 +2,7 @@
 """
 Module to represent the **ArrayList** data structure in *PyDASA*. Fundamental for the rest of the Dimensional Analysis and Data Science Library.
 
-*IMPORTANT:* This code and its specifications for Python are based on the implementations proposed by the following authors/books:
+*IMPORTANT:* based on the implementations proposed by the following authors/books:
 
     #. Algorithms, 4th Edition, Robert Sedgewick and Kevin Wayne.
     #. Data Structure and Algorithms in Python, M.T. Goodrich, R. Tamassia, M.H. Goldwasser.
@@ -528,18 +528,25 @@ class ArrayList(Generic[T]):
         Returns:
             str: the string representation of the *ArrayList*.
         """
-        # Get the name, parameters, and return type of the cmp_function
-        if self.cmp_function and callable(self.cmp_function):
-            cmp_function_name = self.cmp_function.__name__
-            cmp_function_signature = str(inspect.signature(self.cmp_function))
-        else:
-            cmp_function_name = str(self.cmp_function)
-            cmp_function_signature = "()"
-
-        _str = f"{self.__class__.__name__}("
-        _str += f"key='{self.key}', "
-        _str += f"size={self._size}, "
-        _str += f"elements={self._elements}, "
-        _str += f"cmp_function={cmp_function_name}{cmp_function_signature})"
-        _str += ")"
+        _attr_lt = []
+        for attr, value in vars(self).items():
+            # Skip private attributes starting with "__"
+            if attr.startswith("__"):
+                continue
+            # Format callable attributes
+            if callable(value):
+                value = f"{value.__name__}{inspect.signature(value)}"
+            # Format attribute name and value
+            _attr_name = attr.lstrip("_")
+            _attr_lt.append(f"{_attr_name}={repr(value)}")
+        # Format the string representation of the ArrayList class and its attributes
+        _str = f"{self.__class__.__name__}({', '.join(_attr_lt)})"
         return _str
+
+    def __repr__(self) -> str:
+        """*__repr__()* get the string representation of the *ArrayList*. This method returns a string with the elements of the list.
+
+        Returns:
+            str: the string representation of the *ArrayList*.
+        """
+        return self.__str__()

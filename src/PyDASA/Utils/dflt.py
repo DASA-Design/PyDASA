@@ -2,7 +2,7 @@
 """
 Module for default global variables and comparison functions for use by all *PyDASA* and its Data Structs.
 
-*IMPORTANT:* This code and its specifications for Python are based on the implementations proposed by the following authors/books:
+*IMPORTANT:* based on the implementations proposed by the following authors/books:
 
     #. Algorithms, 4th Edition, Robert Sedgewick and Kevin Wayne.
     #. Data Structure and Algorithms in Python, M.T. Goodrich, R. Tamassia, M.H. Goldwasser.
@@ -137,7 +137,7 @@ def dflt_cmp_func_ht(key: str, ekey1: T, entry2) -> int:
     Returns:
         int: -1 if ekey1 < ekey2, 0 if ekey1 == ekey2, 1 if ekey1 > ekey2.
     """
-    ekey2 = entry2.get_key()
+    ekey2 = entry2.key
 
     # Ensure keys are of the same type
     if type(ekey1) is not type(ekey2):

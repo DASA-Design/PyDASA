@@ -2,7 +2,7 @@
 """
 Module to represent the **Node** data structure for the **Linked List** and **Doubly Linked List** in *PyDASA*.
 
-*IMPORTANT:* This code and its specifications for Python are based on the implementations proposed by the following authors/books:
+*IMPORTANT:* based on the implementations proposed by the following authors/books:
 
     # . Algorithms, 4th Edition, Robert Sedgewick and Kevin Wayne.
     # . Data Structure and Algorithms in Python, M.T. Goodrich, R. Tamassia, M.H. Goldwasser.
@@ -98,15 +98,33 @@ class Node(Generic[T]):
         self._data = data
 
     def __str__(self) -> str:
-        """*__str__()* function to return a string representation of the *Node*.
+        """*__str__()* function to return a string representation of the *Node*. It also extendes for the *SLNode* and *DLNode* classes.
 
         Returns:
             str: string representation of the *Node*.
         """
-        _str = f"{self.__class__.__name__}("
-        _str += f"data={self._data}, "
-        _str += ")"
+        _attr_lt = []
+        for attr, value in vars(self).items():
+            # Skip private attributes starting with "__"
+            if attr.startswith("__"):
+                continue
+            # Format callable attributes
+            if callable(value):
+                value = f"{value.__name__}{inspect.signature(value)}"
+            # Format attribute name and value
+            _attr_name = attr.lstrip("_")
+            _attr_lt.append(f"{_attr_name}={repr(value)}")
+        # Format the string representation of Node class
+        _str = f"{self.__class__.__name__}({', '.join(_attr_lt)})"
         return _str
+
+    def __repr__(self) -> str:
+        """*__repr__()* function to return a string representation of the *Node*. It also extendes for the *SLNode* and *DLNode* classes.
+
+        Returns:
+            str: string representation of the *Node*.
+        """
+        return self.__str__()
 
 
 @dataclass
@@ -150,15 +168,21 @@ class SLNode(Node, Generic[T]):
         self._next = node
 
     def __str__(self) -> str:
-        """*__str__()* function to return a string representation of the *SLNode*.
+        """*__str__()* function to return a string representation of the *SLNode*. It also extends the *Node* class.
 
         Returns:
             str: string representation of the *SLNode*.
         """
-        _str = f"{self.__class__.__name__}("
-        _str += f"data={self._data}, "
-        _str += f"next={self._next}"
-        _str += ")"
+        _str = super().__str__()
+        return _str
+
+    def __repr__(self) -> str:
+        """*__repr__()* function to return a string representation of the *SLNode*. It also extends the *Node* class.
+
+        Returns:
+            str: string representation of the *SLNode*.
+        """
+        _str = super().__repr__()
         return _str
 
 
@@ -201,14 +225,19 @@ class DLNode(SLNode, Generic[T]):
         self._prev = node
 
     def __str__(self) -> str:
-        """*__str__()* function to return a string representation of the *DLNode*.
+        """*__str__()* function to return a string representation of the *DLNode*. It also extends the *Node* class.
 
         Returns:
             str: string representation of the *DLNode*.
         """
-        _str = f"{self.__class__.__name__}("
-        _str += f"data={self._data}, "
-        _str += f"next={self._next}, "
-        _str += f"prev={self._prev}"
-        _str += ")"
+        _str = super().__str__()
+        return _str
+
+    def __repr__(self) -> str:
+        """*__repr__()* function to return a string representation of the *DLNode*. It also extends the *Node* class.
+
+        Returns:
+            str: string representation of the *DLNode*.
+        """
+        _str = super().__repr__()
         return _str

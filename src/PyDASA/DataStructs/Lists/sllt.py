@@ -1,8 +1,8 @@
 ﻿# -*- coding: utf-8 -*-
 """
-Module to represent the **LinkedList** data structure in *PyDASA*. Fundamental for the rest of the Dimensional Analysis and Data Science Library.
+Module for the custom **SingleLinkedList** data structure in *PyDASA*. Essential for Dimensional Analysis and Data Science operations.
 
-*IMPORTANT:* This code and its specifications for Python are based on the implementations proposed by the following authors/books:
+*IMPORTANT:* based on the implementations proposed by the following authors/books:
 
     #. Algorithms, 4th Edition, Robert Sedgewick and Kevin Wayne.
     #. Data Structure and Algorithms in Python, M.T. Goodrich, R. Tamassia, M.H. Goldwasser.
@@ -268,8 +268,8 @@ class SingleLinkedList(Generic[T]):
         _data = None
         if self.empty:
             raise IndexError("Empty data structure")
-        if self.last is not None:
-            _data = self.last.data
+        if self._last is not None:
+            _data = self._last.data
         return _data
 
     def get(self, pos: int) -> T:
@@ -292,7 +292,7 @@ class SingleLinkedList(Generic[T]):
             raise IndexError(f"Index {pos} is out of range")
         else:
             # current node starting at the first node
-            _cur = self.first
+            _cur = self._first
             i = 0
             while i != pos:
                 _cur = _cur.next
@@ -322,7 +322,7 @@ class SingleLinkedList(Generic[T]):
             raise IndexError(f"Index {pos} is out of range")
         else:
             # current node starting at the first node
-            _cur = self.first
+            _cur = self._first
             i = 0
             while i != pos:
                 _cur = _cur.next
@@ -344,8 +344,8 @@ class SingleLinkedList(Generic[T]):
         if self.empty:
             raise IndexError("Empty data structure")
         # otherwise, remove the first element
-        _cur = self.first.next
-        _node = self.first
+        _cur = self._first.next
+        _node = self._first
         self._first = _cur
         self._size -= 1
         # if the list is empty, set the last and first to None
@@ -461,7 +461,7 @@ class SingleLinkedList(Generic[T]):
         if self.empty:
             raise IndexError("Empty data structure")
         _idx = -1
-        _node = self.first
+        _node = self._first
         found = False
         i = 0
         while not found and i < self.size:
@@ -672,19 +672,25 @@ class SingleLinkedList(Generic[T]):
         Returns:
             str: string representation of the *SingleLinkedList*.
         """
-        # Get the name, parameters, and return type of the cmp_function
-        if self.cmp_function and callable(self.cmp_function):
-            cmp_function_name = self.cmp_function.__name__
-            cmp_function_signature = str(inspect.signature(self.cmp_function))
-        else:
-            cmp_function_name = str(self.cmp_function)
-            cmp_function_signature = "()"
-
-        _str = f"{self.__class__.__name__}("
-        _str += f"key='{self.key}', "
-        _str += f"size={self._size}, "
-        _str += f"first={self._first}, "
-        _str += f"last={self._last}, "
-        _str += f"cmp_function={cmp_function_name}{cmp_function_signature})"
-        _str += ")"
+        _attr_lt = []
+        for attr, value in vars(self).items():
+            # Skip private attributes starting with "__"
+            if attr.startswith("__"):
+                continue
+            # Format callable attributes
+            if callable(value):
+                value = f"{value.__name__}{inspect.signature(value)}"
+            # Format attribute name and value
+            _attr_name = attr.lstrip("_")
+            _attr_lt.append(f"{_attr_name}={repr(value)}")
+        # format the string with the SingleLinkedList class name and the attributes
+        _str = f"{self.__class__.__name__}({', '.join(_attr_lt)})"
         return _str
+
+    def __repr__(self) -> str:
+        """*__repr__()* to get the string representation of the *SingleLinkedList*. This method returns a string with the elements of the list separated by commas.
+
+        Returns:
+            str: string representation of the *SingleLinkedList*.
+        """
+        return self.__str__()

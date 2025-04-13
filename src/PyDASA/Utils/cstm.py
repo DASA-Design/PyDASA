@@ -289,13 +289,13 @@ class RegexManager(Generic[T]):
         # _str = f"{self.__class__.__name__}(\n"
         for attr, value in vars(self).items():
             # Remove leading underscore from attribute names
-            attr_name = attr.lstrip("_")
+            _prop = attr.lstrip("_")
             if isinstance(value, str):
-                _str += f"{attr_name}='{value}', "
-                # _str += f"\t{attr_name}='{value}',\n"
+                _str += f"{_prop}='{value}', "
+                # _str += f"\t{_prop}='{value}',\n"
             else:
-                _str += f"{attr_name}={value}, "
-                # _str += f"\t{attr_name}={value},\n"
+                _str += f"{_prop}={value}, "
+                # _str += f"\t{_prop}={value},\n"
         # removingf last ', ' from the string
         _str = _str[:-2]
         _str += ")"

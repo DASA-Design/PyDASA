@@ -2,7 +2,7 @@
 """
 Module to represent the **MapEntry** data structure for the **Hash Table** in *PyDASA*.
 
-*IMPORTANT:* This code and its specifications for Python are based on the implementations proposed by the following authors/books:
+*IMPORTANT:* based on the implementations proposed by the following authors/books:
 
     # . Algorithms, 4th Edition, Robert Sedgewick and Kevin Wayne.
     # . Data Structure and Algorithms in Python, M.T. Goodrich, R. Tamassia, M.H. Goldwasser.
@@ -144,7 +144,26 @@ class MapEntry(Generic[T]):
         Returns:
             str: string representation of the *MapEntry*.
         """
-        _str = f"{self.__class__.__name__}("
-        _str += f"key={self._key}, "
-        _str += f"value={self._value})"
+        _attr_lt = []
+        for attr, value in vars(self).items():
+            # Skip private attributes starting with "__"
+            if attr.startswith("__"):
+                continue
+            # Format callable attributes
+            if callable(value):
+                value = f"{value.__name__}{inspect.signature(value)}"
+            # Format attribute name and value
+            _attr_name = attr.lstrip("_")
+            _attr_lt.append(f"{_attr_name}={str(value)}")
+
+        # Format the string representation of MapEntry class and its attributes
+        _str = f"{self.__class__.__name__}({', '.join(_attr_lt)})"
         return _str
+
+    def __repr__(self) -> str:
+        """*__repr__()* function to return a string representation of the *MapEntry*.
+
+        Returns:
+            str: string representation of the *MapEntry*.
+        """
+        return self.__str__()

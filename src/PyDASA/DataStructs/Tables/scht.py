@@ -2,7 +2,7 @@
 """
 Module to represent the **SeparateChainingTable** data structure for the **Hash Table** in *PyDASA*.
 
-*IMPORTANT:* This code and its specifications for Python are based on the implementations proposed by the following authors/books:
+*IMPORTANT:* based on the implementations proposed by the following authors/books:
 
     # . Algorithms, 4th Edition, Robert Sedgewick and Kevin Wayne.
     # . Data Structure and Algorithms in Python, M.T. Goodrich, R. Tamassia, M.H. Goldwasser.
@@ -80,8 +80,27 @@ class Bucket(SingleLinkedList, Generic[T]):
         SingleLinkedList (T): *PyDASA* class for a single linked list.
         Generic (T): Generic type for a Python data structure.
     """
-    # keep as is...
-    pass
+
+    def __str__(self) -> str:
+        """*__str__()* function to return a string representation of the *Bucket*. It also extends the *Node* class.
+
+        Returns:
+            str: string representation of the *Bucket*.
+        """
+        _str = super().__str__()
+        return _str
+
+    def __repr__(self) -> str:
+        """*__repr__()* function to return a string representation of the *Bucket*. It also extends the *Node* class.
+
+        Returns:
+            str: string representation of the *Bucket*.
+        """
+        _str = super().__repr__()
+        return _str
+
+
+
 
 
 @dataclass
@@ -710,50 +729,86 @@ class SeparateChainingTable(Generic[T]):
         # otherwise, the type is valid
         return True
 
-    def __str__(self) -> str:
-
-        # Get the name, parameters, and return type of the cmp_function
-        if self.cmp_function and callable(self.cmp_function):
-            cmp_function_name = self.cmp_function.__name__
-            cmp_function_signature = str(inspect.signature(self.cmp_function))
-        else:
-            cmp_function_name = str(self.cmp_function)
-            cmp_function_signature = "()"
-
-        _ht_summary = f"{self.hash_table.__class__.__name__}("
-        _ht_summary += f"key='{self.hash_table.key}', "
-        _ht_summary += f"size={self.hash_table.size}, "
-        _b_sum = ""
-        for buck in self.hash_table:
-            _b_sum += str(buck) + ", "
-        _ht_summary += f"buckets=[{_b_sum}], "
-        _ht_summary += f"cmp_function = {cmp_function_name}{cmp_function_signature})"
-        _ht_summary += ")"
-
-        _str = f"{self.__class__.__name__}("
-        _str += f"rehashable={self.rehashable}, "
-        _str += f"nentries={self.nentries}, "
-        _str += f"mcapacity={self.mcapacity}, "
-        _str += f"alpha={self.alpha}, "
-        _str += f"key='{self.key}', "
-        _str += f"prime={self.prime}, "
-        _str += f"scale={self._scale}, "
-        _str += f"shift={self._shift}, "
-        _str += f"min_alpha={self.min_alpha}, "
-        _str += f"max_alpha={self.max_alpha}, "
-        _str += f"size={self._size}, "
-        _str += f"collisions={self._collisions}, "
-        _str += f"key_type={self._key_type}, "
-        _str += f"value_type={self._value_type}, "
-        _str += f"hash_table={_ht_summary}, "
-        _str += f"cmp_function={cmp_function_name}{cmp_function_signature}), "
-        _str += ")"
-        return _str
-
     def __len__(self) -> int:
-        """__len__ _summary_
+        """*__len__()* function to return the number of entries (n) in the *SeparateChainingTable*.
 
         Returns:
-            int: _description_
+            int: Number of entries (n) in the *SeparateChainingTable*.
         """
         return self._size
+
+    def __str__(self) -> str:
+        """*__str__()* function to return a string representation of the *SeparateChainingTable*.
+
+        Returns:
+            str: string representation of the *SeparateChainingTable*.
+        """
+        _attr_lt = []
+        for attr, value in vars(self).items():
+            # Skip private attributes starting with "__"
+            if attr.startswith("__"):
+                continue
+            # Format callable attributes
+            if callable(value):
+                try:
+                    value = f"{value.__name__}{inspect.signature(value)}"
+                except ValueError:
+                    value = repr(value)  # Fallback for non-standard callables
+            # Format attribute name and value
+            _attr_name = attr.lstrip("_")
+            _attr_lt.append(f"{_attr_name}={repr(value)}")
+        # Format the string representation of the ArrayList class and its attributes
+        _str = f"{self.__class__.__name__}({', '.join(_attr_lt)})"
+        return _str
+
+
+        # # get class name
+        # _attr_lt = []
+        # for attr, value in vars(self).items():
+        #     # Skip private attributes starting with "__"
+        #     if attr.startswith("__"):
+        #         continue
+        #     # Format callable attributes
+        #     if callable(value):
+        #         value = f"{value.__name__}{inspect.signature(value)}"
+        #     # format internal data structures
+        #     if isinstance(value, ArrayList):
+        #         _idx_lt = []
+        #         for a, v in vars(value).items():
+        #             # skip private attributes starting with "__"
+        #             if a.startswith("__"):
+        #                 continue
+        #             # format callable attributes
+        #             if callable(v):
+        #                 v = f"{v.__name__}{inspect.signature(v)}"
+        #             if isinstance(v, list):
+        #                 # format bucket entries
+        #                 # print("Bukect!!!!!!!")
+        #                 _table_lt = []
+        #                 for bucket in v:
+        #                     print(type(bucket))
+        #                     _bucket_lt = []
+        #                     for _a, _v in vars(bucket).items():
+        #                         print(f"attr: {_a}, value: {_v}")
+        #                         if _a.startswith("__"):
+        #                             continue
+        #                         if callable(_v):
+        #                             _v = f"{_v.__name__}{inspect.signature(_v)}"
+        #                         if isinstance(_v, SLNode):
+        #                             print("SLNode")
+        #                             _v = str(_v) + "\n~~~"
+        #                             _bucket_lt.append(f"{_a}={repr(_v)}")
+
+        #                     bucket = f"{bucket.__class__.__name__}({', +++ '.join(_bucket_lt)})"
+        #                     _table_lt.append(f"{bucket}")
+        #                 # format the bucket list
+        #                 v = f"{bucket.__class__.__name__}({', +++ '.join(_table_lt)})"
+        #             a = a.lstrip("_")
+        #             _idx_lt.append(f"{a}={repr(v)}")
+        #         value = f"{value.__class__.__name__}({', --- '.join(_idx_lt)})"
+        #     # Format attribute name and value
+        #     _attr_name = attr.lstrip("_")
+        #     _attr_lt.append(f"{_attr_name}={repr(value)}")
+        # # Format the string representation of the ArrayList class and its attributes
+        # _str = f"{self.__class__.__name__}({', ++++ '.join(_attr_lt)})"
+        # return _str

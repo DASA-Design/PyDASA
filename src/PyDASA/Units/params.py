@@ -44,7 +44,7 @@ class Parameter(Generic[T]):
         Parameter: A *Parameter* object with the following attributes:
             - `_idx`: The ID of the Parameter.
             - `_sym`: The symbol of the Parameter.
-            - `_fwk`: The framework of the Parameter. It can be one of the following: `PHYSICAL`, `DIGITAL`, or `CUSTOM`.
+            - `_fwk`: The framework of the Parameter. It can be one of the following: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`.
             - `_dims`: The dimensions of the Parameter.
             - `_units`: The Units of Measure of the Parameter.
             - `_cat`: The category of the Parameter. It can be one of the following: `INPUT`, `OUTPUT`, or `CONTROL`.
@@ -71,7 +71,7 @@ class Parameter(Generic[T]):
     # :attr: _fwk
     _fwk: str = "PHYSICAL"
     """
-    Framework the *Parameter* follows in accordance with the FDU. It can be one of the following: `PHYSICAL`, `DIGITAL`, or `CUSTOM`. Parameters and FDUs must be in the same framework.
+    Framework the *Parameter* follows in accordance with the FDU. It can be one of the following: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`. Parameters and FDUs must be in the same framework.
     """
 
     # Category of the parameter, can be: `INPUT`, `OUTPUT`, or `CONTROL`
@@ -290,17 +290,17 @@ class Parameter(Generic[T]):
         return _dimensional_col
 
     @property
-    def idx(self) -> str:
-        """*idx* property to get *Parameter's* index in the dimensional matrix.
+    def idx(self) -> int:
+        """*idx* property gets the *Parameter* index in the dimensional matrix.
 
         Returns:
-            str: ID of the *Parameter*.
+            int: ID of the *Parameter*.
         """
         return self._idx
 
     @idx.setter
     def idx(self, value: str) -> None:
-        """*idx* property to set the *Parameter's* index in the dimensional matrix. It must be alphanumeric.
+        """*idx* property to set the *Parameter* index in the dimensional matrix. It must be alphanumeric.
 
         Args:
             value (str): ID of the *Parameter*.
@@ -316,10 +316,10 @@ class Parameter(Generic[T]):
 
     @property
     def sym(self) -> str:
-        """*sym* property to get the symbol of the *Parameter*.
+        """*sym* property to get the symbol of the *Parameter*. It must be alphanumeric (preferably a single character, a Latin or Greek letter).
 
         Returns:
-            str: Symbol of the *Parameter*. It is a string with the FDU formula of the parameter. i.e.: V, d, D, m, Q, \\rho, etc.
+            str: Symbol of the *Parameter*. i.e.: V, d, D, m, Q, \\rho, etc.
         """
         return self._sym
 
@@ -328,7 +328,7 @@ class Parameter(Generic[T]):
         """*sym* property to set the symbol of *Parameter*. It must be alphanumeric (preferably a single character, a Latin or Greek letter).
 
         Args:
-            value (str): Symbol of the *Parameter*. . i.e.: V, d, D, m, Q, \\rho, etc.
+            value (str): Symbol of the *Parameter*. i.e.: V, d, D, m, Q, \\rho, etc.
 
         Raises:
             ValueError: error if the symbol is not alphanumeric.
@@ -345,13 +345,13 @@ class Parameter(Generic[T]):
         """*fwk* property to get the framework of the *Parameter*.
 
         Returns:
-            str: Framework of the *Parameter*. It can be one of the following: `PHYSICAL`, `DIGITAL`, or `CUSTOM`.
+            str: Framework of the *Parameter*. It can be one of the following: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`.
         """
         return self._fwk
 
     @fwk.setter
     def fwk(self, value: str) -> None:
-        """*fwk* property of the framework of the *Parameter*. It must be one of the following: `PHYSICAL`, `DIGITAL`, or `CUSTOM`.
+        """*fwk* property of the framework of the *Parameter*. It must be one of the following: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`.
 
         Args:
             value (str): Framework of the *Parameter*. Must be the same as the FDU framework.
@@ -556,11 +556,12 @@ class Parameter(Generic[T]):
 
 
 @dataclass
-class Variable(Parameter):
+class Variable(Parameter[T]):
     """**Variable** extends *Parameter* with additional attributes for min/max values, step, and standard Unit of Measure. Useful for sensitivity analysis and simulations.
 
     Args:
-        Parameter (Generic[T]): *PyDASA* *Parameter* class for processing parameters in dimensional analysis.
+        Generic (T): Generic type for a Python data structure.
+        Parameter (Parameter[T]): *PyDASA* *Parameter* class for processing parameters in dimensional analysis.
 
     Returns:
         Variable: A *Variable* object with the following attributes:

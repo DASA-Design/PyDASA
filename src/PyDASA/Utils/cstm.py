@@ -18,15 +18,16 @@ from dataclasses import dataclass, field
 from Src.PyDASA.Utils.err import error_handler as error
 from Src.PyDASA.Utils.dflt import T
 
-# importing PyDASA's default regex for FDU
+# import PyDASA's supported FDU frameworks
+from Src.PyDASA.Utils.cfg import FDU_FWK_DT
+# import PyDASA's default regex for FDU
 from Src.PyDASA.Utils.cfg import DFLT_FDU_PREC_LT
 from Src.PyDASA.Utils.cfg import DFLT_FDU_REGEX
 from Src.PyDASA.Utils.cfg import DFLT_POW_REGEX
 from Src.PyDASA.Utils.cfg import DFLT_NO_POW_REGEX
 from Src.PyDASA.Utils.cfg import DFLT_FDU_SYM_REGEX
 
-# importing PyDASA's custom regex for FDU
-# using the 'as' allows shared variable edition
+# import PyDASA's working regex for FDU, use 'as' to allow shared variable edition
 from Src.PyDASA.Utils import cfg as config
 
 # checking custom modules
@@ -52,11 +53,11 @@ class RegexManager(Generic[T]):
         All private attributes are initialized with default, use the @property decorator to access and validate their user input.
     """
 
-    # Custom flag to indicate if a custom regex is being used
-    # :attr: custom
-    custom: bool = False
+    # private attributes
+    # :attr: _fwk
+    _fwk: str = "PHYSICAL"
     """
-    Custom flag to indicate if a custom FDU regex is being used. If True, the user can define their own FDUs and regex patterns.
+    Framework of the FDU. It can be one of the following: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`. Useful for identifying the framework of the FDU.
     """
 
     # FDUs precedence list for the regex
@@ -96,12 +97,24 @@ class RegexManager(Generic[T]):
     Regex pattern for matching FDUs in Sympy symbolic processor. It is a string for matching FDUs in Latex/str format into Python's Sympy symbolic processor for the dimensional matrix.
     """
 
+    # public attributes
+    # Custom flag to indicate if a custom regex is being used
+    # :attr: custom
+    custom: bool = False
+    """
+    Custom flag to indicate if a custom FDU regex is being used. If True, the user can define their own FDUs and regex patterns.
+    """
+
     def __post_init__(self) -> None:
         """*__post_init__()* configure the the *RegexManager* instance after initialization.
 
         Raises:
             ValueError: If the FDUs precedence list is empty or contains invalid characters.
         """
+        # TODO configure FDUs if it is traditional physical system
+        # TODO configure FDUs if it is Computational system
+        # TODO configure FDUs if it is DASA system
+        # TODO configure FDUs if it is CUSTOM system
         # check if the user is using custom regex
         if self.custom:
             self.setup_wkng_regex()
@@ -278,6 +291,32 @@ class RegexManager(Generic[T]):
             raise ValueError(_msg)
         self._fdu_sym_regex = value
 
+    @property
+    def fwk(self) -> str:
+        """*fwk* property to get the framework of the FDU.
+
+        Returns:
+            str: Framework of the FDU. It can be one of the following: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`.
+        """
+        return self._fwk
+
+    @fwk.setter
+    def fwk(self, value: str) -> None:
+        """*fwk* property of the allowed framework of the FDU.
+
+        Args:
+            value (str): Framework of the FDU. It can be one of the following: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`.
+
+        Raises:
+            ValueError: If the framework is not one of the allowed values.
+        """
+        if value not in FDU_FWK_DT.keys():
+            _msg = f"Invalid framework: {value}. "
+            _msg += "Framework must be one of the following: "
+            _msg += f"{', '.join(FDU_FWK_DT.keys())}."
+            raise ValueError(_msg)
+        self._fwk = value
+
     def __str__(self) -> str:
         """*__str__()* get the string representation of the *RegexManager* instance.
 
@@ -300,6 +339,6 @@ class RegexManager(Generic[T]):
         """*__repr__()* get the string representation of the *RegexManager* instance.
 
         Returns:
-            str: _description_
+            str: String representation of the *RegexManager* instance.
         """
         return self.__str__()

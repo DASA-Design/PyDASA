@@ -37,7 +37,7 @@ class FDU(Generic[T]):
         FDU: A FDU object with the following attributes:
             - `_prec`: The ID of the FDU.
             - `_sym`: The symbol of the FDU.
-            - `_fwk`: The framework of the FDU. It can be one of the following: `PHYSICAL`, `DIGITAL`, or `CUSTOM`.
+            - `_fwk`: The framework of the FDU. It can be one of the following: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`.
             - `name`: The name of the FDU.
             - `description`: The description of the FDU.
     """
@@ -53,7 +53,7 @@ class FDU(Generic[T]):
     # :attr: _fwk
     _fwk: str = "PHYSICAL"
     """
-    Framework of the FDU. It can be one of the following: `PHYSICAL`, `DIGITAL`, or `CUSTOM`. Useful for identifying the framework of the FDU.
+    Framework of the FDU. It can be one of the following: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`. Useful for identifying the framework of the FDU.
     """
 
     # Precedence of the FDU in the dimensional matrix
@@ -134,20 +134,20 @@ class FDU(Generic[T]):
         self._prec = value
 
     @property
-    def framework(self) -> str:
-        """*framework* property to get the framework of the FDU.
+    def fwk(self) -> str:
+        """*fwk* property to get the framework of the FDU.
 
         Returns:
-            str: Framework of the FDU. It can be one of the following: `PHYSICAL`, `DIGITAL`, or `CUSTOM`.
+            str: Framework of the FDU. It can be one of the following: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`.
         """
         return self._fwk
 
-    @framework.setter
-    def framework(self, value: str) -> None:
-        """*framework* property of the allowed framework of the FDU.
+    @fwk.setter
+    def fwk(self, value: str) -> None:
+        """*fwk* property of the allowed framework of the FDU.
 
         Args:
-            value (str): Framework of the FDU. It can be one of the following: `PHYSICAL`, `DIGITAL`, or `CUSTOM`.
+            value (str): Framework of the FDU. It can be one of the following: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`.
 
         Raises:
             ValueError: If the framework is not one of the allowed values.

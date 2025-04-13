@@ -128,7 +128,7 @@ class Node(Generic[T]):
 
 
 @dataclass
-class SLNode(Node, Generic[T]):
+class SLNode(Node[T]):
     """**SLNode** class for creating a Single Linked List Node. Inherits from the **Node** class. Fundamental for the **Linked List** data structure.
 
     Args:
@@ -187,7 +187,7 @@ class SLNode(Node, Generic[T]):
 
 
 @dataclass
-class DLNode(SLNode, Generic[T]):
+class DLNode(SLNode[T]):
     """**DLNode** class for creating a Double Linked List Node. Inherits from the **SLNode** class. Fundamental for the **Doubly Linked List** data structure.
 
     Args:

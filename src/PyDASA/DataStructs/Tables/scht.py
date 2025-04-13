@@ -36,7 +36,6 @@ from Src.PyDASA.Utils.dflt import DFLT_DICT_KEY
 from Src.PyDASA.Utils.dflt import VLD_IODATA_LT
 from Src.PyDASA.Utils.dflt import DFLT_PRIME
 
-
 # checking custom modules
 assert MapEntry
 assert ArrayList
@@ -73,11 +72,11 @@ Minimum load factor (*alpha*) for the *SeparateChainingTable*, by default is 2.0
 
 
 @dataclass
-class Bucket(SingleLinkedList, Generic[T]):
+class Bucket(SingleLinkedList[T]):
     """**Bucket** class to represent a bucket in the **Hash Table** with the *Separate Chaining* method. The structure is based (inherits) on a custom singly linked list (*SingleLinkedList*) for *PyDASA*.
 
     Args:
-        SingleLinkedList (T): *PyDASA* class for a single linked list.
+        SingleLinkedList (dataclass): *PyDASA* custom class for a single linked list.
         Generic (T): Generic type for a Python data structure.
     """
 

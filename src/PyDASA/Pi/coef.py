@@ -8,28 +8,18 @@ Module for representing Dimensionless Coefficients (DN) in *PyDASA*. Defines the
 """
 
 # native python modules
-import re
-# import modules for defining Dimensionless Coefficients (DN) type
-from typing import Optional, List, Generic
 # import dataclass for class attributes and validations
+from typing import Optional, List, Generic
 from dataclasses import dataclass, field
 
 # custom modules
-# TODO check if I really need this import!!!
-# from Src.PyDASA.Units.fdu import FDU
-# from Src.PyDASA.Units.params import Parameter, Variable
-
+from Src.PyDASA.Utils.dflt import T
 # generic error handling and type checking
 from Src.PyDASA.Utils.err import error_handler as error
-from Src.PyDASA.Utils.dflt import T
 
-# importing PyDASA's custom regex for FDU
+# importing PyDASA's regex for managing FDUs
 # using the 'as' allows shared variable edition
 from Src.PyDASA.Utils import cfg as config
-
-# importing the FDU class for creating the FDU object
-# TODO do i need this import in future version?
-# from Src.PyDASA.Units.fdu import FDU
 
 # checking custom modules
 assert error
@@ -39,8 +29,24 @@ assert T
 
 @dataclass
 class PiCoefficient(Generic[T]):
-    # TODO complete docstring
+    """*PiCoefficient* class for creating a Dimensionless Coefficient (DN) in *PyDASA*. It is used to represent the coefficients in the dimensional model.
 
+    Args:
+        Generic (T): Generic type for a Python data structure.
+
+    Returns:
+        PiCoefficient: A *PiCoefficient* object for Dimensional Coefficients (DCs) with the following attributes:
+            - `_idx`: The ID of the *PiCoefficient*.
+            - `_sym`: The symbol of the *PiCoefficient*.
+            - `_fwk`: The framework of the *PiCoefficient*. It can be one of the following: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`.
+            - `_cat`: The category of the *PiCoefficient*. It can be one of the following: `COMPUTED` or `DERIVED`.
+            - `_param_lt`: List of parameter symbols used in the *PiCoefficient*.
+            - `_dim_col`: Dimensional column of the *PiCoefficient*.
+            - `_pivot_lt`: List of pivot indices of the dimensional matrix.
+            - `name`: The name of the *PiCoefficient*.
+            - `description`: The description of the *PiCoefficient*.
+            - `relevance`: Boolean value indicating if the *PiCoefficient* is relevant or not.
+    """
     # Private attributes with validation logic
     # :attr: _idx
     _idx: int = -1
@@ -59,7 +65,7 @@ class PiCoefficient(Generic[T]):
     # :attr: _fwk
     _fwk: str = "PHYSICAL"
     """
-    Framework the *PiCoefficient* follows in accordance with the FDU. It can be one of the following: `PHYSICAL`, `DIGITAL`, or `CUSTOM`. Coefficients, Parameters, and FDUs must be in the same framework.
+    Framework the *PiCoefficient* follows in accordance with the FDU. It can be one of the following: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`. Coefficients, Parameters, and FDUs must be in the same framework.
     """
 
     # Category of the parameter, can be: `INPUT`, `OUTPUT`, or `CONTROL`
@@ -112,11 +118,14 @@ class PiCoefficient(Generic[T]):
     def __post_init__(self) -> None:
         """__post_init__ _summary_
         """
+        # TODO implement this method
+        # TODO write docstring
+        # TODO check if I really need this!!!
         pass
 
     @property
-    def idx(self) -> str:
-        """*idx* property to get *PiCoefficient's* index in the dimensional model.
+    def idx(self) -> int:
+        """*idx* property to get *PiCoefficient* index in the dimensional model.
 
         Returns:
             str: ID of the *PiCoefficient*.
@@ -125,7 +134,7 @@ class PiCoefficient(Generic[T]):
 
     @idx.setter
     def idx(self, value: str) -> None:
-        """*idx* property to set the *PiCoefficient's* index in the dimensional model. It must be an integer.
+        """*idx* property to set the *PiCoefficient* index in the dimensional model. It must be an integer.
 
         Args:
             value (str): ID of the *PiCoefficient*.
@@ -170,13 +179,13 @@ class PiCoefficient(Generic[T]):
         """*fwk* property to get the framework of the *PiCoefficient*.
 
         Returns:
-            str: Framework of the *PiCoefficient*. It can be one of the following: `PHYSICAL`, `DIGITAL`, or `CUSTOM`.
+            str: Framework of the *PiCoefficient*. It can be one of the following: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`.
         """
         return self._fwk
 
     @fwk.setter
     def fwk(self, value: str) -> None:
-        """*fwk* property of the framework of the *PiCoefficient*. It must be one of the following: `PHYSICAL`, `DIGITAL`, or `CUSTOM`.
+        """*fwk* property of the framework of the *PiCoefficient*. It must be one of the following: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`.
 
         Args:
             value (str): Framework of the *PiCoefficient*. Must be the same as the FDU framework.

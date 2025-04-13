@@ -97,7 +97,7 @@ class RegexManager(Generic[T]):
     """
 
     def __post_init__(self) -> None:
-        """*__post_init__* method to configure the the *RegexManager* instance after initialization.
+        """*__post_init__()* configure the the *RegexManager* instance after initialization.
 
         Raises:
             ValueError: If the FDUs precedence list is empty or contains invalid characters.
@@ -279,24 +279,27 @@ class RegexManager(Generic[T]):
         self._fdu_sym_regex = value
 
     def __str__(self) -> str:
-        """*__str__* get the string representation of the *RegexManager* instance.
+        """*__str__()* get the string representation of the *RegexManager* instance.
 
         Returns:
             str: String representation of the *RegexManager* instance.
         """
-        # TODO this is the best str method, extend it ot other classes!!!
-        _str = f"{self.__class__.__name__}("
-        # _str = f"{self.__class__.__name__}(\n"
+        _attr_lt = []
         for attr, value in vars(self).items():
-            # Remove leading underscore from attribute names
-            _prop = attr.lstrip("_")
-            if isinstance(value, str):
-                _str += f"{_prop}='{value}', "
-                # _str += f"\t{_prop}='{value}',\n"
-            else:
-                _str += f"{_prop}={value}, "
-                # _str += f"\t{_prop}={value},\n"
-        # removingf last ', ' from the string
-        _str = _str[:-2]
-        _str += ")"
+            # Skip private attributes starting with "__"
+            if attr.startswith("__"):
+                continue
+            # Format attribute name and value
+            _attr_name = attr.lstrip("_")
+            _attr_lt.append(f"{_attr_name}={repr(value)}")
+        # Format the string representation of the ArrayList class and its attributes
+        _str = f"{self.__class__.__name__}({', '.join(_attr_lt)})"
         return _str
+
+    def __repr__(self) -> str:
+        """*__repr__()* get the string representation of the *RegexManager* instance.
+
+        Returns:
+            str: _description_
+        """
+        return self.__str__()

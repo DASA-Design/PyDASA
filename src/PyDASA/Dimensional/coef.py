@@ -319,13 +319,27 @@ class PiCoefficient(Generic[T]):
             raise ValueError(_msg)
 
     def __str__(self) -> str:
-        _class_name = self.__class__.__name__
-        _str = f"{_class_name}("
+        """*__str__()* get the string representation of the *PiCoefficient*.
+
+        Returns:
+            str: String representation of the *PiCoefficient*.
+        """
+        _attr_lt = []
         for attr, value in vars(self).items():
-            # Remove leading underscore from attribute names
-            _prop = attr.lstrip("_")
-            if isinstance(value, str):
-                _str += f"\t{_prop}='{value}',\n"
-            else:
-                _str += f"\t{_prop}={value},\n"
-        _str += ")"
+            # Skip private attributes starting with "__"
+            if attr.startswith("__"):
+                continue
+            # Format attribute name and value
+            _attr_name = attr.lstrip("_")
+            _attr_lt.append(f"{_attr_name}={repr(value)}")
+        # Format the string representation of the ArrayList class and its attributes
+        _str = f"{self.__class__.__name__}({', '.join(_attr_lt)})"
+        return _str
+
+    def __repr__(self) -> str:
+        """*__repr__()* get the string representation of the *PiCoefficient*.
+
+        Returns:
+            str: String representation of the *PiCoefficient*.
+        """
+        return self.__str__()

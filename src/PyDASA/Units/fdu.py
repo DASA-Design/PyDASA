@@ -160,20 +160,27 @@ class FDU(Generic[T]):
         self._fwk = value
 
     def __str__(self) -> str:
-        """*__str__* returns a string representation of the FDU object.
+        """*__str__()* returns a string representation of the FDU object.
 
         Returns:
             str: String representation of the FDU object.
         """
-        _str = f"{self.__class__.__name__}("
+        _attr_lt = []
         for attr, value in vars(self).items():
-            # Remove leading underscore from attribute names
-            _prop = attr.lstrip("_")
-            if isinstance(value, str):
-                _str += f"{_prop}='{value}', "
-            else:
-                _str += f"{_prop}={value}, "
-        # removingf last ', ' from the string
-        _str = _str[:-2]
-        _str += ")"
+            # Skip private attributes starting with "__"
+            if attr.startswith("__"):
+                continue
+            # Format attribute name and value
+            _attr_name = attr.lstrip("_")
+            _attr_lt.append(f"{_attr_name}={repr(value)}")
+        # Format the string representation of the ArrayList class and its attributes
+        _str = f"{self.__class__.__name__}({', '.join(_attr_lt)})"
         return _str
+
+    def __repr__(self) -> str:
+        """*__repr__()* returns a string representation of the FDU object.
+
+        Returns:
+            str: String representation of the FDU object.
+        """
+        return self.__str__()

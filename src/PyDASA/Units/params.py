@@ -136,7 +136,7 @@ class Parameter(Generic[T]):
     """
 
     def __post_init__(self) -> None:
-        """*__post_init__* method to initialize the *Parameter* object. It is called after the object is created. It validates the dimensions and sets up the dimensional expression, symbolic expression, and dimensional column.
+        """*__post_init__()* initialize the *Parameter* object. It is called after the object is created. It validates the dimensions and sets up the dimensional expression, symbolic expression, and dimensional column.
 
         Raises:
             ValueError: error if the dimensions string doen't follow the FDU regex pattern.
@@ -529,42 +529,30 @@ class Parameter(Generic[T]):
         self.relevance = False
 
     def __str__(self) -> str:
-        """*__str__* returns a string representation of the *Parameter* object.
-        It includes the ID, symbol, framework, dimensions, category, Units of Measure, name, description, and relevance.
+        """*__str__()* returns a string representation of the *Parameter* object. It includes the ID, symbol, framework, dimensions, category, Units of Measure, name, description, and relevance.
 
         Returns:
             str: String representation of the *Parameter* object.
         """
-        # # get class name
-        # _class_name = self.__class__.__name__
-        # _str = f"{_class_name}("
-        # _str += f"idx='{self._idx}', "
-        # _str += f"sym='{self._sym}', "
-        # _str += f"fwk='{self._fwk}', "
-        # _str += f"cat='{self._cat}', "
-        # _str += f"dims='{self._dims}', "
-        # _str += f"dim_exp='{self._dim_exp}', "
-        # _str += f"sym_exp='{self._sym_exp}', "
-        # _str += f"dim_col='{self._dim_col}', "
-        # _str += f"units='{self._units}', "
-        # _str += f"name='{self.name}', "
-        # _str += f"description='{self.description}', "
-        # _str += f"relevance={self.relevance}"
-        # _str += ")"
-        # return _str
-        # get class name
-        _str = f"{self.__class__.__name__}("
+        _attr_lt = []
         for attr, value in vars(self).items():
-            # Remove leading underscore from attribute names
-            _prop = attr.lstrip("_")
-            if isinstance(value, str):
-                _str += f"{_prop}='{value}', "
-            else:
-                _str += f"{_prop}={value}, "
-        # removingf last ', ' from the string
-        _str = _str[:-2]
-        _str += ")"
+            # Skip private attributes starting with "__"
+            if attr.startswith("__"):
+                continue
+            # Format attribute name and value
+            _attr_name = attr.lstrip("_")
+            _attr_lt.append(f"{_attr_name}={repr(value)}")
+        # Format the string representation of the ArrayList class and its attributes
+        _str = f"{self.__class__.__name__}({', '.join(_attr_lt)})"
         return _str
+
+    def __repr__(self) -> str:
+        """*__repr__* returns a string representation of the *Parameter* object.
+
+        Returns:
+            str: String representation of the *Parameter* object.
+        """
+        return self.__str__()
 
 
 @dataclass
@@ -797,42 +785,19 @@ class Variable(Parameter):
         self._std_step = 1 / 1000
 
     def __str__(self) -> str:
-        """*__str__* returns a string representation of the *Variable* object.
-        It includes the ID, symbol, framework, dimensions, category, Units of Measure, name, description, relevance, and min/max values.
+        """*__str__()* function to return a string representation of the *Variable*. It extends from *Patameter* class.
 
         Returns:
-            str: String representation of the *Variable* object.
+            str: string representation of the *Variable*.
         """
-        # # get parent class name
-        # _parent_class_name = super().__class__.__name__
-        # # get class name
-        # _class_name = self.__class__.__name__
-        # # get the class representation
-        # _str = super().__str__()
-        # # replace the parent class name with the class name
-        # _str = _str.replace(_parent_class_name, _class_name)
-        # # remove last bracket
-        # _str = _str[:-1]
-        # # add the class name
-        # _str += f", min: {self._min}, "
-        # _str += f"max: {self._max}, "
-        # _str += f"std_units: {self._std_units}, "
-        # _str += f"std_min: {self._std_min}, "
-        # _str += f"std_max: {self._std_max}, "
-        # _str += f"std_step: {self._std_step}"
-        # _str += ")"
-        # return _str
+        _str = super().__str__()
+        return _str
 
-        # get class name
-        _str = f"{self.__class__.__name__}("
-        for attr, value in vars(self).items():
-            # Remove leading underscore from attribute names
-            _prop = attr.lstrip("_")
-            if isinstance(value, str):
-                _str += f"{_prop}='{value}', "
-            else:
-                _str += f"{_prop}={value}, "
-        # removingf last ', ' from the string
-        _str = _str[:-2]
-        _str += ")"
+    def __repr__(self) -> str:
+        """*__repr__()* function to return a string representation of the *Variable*. It extends from *Patameter* class.
+
+        Returns:
+            str: string representation of the *Variable*.
+        """
+        _str = super().__repr__()
         return _str

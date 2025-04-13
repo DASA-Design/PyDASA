@@ -100,9 +100,6 @@ class Bucket(SingleLinkedList, Generic[T]):
         return _str
 
 
-
-
-
 @dataclass
 class SeparateChainingTable(Generic[T]):
 
@@ -761,54 +758,10 @@ class SeparateChainingTable(Generic[T]):
         _str = f"{self.__class__.__name__}({', '.join(_attr_lt)})"
         return _str
 
+    def __repr__(self) -> str:
+        """*__repr__()* function to return a string representation of the *SeparateChainingTable*.
 
-        # # get class name
-        # _attr_lt = []
-        # for attr, value in vars(self).items():
-        #     # Skip private attributes starting with "__"
-        #     if attr.startswith("__"):
-        #         continue
-        #     # Format callable attributes
-        #     if callable(value):
-        #         value = f"{value.__name__}{inspect.signature(value)}"
-        #     # format internal data structures
-        #     if isinstance(value, ArrayList):
-        #         _idx_lt = []
-        #         for a, v in vars(value).items():
-        #             # skip private attributes starting with "__"
-        #             if a.startswith("__"):
-        #                 continue
-        #             # format callable attributes
-        #             if callable(v):
-        #                 v = f"{v.__name__}{inspect.signature(v)}"
-        #             if isinstance(v, list):
-        #                 # format bucket entries
-        #                 # print("Bukect!!!!!!!")
-        #                 _table_lt = []
-        #                 for bucket in v:
-        #                     print(type(bucket))
-        #                     _bucket_lt = []
-        #                     for _a, _v in vars(bucket).items():
-        #                         print(f"attr: {_a}, value: {_v}")
-        #                         if _a.startswith("__"):
-        #                             continue
-        #                         if callable(_v):
-        #                             _v = f"{_v.__name__}{inspect.signature(_v)}"
-        #                         if isinstance(_v, SLNode):
-        #                             print("SLNode")
-        #                             _v = str(_v) + "\n~~~"
-        #                             _bucket_lt.append(f"{_a}={repr(_v)}")
-
-        #                     bucket = f"{bucket.__class__.__name__}({', +++ '.join(_bucket_lt)})"
-        #                     _table_lt.append(f"{bucket}")
-        #                 # format the bucket list
-        #                 v = f"{bucket.__class__.__name__}({', +++ '.join(_table_lt)})"
-        #             a = a.lstrip("_")
-        #             _idx_lt.append(f"{a}={repr(v)}")
-        #         value = f"{value.__class__.__name__}({', --- '.join(_idx_lt)})"
-        #     # Format attribute name and value
-        #     _attr_name = attr.lstrip("_")
-        #     _attr_lt.append(f"{_attr_name}={repr(value)}")
-        # # Format the string representation of the ArrayList class and its attributes
-        # _str = f"{self.__class__.__name__}({', ++++ '.join(_attr_lt)})"
-        # return _str
+        Returns:
+            str: string representation of the *SeparateChainingTable*.
+        """
+        return self.__str__()

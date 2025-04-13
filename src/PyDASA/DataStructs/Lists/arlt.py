@@ -114,7 +114,7 @@ class ArrayList(Generic[T]):
             int: Comparison result.
         """
         try:
-            # passing self as the first argument to simulate a method
+            # default comparison needs the key to be defined
             return dflt_cmp_func_lt(self.key, elm1, elm2)
         except Exception as err:
             self._error_handler(err)
@@ -249,11 +249,7 @@ class ArrayList(Generic[T]):
         Returns:
             T: the element at the specified position in the *ArrayList*.
         """
-        if self.empty:
-            raise IndexError("Empty data structure")
-        if pos < 0 or pos >= self._size:
-            raise IndexError(f"Index {pos} is out of range")
-        return self._elements[pos]
+        return self.get(pos)
 
     def pop_first(self) -> T:
         """*pop_first()* removes the first element from the *ArrayList*.
@@ -368,7 +364,7 @@ class ArrayList(Generic[T]):
             self._elements[pos] = new_data
 
     def swap(self, pos1: int, pos2: int) -> None:
-        """*swap()* swaps two elements in the *ArrayList* at specified positions. This method exchanges the elements at the given positions.
+        """*swap()* swaps two elements in the *ArrayList* at specified positions.
 
         Args:
             pos1 (int): position of the first element to swap.
@@ -544,7 +540,7 @@ class ArrayList(Generic[T]):
         return _str
 
     def __repr__(self) -> str:
-        """*__repr__()* get the string representation of the *ArrayList*. This method returns a string with the elements of the list.
+        """*__repr__()* get the string representation of the *ArrayList*. This method returns a string representation.
 
         Returns:
             str: the string representation of the *ArrayList*.

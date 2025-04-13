@@ -127,7 +127,7 @@ class SingleLinkedList(Generic[T]):
             int: Comparison result.
         """
         try:
-            # passing self as the first argument to simulate a method
+            # default comparison needs the key to be defined
             return dflt_cmp_func_lt(self.key, elm1, elm2)
         except Exception as err:
             self._error_handler(err)
@@ -315,20 +315,7 @@ class SingleLinkedList(Generic[T]):
         Returns:
             Optional[T]: the element at the specified position in the *SingleLinkedList*.
         """
-        _data = None
-        if self.empty:
-            raise IndexError("Empty data structure")
-        elif pos < 0 or pos > self.size - 1:
-            raise IndexError(f"Index {pos} is out of range")
-        else:
-            # current node starting at the first node
-            _cur = self._first
-            i = 0
-            while i != pos:
-                _cur = _cur.next
-                i += 1
-            _data = _cur.data
-        return _data
+        return self.get(pos)
 
     def pop_first(self) -> T:
         """*pop_first()* removes the first element from the *SingleLinkedList*.
@@ -408,13 +395,13 @@ class SingleLinkedList(Generic[T]):
         if pos < 0 or pos > self.size - 1:
             raise IndexError(f"Index {pos} is out of range")
         # set current and previous nodes to the first node
-        _cur = self.first
-        _prev = self.first
+        _cur = self._first
+        _prev = self._first
         i = 0
         # if the removing position is the first, remove the first element
         if pos == 0:
-            _data = self.first.data
-            self.first = self.first.next
+            _data = self._first.data
+            self._first = self._first.next
         # if the position is not the first element, traverse the list to find it
         elif pos >= 1:
             # TODO check algorithm with "while i != pos:"
@@ -500,7 +487,7 @@ class SingleLinkedList(Generic[T]):
             _cur.data = new_data
 
     def swap(self, pos1: int, pos2: int) -> None:
-        """*swap()* swaps two elements in the *SingleLinkedList* at specific positions. This method exchanges the elements at the given positions.
+        """*swap()* swaps two elements in the *SingleLinkedList* at specific positions.
 
 
         Args:
@@ -650,7 +637,7 @@ class SingleLinkedList(Generic[T]):
             Iterator[T]: an iterator object that can be used to iterate over the nodes of the list.
         """
         try:
-            # FIXME do I need the try/except block?
+            # TODO do I need the try/except block?
             _cur = self.first
             while _cur is not None:
                 yield _cur.data
@@ -688,7 +675,7 @@ class SingleLinkedList(Generic[T]):
         return _str
 
     def __repr__(self) -> str:
-        """*__repr__()* to get the string representation of the *SingleLinkedList*. This method returns a string with the elements of the list separated by commas.
+        """*__repr__()* get the string representation of the *SingleLinkedList*. This method returns a string representation,
 
         Returns:
             str: string representation of the *SingleLinkedList*.

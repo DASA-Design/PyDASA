@@ -102,3 +102,12 @@ p1 = Parameter(name="U_1",
                _units="kPa",
                _dims="C*T^-1",)
 print(p1, "\n")
+
+fdu = FDU()
+print(fdu, "\n")
+
+fdu_lt = [
+    {"_id": 1, "_sym": "T", "_fwk": "PHYSICAL", "_prec": 0, "desription": "Time"},
+    {"_id": 5, "_sym": "M", "_fwk": "PHYSICAL", "_prec": 4, "description": "Mass"},
+    {"_id": 4, "_sym": "L", "_fwk": "PHYSICAL", "_prec": 3, "description": "Longitude"},
+]

@@ -20,15 +20,23 @@ from src.utils import T
 
 @dataclass
 class PiCoefficient(Generic[T]):
-    """PiCoefficient _summary_
+    """*PiCoefficient* class for creating a *Dimensionless Coefficient* in *PyDASA*. PiCoefficients are used to define the dimensionless coefficients of a system.
 
-    Raises:
-        ValueError: _description_
+    Args:
+        Generic (T): Generic type for a Python data structure.
 
     Returns:
-        _type_: _description_
+        PiCoefficient: A Dimensionless Coefficient (DC) object with the following attributes:
+            - `name`: The name of the DC.
+            - `symbol`: The symbol of the DC.
+            - `description`: The description of the DC.
+            - `pi_expr`: The expression for the dimensionless coefficient.
+            - `_idx`: The index in the dimensional matrix.
+            - `_pi_param_lt`: The list of parameters used in the dimensionless coefficient.
+            - `_pi_exp_lt`: The list of exponents used in the dimensionless coefficient.
+            - `_rref_dim_matrix`: The diagonal solved dimensional matrix.
+            - `_pivot_lt`: The list of pivots in the dimensional matrix.
     """
-    # TODO add docstring
     # name of the parameter
     name: str = ""
     # latex symbol for the parameter

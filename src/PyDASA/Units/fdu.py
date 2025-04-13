@@ -1,8 +1,8 @@
 ﻿# -*- coding: utf-8 -*-
 """
-Module to represent the **FDU** or **Fundamental Dimensional Unit** data structure for Dimensional Analysis in *PyDASA*.
+Module for representing the **FDU** or **Fundamental Dimensional Unit** for Dimensional Analysis in *PyDASA*.
 
-*IMPORTANT:* This code and its specifications for Python are based on the theory and subject developed by the following authors/books:
+*IMPORTANT:* Based on the theory from:
 
     # H.Gorter, *Dimensionalanalyse: Eine Theoririe der physikalischen Dimensionen mit Anwendungen*
 """
@@ -28,7 +28,7 @@ assert T
 
 @dataclass
 class FDU(Generic[T]):
-    """**FDU** class for creating a **Fundamental Dimensional Unit** in *PyDASA*. Fundamental for the process of Dimensional Analysis and creating Dimensionless Coefficients.
+    """**FDU** class for creating a **Fundamental Dimensional Unit** in *PyDASA*. FDUs are the basic building blocks of dimensional analysis and are used to define the dimensions of physical and digital quantities.
 
     Args:
         Generic (T): Generic type for a Python data structure.
@@ -36,22 +36,22 @@ class FDU(Generic[T]):
     Returns:
         FDU: A FDU object with the following attributes:
             - `_prec`: The ID of the FDU.
-            - `_symbol`: The symbol of the FDU.
-            - `_framework`: The framework of the FDU. It can be one of the following: `PHYSICAL`, `DIGITAL`, or `CUSTOM`.
+            - `_sym`: The symbol of the FDU.
+            - `_fwk`: The framework of the FDU. It can be one of the following: `PHYSICAL`, `DIGITAL`, or `CUSTOM`.
             - `name`: The name of the FDU.
             - `description`: The description of the FDU.
     """
 
     # Private attributes with validation logic
     # Unique FDU symbol in the system
-    # :attr: _symbol
-    _symbol: str = ""
+    # :attr: _sym
+    _sym: str = ""
     """
     Unique FDU's symbol. It must be a single alphanumeric character (preferably a single Latin or Greek letter).
     """
 
-    # :attr: _framework
-    _framework: str = "PHYSICAL"
+    # :attr: _fwk
+    _fwk: str = "PHYSICAL"
     """
     Framework of the FDU. It can be one of the following: `PHYSICAL`, `DIGITAL`, or `CUSTOM`. Useful for identifying the framework of the FDU.
     """
@@ -79,17 +79,17 @@ class FDU(Generic[T]):
     """
 
     @property
-    def symbol(self) -> str:
-        """*symbol* property to get the symbol of the FDU.
+    def sym(self) -> str:
+        """*sym* property to get the symbol of the FDU.
 
         Returns:
             str: Symbol of the FDU.
         """
-        return self._symbol
+        return self._sym
 
-    @symbol.setter
-    def symbol(self, value: str) -> None:
-        """*symbol* property to set the symbol of the FDU. It must be alphanumeric (preferably a single character + Latin or Greek letter).
+    @sym.setter
+    def sym(self, value: str) -> None:
+        """*sym* property to set the symbol of the FDU. It must be alphanumeric (preferably a single character + Latin or Greek letter).
 
         Args:
             value (str): Symbol of the FDU.
@@ -102,20 +102,20 @@ class FDU(Generic[T]):
             _msg += f"Provided: {value}"
             _msg += "Preferably a Latin or Greek letter."
             raise ValueError(_msg)
-        self._symbol = value
+        self._sym = value
 
     @property
-    def precedence(self) -> int:
-        """*precedence* property to get the row order of the FDU in the dimensional matrix.
+    def prec(self) -> int:
+        """*prec* property to get the row order of the FDU in the dimensional matrix.
 
         Returns:
             int: Precedence of the FDU.
         """
         return self._prec
 
-    @precedence.setter
-    def precedence(self, value: int) -> None:
-        """*precedence* property to order the FDU in the rows of the dimensional matrix.
+    @prec.setter
+    def prec(self, value: int) -> None:
+        """*prec* property to order the FDU in the rows of the dimensional matrix.
 
         Args:
             value (int): Precedence of the FDU. Must be a non-negative integer.
@@ -140,7 +140,7 @@ class FDU(Generic[T]):
         Returns:
             str: Framework of the FDU. It can be one of the following: `PHYSICAL`, `DIGITAL`, or `CUSTOM`.
         """
-        return self._framework
+        return self._fwk
 
     @framework.setter
     def framework(self, value: str) -> None:
@@ -157,7 +157,7 @@ class FDU(Generic[T]):
             _msg += "Framework must be one of the following: "
             _msg += f"{', '.join(FDU_FWK_DT.keys())}."
             raise ValueError(_msg)
-        self._framework = value
+        self._fwk = value
 
     def __str__(self) -> str:
         """*__str__* returns a string representation of the FDU object.
@@ -166,9 +166,14 @@ class FDU(Generic[T]):
             str: String representation of the FDU object.
         """
         _str = f"{self.__class__.__name__}("
-        _str += f"symbol='{self._symbol}', "
-        _str += f"precedence='{self._prec}', "
-        _str += f"framework='{self._framework}', "
-        _str += f"name='{self.name}', "
-        _str += f"description='{self.description}')"
+        for attr, value in vars(self).items():
+            # Remove leading underscore from attribute names
+            _prop = attr.lstrip("_")
+            if isinstance(value, str):
+                _str += f"{_prop}='{value}', "
+            else:
+                _str += f"{_prop}={value}, "
+        # removingf last ', ' from the string
+        _str = _str[:-2]
+        _str += ")"
         return _str

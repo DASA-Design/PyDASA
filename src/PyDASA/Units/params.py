@@ -1,8 +1,8 @@
 ﻿# -*- coding: utf-8 -*-
 """
-Module to represent Parameters and Variables in Dimensional Analysis for *PyDASA*.
+Module for representing *Parameters* and Variables in Dimensional Analysis for *PyDASA*.
 
-*IMPORTANT:* This code and its specifications for Python are based on the theory and subject developed by the following authors/books:
+*IMPORTANT:* Based on the theory from:
 
     # H.Gorter, *Dimensionalanalyse: Eine Theoririe der physikalischen Dimensionen mit Anwendungen*
 """
@@ -27,21 +27,15 @@ from Src.PyDASA.Utils import cfg as config
 # TODO do i need this import in future version?
 # from Src.PyDASA.Units.fdu import FDU
 
-from Src.PyDASA.Utils.cfg import FDU_FWK_DT
-from Src.PyDASA.Utils.cfg import PARAMS_FWK_DT
-
-# TODO do i need this import???
-# importing the FDU_FWK_TP for creating the FDU object
-
-
 # checking custom modules
 assert error
+assert config
 assert T
 
 
 @dataclass
 class Parameter(Generic[T]):
-    """*Parameter* class for creating a *Parameter* in *PyDASA*. Fundamental for the process of Dimensional Analysis and creating Dimensionless Coefficients.
+    """*Parameter* class for creating a *Parameter* in *PyDASA*. The parameters are use in Dimensional Analysis to create Dimensionless Coefficients (DN).
 
     Args:
         Generic (T): Generic type for a Python data structure.
@@ -63,7 +57,7 @@ class Parameter(Generic[T]):
     # :attr: _idx
     _idx: int = -1
     """
-    Index of the parameter. It is the unique integer for the column's order in the dimensional matrix.
+    Index of the *Parameter*. It is the unique integer for the column's order in the dimensional matrix.
     """
 
     # Symbol of the FDU
@@ -108,7 +102,7 @@ class Parameter(Generic[T]):
     Symbolic Dimensional Expression of the *Parameter* for analysis. It is a string suitable for Sympy processing. It is used to calculate the dimensional matrix columns. i.e.: from [T^2*L^-1] to [T**2*L**(-1)].
     """
 
-    # list with the dimensions exponent coefficients as integers
+    # list with the dimensions exponent as integers
     # :attr: _dim_col
     _dim_col: Optional[List[int]] = field(default_factory=list)
     """
@@ -325,19 +319,19 @@ class Parameter(Generic[T]):
         """*sym* property to get the symbol of the *Parameter*.
 
         Returns:
-            str: Symbol of the *Parameter*. It is a string with the FDU formula of the parameter. i.e.: [T^2*L^-1]
+            str: Symbol of the *Parameter*. It is a string with the FDU formula of the parameter. i.e.: V, d, D, m, Q, \\rho, etc.
         """
         return self._sym
 
     @sym.setter
     def sym(self, value: str) -> None:
-        """*sym* property to set the symbol of *Parameter*. It must be alphanumeric (preferably a single character + Latin or Greek letter).
+        """*sym* property to set the symbol of *Parameter*. It must be alphanumeric (preferably a single character, a Latin or Greek letter).
 
         Args:
-            value (str): Symbol of the *Parameter*. i.e: m1 for mass 1, d1 for data 1, etc.
+            value (str): Symbol of the *Parameter*. . i.e.: V, d, D, m, Q, \\rho, etc.
 
         Raises:
-            ValueError: _description_
+            ValueError: error if the symbol is not alphanumeric.
         """
         if not value.isalnum():
             _msg = "Symbol must be alphanumeric. "
@@ -365,10 +359,10 @@ class Parameter(Generic[T]):
         Raises:
             ValueError: If the framework is not one of the allowed values.
         """
-        if value not in FDU_FWK_DT.keys():
+        if value not in config.FDU_FWK_DT.keys():
             _msg = f"Invalid framework: {value}. "
             _msg += "Framework must be one of the following: "
-            _msg += f"{', '.join(FDU_FWK_DT.keys())}."
+            _msg += f"{', '.join(config.FDU_FWK_DT.keys())}."
             raise ValueError(_msg)
         self._fwk = value
 
@@ -391,10 +385,10 @@ class Parameter(Generic[T]):
         Raises:
             ValueError: error if the category is not one of the allowed values.
         """
-        if value.upper() not in PARAMS_FWK_DT.keys():
+        if value.upper() not in config.PARAMS_FWK_DT.keys():
             _msg = f"Invalid category: {value}. "
             _msg += "Category must be one of the following: "
-            _msg += f"{', '.join(PARAMS_FWK_DT.keys())}."
+            _msg += f"{', '.join(config.PARAMS_FWK_DT.keys())}."
             raise ValueError(_msg)
         self._cat = value.upper()
 
@@ -541,28 +535,54 @@ class Parameter(Generic[T]):
         Returns:
             str: String representation of the *Parameter* object.
         """
+        # # get class name
+        # _class_name = self.__class__.__name__
+        # _str = f"{_class_name}("
+        # _str += f"idx='{self._idx}', "
+        # _str += f"sym='{self._sym}', "
+        # _str += f"fwk='{self._fwk}', "
+        # _str += f"cat='{self._cat}', "
+        # _str += f"dims='{self._dims}', "
+        # _str += f"dim_exp='{self._dim_exp}', "
+        # _str += f"sym_exp='{self._sym_exp}', "
+        # _str += f"dim_col='{self._dim_col}', "
+        # _str += f"units='{self._units}', "
+        # _str += f"name='{self.name}', "
+        # _str += f"description='{self.description}', "
+        # _str += f"relevance={self.relevance}"
+        # _str += ")"
+        # return _str
         # get class name
-        _class_name = self.__class__.__name__
-        _str = f"{_class_name}("
-        _str += f"idx='{self._idx}', "
-        _str += f"sym='{self._sym}', "
-        _str += f"fwk='{self._fwk}', "
-        _str += f"cat='{self._cat}', "
-        _str += f"dims='{self._dims}', "
-        _str += f"dim_exp='{self._dim_exp}', "
-        _str += f"sym_exp='{self._sym_exp}', "
-        _str += f"dim_col='{self._dim_col}', "
-        _str += f"units='{self._units}', "
-        _str += f"name='{self.name}', "
-        _str += f"description='{self.description}', "
-        _str += f"relevance={self.relevance}"
+        _str = f"{self.__class__.__name__}("
+        for attr, value in vars(self).items():
+            # Remove leading underscore from attribute names
+            _prop = attr.lstrip("_")
+            if isinstance(value, str):
+                _str += f"{_prop}='{value}', "
+            else:
+                _str += f"{_prop}={value}, "
+        # removingf last ', ' from the string
+        _str = _str[:-2]
         _str += ")"
         return _str
 
 
 @dataclass
 class Variable(Parameter):
-    """**Variable** extends *Parameter* with additional attributes for min/max values, step, and standard Unit of Measure. Useful for sensitivity analysis and simulations."""
+    """**Variable** extends *Parameter* with additional attributes for min/max values, step, and standard Unit of Measure. Useful for sensitivity analysis and simulations.
+
+    Args:
+        Parameter (Generic[T]): *PyDASA* *Parameter* class for processing parameters in dimensional analysis.
+
+    Returns:
+        Variable: A *Variable* object with the following attributes:
+            - `_min`: The minimum range of the *Variable*. It is a float value.
+            - `_max`: The maximum range of the *Variable*. It is a float value.
+            - `_std_units`: The standardized Unit of Measure of the *Variable*. It is a string with the dimensional Units of Measure. i.e.: `m/s`, `kg/m3`, etc.
+            - `_std_min`: The standardized minimum range of the *Variable*, after converting Units of Measure. It is a float value.
+            - `_std_max`: The standardized maximum range of the *Variable*, after converting Units of Measure. It is a float value.
+            - `_std_step`: The step value of the *Variable*. It is a very small float value. It is used for sensitivity analysis and simulations.
+    """
 
     # Private attributes with validation logic
     # :attr: _min
@@ -783,22 +803,36 @@ class Variable(Parameter):
         Returns:
             str: String representation of the *Variable* object.
         """
-        # get parent class name
-        _parent_class_name = super().__class__.__name__
+        # # get parent class name
+        # _parent_class_name = super().__class__.__name__
+        # # get class name
+        # _class_name = self.__class__.__name__
+        # # get the class representation
+        # _str = super().__str__()
+        # # replace the parent class name with the class name
+        # _str = _str.replace(_parent_class_name, _class_name)
+        # # remove last bracket
+        # _str = _str[:-1]
+        # # add the class name
+        # _str += f", min: {self._min}, "
+        # _str += f"max: {self._max}, "
+        # _str += f"std_units: {self._std_units}, "
+        # _str += f"std_min: {self._std_min}, "
+        # _str += f"std_max: {self._std_max}, "
+        # _str += f"std_step: {self._std_step}"
+        # _str += ")"
+        # return _str
+
         # get class name
-        _class_name = self.__class__.__name__
-        # get the class representation
-        _str = super().__str__()
-        # replace the parent class name with the class name
-        _str = _str.replace(_parent_class_name, _class_name)
-        # remove last bracket
-        _str = _str[:-1]
-        # add the class name
-        _str += f", min: {self._min}, "
-        _str += f"max: {self._max}, "
-        _str += f"std_units: {self._std_units}, "
-        _str += f"std_min: {self._std_min}, "
-        _str += f"std_max: {self._std_max}, "
-        _str += f"std_step: {self._std_step}"
+        _str = f"{self.__class__.__name__}("
+        for attr, value in vars(self).items():
+            # Remove leading underscore from attribute names
+            _prop = attr.lstrip("_")
+            if isinstance(value, str):
+                _str += f"{_prop}='{value}', "
+            else:
+                _str += f"{_prop}={value}, "
+        # removingf last ', ' from the string
+        _str = _str[:-2]
         _str += ")"
         return _str

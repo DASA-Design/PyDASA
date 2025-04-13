@@ -4,13 +4,11 @@ Configuration module for Fundamental Dimensional Units (FDUs), Parameters, and V
 
 It can handle both physical and digital dimensions, as well as working (custom or otherwise) dimensions through the use of the WKNG_* variables.
 
-*IMPORTANT:* This code and its specifications for Python are based on the theory and subject developed by the following authors/books:
+*IMPORTANT:* Based on the theory from:
 
     # H.Gorter, *Dimensionalanalyse: Eine Theoririe der physikalischen Dimensionen mit Anwendungen*
 """
 # python native modules
-# from dataclasses import dataclass
-# from typing import TypeVar
 
 # global variables
 
@@ -100,9 +98,9 @@ Custom Regex pattern to match FDU symbols in *PyDASA*. i.e.: [T*D] to [T^1*D^1].
 # Set of supported Fundamental Dimensional Units (FDU)
 # :data: FDU_FWK_DT
 FDU_FWK_DT = {
-    "PHYSICAL": "Traditional physical units",
-    "DIGITAL": "Software Architecture units",
-    "CUSTOM": "Custom units",
+    "PHYSICAL": "Traditional Physical Dimensional Units.",
+    "DIGITAL": "Software Architecture Dimensional Units.",
+    "CUSTOM": "User Defined Dimensional Units.",
 }
 """
 Dictionary with the supported Fundamental Dimensional Units (FDU) in *PyDASA*.
@@ -111,13 +109,22 @@ Dictionary with the supported Fundamental Dimensional Units (FDU) in *PyDASA*.
 # Set of supported Fundamental Dimensional Units (FDU)
 # :data: FDU_FWK_TP
 PARAMS_FWK_DT = {
-    "INPUT": "Input parameters, what I know affects the system",
-    "OUTPUT": "Output parameters, Usually the result of the analysis",
-    "CONTROL": "Control parameters, including constants",
+    "INPUT": "Input parameters, what I know affects the system.",
+    "OUTPUT": "Output parameters, Usually the result of the analysis.",
+    "CONTROL": "Control parameters, including constants.",
 }
 """
 Dictionary with the supported Fundamental Dimensional Units (FDU) in *PyDASA*.
 """
+
+DC_CAT_DT = {
+    "COMPUTED": "Computed parameters, usually the direct result of using the Buckingham Pi theorem.",
+    "DERIVED": "Derived parameters, usually the result combining other computed coefficients.",
+}
+"""
+Dictionary with the supported categories of Dimensionless Coefficients (DN) in *PyDASA*.
+"""
+
 
 # prints to check the regex patterns
 # print("DFLT_FDU_PREC_LT:", DFLT_FDU_PREC_LT)

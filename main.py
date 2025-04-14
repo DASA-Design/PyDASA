@@ -3,13 +3,13 @@
 # PyDASA modules
 # data structures modules
 # lists modules
-from Src.PyDASA.DataStructs.Lists.arlt import ArrayList
-from Src.PyDASA.DataStructs.Lists.sllt import SingleLinkedList
-from Src.PyDASA.DataStructs.Lists.ndlt import Node, SLNode, DLNode
+from Src.PyDASA.DStructs.Lists.arlt import ArrayList
+from Src.PyDASA.DStructs.Lists.sllt import SingleLinkedList
+from Src.PyDASA.DStructs.Lists.ndlt import Node, SLNode, DLNode
 # hash tables modules
-from Src.PyDASA.DataStructs.Tables.htme import MapEntry
-from Src.PyDASA.DataStructs.Tables.scht import SCHashTable
-from Src.PyDASA.DataStructs.Tables.scht import Bucket
+from Src.PyDASA.DStructs.Tables.htme import MapEntry
+from Src.PyDASA.DStructs.Tables.scht import SCHashTable
+from Src.PyDASA.DStructs.Tables.scht import Bucket
 
 
 # dimensionl analysis modules
@@ -169,3 +169,105 @@ print("\tWKNG_FDU_REGEX:", config.WKNG_FDU_REGEX)
 print("\tWKNG_POW_REGEX:", config.WKNG_POW_REGEX)
 print("\tWKNG_NO_POW_REGEX:", config.WKNG_NO_POW_REGEX)
 print("\tWKNG_FDU_SYM_REGEX:", config.WKNG_FDU_SYM_REGEX)
+
+# Planar Channel Flow with a Moving Wall
+# u = f(y, d, U, P, v)
+# u: fluid velocity
+# y: distance from the wall
+# d: distance from the wall to the center of the channel (diameter)
+# U: velocity of the wall
+# P: pressure drop across the channel
+# v: kinematic viscosity of the fluid
+
+dim_relevance_lt = [
+    Parameter(_sym="u",
+              _fwk="CUSTOM",
+              name="Fluid Velocity",
+              description="Fluid velocity in the channel",
+              relevant=True,
+              _idx=0,
+              _cat="OUTPUT",
+              _units="m/s",
+              _dims="L*T^-1",),
+    Parameter(_sym="y",
+              _fwk="CUSTOM",
+              name="Distance from the wall",
+              description="Distance from the wall to the center of the channel",
+              relevant=True,
+              _idx=1,
+              _cat="INPUT",
+              _units="m",
+              _dims="L",),
+    Parameter(_sym="d",
+              _fwk="CUSTOM",
+              name="Channel diameter",
+              relevant=True,
+              description="Diameter of the channel",
+              _idx=2,
+              _cat="INPUT",
+              _units="m",
+              _dims="L",),
+    Parameter(_sym="U",
+              _fwk="CUSTOM",
+              name="Velocity of the wall",
+              relevant=True,
+              description="Velocity of the fluid wall",
+              _idx=3,
+              _cat="INPUT",
+              _units="m/s",
+              _dims="L*T^-1",),
+    Parameter(_sym="P",
+              _fwk="CUSTOM",
+              name="Channel Pressure Drop",
+              relevant=True,
+              description="Pressure drop across the channel",
+              _idx=4,
+              _cat="CONTROL",
+              _units="Pa",
+              _dims="M*T^-2*L^-1",),
+    Parameter(_sym="v",
+              _fwk="CUSTOM",
+              name="Fluid Viscosity",
+              relevant=True,
+              description="Kinematic viscosity of the fluid",
+              _idx=5,
+              _cat="CONTROL",
+              _units="m^2/s",
+              _dims="L^2*T^-1",),
+    Parameter(_sym="g",
+              _fwk="CUSTOM",
+              name="Gravity",
+              description="Acceleration due to gravity",
+              _idx=6,
+              _cat="CONTROL",
+              _units="m/s^2",
+              _dims="L*T^-2",),
+    Parameter(_sym="f",
+              _fwk="CUSTOM",
+              name="Fluid Frequency",
+              description="Fluid frequency",
+              _idx=7,
+              _cat="CONTROL",
+              _units="Hz",
+              _dims="T^-1",),
+]
+
+print(type(dim_relevance_lt))
+print("Dimensional relevance of the parameters:")
+for p in dim_relevance_lt:
+    print(p)
+
+fdu_lt = [
+    {"_idx": 0, "_sym": "Tt", "_fwk": "CUSTOM", "description": "Time~~~~~~~!!!~~~~~~"},
+    {"_idx": 1, "_sym": "Mm", "_fwk": "CUSTOM", "description": "Mass~~~~~!!!!!~~~~~~~"},
+    {"_idx": 2, "_sym": "Ll", "_fwk": "CUSTOM", "description": "Longitude~~~!!!!!!!~~~~~"},
+]
+
+print("Setting parameters for the dimensional analysis")
+DAModel.param_lt = dim_relevance_lt
+print(len(DAModel.param_lt), DAModel.param_lt, "\n")
+print("Setting the relevance list for dimensional analysis")
+DAModel.relevance_lt = dim_relevance_lt
+print(len(DAModel.relevance_lt), DAModel.relevance_lt, "\n")
+
+print(DAModel, "\n")

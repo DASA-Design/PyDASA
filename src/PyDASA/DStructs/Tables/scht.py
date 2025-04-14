@@ -20,9 +20,9 @@ import random
 
 # custom modules
 # generic error handling and type checking
-from Src.PyDASA.DataStructs.Tables.htme import MapEntry
-from Src.PyDASA.DataStructs.Lists.arlt import ArrayList
-from Src.PyDASA.DataStructs.Lists.sllt import SingleLinkedList
+from Src.PyDASA.DStructs.Tables.htme import MapEntry
+from Src.PyDASA.DStructs.Lists.arlt import ArrayList
+from Src.PyDASA.DStructs.Lists.sllt import SingleLinkedList
 # util functions for the hash table
 from Src.PyDASA.Utils.nos import next_prime, previous_prime
 from Src.PyDASA.Utils.nos import mad_hash

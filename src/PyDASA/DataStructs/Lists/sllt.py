@@ -638,7 +638,7 @@ class SingleLinkedList(Generic[T]):
         """
         try:
             # TODO do I need the try/except block?
-            _cur = self.first
+            _cur = self._first
             while _cur is not None:
                 yield _cur.data
                 _cur = _cur.next

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Module to represent the **SeparateChainingTable** data structure for the **Hash Table** in *PyDASA*.
+Module to represent the **SCHashTable** data structure for the **Hash Table** in *PyDASA*.
 
 *IMPORTANT:* based on the implementations proposed by the following authors/books:
 
@@ -55,19 +55,19 @@ assert DFLT_PRIME
 # :data: DFLT_SC_ALPHA
 DFLT_SC_ALPHA: float = 4.0
 """
-Default load factor (*alpha*) for the *SeparateChainingTable*, by default is 4.0.
+Default load factor (*alpha*) for the *SCHashTable*, by default is 4.0.
 """
 
 # :data: MAX_SC_ALPHA
 MAX_SC_ALPHA: float = 8.0
 """
-Maximum load factor (*alpha*) for the *SeparateChainingTable*, by default is 8.0.
+Maximum load factor (*alpha*) for the *SCHashTable*, by default is 8.0.
 """
 
 # :data: MIN_SC_ALPHA
 MIN_SC_ALPHA: float = 2.0
 """
-Minimum load factor (*alpha*) for the *SeparateChainingTable*, by default is 2.0.
+Minimum load factor (*alpha*) for the *SCHashTable*, by default is 2.0.
 """
 
 
@@ -100,7 +100,7 @@ class Bucket(SingleLinkedList[T]):
 
 
 @dataclass
-class SeparateChainingTable(Generic[T]):
+class SCHashTable(Generic[T]):
 
     # boolean to indicate if the hash table can be rehashed
     # :attr: rehashable
@@ -138,7 +138,7 @@ class SeparateChainingTable(Generic[T]):
     # :attr: cmp_function
     cmp_function: Optional[Callable[[T, T], int]] = None
     """
-    Customizable comparison function for *SeparateChainingTable* and its *MapEntry* objects. Defaults to *dflt_cmp_func_ht()* from *PyDASA*, but can be overridden by the user.
+    Customizable comparison function for *SCHashTable* and its *MapEntry* objects. Defaults to *dflt_cmp_func_ht()* from *PyDASA*, but can be overridden by the user.
     """
 
     # actual place to store the entries in the hash table
@@ -152,7 +152,7 @@ class SeparateChainingTable(Generic[T]):
     # :attr: key
     key: Optional[str] = DFLT_DICT_KEY
     """
-    Customizable key name for identifying elements in the *SeparateChainingTable*. Defaults to *DFLT_DICT_KEY = '_id'* from *PyDASA*, but can be overridden by the user.
+    Customizable key name for identifying elements in the *SCHashTable*. Defaults to *DFLT_DICT_KEY = '_id'* from *PyDASA*, but can be overridden by the user.
     """
 
     # prime number (P) for the MAD compression function
@@ -230,11 +230,11 @@ class SeparateChainingTable(Generic[T]):
     # :attr: iodata
     iodata: Optional[List[T]] = None
     """
-    Optional Python list for loading external data intho the *SeparateChainingTable*. Defaults to *None* but can be provided during creation.
+    Optional Python list for loading external data intho the *SCHashTable*. Defaults to *None* but can be provided during creation.
     """
 
     def __post_init__(self) -> None:
-        """*__post_init__()* Initializes the *SeparateChainingTable* after creation by setting attributes like *rehashable*, *mcapacity*, *alpha*, *cmp_function*, *key*, *prime*, *scale*, *shift*, and *iodata*.
+        """*__post_init__()* Initializes the *SCHashTable* after creation by setting attributes like *rehashable*, *mcapacity*, *alpha*, *cmp_function*, *key*, *prime*, *scale*, *shift*, and *iodata*.
         It also sets the default values for the *min_alpha* and *max_alpha* attributes, which are used to control the load factor of the hash table.
 
         *NOTE:* Special method called automatically after object creation.
@@ -283,7 +283,7 @@ class SeparateChainingTable(Generic[T]):
             self._error_handler(err)
 
     def default_compare(self, key1: T, entry2: MapEntry) -> int:
-        """*default_compare()* Default comparison function for the *SeparateChainingTable* and its *MapEntry* objects. Compares the key of the *MapEntry* with the provided key *key1* and reurns:
+        """*default_compare()* Default comparison function for the *SCHashTable* and its *MapEntry* objects. Compares the key of the *MapEntry* with the provided key *key1* and reurns:
             - 0 if they are equal.
             - 1 if the *MapEntry* key is less than *key1*.
             - -1 if the *MapEntry* key is greater than *key1*.
@@ -303,32 +303,32 @@ class SeparateChainingTable(Generic[T]):
 
     @property
     def size(self) -> int:
-        """*size* Property to retrieve the number if entries (n) in the *SeparateChainingTable*.
+        """*size* Property to retrieve the number if entries (n) in the *SCHashTable*.
         Returns:
-            int: Number of entries (n) in the *SeparateChainingTable*.
+            int: Number of entries (n) in the *SCHashTable*.
         """
         return self._size
 
     @property
     def empty(self) -> bool:
-        """*empty* Property to check if the *SeparateChainingTable* has entries or not.
+        """*empty* Property to check if the *SCHashTable* has entries or not.
 
         Returns:
-            bool: True if the *SeparateChainingTable* is empty, False otherwise.
+            bool: True if the *SCHashTable* is empty, False otherwise.
         """
         return self._size == 0
 
     @property
     def collisions(self) -> int:
-        """*collisions* Property to retrieve the number of collisions in the *SeparateChainingTable*.
+        """*collisions* Property to retrieve the number of collisions in the *SCHashTable*.
 
         Returns:
-            int: Number of collisions in the *SeparateChainingTable*.
+            int: Number of collisions in the *SCHashTable*.
         """
         return self._collisions
 
     def clear(self) -> None:
-        """*clear()* function to reset the *SeparateChainingTable* to its initial state. It clears all the entries in the hash table and resets the size, collisions and current load factor.
+        """*clear()* function to reset the *SCHashTable* to its initial state. It clears all the entries in the hash table and resets the size, collisions and current load factor.
         """
         try:
             # reset the size, collisions and current load factor
@@ -651,16 +651,16 @@ class SeparateChainingTable(Generic[T]):
         error(_context, _function_name, err)
 
     def _check_type(self, entry: MapEntry) -> bool:
-        """*_check_type()* función propia de la estructura que revisa si el tipo de dato del registro (pareja llave-valor) que se desea agregar al *SeparateChainingTable* es del mismo tipo contenido dentro de los *MapEntry* del *SeparateChainingTable*.
+        """*_check_type()* función propia de la estructura que revisa si el tipo de dato del registro (pareja llave-valor) que se desea agregar al *SCHashTable* es del mismo tipo contenido dentro de los *MapEntry* del *SCHashTable*.
 
         Args:
-            element (T): elemento que se desea procesar en *SeparateChainingTable*.
+            element (T): elemento que se desea procesar en *SCHashTable*.
 
         Raises:
-            TypeError: error si el tipo de dato del elemento que se desea agregar no es el mismo que el tipo de dato de los elementos que ya contiene el *SeparateChainingTable*.
+            TypeError: error si el tipo de dato del elemento que se desea agregar no es el mismo que el tipo de dato de los elementos que ya contiene el *SCHashTable*.
 
         Returns:
-            bool: operador que indica si el ADT *SeparateChainingTable* es del mismo tipo que el elemento que se desea procesar.
+            bool: operador que indica si el ADT *SCHashTable* es del mismo tipo que el elemento que se desea procesar.
         """
         # TODO check usability of this function
         # if datastruct is empty, set the entry type
@@ -726,18 +726,18 @@ class SeparateChainingTable(Generic[T]):
         return True
 
     def __len__(self) -> int:
-        """*__len__()* function to return the number of entries (n) in the *SeparateChainingTable*.
+        """*__len__()* function to return the number of entries (n) in the *SCHashTable*.
 
         Returns:
-            int: Number of entries (n) in the *SeparateChainingTable*.
+            int: Number of entries (n) in the *SCHashTable*.
         """
         return self._size
 
     def __str__(self) -> str:
-        """*__str__()* function to return a string representation of the *SeparateChainingTable*.
+        """*__str__()* function to return a string representation of the *SCHashTable*.
 
         Returns:
-            str: string representation of the *SeparateChainingTable*.
+            str: string representation of the *SCHashTable*.
         """
         _attr_lt = []
         for attr, value in vars(self).items():
@@ -758,9 +758,9 @@ class SeparateChainingTable(Generic[T]):
         return _str
 
     def __repr__(self) -> str:
-        """*__repr__()* function to return a string representation of the *SeparateChainingTable*.
+        """*__repr__()* function to return a string representation of the *SCHashTable*.
 
         Returns:
-            str: string representation of the *SeparateChainingTable*.
+            str: string representation of the *SCHashTable*.
         """
         return self.__str__()

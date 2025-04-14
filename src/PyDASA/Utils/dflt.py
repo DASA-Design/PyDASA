@@ -35,7 +35,7 @@ Tuple with the native data types in Python that are comparable in the structures
 
 # default key for comparing dictionaries
 # :data: DFLT_DICT_KEY
-DFLT_DICT_KEY: str = "_id"
+DFLT_DICT_KEY: str = "_idx"
 """
 Default key field for comparing dictionaries in the structures.
 """

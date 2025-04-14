@@ -21,7 +21,6 @@ Supported Frameworks:
     - PHYSICAL: Traditional physical dimensional framework.
     - COMPUTATION: Computer science dimensional framework.
     - DIGITAL: Software architecture dimensional framework.
-    - DASA: Software architecture dimensional framework.
     - CUSTOM: User-defined dimensional framework.
 
 Default Patterns:
@@ -64,23 +63,23 @@ Physical FDUs Precedence Dictionary.
     - Luminous Intensity [J]: Perceived power of light in a given direction.
 """
 
-# Digital FDUs precedence dict
-# :attr: DIGI_FDU_PREC_DT
-DIGI_FDU_PREC_DT: dict = {
+# Computation FDUs precedence dict
+# :attr: COMPU_FDU_PREC_DT
+COMPU_FDU_PREC_DT: dict = {
     "T": "Time",
     "S": "Space",
     "N": "Complexity",
 }
 """
-Digital FDUs Precedence Dictionary.
+Computation FDUs Precedence Dictionary.
     - T: Time, the duration of an event or interval.
     - S: Space, the memory or storage capacity of a system.
     - N: Complexity, the measure of interconnectedness or intricacy in a system.
 """
 
 # Software Architecture FDUs precedence dict
-# :attr: DASA_FDU_PREC_DT
-DASA_FDU_PREC_DT: dict = {
+# :attr: DIGI_FDU_PREC_DT
+DIGI_FDU_PREC_DT: dict = {
     "T": "Time",
     "D": "Data",
     "C": "Complexity",
@@ -88,7 +87,7 @@ DASA_FDU_PREC_DT: dict = {
     "P": "Capacity",
 }
 """
-Dimensional Analysis Software Architecture (DASA) FDUs Precedence Dictionary.
+Digital or Dimensional Analysis Software Architecture (DASA) FDUs Precedence Dictionary.
         - T: Time, the duration of an event or interval.
         - D: Data, the information processed by a system.
         - C: Complexity, the measure of interconnectedness or intricacy in a component operation.

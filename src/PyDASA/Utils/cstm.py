@@ -9,8 +9,8 @@ Module **RegexManager** manages the regular expressions (regex) for validating t
 
 # native python modules
 # import dataclass for defining the node class
-from typing import List, Generic
-from dataclasses import dataclass, field
+from typing import List, Generic, Optional
+from dataclasses import dataclass
 # import modules for defining the MapEntry type
 
 # custom modules
@@ -21,11 +21,11 @@ from Src.PyDASA.Utils.dflt import T
 # import PyDASA's supported FDU frameworks
 from Src.PyDASA.Utils.cfg import FDU_FWK_DT
 # import PyDASA's default regex for FDU
-from Src.PyDASA.Utils.cfg import DFLT_FDU_PREC_LT
-from Src.PyDASA.Utils.cfg import DFLT_FDU_REGEX
+from Src.PyDASA.Utils.cfg import PHY_FDU_PREC_DT
+from Src.PyDASA.Utils.cfg import COMPU_FDU_PREC_DT
+from Src.PyDASA.Utils.cfg import DIGI_FDU_PREC_DT
 from Src.PyDASA.Utils.cfg import DFLT_POW_REGEX
-from Src.PyDASA.Utils.cfg import DFLT_NO_POW_REGEX
-from Src.PyDASA.Utils.cfg import DFLT_FDU_SYM_REGEX
+# from Src.PyDASA.Utils.cfg import DFLT_FDU_SYM_REGEX
 
 # import PyDASA's working regex for FDU, use 'as' to allow shared variable edition
 from Src.PyDASA.Utils import cfg as config
@@ -54,110 +54,152 @@ class RegexManager(Generic[T]):
     """
 
     # private attributes
+    # FDU framework, linked to FDU_FWK_DT
     # :attr: _fwk
     _fwk: str = "PHYSICAL"
     """
-    Framework of the FDU. It can be one of the following: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`. Useful for identifying the framework of the FDU.
+    # Framework of the FDU: `PHYSICAL`, `COMPUTATION`, `DIGITAL`, or `CUSTOM`. By default, it is set to `PHYSICAL`.
     """
 
-    # FDUs precedence list for the regex
+    # FDU precedence list for regex, linked to WKNG_FDU_PREC_LT.
     # :attr: _fdu_prec_lt
-    _fdu_prec_lt: List[str] = field(default_factory=lambda: DFLT_FDU_PREC_LT)
+    _fdu_prec_lt: Optional[List[str]] = None
     """
-    The FDU's precedence list for the regex. It is a list of strings with the FDUs in precedence order for creating the dimensional matrix.
+    # FDU precedence list for regex, defining the order of FDUs in the dimensional matrix.
     """
 
-    # FDUs matching regex pattern
+    # FDUs matching regex pattern, linked to WKNG_FDU_REGEX.
     # :attr: _fdu_regex
-    _fdu_regex: str = field(default_factory=lambda: DFLT_FDU_REGEX)
+    _fdu_regex: Optional[str] = None
     """
-    Main FDU regex pattern for matching FDUs in *PyDASA*. It is a string for matching FDUs from a formula or parameter into the dimensional matrix.
+    Main FDU regex pattern for matching FDUs in *PyDASA*. It is a string for matching FDUs from a formula or parameter into the dimensional matrix. (e.g., 'M/L*T^-2' to 'M^1*L^-1*T^-2').
     """
 
-    # FDUs matching regex pattern for dimensions with exponent
+    # FDUs matching regex pattern for dimensions with exponents, linked to WKNG_POW_REGEX.
     # :attr: _fdu_pow_regex
-    _fdu_pow_regex: str = field(default_factory=lambda: DFLT_POW_REGEX)
+    _fdu_pow_regex: Optional[str] = None
     """
-    Regex pattern for matching FDUs with exponents in *PyDASA*. It is a string  for matching FDUs with exponents from a formula or parameter into the dimensional matrix.
+    Regex pattern for matching FDUs with exponents (e.g., 'M*L^-1*T^-2' to 'M^(1)*L^(-1)*T^(-2)').
     """
 
-    # FDUs matching regex pattern for dimensions without exponent
+    # FDUs matching regex pattern for dimensions without exponents, linked to WKNG_NO_POW_REGEX.
     # :attr: _fdu_no_pow_regex
-    _fdu_no_pow_regex: str = field(default_factory=lambda: DFLT_NO_POW_REGEX)
+    _fdu_no_pow_regex: Optional[str] = DFLT_POW_REGEX
     """
-    Regex pattern for matching FDUs without exponents in *PyDASA*. It is a string for matching FDUs without exponents from a formula or parameter into the dimensional matrix.
-
-    IMPORTAN: This is the ONLY regex that doesnt change with the custom regex.
+    Regex pattern for matching FDUs without exponents (e.g., 'M*L*T' to 'M^(1)*L^(1)*T^(1)'). IMPORTANT: This regex does not change with custom regex.
     """
 
-    # FDUs matching regex pattern for dimensions in Sympy symbolic processor
+    # FDUs matching regex pattern for dimensions in Sympy symbolic processor, linked to WKNG_FDU_SYM_REGEX.
     # :attr: _fdu_sym_regex
-    _fdu_sym_regex: str = field(default_factory=lambda: DFLT_FDU_SYM_REGEX)
+    _fdu_sym_regex: Optional[str] = None
     """
-    Regex pattern for matching FDUs in Sympy symbolic processor. It is a string for matching FDUs in Latex/str format into Python's Sympy symbolic processor for the dimensional matrix.
+    Regex pattern for matching FDUs in Sympy (e.g., 'M^(1)*L^(-1)*T^(-2)' to 'L**(-1)*M**(1)*T**(-2)').
     """
 
     # public attributes
-    # Custom flag to indicate if a custom regex is being used
-    # :attr: custom
-    custom: bool = False
-    """
-    Custom flag to indicate if a custom FDU regex is being used. If True, the user can define their own FDUs and regex patterns.
-    """
 
     def __post_init__(self) -> None:
-        """*__post_init__()* configure the the *RegexManager* instance after initialization.
+        """*__post_init__()* initializes the *RegexManager* instance and sets up regex patterns for FDUs.
 
         Raises:
-            ValueError: If the FDUs precedence list is empty or contains invalid characters.
+            ValueError: error if the CUSTOM framework lacks a precedence list.
+            ValueError: error if the framework is invalid.
         """
-        # TODO configure FDUs if it is traditional physical system
-        # TODO configure FDUs if it is Computational system
-        # TODO configure FDUs if it is DASA system
-        # TODO configure FDUs if it is CUSTOM system
-        # check if the user is using custom regex
-        if self.custom:
-            self.setup_wkng_regex()
+        # if the framework is not CUSTOM with NO FDU precedence list
+        if self.fwk != "CUSTOM" and not self.fdu_prec_lt:
+            # set the default FDU precedence list based on the framework
+            self.fdu_prec_lt = self._get_dflt_prec_lt()
+        # if the framework not CUSTOM with FDU precedence list
+        elif self.fwk != "CUSTOM" and self.fdu_prec_lt:
+            # set the framework to CUSTOM
+            self.fwk = "CUSTOM"
+        # if the framework is CUSTOM with NO FDU precedence list
+        elif self.fwk == "CUSTOM" and not self.fdu_prec_lt:
+            # raise an error
+            _msg = "FDUs precedence list must be a non-empty list of strings. "
+            _msg += f"Provided: {self.fdu_prec_lt}"
+            raise ValueError(_msg)
+        # otherwise, the framework is not valid
+        else:
+            _msg = "Invalid framework or FDU precedence list."
+            _msg += "Framework must be one of the following: "
+            _msg += f"{', '.join(FDU_FWK_DT.keys())}."
+            raise ValueError(_msg)
+        # always setup the working regex patterns based on the FDU precedence list.
+        self.setup_wkng_regex()
+
+    def _get_dflt_prec_lt(self) -> List[str]:
+        """*_get_dflt_prec_lt()* get the default FDU precedence list based on the framework.
+
+        Raises:
+            ValueError: error if the framework is invalid.
+
+        Returns:
+            List[str]: Default FDU precedence list based on the framework.
+        """
+        # if the framework is one of the supported ones
+        if self.fwk == "PHYSICAL":
+            return list(PHY_FDU_PREC_DT.keys())
+        if self.fwk == "COMPUTATION":
+            return list(COMPU_FDU_PREC_DT.keys())
+        if self.fwk == "DIGITAL":
+            return list(DIGI_FDU_PREC_DT.keys())
+        # otherwise, raise an error
+        _msg = f"Invalid framework: {self.fwk}. "
+        _msg += "Framework must be one of the following: "
+        _msg += f"{', '.join(FDU_FWK_DT.keys())}."
+        raise ValueError(_msg)
 
     def setup_wkng_regex(self) -> None:
-        """*setup_wkng_regex()* setup the working (custom or otherwise) regex patterns for FDUs in *PyDASA* based on the user-defined FDU precedence list.
+        """*_setup_wkng_regex()* Initializes the *RegexManager* instance and sets up regex patterns for FDUs.
 
-        This method is called after the constructor of the *RegexManager* class if the user has defined desired.
+        Raises:
+            ValueError: If the CUSTOM framework lacks a precedence list or if the framework is invalid.
         """
-        # compile the custom regex patterns for FDUs
-        self._compile_wkng_vars()
-        # update the global variables with the custom regex patterns
-        self._update_wkng_vars()
+        if all(isinstance(i, str) for i in self.fdu_prec_lt):
+            # compile the custom regex patterns for FDUs
+            self._compile_wkng_vars()
+            # update the global variables with the custom regex patterns
+            self._update_wkng_vars()
+        else:
+            _msg = "FDUs precedence list must be a non-empty list of strings. "
+            _msg += f"Provided: {self.fdu_prec_lt}"
+            raise ValueError(_msg)
 
     def _compile_wkng_vars(self) -> None:
-        """*_compile_wkng_vars()* compile working (custom or otherwise) regex patterns for FDUs in *PyDASA* based on the user-defined FDU precedence list.
+        """*_compile_wkng_vars()* compiles regex patterns for FDUs based on the provided precedence list. Creates regex patterns for:
+            - FDUs with exponents.
+            - FDUs without exponents.
+            - FDUs in Sympy symbolic processor.
         """
-        # dimensional precedence list
-        # check for valid custom dimensional precedence list
+        # FDU precedence list
+        # check for valid custom FDU precedence list
         self.fdu_prec_lt = self._fdu_prec_lt
+        # creating the FDU precedence list string
+        _fdu_chars = ''.join(self.fdu_prec_lt)
 
-        # compile dimensional regex patterns
-        self._fdu_regex = rf"^[{''.join(self.fdu_prec_lt)}](\^-?\d+)?(\*[{''.join(self.fdu_prec_lt)}](?:\^-?\d+)?)*$"
-        # check for valid dimensional custom regex
+        # compile FDU regex patterns
+        self._fdu_regex = rf"^[{_fdu_chars}](\^-?\d+)?(\*[{''.join(self.fdu_prec_lt)}](?:\^-?\d+)?)*$"
+        # check for valid FDU custom regex
         self.fdu_regex = self._fdu_regex
 
-        # compile dimensional regex patterns with exponent
+        # compile FDU regex patterns with exponent
         self._fdu_pow_regex = DFLT_POW_REGEX
-        # check for valid dimensional custom regex
+        # check for valid FDU custom regex
         self.fdu_pow_regex = self._fdu_pow_regex
 
-        # compile dimensional regex patterns without exponent
-        self._fdu_no_pow_regex = rf"[{''.join(self.fdu_prec_lt)}](?!\^)"
-        # check for valid dimensional custom regex
+        # compile FDU regex patterns without exponent
+        self._fdu_no_pow_regex = rf"[{_fdu_chars}](?!\^)"
+        # check for valid FDU custom regex
         self.fdu_no_pow_regex = self._fdu_no_pow_regex
 
-        # compile dimensional regex patterns in Sympy symbolic processor
-        self._fdu_sym_regex = rf"[{''.join(self.fdu_prec_lt)}]"
-        # check for valid dimensional custom regex
+        # compile FDU regex patterns in Sympy symbolic processor
+        self._fdu_sym_regex = rf"[{_fdu_chars}]"
+        # check for valid FDU custom regex
         self.fdu_sym_regex = self._fdu_sym_regex
 
     def _update_wkng_vars(self) -> None:
-        """*_update_wkng_vars()* updates the global variables with the working (custom or otherwise) regex patterns compiled with the FDU's precedence list of the user.
+        """*_update_wkng_vars()* Updates the global *config* variables with custom regex patterns for FDUs.
         """
         # update global variables with the custom regex patterns
         config.WKNG_FDU_PREC_LT = self._fdu_prec_lt
@@ -165,6 +207,32 @@ class RegexManager(Generic[T]):
         config.WKNG_POW_REGEX = self._fdu_pow_regex
         config.WKNG_NO_POW_REGEX = self._fdu_no_pow_regex
         config.WKNG_FDU_SYM_REGEX = self._fdu_sym_regex
+
+    @property
+    def fwk(self) -> str:
+        """*fwk* property to get the framework of the FDU.
+
+        Returns:
+            str: Framework of the FDU. It can be one of the following: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`.
+        """
+        return self._fwk
+
+    @fwk.setter
+    def fwk(self, value: str) -> None:
+        """*fwk* property of the allowed framework of the FDU.
+
+        Args:
+            value (str): Framework of the FDU. It can be one of the following: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`.
+
+        Raises:
+            ValueError: If the framework is not one of the allowed values.
+        """
+        if value not in FDU_FWK_DT.keys():
+            _msg = f"Invalid framework: {value}. "
+            _msg += "Framework must be one of the following: "
+            _msg += f"{', '.join(FDU_FWK_DT.keys())}."
+            raise ValueError(_msg)
+        self._fwk = value
 
     @property
     def fdu_prec_lt(self) -> List[str]:
@@ -290,32 +358,6 @@ class RegexManager(Generic[T]):
             _msg += f"Provided: {value}"
             raise ValueError(_msg)
         self._fdu_sym_regex = value
-
-    @property
-    def fwk(self) -> str:
-        """*fwk* property to get the framework of the FDU.
-
-        Returns:
-            str: Framework of the FDU. It can be one of the following: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`.
-        """
-        return self._fwk
-
-    @fwk.setter
-    def fwk(self, value: str) -> None:
-        """*fwk* property of the allowed framework of the FDU.
-
-        Args:
-            value (str): Framework of the FDU. It can be one of the following: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`.
-
-        Raises:
-            ValueError: If the framework is not one of the allowed values.
-        """
-        if value not in FDU_FWK_DT.keys():
-            _msg = f"Invalid framework: {value}. "
-            _msg += "Framework must be one of the following: "
-            _msg += f"{', '.join(FDU_FWK_DT.keys())}."
-            raise ValueError(_msg)
-        self._fwk = value
 
     def __str__(self) -> str:
         """*__str__()* get the string representation of the *RegexManager* instance.

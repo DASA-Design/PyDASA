@@ -144,7 +144,6 @@ class DimensionalModel(Generic[T]):
         """
         # TODO implement this method
         # TODO complete docstring
-        
         pass
 
     def _config_fdu_precedence(self, lt: List[dict]) -> None:

@@ -88,11 +88,6 @@ print(p, "\n")
 v = Variable()
 print(v, "\n")
 
-rm = RegexManager(custom=True,
-                  _fdu_prec_lt=["T", "D", "C"],)
-print(rm, "\n")
-# rm.update_global_vars()
-
 p1 = Parameter(name="U_1",
                description="Service Rate",
                _sym="U_{1}",
@@ -100,11 +95,19 @@ p1 = Parameter(name="U_1",
                _idx=1,
                _cat="INPUT",
                _units="kPa",
-               _dims="C*T^-1",)
+               _dims="M*T^-2*L^-1",)
 print(p1, "\n")
 
 fdu = FDU()
 print(fdu, "\n")
+
+rm = RegexManager(_fdu_prec_lt=["T", "D", "C"],)
+print(rm, "\n")
+
+rm = RegexManager(_fwk="DIGITAL",)
+print(rm, "\n")
+
+# rm.update_global_vars()
 
 fdu_lt = [
     {"_id": 1, "_sym": "T", "_fwk": "PHYSICAL", "_prec": 0, "desription": "Time"},

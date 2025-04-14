@@ -1,6 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
 """
-Module for solving the Dimensional Model in *PyDASA*. Defines the *DimensionalModel* for managing dimensional data and the *DimensionalAnalyzer* for performing dimensional analysis.
+Module for solving the Dimensional Model in *PyDASA*.
 
 1. **DimensionalModel**:
     - Manages the structure and data of the dimensional system.
@@ -49,14 +49,17 @@ from Src.PyDASA.Utils.dflt import T
 from Src.PyDASA.Utils import cfg as config
 
 # Generalizing input type for class typing
-FDUElm = Union[FDU, dict, str]
-Params = Union[Parameter, dict, str]
+FDUElm = Union[FDU, dict]
 FDUEnt = MapEntry[Tuple[str, FDU]]
 
 # checking custom modules
 assert error
 assert config
 assert T
+
+# global variables
+MAX_OUT: int = 1
+MAX_IN: int = 10
 
 
 @dataclass
@@ -89,30 +92,30 @@ class DimensionalModel(Generic[T]):
     Framework the *DimensionalModel* follows in accordance with the FDU. It can be one of the following: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`. Parameters and FDUs must be in the same framework.
     """
 
-    # FDU regex manager
-    # :attr: _fdu_regex
-    _fdu_regex: RegexManager = field(default_factory=lambda: RegexManager)
-    """
-    FDU regex manager. It is used to validate and configure the FDU's symbols, working regex, and precedence list.
-    """
-
     # FDUs hash table
     # :attr: _fdu_ht
-    _fdu_ht: SCHashTable[FDUEnt] = field(default_factory=SCHashTable[FDUEnt])
+    _fdu_ht: SCHashTable[FDUEnt] = field(default_factory=SCHashTable)
     """
     FDU hash table. Custom hash table for storing FDUs. It is a dictionary-like structure that allows for fast lookups and insertions.
     """
 
+    # FDU regex manager
+    # :attr: _fdu_regex
+    _fdu_regex: RegexManager = field(default_factory=RegexManager)
+    """
+    FDU regex manager. It is used to validate and configure the FDU's symbols, working regex, and precedence list.
+    """
+
     # List of parameters
     # :attr: _param_lt
-    _param_lt: List[Parameter] = field(default_factory=list[Parameter])
+    _param_lt: List[Parameter] = field(default_factory=list)
     """
     List of *Parameter* objects. It is used to store the parameters of the system and is the base for the relevance list.
     """
 
     # List of relevant parameters
     # :attr: _relevance_lt
-    _relevance_lt: List[Parameter] = field(default_factory=list[Parameter])
+    _relevance_lt: List[Parameter] = field(default_factory=list)
     """
     List of relevant *Parameter* objects. It is used to store the parameters use to solve the Dimensional Matrix. It is a subset of the `_param_lt` list with the 'relevance' attribute set to `True`.
     """
@@ -184,34 +187,32 @@ class DimensionalModel(Generic[T]):
             "DIGITAL": config.DIGI_FDU_PREC_DT,
         }
         # get the framework dictionary
-        _cfg_dt = _frk_dt.get(self._fwk, {})
+        fdu_data = _frk_dt.get(self._fwk, {})
         # if the framework is not valid, raise an error
-        if not _cfg_dt:
+        if not fdu_data:
             _msg = f"Invalid framework: {self._fwk}. "
-            _msg += "Framework must be one of the following: "
+            _msg += "Must be one of the following: "
             _msg += f"{', '.join(config.FDU_FWK_DT.keys())}."
             raise ValueError(_msg)
         # otherwise, configure the FDUs
-        for i, (_sym, _desc) in enumerate(_cfg_dt.items()):
-            t_fdu = FDU(_sym=_sym,
-                        _fwk=self._fwk,
-                        _idx=i,
-                        name=_desc,
-                        description=_desc)
-            self._fdu_ht.insert(t_fdu.sym, t_fdu)
-            i += 1
+        for i, (_sym, _desc) in enumerate(fdu_data.items()):
+            _fdu = FDU(_sym=_sym,
+                       _fwk=self._fwk,
+                       _idx=i,
+                       name=_desc,
+                       description=_desc)
+            self._fdu_ht.insert(_fdu.sym, _fdu)
 
     def _configure_custom_fdus(self) -> None:
         """*configure_custom_fdus()* configures the custom FDUs in the hash table. It uses the `io_fdu` attribute to determine the framework of the FDUs.
         """
         # TODO maybe I can improve this for more genericity
-        for i, t_fdu in enumerate(self.io_fdu):
+        for i, fdu_data in enumerate(self.io_fdu):
             # standarize all frameworks to be the same
-            t_fdu["_fwk"] = self._fwk
-            t_fdu["_idx"] = i
-            fdu = FDU(**t_fdu)
+            fdu_data["_fwk"] = self._fwk
+            fdu_data["_idx"] = i
+            fdu = FDU(**fdu_data)
             self._fdu_ht.insert(fdu.sym, fdu)
-            i += 1
 
     def _setup_fdu_precedence(self) -> None:
         """_setup_fdu_precedence _summary_
@@ -220,16 +221,14 @@ class DimensionalModel(Generic[T]):
             ValueError: _description_
         """
         # TODO maybe I can improve this for more genericity
+        global MAX_IN
         if self._fdu_ht.empty:
             _msg = "FDU hash table is empty. "
             _msg += f"Current Size: {self._fdu_ht.size()}."
             _msg += "Please configure the FDU hash table before setting up the precedence list."
             raise ValueError(_msg)
-        _fdu_keys = self._fdu_ht.keys()
-        _fdu_prec_lt = []
-        for fdu in _fdu_keys:
-            _fdu_prec_lt.append(fdu)
-        config.DFLT_FDU_PREC_LT = _fdu_prec_lt
+        config.DFLT_FDU_PREC_LT = list(self._fdu_ht.keys())
+        MAX_IN = len(config.DFLT_FDU_PREC_LT)
 
     def _setup_fdu_regex(self) -> None:
         """_setup_fdu_regex _summary_
@@ -311,10 +310,118 @@ class DimensionalModel(Generic[T]):
         """
         if value not in config.FDU_FWK_DT.keys():
             _msg = f"Invalid framework: {value}. "
-            _msg += "Framework must be one of the following: "
+            _msg += "Must be one of the following: "
             _msg += f"{', '.join(config.FDU_FWK_DT.keys())}."
             raise ValueError(_msg)
         self._fwk = value
+
+    @property
+    def param_lt(self) -> List[Parameter]:
+        """*param_lt* property to get the list of parameters in the *DimensionalModel*.
+
+        Returns:
+            List[Parameter]: List of *Parameter* objects.
+        """
+        return self._param_lt
+
+    @param_lt.setter
+    def param_lt(self, value: List[Parameter]) -> None:
+        """*param_lt* property to set the list of parameters in the *DimensionalModel*. It must be a list of *Parameter* objects.
+
+        Args:
+            value (List[Parameter]): List of *Parameter* objects.
+
+        Raises:
+            ValueError: If the parameter list is empty.
+        """
+        if not value:
+            _msg = "Parameter list cannot be empty. "
+            _msg += f"Provided: {value}"
+            raise ValueError(_msg)
+        if not all(isinstance(p, Parameter) for p in value):
+            _msg = "Parameter list must be a list of Parameter objects. "
+            _msg += f"Provided: {value}"
+            raise ValueError(_msg)
+        value = self._adjust_param_lt(value)
+        self._param_lt = value
+
+    def _adjust_param_lt(self, param_lt: List[Parameter]) -> List[Parameter]:
+        """*_adjust_param_lt()* adjusts the parameter list to set the framework and index of the parameters.
+
+        Args:
+            param_lt (List[Parameter]): List of *Parameter* objects.
+
+        Returns:
+            List[Parameter]: Adjusted list of *Parameter* objects.
+        """
+        # validate the parameter list
+        if self._validate_param_lt(param_lt):
+            # check if there is a precedence on the parameters
+            if all(p.idx == -1 for p in param_lt):
+                # set the index of the parameters
+                for i, param in enumerate(param_lt):
+                    param.idx = i
+                    # fix the framework of the parameters
+                    param.fwk = self._fwk
+        return param_lt
+
+    def _validate_param_lt(self, param_lt: List[Parameter]) -> bool:
+        """*_validate_param_lt()* validates the parameter list. It checks if the number of inputs, outputs, and control parameters are valid.
+
+        Args:
+            param_lt (List[Parameter]): List of *Parameter* objects.
+
+        Raises:
+            ValueError: error if there is more than one output *Parameter*.
+            ValueError: error if there is no output *Parameter*.
+            ValueError: error if there are more inputs *Parameter* than FDUs.
+            ValueError: error if there are no input *Parameter*.
+
+        Returns:
+            bool: True if the parameter list is valid, False otherwise.
+        """
+        self._n_param = len(param_lt)
+        self._n_in = len([p for p in param_lt if p.cat == "INPUT"])
+        self._n_out = len([p for p in param_lt if p.cat == "OUTPUT"])
+        self._n_ctrl = self._n_param - self._n_in - self._n_out
+
+        # check if the number of outputs is valid, ONLY ONE OUTPUT!
+        if self._n_out > MAX_OUT:
+            _msg = f"Number of outputs is invalid: {self._n_out}. "
+            _msg += f"Maximum allowed: {MAX_OUT}."
+            raise ValueError(_msg)
+        if self._n_out == 0:
+            _msg = "No output parameter defined. "
+            _msg += "At least one output parameter is required."
+            raise ValueError(_msg)
+        # check if the number of inputs is valid
+        if self._n_in > MAX_IN:
+            _msg = f"Number of inputs is invalid: {self._n_in}. "
+            _msg += f"Maximum allowed: {MAX_IN}."
+            raise ValueError(_msg)
+        if self._n_in == 0:
+            _msg = "No input parameter defined. "
+            _msg += "At least one input parameter is required."
+            raise ValueError(_msg)
+        return True
+
+    @property
+    def relevance_lt(self) -> List[Parameter]:
+        """*relevance_lt* property to get the list of relevant parameters in the *DimensionalModel*. It is a subset of the `_param_lt` list with the 'relevant' attribute set to `True`.
+
+        Returns:
+            List[Parameter]: List of relevant *Parameter* objects.
+        """
+        return self._relevance_lt
+
+    @relevance_lt.setter
+    def relevance_lt(self, param_lt: List[Parameter]) -> None:
+        """*set_relevance_lt()* sets the relevance list of the *DimensionalModel*. It is a subset of the `_param_lt` list with the 'relevance' attribute set to `True`.
+
+        Args:
+            param_lt (List[Parameter]): List of *Parameter* objects.
+        """
+        self._relevance_lt = [p for p in param_lt if p.relevant]
 
     def _error_handler(self, err: Exception) -> None:
         """*_error_handler()* to process the context (package/class), function name (method), and the error (exception) that was raised to format a detailed error message and traceback.

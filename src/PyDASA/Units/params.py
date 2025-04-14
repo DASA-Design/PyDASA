@@ -50,7 +50,7 @@ class Parameter(Generic[T]):
             - `_cat`: The category of the Parameter. It can be one of the following: `INPUT`, `OUTPUT`, or `CONTROL`.
             - `name`: The name of the Parameter.
             - `description`: The description of the Parameter.
-            - `relevance`: The relevance of the Parameter. It can be `True` or `False`.
+            - `relevant`: If a Parameter is important or not. It can be `True` or `False`.
     """
 
     # Private attributes with validation logic
@@ -129,8 +129,8 @@ class Parameter(Generic[T]):
     Description of the *Parameter*. It is a small summary of the parameter.
     """
 
-    # :attr: _relevance
-    relevance: bool = False
+    # :attr: relevant
+    relevant: bool = False
     """
     Boolean value indicating if the *Parameter* is relevant or not. It is used to identify whether the parameter is inside the main dimensional matrix or not.
     """
@@ -526,10 +526,10 @@ class Parameter(Generic[T]):
         self._units = ""
         self.name = ""
         self.description = ""
-        self.relevance = False
+        self.relevant = False
 
     def __str__(self) -> str:
-        """*__str__()* returns a string representation of the *Parameter* object. It includes the ID, symbol, framework, dimensions, category, Units of Measure, name, description, and relevance.
+        """*__str__()* returns a string representation of the *Parameter* object. It includes the ID, symbol, framework, dimensions, category, Units of Measure, name, description, and relevant.
 
         Returns:
             str: String representation of the *Parameter* object.

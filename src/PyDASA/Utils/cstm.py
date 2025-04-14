@@ -99,7 +99,7 @@ class RegexManager(Generic[T]):
     # public attributes
 
     def __post_init__(self) -> None:
-        """__post_init__ _summary_
+        """*__post_init__()* initializes the *RegexManager* instance. It sets up the FDU framework, precedence list, and regex patterns for FDUs.
         """
         try:
             # configure working FDUs precedence list
@@ -110,10 +110,10 @@ class RegexManager(Generic[T]):
             self._error_handler(err)
 
     def setup_precedence(self) -> None:
-        """setup_precedence _summary_
+        """*_setup_precedence()* initializes the FDU framework and sets up the FDUs precedence list.
 
         Raises:
-            ValueError: _description_
+            ValueError: error if the framework is invalid.
         """
         # if the framework is supported
         if self.fwk in FDU_FWK_DT and self.fwk != "CUSTOM":
@@ -122,7 +122,7 @@ class RegexManager(Generic[T]):
         # if the framework is user-defined
         elif self.fwk == "CUSTOM" and self.fdu_prec_lt:
             # Use the provided custom precedence list
-            # self.fdu_prec_lt = self._fdu_prec_lt
+            self.fdu_prec_lt = self._fdu_prec_lt
             pass
         # otherwise, raise an error
         else:
@@ -132,6 +132,14 @@ class RegexManager(Generic[T]):
             raise ValueError(_msg)
 
     def _get_default_precedence(self) -> List[str]:
+        """*_get_default_precedence()* returns the default FDUs precedence list based on the framework.
+
+        Raises:
+            ValueError: error if the framework is invalid.
+
+        Returns:
+            List[str]: Default FDUs precedence list based on the framework.
+        """
         # map for easy access to the FDUs
         _frk_dt = {
             "PHYSICAL": PHY_FDU_PREC_DT,
@@ -146,11 +154,6 @@ class RegexManager(Generic[T]):
         _msg += "Must be one of the following: "
         _msg += f"{', '.join(FDU_FWK_DT.keys())}."
         raise ValueError(_msg)
-
-    def _setup_custom_precedence(self) -> None:
-        # FIXME unnecessary function, remove it later
-        # check for valid custom FDU precedence list
-        self.fdu_prec_lt = self._fdu_prec_lt
 
     def setup_regex(self) -> None:
         """*_setup_wkng_regex()* Initializes the *RegexManager* instance and sets up regex patterns for FDUs.

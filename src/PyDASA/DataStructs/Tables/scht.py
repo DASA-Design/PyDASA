@@ -330,79 +330,28 @@ class SCHashTable(Generic[T]):
     def clear(self) -> None:
         """*clear()* function to reset the *SCHashTable* to its initial state. It clears all the entries in the hash table and resets the size, collisions and current load factor.
         """
-        try:
-            # reset the size, collisions and current load factor
-            self._size = 0
-            self._collisions = 0
-            self._cur_alpha = 0
-            # clear the bukets in the hash table
-            for _bucket in self.hash_table:
-                _bucket.clear()
-            # clear the hash table itself
-            self.hash_table.clear()
-        except Exception as err:
-            self._error_handler(err)
+        # reset the size, collisions and current load factor
+        self._size = 0
+        self._collisions = 0
+        self._cur_alpha = 0
+        # clear the bukets in the hash table
+        for _bucket in self.hash_table:
+            _bucket.clear()
+        # clear the hash table itself
+        self.hash_table.clear()
 
     def insert(self, key: T, value: T) -> None:
-        """insert _summary_
+        """*insert()* adds a new entry to the *SCHashTable*. It creates a new *MapEntry* object with the key-value pair.
 
         Args:
-            key (T): _description_
-            value (T): _description_
+            key (T): key for the entry.
+            value (T): value for the entry.
         """
-        try:
-            # create a new entry for the hash table
-            _new_entry = MapEntry(key, value)
-            _idx = -1
-            # cheking the type of the entry
-            if self._check_type(_new_entry):
-                # get the hash key for the entry
-                _hash = mad_hash(key,
-                                 self._scale,
-                                 self._shift,
-                                 self.prime,
-                                 self.mcapacity)
-
-                # checking the bucket
-                _bucket = self.hash_table.get(_hash)
-                # check if the bucket is empty
-                if not _bucket.empty:
-                    _idx = _bucket.index_of(key)
-                # the entry is not in the bucket, add it and a collision
-                # the entry is already in the bucket, update it
-                if _idx > -1:
-                    _bucket.update(_idx, _new_entry)
-                # otherwise, is a new entry
-                else:
-                    if _bucket.size >= 1:
-                        self._collisions += 1
-                    _bucket.append(_new_entry)
-                    self._size += 1
-                    self._cur_alpha = self._size / self.mcapacity
-                # check if the structure needs to be rehashed
-                if self._cur_alpha >= self.max_alpha:
-                    self.resize()
-        except Exception as err:
-            self._error_handler(err)
-
-    def get_entry(self, key: T) -> Optional[MapEntry]:
-        """get_entry _summary_
-
-        Args:
-            key (T): _description_
-
-        Raises:
-            IndexError: _description_
-
-        Returns:
-            Optional[MapEntry]: _description_
-        """
-        try:
-            if self.empty:
-                raise IndexError("Empty data structure")
-            # assume the entry is not in the structure
-            entry = None
-            idx = -1
+        # create a new entry for the hash table
+        _new_entry = MapEntry(key, value)
+        _idx = -1
+        # cheking the type of the entry
+        if self._validate_type(_new_entry):
             # get the hash key for the entry
             _hash = mad_hash(key,
                              self._scale,
@@ -414,136 +363,165 @@ class SCHashTable(Generic[T]):
             _bucket = self.hash_table.get(_hash)
             # check if the bucket is empty
             if not _bucket.empty:
-                idx = _bucket.index_of(key)
-            # if the entry is in the bucket, return it
-            if idx > -1:
-                entry = _bucket.get(idx)
-            return entry
-        except Exception as err:
-            self._error_handler(err)
+                _idx = _bucket.index_of(key)
+            # the entry is not in the bucket, add it and a collision
+            # the entry is already in the bucket, update it
+            if _idx > -1:
+                _bucket.update(_new_entry, _idx)
+            # otherwise, is a new entry
+            else:
+                if _bucket.size >= 1:
+                    self._collisions += 1
+                _bucket.append(_new_entry)
+                self._size += 1
+                self._cur_alpha = self._size / self.mcapacity
+            # check if the structure needs to be rehashed
+            if self._cur_alpha >= self.max_alpha:
+                self.resize()
+
+    def get_entry(self, key: T) -> Optional[MapEntry]:
+        """*get_entry()* retrieves an entry from the *SCHashTable* using the provided key.
+
+        Args:
+            key (T): key for the entry.
+
+        Raises:
+            IndexError: error if the *SCHashTable* is empty.
+
+        Returns:
+            Optional[MapEntry]: *MapEntry* object with the key-value pair if found, None otherwise.
+        """
+        if self.empty:
+            raise IndexError("Empty data structure")
+        # assume the entry is not in the structure
+        entry = None
+        idx = -1
+        # get the hash key for the entry
+        _hash = mad_hash(key,
+                         self._scale,
+                         self._shift,
+                         self.prime,
+                         self.mcapacity)
+        # checking the bucket
+        _bucket = self.hash_table.get(_hash)
+        # check if the bucket is empty
+        if not _bucket.empty:
+            idx = _bucket.index_of(key)
+        # if the entry is in the bucket, return it
+        if idx > -1:
+            entry = _bucket.get(idx)
+        return entry
 
     def get_bucket(self, key: T) -> Optional[Bucket]:
-        """get_bucket _summary_
+        """*get_bucket()* retrieves the bucket containing the key-value pair from the *SCHashTable* using the provided key.
 
         Args:
-            key (T): _description_
+            key (T): key for the entry.
 
         Raises:
-            IndexError: _description_
+            IndexError: error if the *SCHashTable* is empty.
 
         Returns:
-            Optional[Bucket]: _description_
+            Optional[Bucket]: *Bucket* object containing the key-value pair if found, None otherwise.
         """
-        try:
-            if self.empty:
-                raise IndexError("Empty data structure")
-            # assume the entry is not in the structure
+        if self.empty:
+            raise IndexError("Empty data structure")
+        # assume the entry is not in the structure
+        _bucket = None
+        # get the hash key for the entry
+        _hash = mad_hash(key,
+                         self._scale,
+                         self._shift,
+                         self.prime,
+                         self.mcapacity)
+        # recover the bucket
+        _bucket = self.hash_table.get(_hash)
+        # ceck if the bucket is empty
+        if _bucket.empty:
             _bucket = None
-            # get the hash key for the entry
-            _hash = mad_hash(key,
-                             self._scale,
-                             self._shift,
-                             self.prime,
-                             self.mcapacity)
-
-            # recover the bucket
-            _bucket = self.hash_table.get(_hash)
-            # ceck if the bucket is empty
-            if _bucket.empty:
-                _bucket = None
-            # otherwise, return the bucket
-            return _bucket
-        except Exception as err:
-            self._error_handler(err)
+        # otherwise, return the bucket
+        return _bucket
 
     def is_present(self, key: T) -> bool:
-        """is_present _summary_
+        """*is_present()* checks if the provided key is present in the *SCHashTable*.
 
         Args:
-            key (T): _description_
+            key (T): key for the entry.
 
         Raises:
-            IndexError: _description_
+            IndexError: error if the *SCHashTable* is empty.
 
         Returns:
-            bool: _description_
+            bool: True if the key is present in the *SCHashTable*, False otherwise.
         """
-        try:
-            if self.empty:
-                raise IndexError("Empty data structure")
-            # assume the entry is not in the structure
-            found = False
-            # use the MAD compression function to get the hash key
-            _hash = mad_hash(key,
-                             self._scale,
-                             self._shift,
-                             self.prime,
-                             self.mcapacity)
-            # look into the bucket
-            _bucket = self.hash_table.get(_hash)
-            _idx = _bucket.index_of(key)
-            # if the entry is in the bucket, return True
-            if _idx > -1:
-                found = True
-            return found
-        except Exception as err:
-            self._error_handler(err)
+        if self.empty:
+            raise IndexError("Empty data structure")
+        # assume the entry is not in the structure
+        found = False
+        # use the MAD compression function to get the hash key
+        _hash = mad_hash(key,
+                         self._scale,
+                         self._shift,
+                         self.prime,
+                         self.mcapacity)
+        # look into the bucket
+        _bucket = self.hash_table.get(_hash)
+        _idx = _bucket.index_of(key)
+        # if the entry is in the bucket, return True
+        if _idx > -1:
+            found = True
+        return found
 
     def delete(self, key: T) -> Optional[MapEntry]:
-        """delete _summary_
+        """*delete()* removes an entry from the *SCHashTable* using the provided key.
 
         Args:
-            key (T): _description_
+            key (T): key for the entry.
 
         Raises:
-            IndexError: _description_
-            IndexError: _description_
+            IndexError: error if the *SCHashTable* is empty.
 
         Returns:
-            Optional[MapEntry]: _description_
+            Optional[MapEntry]: *MapEntry* object with the key-value pair if found, None otherwise.
         """
-        try:
-            if self.empty:
-                raise IndexError("Empty data structure")
-            # assume the entry is not in the structure
-            _entry = None
-            _idx = -1
-            # get the hash key for the entry
-            _hash = mad_hash(key,
-                             self._scale,
-                             self._shift,
-                             self.prime,
-                             self.mcapacity)
-            # checking the bucket
-            _bucket = self.hash_table.get(_hash)
-            # check if the bucket is not empty
-            if not _bucket.empty:
-                _idx = _bucket.index_of(key)
-                # if the entry is in the bucket, remove it
-                if _idx > -1:
-                    _entry = _bucket.remove(_idx)
-                    self.hash_table.update(_bucket, _hash)
-                    # updating collisions
-                    if _bucket.size > 1:
-                        self._collisions -= 1
-                    # updating size and alpha
-                    self._size -= 1
-                    self._cur_alpha = self._size / self.mcapacity
-                # Otherwise, the entry is not in the map
-                # TODO maybe i don't need this
-                else:
-                    raise IndexError(f"Entry for Key: {key} not found")
-            if self._cur_alpha < self.min_alpha:
-                self.resize()
-            return _entry
-        except Exception as err:
-            self._error_handler(err)
+        if self.empty:
+            raise IndexError("Empty data structure")
+        # assume the entry is not in the structure
+        _entry = None
+        _idx = -1
+        # get the hash key for the entry
+        _hash = mad_hash(key,
+                         self._scale,
+                         self._shift,
+                         self.prime,
+                         self.mcapacity)
+        # checking the bucket
+        _bucket = self.hash_table.get(_hash)
+        # check if the bucket is not empty
+        if not _bucket.empty:
+            _idx = _bucket.index_of(key)
+            # if the entry is in the bucket, remove it
+            if _idx > -1:
+                _entry = _bucket.remove(_idx)
+                self.hash_table.update(_bucket, _hash)
+                # updating collisions
+                if _bucket.size > 1:
+                    self._collisions -= 1
+                # updating size and alpha
+                self._size -= 1
+                self._cur_alpha = self._size / self.mcapacity
+            # TODO old code, check if needed
+            # elif _idx == -1:
+            #     raise IndexError(f"Entry for Key: {key} not found")
+        if self._cur_alpha < self.min_alpha:
+            self.resize()
+        return _entry
 
     def keys(self) -> SingleLinkedList[T]:
-        """keys _summary_
+        """*keys()* returns a single linked list of keys from the *SCHashTable*.
 
         Returns:
-            SingleLinkedList[T]: _description_
+            SingleLinkedList[T]: list of keys from the *SCHashTable*. e.g. [key1, key2, ...].
         """
         try:
             _keys_lt = SingleLinkedList(key=self.key)
@@ -556,10 +534,10 @@ class SCHashTable(Generic[T]):
             self._error_handler(err)
 
     def values(self) -> SingleLinkedList[T]:
-        """values _summary_
+        """*values()* returns a single linked list of values from the *SCHashTable*.
 
         Returns:
-            SingleLinkedList[T]: _description_
+            SingleLinkedList[T]: list of values from the *SCHashTable*. e.g. [value1, value2, ...].
         """
         try:
             _values_lt = SingleLinkedList(key=self.key)
@@ -572,10 +550,10 @@ class SCHashTable(Generic[T]):
             self._error_handler(err)
 
     def entries(self) -> SingleLinkedList[T]:
-        """entries _summary_
+        """*entries() returns a list of tuples with the key and value of each entry in the hash table.
 
         Returns:
-            SingleLinkedList[T]: _description_
+            SingleLinkedList[T]: list of tuples with the key-value paor of each entry in the hash table. e.g. [(key1, value1), (key2, value2), ...].
         """
         try:
             _entries_lt = SingleLinkedList(key=self.key)
@@ -589,7 +567,7 @@ class SCHashTable(Generic[T]):
             self._error_handler(err)
 
     def resize(self) -> None:
-        """resize _summary_
+        """*resize()* rehashes the *SCHashTable* by creating a new hash table with a new capacity (M) and rehashing all the entries from the old hash table to the new one. It also updates the size, collisions and current load factor.
         """
         try:
             # check if the structure is rehashable
@@ -650,17 +628,17 @@ class SCHashTable(Generic[T]):
         _function_name = inspect.currentframe().f_code.co_name
         error(_context, _function_name, err)
 
-    def _check_type(self, entry: MapEntry) -> bool:
-        """*_check_type()* función propia de la estructura que revisa si el tipo de dato del registro (pareja llave-valor) que se desea agregar al *SCHashTable* es del mismo tipo contenido dentro de los *MapEntry* del *SCHashTable*.
+    def _validate_type(self, entry: MapEntry) -> bool:
+        """*_validate_type()* validates the type of the *MapEntry* against the expected type in the *SCHashTable*. It raises a *TypeError* if the types do not match.
 
         Args:
-            element (T): elemento que se desea procesar en *SCHashTable*.
+            entry (MapEntry): *MapEntry* object to validate.
 
         Raises:
-            TypeError: error si el tipo de dato del elemento que se desea agregar no es el mismo que el tipo de dato de los elementos que ya contiene el *SCHashTable*.
+            TypeError: error if the type of the *MapEntry* does not match the expected type in the *SCHashTable*.
 
         Returns:
-            bool: operador que indica si el ADT *SCHashTable* es del mismo tipo que el elemento que se desea procesar.
+            bool: True if the type of the *MapEntry* matches the expected type in the *SCHashTable*, False otherwise.
         """
         # TODO check usability of this function
         # if datastruct is empty, set the entry type
@@ -670,28 +648,22 @@ class SCHashTable(Generic[T]):
             self._key_type = type(key)
             self._value_type = type(value)
         # check if the new entry is the same type as the other entries
-        elif self._key_type is not type(key):
-            err_msg = f"Invalid key type: {type(key)} "
-            err_msg += f"for struct configured with type: {self._key_type}"
-            raise TypeError(err_msg)
-        elif self._value_type is not type(value):
-            err_msg = f"Invalid value type: {type(value)} "
-            err_msg += f"for struct configured with type: {self._value_type}"
-            raise TypeError(err_msg)
+        valid = self._validate_key_type(entry)
+        valid = valid and self._validate_value_type(entry)
         # otherwise, the type is valid
-        return True
+        return valid
 
     def _validate_key_type(self, entry: MapEntry) -> bool:
-        """_validate_key_type _summary_
+        """*_validate_key_type()* validates the type of the key in the *MapEntry* against the expected type in the *SCHashTable*. It raises a *TypeError* if the types do not match.
 
         Args:
-            entry (MapEntry): _description_
+            entry (MapEntry): *MapEntry* object to validate.
 
         Raises:
-            TypeError: _description_
+            TypeError: error if the type of the key in the *MapEntry* does not match the expected type in the *SCHashTable*.
 
         Returns:
-            bool: _description_
+            bool: True if the type of the key in the *MapEntry* matches the expected type in the *SCHashTable*, False otherwise.-
         """
         # TODO check usability of this function
         key = entry.key
@@ -704,16 +676,16 @@ class SCHashTable(Generic[T]):
         return True
 
     def _validate_value_type(self, entry: MapEntry) -> bool:
-        """_validate_value_type _summary_
+        """*_validate_value_type()* validates the type of the value in the *MapEntry* against the expected type in the *SCHashTable*. It raises a *TypeError* if the types do not match.
 
         Args:
-            entry (MapEntry): _description_
+            entry (MapEntry): *MapEntry* object to validate.
 
         Raises:
-            TypeError: _description_
+            TypeError: error if the type of the value in the *MapEntry* does not match the expected type in the *SCHashTable*.
 
         Returns:
-            bool: _description_
+            bool: True if the type of the value in the *MapEntry* matches the expected type in the *SCHashTable*, False otherwise.
         """
         # TODO check usability of this function
         value = entry.value

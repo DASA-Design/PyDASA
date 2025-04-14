@@ -479,7 +479,7 @@ class SingleLinkedList(Generic[T]):
             raise IndexError(f"Index {pos} is out of range")
         # if the element type is valid, update the element
         elif self._validate_type(new_data):
-            _cur = self.first
+            _cur = self._first
             i = 0
             while i != pos:
                 _cur = _cur.next

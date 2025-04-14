@@ -34,8 +34,8 @@ from Src.PyDASA.Units.params import Parameter
 from Src.PyDASA.Pi.coef import PiCoefficient
 
 # data structures modules
-from Src.PyDASA.DataStructs.Tables.scht import SCHashTable
-from Src.PyDASA.DataStructs.Tables.htme import MapEntry
+from Src.PyDASA.DStructs.Tables.scht import SCHashTable
+from Src.PyDASA.DStructs.Tables.htme import MapEntry
 
 # FDU regex manager
 from Src.PyDASA.Utils.cstm import RegexManager

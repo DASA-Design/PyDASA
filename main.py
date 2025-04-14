@@ -1,17 +1,32 @@
-﻿from Src.PyDASA.DataStructs.Lists.arlt import ArrayList
+﻿
+# Custom modules
+# PyDASA modules
+# data structures modules
+# lists modules
+from Src.PyDASA.DataStructs.Lists.arlt import ArrayList
 from Src.PyDASA.DataStructs.Lists.sllt import SingleLinkedList
 from Src.PyDASA.DataStructs.Lists.ndlt import Node, SLNode, DLNode
+# hash tables modules
 from Src.PyDASA.DataStructs.Tables.htme import MapEntry
-from Src.PyDASA.DataStructs.Tables.scht import SeparateChainingTable
+from Src.PyDASA.DataStructs.Tables.scht import SCHashTable
 from Src.PyDASA.DataStructs.Tables.scht import Bucket
 
-# for FDU regex management
-from Src.PyDASA.Utils.cstm import RegexManager
-# complete module withe the FDU's regex
-from Src.PyDASA.Utils import cfg as config
 
+# dimensionl analysis modules
+# config module
+from Src.PyDASA.Utils import cfg as config
+# FDU regex management
+from Src.PyDASA.Utils.cstm import RegexManager
+# FDU modules
 from Src.PyDASA.Units.fdu import FDU
+# Parameter and Variable modules
 from Src.PyDASA.Units.params import Parameter, Variable
+# Dimensional Matrix Modelling module
+from Src.PyDASA.Models.dim import DimensionalModel
+
+# for FDU regex management
+# for Dimensional Analysisis modules
+# complete module withe the FDU's regex
 
 
 def test_cmp(a, b) -> int:
@@ -47,9 +62,9 @@ print(b.index_of(2), b.index_of(4), "\n")
 c = Bucket()
 print(c, "\n")
 _data = (
-    {"_id": 1, "_data": 1},
-    {"_id": 2, "_data": 2},
-    {"_id": 3, "_data": 3},
+    {"_idx": 1, "_data": 1},
+    {"_idx": 2, "_data": 2},
+    {"_idx": 3, "_data": 3},
 )
 c = Bucket(iodata=_data)
 print(c, "\n")
@@ -60,8 +75,28 @@ a = ArrayList(iodata=_data,
               cmp_function=test_cmp)
 print(a, "\n")
 
-ht = SeparateChainingTable(iodata=_data)
+ht = SCHashTable(iodata=_data)
 print(ht, "\n")
+
+nd = Node(_data=1)
+print(nd, "\n")
+
+nd = SLNode(_data=1)
+print(nd, "\n")
+
+nd.next = Node(_data=2)
+print(nd, "\n")
+
+dlnd = DLNode(_data=1)
+print(dlnd, "\n")
+dlnd.next = Node(_data=2)
+dlnd.prev = Node(_data=0)
+print(dlnd, "\n")
+
+mp = MapEntry(_key="U_1",
+              _value=1.0,)
+print(mp, "\n")
+
 
 # default regex for FDU
 print("\n==== Default Regex ====")
@@ -110,7 +145,27 @@ print(rm, "\n")
 # rm.update_global_vars()
 
 fdu_lt = [
-    {"_id": 1, "_sym": "T", "_fwk": "PHYSICAL", "_prec": 0, "desription": "Time"},
-    {"_id": 5, "_sym": "M", "_fwk": "PHYSICAL", "_prec": 4, "description": "Mass"},
-    {"_id": 4, "_sym": "L", "_fwk": "PHYSICAL", "_prec": 3, "description": "Longitude"},
+    {"_idx": 0, "_sym": "T", "_fwk": "CUSTOM", "description": "Time~~~~~~~~~~~~~"},
+    {"_idx": 1, "_sym": "M", "_fwk": "CUSTOM", "description": "Mass~~~~~~~~~~~~"},
+    {"_idx": 2, "_sym": "L", "_fwk": "CUSTOM", "description": "Longitude~~~~~~~~"},
 ]
+
+b = SingleLinkedList(iodata=fdu_lt)
+print(b.first, "\n", b.last, "\n")
+print(b, "\n")
+for fdu in b:
+    print(fdu, "\n")
+
+
+DAModel = DimensionalModel(_fwk="CUSTOM",
+                           _idx=0,
+                           io_fdu=fdu_lt)
+print(DAModel, "\n")
+
+# custom regex for FDU
+print("\n==== Custom Regex ====")
+print("\tWKNG_DFLT_FDU_PREC_LT:", config.WKNG_FDU_PREC_LT)
+print("\tWKNG_FDU_REGEX:", config.WKNG_FDU_REGEX)
+print("\tWKNG_POW_REGEX:", config.WKNG_POW_REGEX)
+print("\tWKNG_NO_POW_REGEX:", config.WKNG_NO_POW_REGEX)
+print("\tWKNG_FDU_SYM_REGEX:", config.WKNG_FDU_SYM_REGEX)

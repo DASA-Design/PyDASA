@@ -35,7 +35,7 @@ class FDU(Generic[T]):
 
     Returns:
         FDU: A FDU object with the following attributes:
-            - `_prec`: The ID of the FDU.
+            - `_idx`: The ID of the FDU.
             - `_sym`: The symbol of the FDU.
             - `_fwk`: The framework of the FDU. It can be one of the following: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`.
             - `name`: The name of the FDU.
@@ -57,10 +57,10 @@ class FDU(Generic[T]):
     """
 
     # Precedence of the FDU in the dimensional matrix
-    # :attr: _prec
-    _prec: int = -1
+    # :attr: _idx
+    _idx: int = -1
     """
-    ID of the FDU. It must be a unique alphanumeric. Useful for identifying the FDU in the system and dimensional matrix construction.
+    Precedence of the FDU in the dimensional matrix. It is used to order the FDUs in the rows of the dimensional matrix.
     """
 
     # Public attributes
@@ -105,17 +105,17 @@ class FDU(Generic[T]):
         self._sym = value
 
     @property
-    def prec(self) -> int:
-        """*prec* property to get the row order of the FDU in the dimensional matrix.
+    def idx(self) -> int:
+        """*idx* property to get the row order of the FDU in the dimensional matrix.
 
         Returns:
             int: Precedence of the FDU.
         """
-        return self._prec
+        return self._idx
 
-    @prec.setter
-    def prec(self, value: int) -> None:
-        """*prec* property to order the FDU in the rows of the dimensional matrix.
+    @idx.setter
+    def idx(self, value: int) -> None:
+        """*idx* property to order the FDU in the rows of the dimensional matrix.
 
         Args:
             value (int): Precedence of the FDU. Must be a non-negative integer.
@@ -131,7 +131,7 @@ class FDU(Generic[T]):
             _msg = "Precedence must be an integer. "
             _msg += f"Provided: {value}"
             raise ValueError(_msg)
-        self._prec = value
+        self._idx = value
 
     @property
     def fwk(self) -> str:

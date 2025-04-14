@@ -21,9 +21,11 @@ Module for solving the Dimensional Model in *PyDASA*. Defines the *DimensionalMo
 # native python modules
 # import re
 # import modules for defining Dimensionless Coefficients (DN) type
-from typing import Optional, List, Generic, Union
+from typing import List, Tuple
+from typing import Optional, Generic, Union
 # import dataclass for class attributes and validations
 from dataclasses import dataclass, field
+import inspect
 
 # custom modules
 # Dimensional Analysisis modules
@@ -32,7 +34,7 @@ from Src.PyDASA.Units.params import Parameter
 from Src.PyDASA.Pi.coef import PiCoefficient
 
 # data structures modules
-from Src.PyDASA.DataStructs.Tables.scht import SeparateChainingTable
+from Src.PyDASA.DataStructs.Tables.scht import SCHashTable
 from Src.PyDASA.DataStructs.Tables.htme import MapEntry
 
 # FDU regex manager
@@ -46,9 +48,10 @@ from Src.PyDASA.Utils.dflt import T
 # using the 'as' allows shared variable edition
 from Src.PyDASA.Utils import cfg as config
 
-# Generalizing input type for the classes
-FDUs = Union[FDU, dict, str]
+# Generalizing input type for class typing
+FDUElm = Union[FDU, dict, str]
 Params = Union[Parameter, dict, str]
+FDUEnt = MapEntry[Tuple[str, FDU]]
 
 # checking custom modules
 assert error
@@ -95,9 +98,9 @@ class DimensionalModel(Generic[T]):
 
     # FDUs hash table
     # :attr: _fdu_ht
-    _fdu_ht = field(default_factory=SeparateChainingTable[MapEntry[str, FDU]])
+    _fdu_ht: SCHashTable[FDUEnt] = field(default_factory=SCHashTable[FDUEnt])
     """
-    DFUs hash table. Custom hash table for storing FDUs. It is a dictionary-like structure that allows for fast lookups and insertions.
+    FDU hash table. Custom hash table for storing FDUs. It is a dictionary-like structure that allows for fast lookups and insertions.
     """
 
     # List of parameters
@@ -128,8 +131,8 @@ class DimensionalModel(Generic[T]):
     """
 
     # list of user defined FDUs
-    # :attr: io_fdu_lt
-    io_fdu_lt: Optional[List[FDUs]] = None
+    # :attr: io_fdu
+    io_fdu: Optional[List[dict]] = None
     """
     Optional list of user-defined FDUs (Fundamental Dimensions). This list stores FDUs as dictionaries or strings, including their symbols and frameworks.
 
@@ -143,17 +146,98 @@ class DimensionalModel(Generic[T]):
         """__post_init__ _summary_
         """
         # TODO implement this method
-        # TODO complete docstring
-        pass
+        # set up the hash table for the FDUs
+        self._setup_fdu_ht()
+        # set up the FDU precedence list
+        self._setup_fdu_precedence()
+        # set up the FDU regex manager
+        self._setup_fdu_regex()
 
-    def _config_fdu_precedence(self, lt: List[dict]) -> None:
-        """_config_fdu_precedence _summary_
+        # TODO maybe I dont need the if, because of hwo RegexManager is implemented
 
-        Args:
-            lt (List[str]): _description_
+    def _setup_fdu_ht(self) -> None:
+        """*_setup_fdu_ht()* sets up the hash table for the FDUs. It uses the `_fwk` attribute to determine the framework of the FDUs.
+
+        Raises:
+            ValueError: error if the framework is invalid.
         """
-        # TODO complete docstring
-        self._fdu_regex._fdu_prec_lt = lt
+        if self._fwk in config.FDU_FWK_DT and self._fwk != "CUSTOM":
+            self._configure_default_fdus()
+        elif self._fwk == "CUSTOM" and self.io_fdu:
+            self._configure_custom_fdus()
+        else:
+            _msg = f"Invalid framework: {self._fwk}. "
+            _msg += "Must be one of the following: "
+            _msg += f"{', '.join(config.FDU_FWK_DT.keys())}."
+            raise ValueError(_msg)
+
+    def _configure_default_fdus(self) -> None:
+        """*_configure_default_fdus()* configures the default FDUs in the hash table. It uses the `_fwk` attribute to determine the framework of the FDUs.
+
+        Raises:
+            ValueError: error if the framework is invalid.
+        """
+        # map for easy access to the FDUs
+        _frk_dt = {
+            "PHYSICAL": config.PHY_FDU_PREC_DT,
+            "COMPUTATION": config.COMPU_FDU_PREC_DT,
+            "DIGITAL": config.DIGI_FDU_PREC_DT,
+        }
+        # get the framework dictionary
+        _cfg_dt = _frk_dt.get(self._fwk, {})
+        # if the framework is not valid, raise an error
+        if not _cfg_dt:
+            _msg = f"Invalid framework: {self._fwk}. "
+            _msg += "Framework must be one of the following: "
+            _msg += f"{', '.join(config.FDU_FWK_DT.keys())}."
+            raise ValueError(_msg)
+        # otherwise, configure the FDUs
+        for i, (_sym, _desc) in enumerate(_cfg_dt.items()):
+            t_fdu = FDU(_sym=_sym,
+                        _fwk=self._fwk,
+                        _idx=i,
+                        name=_desc,
+                        description=_desc)
+            self._fdu_ht.insert(t_fdu.sym, t_fdu)
+            i += 1
+
+    def _configure_custom_fdus(self) -> None:
+        """*configure_custom_fdus()* configures the custom FDUs in the hash table. It uses the `io_fdu` attribute to determine the framework of the FDUs.
+        """
+        # TODO maybe I can improve this for more genericity
+        for i, t_fdu in enumerate(self.io_fdu):
+            # standarize all frameworks to be the same
+            t_fdu["_fwk"] = self._fwk
+            t_fdu["_idx"] = i
+            fdu = FDU(**t_fdu)
+            self._fdu_ht.insert(fdu.sym, fdu)
+            i += 1
+
+    def _setup_fdu_precedence(self) -> None:
+        """_setup_fdu_precedence _summary_
+
+        Raises:
+            ValueError: _description_
+        """
+        # TODO maybe I can improve this for more genericity
+        if self._fdu_ht.empty:
+            _msg = "FDU hash table is empty. "
+            _msg += f"Current Size: {self._fdu_ht.size()}."
+            _msg += "Please configure the FDU hash table before setting up the precedence list."
+            raise ValueError(_msg)
+        _fdu_keys = self._fdu_ht.keys()
+        _fdu_prec_lt = []
+        for fdu in _fdu_keys:
+            _fdu_prec_lt.append(fdu)
+        config.DFLT_FDU_PREC_LT = _fdu_prec_lt
+
+    def _setup_fdu_regex(self) -> None:
+        """_setup_fdu_regex _summary_
+        """
+        _PREC_LT = config.DFLT_FDU_PREC_LT.copy()
+        self._fdu_regex = RegexManager(_fwk=self._fwk,
+                                       _fdu_prec_lt=_PREC_LT)
+        self._fdu_regex.update_global_regex()
 
     @property
     def idx(self) -> int:
@@ -232,7 +316,41 @@ class DimensionalModel(Generic[T]):
             raise ValueError(_msg)
         self._fwk = value
 
+    def _error_handler(self, err: Exception) -> None:
+        """*_error_handler()* to process the context (package/class), function name (method), and the error (exception) that was raised to format a detailed error message and traceback.
 
+        Args:
+            err (Exception): Python raised exception.
+        """
+        _context = self.__class__.__name__
+        _function_name = inspect.currentframe().f_code.co_name
+        error(_context, _function_name, err)
+
+    def __str__(self) -> str:
+        """*__str__()* returns a string representation of the *DimensionalModel* object.
+
+        Returns:
+            str: String representation of the *DimensionalModel* object.
+        """
+        _attr_lt = []
+        for attr, value in vars(self).items():
+            # Skip private attributes starting with "__"
+            if attr.startswith("__"):
+                continue
+            # Format attribute name and value
+            _attr_name = attr.lstrip("_")
+            _attr_lt.append(f"{_attr_name}={repr(value)}")
+        # Format the string representation of the ArrayList class and its attributes
+        _str = f"{self.__class__.__name__}({', '.join(_attr_lt)})"
+        return _str
+
+    def __repr__(self) -> str:
+        """*__repr__()* returns a string representation of the *DimensionalModel* object.
+
+        Returns:
+            str: String representation of the *DimensionalModel* object.
+        """
+        return self.__str__()
 
 
 @dataclass

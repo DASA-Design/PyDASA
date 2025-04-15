@@ -1,4 +1,27 @@
-﻿# python natie modules
+﻿# -*- coding: utf-8 -*-
+"""
+Module for solving Dimensional Analysis problems in *PyDASA*.
+
+This module provides the **DASolver** class, which is responsible for:
+1. Managing dimensional parameters and their relationships.
+2. Constructing and solving the dimensional matrix.
+3. Generating dimensionless coefficients (e.g., Pi groups) using the Buckingham Pi theorem.
+4. Providing tools for analyzing and manipulating dimensional data.
+
+Classes:
+    - DASolver: Main solver class for dimensional analysis.
+
+Dependencies:
+    - Python native modules: `re`, `copy`
+    - Third-party modules: `sympy`, `numpy`
+    - Custom modules: `Parameter`, `PiCoefficient`, `FDU`, `T`
+
+*IMPORTANT:* Based on the theory from:
+
+    # H.Gorter, *Dimensionalanalyse: Eine Theoririe der physikalischen Dimensionen mit Anwendungen*
+"""
+
+# python natie modules
 # import re
 # import sys
 # import os
@@ -31,13 +54,29 @@ from src.utils import FDU
 
 @dataclass
 class DASolver(Generic[T]):
-    """DASolver _summary_
+    """
+    **DASolver** is the main class for performing Dimensional Analysis in *PyDASA*.
 
-    Args:
-        Generic (_type_): _description_
+    This class provides methods to:
+    - Manage dimensional parameters and their relationships.
+    - Construct and solve the dimensional matrix.
+    - Generate dimensionless coefficients (e.g., Pi groups) using the Buckingham Pi theorem.
+    - Analyze and manipulate dimensional data.
 
-    Returns:
-        _type_: _description_
+    Attributes:
+        phenomena (str): Description of the physical phenomenon being analyzed.
+        description (str): Additional details about the analysis.
+        dimensional_lt (List[Parameter]): List of dimensional parameters.
+        output (Optional[Parameter]): The output parameter of the analysis.
+        pi_coefficients (List[PiCoefficient]): List of dimensionless Pi coefficients.
+        _work_param_dt (Dict[str, Parameter]): Dictionary of working parameters.
+        _n_param (int): Total number of parameters.
+        _relv_param_dt (Dict[str, Parameter]): Dictionary of relevant parameters.
+        _n_relv_param (int): Number of relevant parameters.
+        _used_fdu_lt (List[str]): List of used Fundamental Dimensional Units (FDUs).
+        _n_used_fdu (int): Number of used FDUs.
+        _cur_dim_matrix (Optional[np.ndarray]): Current dimensional matrix.
+        _trans_dim_matrix (Optional[np.ndarray]): Transposed dimensional matrix.
     """
     phenomena: str = ""
     description: str = ""
@@ -56,7 +95,11 @@ class DASolver(Generic[T]):
         default_factory=lambda: np.array([]))
 
     def __post_init__(self) -> None:
-        """__post_init__ _summary_
+        """__post_init__ Initializes the DASolver by:
+            - Checking and sorting used FDUs.
+            - Sorting dimensional parameters by relevance.
+            - Setting up the output parameter.
+            - Creating dictionaries for working and relevant parameters.
         """
         # casting input dimensional list to list
         self.dimensional_lt = list(self.dimensional_lt)
@@ -85,6 +128,11 @@ class DASolver(Generic[T]):
         self._n_relv_param = len(self._relv_param_dt)
 
     def __str__(self) -> str:
+        """__str__ Returns a string representation of the DASolver instance.
+
+        Returns:
+            str: String representation of the DASolver.
+        """
         class_str = f"{self.__class__.__name__}(\n"
         for attr, value in vars(self).items():
             if isinstance(value, str):
@@ -95,7 +143,7 @@ class DASolver(Generic[T]):
         return class_str
 
     def _check_used_fdu(self) -> None:
-        """_check_used_fdu _summary_
+        """_check_used_fdu Identifies and stores the list of used Fundamental Dimensional Units (FDUs) from the dimensional parameters.
         """
         for param in self.dimensional_lt:
             matches = re.findall(r"[A-Z]", param.dimensions)
@@ -107,12 +155,12 @@ class DASolver(Generic[T]):
         self._sort_used_fdu()
 
     def _sort_used_fdu(self) -> None:
-        """_sort_used_fdu _summary_
+        """_sort_used_fdu Sorts the list of used FDUs based on their precedence.
         """
         self._used_fdu_lt.sort(key=lambda x: FDU.index(x))
 
     def _sort_dim_lt_by_relv_param(self):
-        """_sort_dim_lt_by_relv_param _summary_
+        """_sort_dim_lt_by_relv_param Sorts the dimensional parameters by relevance and updates their indices.
         """
         # sort the dimensional list by the relevant parameters
         self.dimensional_lt.sort(key=lambda x: x.relevant, reverse=True)
@@ -123,25 +171,38 @@ class DASolver(Generic[T]):
             i += 1
 
     def _fix_output_idx(self):
+        """_fix_output_idx Ensures the output parameter is placed at the correct index in the dimensional list.
+        """
         tgt_idx = self._n_used_fdu
         src_idx = self.output._idx
-        # print("src:", src_idx, self.output.name)
-        # print("tgt:", tgt_idx, self.dimensional_lt[tgt_idx].name)
         self.dimensional_lt[src_idx]._idx = tgt_idx
         self.dimensional_lt[tgt_idx]._idx = src_idx
         self.dimensional_lt = self._exchange_param(self.dimensional_lt,
                                                    src_idx,
                                                    tgt_idx)
 
-    def _exchange_param(slef, lst, pos1, pos2):
+    def _exchange_param(self,
+                        lst: List[Parameter],
+                        pos1: int,
+                        pos2: int) -> List[Parameter]:
+        """ _exchange_param Swaps two parameters in the dimensional list.
+
+        Args:
+            lst (List[Parameter]): List of parameters.
+            pos1 (int): Index of the first parameter.
+            pos2 (int): Index of the second parameter.
+
+        Returns:
+            List[Parameter]: Updated list with swapped parameters.
+        """
         lst[pos1], lst[pos2] = lst[pos2], lst[pos1]
         return lst
 
     def _setup_work_dict(self) -> Dict[str, Parameter]:
-        """_setup_work_dict _summary_
+        """_setup_work_dict Creates a dictionary of working parameters.
 
         Returns:
-            Dict[str, Parameter]: _description_
+            Dict[str, Parameter]: Dictionary of working parameters.
         """
         _work_dt = dict()
         for param in self.dimensional_lt:
@@ -151,10 +212,10 @@ class DASolver(Generic[T]):
         return _work_dt
 
     def _setup_relv_dict(self) -> Dict[str, Parameter]:
-        """_setup_relv_dict _summary_
+        """_setup_relv_dict Creates a dictionary of relevant parameters.
 
         Returns:
-            Dict[str, Parameter]: _description_
+            Dict[str, Parameter]: Dictionary of relevant parameters.
         """
         _relv_dt = dict()
         for param in self.dimensional_lt:
@@ -165,10 +226,10 @@ class DASolver(Generic[T]):
         return _relv_dt
 
     def _setup_output(self) -> Optional[Parameter]:
-        """_setup_output _summary_
+        """_setup_output Identifies and sets the output parameter.
 
         Returns:
-            Optional[Parameter]: _description_
+            Optional[Parameter]: The output parameter.
         """
         output = None
         if self.output is None:
@@ -182,30 +243,33 @@ class DASolver(Generic[T]):
         return output
 
     def _start_dim_matrix(self) -> np.ndarray:
+        """_start_dim_matrix Initializes an empty dimensional matrix.
+
+        Returns:
+            np.ndarray: Zero-filled dimensional matrix.
+        """
         dim_matrix = np.zeros((self._n_used_fdu, self._n_param))
         return dim_matrix
 
     def _extract_param_exp(self, param: Parameter) -> List[int]:
-        """_extract_param_exp _summary_
+        """_extract_param_exp Extracts the exponents of a parameter's dimensions.
 
         Args:
-            param (Parameter): _description_
+            param (Parameter): The parameter to extract exponents from.
 
         Returns:
-            List[int]: _description_
+            List[int]: List of exponents for the parameter's dimensions.
         """
         exponents = list()
         fdu_pow_lt = param._exp_dim_lt
         for tfdu, tpow in zip(FDU, fdu_pow_lt):
             if tfdu in self._used_fdu_lt:
                 exponents.append(tpow)
-            # else:
-            #     exponents.append(0)
         exponents = np.array(exponents)
         return exponents
 
     def _fill_dim_matrix(self) -> None:  # np.ndarray:
-        """_fill_dim_matrix _summary_
+        """_fill_dim_matrix Fills the dimensional matrix with exponents from the parameters.
         """
         for param in self.dimensional_lt:
             t_exp_vec = self._extract_param_exp(param)
@@ -216,16 +280,20 @@ class DASolver(Generic[T]):
         # return self._cur_dim_matrix
 
     def _transpose_dim_matrix(self) -> None:
+        """_transpose_dim_matrix Transposes the dimensional matrix.
+        """
         self._trans_dim_matrix = self._cur_dim_matrix.transpose()
 
     def config_dim_matrix(self) -> None:
-
+        """config_dim_matrix Configures the dimensional matrix by:
+            - Initializing the matrix.
+            - Filling it with parameter exponents.
+            - Transposing the matrix.
+        """
         # creating the zero filled dimensional matrix
         self._cur_dim_matrix = self._start_dim_matrix()
-
         # filling the dimensional matrix
         self._fill_dim_matrix()
-
         # creating the transpose dimensional matrix
         self._transpose_dim_matrix()
 
@@ -233,20 +301,17 @@ class DASolver(Generic[T]):
                             symbol_lt: List[str],
                             dim_matrix: np.ndarray
                             ) -> Optional[List[PiCoefficient]]:
-        """get_pi_coefficients _summary_
+        """get_pi_coefficients Computes the dimensionless Pi coefficients using the null space of the dimensional matrix.
 
         Args:
-            symbol_lt (List[str]): _description_
-            dim_matrix (np.ndarray): _description_
+            symbol_lt (List[str]): List of parameter symbols.
+            dim_matrix (np.ndarray): Dimensional matrix.
 
         Returns:
-            Optional[List[PiCoefficient]]: _description_
+            Optional[List[PiCoefficient]]: List of computed Pi coefficients.
         """
-        # TODO add docstring
         coefficient_lt = list()
         dim_matrix = Matrix(dim_matrix)
-        # print(dim_matrix.cholesky_solve()
-        # if dim_matrix.det() != 0:
         pi_rref = dim_matrix.rref()
         pi_matrix = matrix2numpy(pi_rref[0])
         pi_pivot_col_lt = pi_rref[1]
@@ -261,6 +326,8 @@ class DASolver(Generic[T]):
         return coefficient_lt
 
     def solve_dim_matrix(self):
+        """solve_dim_matrix Solves the dimensional matrix to compute the Pi coefficients.
+        """
         symbol_lt = [param.symbol for param in self.dimensional_lt]
         self.pi_coefficients = self.get_pi_coefficients(symbol_lt,
                                                         self._cur_dim_matrix)

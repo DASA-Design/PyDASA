@@ -22,7 +22,7 @@ from Src.PyDASA.Units.fdu import FDU
 # Parameter and Variable modules
 from Src.PyDASA.Units.params import Parameter, Variable
 # Dimensional Matrix Modelling module
-from Src.PyDASA.Models.dim import DimensionalModel
+from Src.PyDASA.Models.dim import DimensionalModel, DimensionalAnalyzer
 
 # for FDU regex management
 # for Dimensional Analysisis modules
@@ -224,7 +224,7 @@ dim_relevance_lt = [
               _idx=4,
               _cat="CONTROL",
               _units="Pa",
-              _dims="M*T^-2*L^-1",),
+              _dims="T^-2*L^1",),
     Parameter(_sym="v",
               _fwk="CUSTOM",
               name="Fluid Viscosity",
@@ -271,3 +271,27 @@ DAModel.relevance_lt = dim_relevance_lt
 print(len(DAModel.relevance_lt), DAModel.relevance_lt, "\n")
 
 print(DAModel, "\n")
+
+print(DAModel._n_param, "\n")
+
+DAnalysis = DimensionalAnalyzer(_fwk="CUSTOM",
+                                _idx=0,
+                                io_fdu=fdu_lt,
+                                _fdu_ht=DAModel._fdu_ht,
+                                _param_lt=DAModel.param_lt,
+                                _relevance_lt=DAModel.relevance_lt,)
+print(DAnalysis.relevance_lt, "\n")
+print(len(DAnalysis.relevance_lt), "\n")
+print(DAnalysis, "\n")
+print(DAnalysis._wrk_fdu_lt, "\n")
+print(DAnalysis._fdu_ht, "\n")
+
+for relv in DAnalysis.relevance_lt:
+    print("blaaaaa", relv.idx, relv.cat, relv.sym, relv.name)
+print(DAnalysis.output, "\n")
+
+DAnalysis.create_matrix()
+DAnalysis.solve_matrix()
+print(len(DAnalysis.pi_coef_lt), "\n")
+for pi in DAnalysis.pi_coef_lt:
+    print(pi, "\n")

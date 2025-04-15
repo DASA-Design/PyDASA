@@ -151,19 +151,17 @@ class DimensionalModel(Generic[T]):
     """
 
     def __post_init__(self) -> None:
-        """__post_init__ _summary_
+        """*__post_init__()* initializes the *DimensionalModel* object. It sets up the FDU hash table, FDU precedence list, and FDU regex manager.
         """
         if self._fdu_ht.empty:
-            self._setup_fdu_map()
+            self._filter_fdu_map()
 
         # if self._fdu_regex.fdu_prec_lt is None:
         self._setup_fdu_precedence()
         self._setup_fdu_regex()
 
-        # TODO maybe I dont need the if, because of hwo RegexManager is implemented
-
-    def _setup_fdu_map(self) -> None:
-        """*_setup_fdu_map()* Sets up the hash table for FDUs based on the framework.
+    def _filter_fdu_map(self) -> None:
+        """*_filter_fdu_map()* Sets up the hash table for FDUs based on the framework.
 
         Raises:
             ValueError: error if the framework is invalid.
@@ -221,12 +219,12 @@ class DimensionalModel(Generic[T]):
             self._fdu_ht.insert(fdu.sym, fdu)
 
     def _setup_fdu_precedence(self) -> None:
-        """_setup_fdu_precedence _summary_
+        """*_setup_fdu_precedence()* Sets up the FDU precedence list with the FDUs in the hash table.
 
         Raises:
-            ValueError: _description_
+            ValueError: error if the FDU hash table is empty.
         """
-        # TODO maybe I can improve this for more genericity
+        # TODO dont like this global, maybe improve this method
         global MAX_IN
         if self._fdu_ht.empty:
             _msg = "FDU hash table is empty. "
@@ -237,7 +235,7 @@ class DimensionalModel(Generic[T]):
         MAX_IN = len(cfg.DFLT_FDU_PREC_LT)
 
     def _setup_fdu_regex(self) -> None:
-        """_setup_fdu_regex _summary_
+        """*_setup_fdu_regex()* Sets up the FDU regex manager with the FDU precedence list.
         """
         _PREC_LT = cfg.DFLT_FDU_PREC_LT
         self._fdu_regex = RegexManager(_fwk=self._fwk,
@@ -450,8 +448,8 @@ class DimensionalModel(Generic[T]):
         _attr_lt = []
         for attr, value in vars(self).items():
             # Skip private attributes starting with "__"
-            if attr.startswith("__"):
-                continue
+            # if attr.startswith("__"):
+            #    continue
             # Format attribute name and value
             _attr_name = attr.lstrip("_")
             _attr_lt.append(f"{_attr_name}={repr(value)}")
@@ -470,43 +468,55 @@ class DimensionalModel(Generic[T]):
 
 @dataclass
 class DimensionalAnalyzer(DimensionalModel[T]):
-    """DimensionalAnalyzer _summary_
+    """**DimensionalAnalyzer** extends *DimensionalModel* to perform the dimensional analysis.
+
+    This class provides methods to:
+    - Sort parameters and FDUs for analysis.
+    - Build and solve the dimensional matrix.
+    - Generate dimensionless coefficients (e.g., Pi groups).
+
+    Attributes:
+        output (Optional[Parameter]): The output parameter of the analysis.
+        _wrk_fdu_lt (List[str]): List of working Fundamental Dimensions (FDUs).
+        _dim_mtx (Optional[np.ndarray]): Dimensional matrix.
+        _dim_mtx_trans (Optional[np.ndarray]): Transposed dimensional matrix.
 
     # TODO complete docstring
 
     Args:
         Generic (T): Generic type for a Python data structure.
+        DimensionalModel (DimensionalModel[T]): Inherits from the *DimensionalModel* class.        
     """
+
+    # Private attributes with validation logic
+
     output: Optional[Parameter] = None
     _wrk_fdu_lt: List[str] = field(default_factory=list)
     _dim_mtx: Optional[np.ndarray] = None
     _dim_mtx_trans: Optional[np.ndarray] = None
 
     def __post_init__(self) -> None:
+        """__post_init__ _summary_
+        """
         super().__post_init__()
         if self._validate_param_lt(self.param_lt):
             self.output = self._setup_output()
-            self._wrk_fdu_lt = self._setup_working_fdu(self.relevance_lt)
-            self._wrk_fdu_lt = self._sort_working_fdu(self._wrk_fdu_lt)
-            self._fdu_ht = self._setup_fdu_map(self._wrk_fdu_lt)
+            self._wrk_fdu_lt = self._extract_fdu(self.relevance_lt)
+            self._wrk_fdu_lt = self._sort_fdu(self._wrk_fdu_lt)
+            self._fdu_ht = self._filter_fdu_map(self._wrk_fdu_lt)
             self._relevance_lt = self._sort_by_category(self.relevance_lt)
 
-    def _setup_output(self) -> Parameter:
-        """*_setup_da_output()* Sets up the output parameter for the *DimensionalAnalyzer*.
+    def _setup_output(self) -> Optional[Parameter]:
+        """*_setup_da_output()* Finds and sets the output parameter.
 
         Returns:
-            Parameter: Output parameter for the *DimensionalAnalyzer*.
+            Optional[Parameter]: The output parameter of the analysis. None if not found.
         """
-        output = None
-        if self._n_out > 0:
-            for param in self._param_lt:
-                if param.cat == "OUTPUT":
-                    output = param
-                    break
-        return output
+        # use next for better performance and readability
+        return next((p for p in self._param_lt if p.cat == "OUTPUT"), None)
 
-    def _setup_working_fdu(self, relevance_lt: List[Parameter]) -> List[str]:
-        """*_setup_working_fdu()* Sets up the working FDUs for the *DimensionalAnalyzer*.
+    def _extract_fdu(self, relevance_lt: List[Parameter]) -> List[str]:
+        """*_extract_fdu()* Extracts working FDUs from relevant parameters.
 
         Args:
             relevance_lt (List[Parameter]): List of relevant parameters.
@@ -514,20 +524,14 @@ class DimensionalAnalyzer(DimensionalModel[T]):
         Returns:
             List[str]: List of working FDUs.
         """
-        print("Setting up working FDUs")
-        print("Relevant parameters:", relevance_lt)
-        _wrk_fdu_lt = []
-        for param in relevance_lt:
-            matches = re.findall(cfg.WKNG_FDU_SYM_REGEX, param.std_dims)
-            print("Matches:", matches)
-            for m in matches:
-                if m not in _wrk_fdu_lt:
-                    _wrk_fdu_lt.append(m)
-        print("Working FDUs:", _wrk_fdu_lt)
-        return _wrk_fdu_lt
+        match = [p.std_dims for p in relevance_lt]
+        fdus = [d for d in re.findall(cfg.WKNG_FDU_SYM_REGEX, str(match))]
+        fdus = list({fdus[i] for i in range(len(fdus))})
+        # return list({m for p in relevance_lt for m in re.findall(cfg.WKNG_FDU_SYM_REGEX, p.std_dims)})
+        return fdus
 
-    def _sort_working_fdu(self, fdu_lt: List[str]) -> List[str]:
-        """*_sort_working_fdu()* Sorts the working FDUs based on the framework.
+    def _sort_fdu(self, fdu_lt: List[str]) -> List[str]:
+        """*_sort_fdu()* Sorts FDUs based on framework precedence.
 
         Args:
             fdu_lt (List[str]): List of working FDUs.
@@ -535,186 +539,142 @@ class DimensionalAnalyzer(DimensionalModel[T]):
         Returns:
             List[str]: Sorted list of working FDUs.
         """
-        print("Sorting working FDUs")
-        print("Working FDUs:", fdu_lt)
-        print("Precedence list:", cfg.WKNG_FDU_PREC_LT)
-        _fdu_lt = sorted(fdu_lt, key=lambda x: cfg.WKNG_FDU_PREC_LT.index(x))
-        print("Sorted working FDUs:", _fdu_lt)
-        return _fdu_lt
+        return sorted(fdu_lt, key=lambda x: cfg.WKNG_FDU_PREC_LT.index(x))
 
-    def _setup_fdu_map(self, fdu_lt: List[str]) -> SCHashTable:
-        """_setup_fdu_map _summary_
+    def _filter_fdu_map(self, fdu_lt: List[str]) -> SCHashTable:
+        """*_filter_fdu_map()* Filters the FDU hash table to include only working FDUs.
 
         Args:
-            fdu_lt (List[str]): _description_
+            fdu_lt (List[str]): List of working FDUs.
 
         Returns:
-            SCHashTable: _description_
+            SCHashTable: Filtered FDU hash table.
         """
-        _new_fdu_ht = SCHashTable()
-        _fdu_ht_keys = self._fdu_ht.keys()
-        print("keys", _fdu_ht_keys)
-        print("FDU hash table:", self._fdu_ht.size)
+        new_fdu_ht = SCHashTable()
         for key in fdu_lt:
-            print(key)
-            if key in list(_fdu_ht_keys):
-                print("ajaaaaaa!!!!!")
-                fdu = self._fdu_ht.delete(key)
-                print("---- removing FDU!!", fdu)
-                _new_fdu_ht.insert(key, fdu)
-        return _new_fdu_ht
+            if key in self._fdu_ht.keys():
+                new_fdu_ht.insert(key, self._fdu_ht.delete(key))
+        return new_fdu_ht
 
     def _sort_by_category(self, param_lt: List[Parameter]) -> List[Parameter]:
-        """*_sort_by_category()* Sorts the relevant parameters by category. The precedence list is defined in the `cfg` module. The order is 'INPUT', 'OUTPUT', and 'CONTROL'.
+        """*_sort_by_category()* Sorts parameters by category based on precedence in `cfg` module.
 
         Args:
-            param_lt (List[Parameter]): List of relevant parameters.
+            param_lt (List[Parameter]): List of parameters.
 
         Returns:
-            List[Parameter]: Sorted list of relevant parameters.
+            List[Parameter]: Sorted list of parameters.
         """
-        category = list(cfg.PARAMS_CAT_DT.keys())
-        print("Sorting by category")
-        print("Relevant parameters:", param_lt)
-        print("Categories:", category)
-        _param_lt = sorted(param_lt, key=lambda p: category.index(p.cat))
-        # adjust Parameter idx
-        for i, param in enumerate(_param_lt):
+        _PAR_CAT = list(cfg.PARAMS_CAT_DT.keys())
+        sorted_params = sorted(param_lt, key=lambda p: _PAR_CAT.index(p.cat))
+        for i, param in enumerate(sorted_params):
             param.idx = i
-        return _param_lt
+        return sorted_params
 
     def _setup_matrix(self, n_fdu: int, n_relv: int) -> np.ndarray:
-        """*_setup_matrix()* Sets up the dimensional matrix for the *DimensionalAnalyzer*.
+        """*_setup_matrix()* Creates a zero-filled dimensional matrix.
 
         Args:
             n_fdu (int): Number of active FDUs.
             n_relv (int): Number of relevant parameters.
 
         Returns:
-            np.ndarray: Zero filled matrix with dimensions (n_fdu, n_relv).
+            np.ndarray: Zero filled matrix with (n_fdu, n_relv) shape.
         """
         return np.zeros((n_fdu, n_relv), dtype=float)
 
     def _fill_matrix(self,
                      relevance_lt: List[Parameter],
                      mtx: np.ndarray) -> np.ndarray:
-        """_fill_matrix _summary_
+        """*_fill_matrix()* Fills the dimensional matrix with parameter exponents.
 
         Args:
-            mtx (np.ndarray): _description_
-            relevance_lt (List[Parameter]): _description_
+            relevance_lt (List[Parameter]): List of relevant parameters.
+            mtx (np.ndarray): Dimensional matrix.
 
         Returns:
-            np.ndarray: _description_
+            np.ndarray: Filled dimensional matrix.
         """
-        for i, relv in enumerate(relevance_lt):
-            dim_col = np.array(relv.dim_col, dtype=float)
-            print(dim_col)
-            mtx[:, relv.idx] = dim_col
-            # print(i == relv.idx, relv.sym)
+        for relv in relevance_lt:
+            mtx[:, relv.idx] = np.array(relv.dim_col, dtype=float)
         return mtx
 
-    def _transpose_matrix(self, mtx: np.ndarray) -> np.ndarray:
-        """_transpose_matrix _summary_
-
-        Args:
-            mtx (np.ndarray): _description_
-
-        Returns:
-            np.ndarray: _description_
-        """
-        return np.transpose(mtx)
-
     def create_matrix(self) -> None:
-        print("Dimensional matrix:\n", self._dim_mtx)
+        """*create_matrix()* uilds the dimensional matrix and its transpose.
+        """
         self._dim_mtx = self._setup_matrix(self._n_in, self._n_relv)
-        print("Dimensional matrix:\n", self._dim_mtx)
         self._dim_mtx = self._fill_matrix(self.relevance_lt, self._dim_mtx)
-        print("Dimensional matrix:\n", self._dim_mtx)
-        self._dim_mtx_trans = self._transpose_matrix(self._dim_mtx)
-        print("Dimensional matrix:\n", self._dim_mtx_trans)
+        self._dim_mtx_trans = self._dim_mtx.T
 
     def _diagonalize_matrix(self,
                             mtx: np.ndarray) -> tuple[np.ndarray, List[int]]:
-        """_diagonalize_matrix _summary_
+        """*_diagonalize_matrix()* Computes the Row-Reduced Echelon Form (RREF) of the matrix.
 
         Args:
-            mtx (np.ndarray): _description_
+            mtx (np.ndarray): Dimensional matrix.
 
         Returns:
-            Union[np.ndarray, List[int]]: _description_
+            tuple[np.ndarray, List[int]]: RREF matrix and pivot columns.
         """
         # Convert the NumPy matrix to a SymPy Matrix
         self._sym_mtx = sp.Matrix(mtx)
-
         # Compute the Row-Reduced Echelon Form (RREF) and pivot columns
         rref_mtx, pivot_cols = self._sym_mtx.rref()
-
-        # Convert the RREF matrix back to a NumPy array
-        rref_np_mtx = sp.matrix2numpy(rref_mtx, dtype=float)
-
-        return rref_np_mtx, pivot_cols
+        # return the casted RREF matrix and the pivot columns
+        return sp.matrix2numpy(rref_mtx, dtype=float), pivot_cols
 
     def generate_pi_coefficients(self,
                                  relevance_lt: List[Parameter],
                                  mtx: sp.Matrix) -> List[PiCoefficient]:
-        """generate_pi_coefficients _summary_
+        """*generate_pi_coefficients()* Generates dimensionless Pi coefficients using the null space of the matrix.
 
         Args:
-            mtx (np.ndarray): _description_
-            relevance_lt (List[Parameter]): _description_
+            relevance_lt (List[Parameter]): List of relevant parameters.
+            mtx (sp.Matrix): Dimensional matrix.
 
         Returns:
-            List[PiCoefficient]: _description_
+            List[PiCoefficient]: List of Pi coefficients.
         """
-        _pi_coeff_lt = []
-        nullspace_vectors_lt = mtx.nullspace()
-        symbol_lt = [param.sym for param in relevance_lt]
-        # print("Nullspace vectors:", nullspace_vectors_lt)
-        print(f"--- size or the relevance list: {len(relevance_lt)} ---")
-        print(f"--- size of the nullspace vectors: {len(nullspace_vectors_lt)} ---")
-        for i, pi_exp in enumerate(nullspace_vectors_lt):
-            pi_exp = sp.matrix2numpy(pi_exp, dtype=float).T
-            print(f"--- Pi expression {i}:", pi_exp.shape)
-            # create the PiCoefficient object
-            sym = f"\\Pi{{{i}}}"
-            _sym_lt = []
-            for j, coeff in enumerate(pi_exp):
-                print(j, type(coeff), symbol_lt[j])
-                for m, k in enumerate(coeff):
-                    print(k, m, symbol_lt[m])
-                    if k != 0:
-                        _sym_lt.append(symbol_lt[m])
-            # pi_exp = pi_exp.flatten().tolist()
-            nam = f"Pi-Coefficient No. {i}"
-            desc = f"Pi-Group No. {i} computed with {', '.join(_sym_lt)}"
-            _pi_coeff = PiCoefficient(_idx=i,
-                                      _sym=sym,
-                                      _fwk=self._fwk,
-                                      _param_lt=symbol_lt,
-                                      _dim_col=pi_exp,
-                                      _pivot_lt=nullspace_vectors_lt[1],
-                                      name=nam,
-                                      description=desc,)
-            # _pi_coeff = PiCoefficient(name=sym,
-            #                           symbol=sym,
-            #                           pi_expr=coef_exp,
-            #                           _idx=-1,
-            #                           _pi_param_lt=self._wrk_fdu_lt,
-            #                           _pi_exp_lt=coef_exp)
-            # # add the PiCoefficient to the list
-            _pi_coeff_lt.append(_pi_coeff)
-        return _pi_coeff_lt
+        nullspace_vectors = mtx.nullspace()
+        symbols = [param.sym for param in relevance_lt]
+        coefficients = []
+        for i, vector in enumerate(nullspace_vectors):
+            vector_np = sp.matrix2numpy(vector, dtype=float).T
+            # Extract symbols of the parameters involved in the coefficient
+            piparam = [symbols[j] for j, c in enumerate(vector_np[0]) if c != 0]
+            coefficients.append(PiCoefficient(
+                _idx=i,
+                _sym=f"\\Pi{{{i}}}",
+                _fwk=self._fwk,
+                _param_lt=symbols,
+                _pivot_lt=self._pivot_cols,
+                _dim_col=vector_np,
+                name=f"Pi-Coefficient No. {i}",
+                description=f"Pi-Group {i} computed with {', '.join(piparam)}"
+            ))
+
+        # OLD CODE VERSION
+        # nullspace_vectors = mtx.nullspace()
+        # symbol_lt = [param.sym for param in relevance_lt]
+        # coefficients = [
+        #     PiCoefficient(
+        #         _idx=i,
+        #         _sym=f"\\Pi{{{i}}}",
+        #         _fwk=self._fwk,
+        #         _param_lt=symbol_lt,
+        #         _dim_col=sp.matrix2numpy(vector, dtype=float).T,
+        #         _pivot_lt=self._pivot_cols,
+        #         name=f"Pi-Coefficient No. {i}",
+        #         description=f"Pi-Group {i} computed with {', '.join(symbol_lt)}"
+        #     ) for i, vector in enumerate(nullspace_vectors)
+        # ]
+        return coefficients
 
     def solve_matrix(self) -> None:
-        """*_solve_dim_matrix()* Solves the dimensional matrix for the *DimensionalAnalyzer*.
-
-        Returns:
-            np.ndarray: Solved dimensional matrix.
+        """*_solve_dim_matrix()* Solves the dimensional matrix and computes the Pi coefficients.
         """
         ans = self._diagonalize_matrix(self._dim_mtx)
         self._rref_mtx, self._pivot_cols = ans
-
         self._pi_coef_lt = self.generate_pi_coefficients(self.relevance_lt,
                                                          self._sym_mtx)
 
@@ -726,3 +686,16 @@ class DimensionalAnalyzer(DimensionalModel[T]):
             List[PiCoefficient]: List of Pi-Coefficients.
         """
         return self._pi_coef_lt
+
+    @pi_coef_lt.setter
+    def pi_coef_lt(self, value: List[PiCoefficient]) -> None:
+        """*pi_coef_lt* property to set the list of Pi-Coefficients in the *DimensionalAnalyzer*. It must be a list of *PiCoefficient* objects.
+
+        Args:
+            value (List[PiCoefficient]): List of *PiCoefficient* objects.
+        """
+        if not all(isinstance(p, PiCoefficient) for p in value):
+            _msg = "Coefficient list must be a list of PiCoefficient objects. "
+            _msg += f"Provided: {value}"
+            raise ValueError(_msg)
+        self._pi_coef_lt = value

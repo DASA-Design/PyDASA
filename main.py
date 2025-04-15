@@ -292,6 +292,7 @@ print(DAnalysis.output, "\n")
 
 DAnalysis.create_matrix()
 DAnalysis.solve_matrix()
-print(len(DAnalysis.pi_coef_lt), "\n")
+# print(len(DAnalysis.pi_coef_lt), "\n")
 for pi in DAnalysis.pi_coef_lt:
     print(pi, "\n")
+print(DAnalysis._pivot_cols, "\n")

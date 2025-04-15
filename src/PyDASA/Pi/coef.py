@@ -216,10 +216,10 @@ class PiCoefficient(Generic[T]):
         Raises:
             ValueError: error if the category is not one of the allowed values.
         """
-        if value.upper() not in config.PARAMS_FWK_DT.keys():
+        if value.upper() not in config.PARAMS_CAT_DT.keys():
             _msg = f"Invalid category: {value}. "
             _msg += "Category must be one of the following: "
-            _msg += f"{', '.join(config.PARAMS_FWK_DT.keys())}."
+            _msg += f"{', '.join(config.PARAMS_CAT_DT.keys())}."
             raise ValueError(_msg)
         self._cat = value.upper()
 

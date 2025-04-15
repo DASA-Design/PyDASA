@@ -19,13 +19,11 @@ Module for solving the Dimensional Model in *PyDASA*.
 """
 
 # native python modules
-# import re
-# import modules for defining Dimensionless Coefficients (DN) type
-from typing import List, Tuple
-from typing import Optional, Generic, Union
-# import dataclass for class attributes and validations
+# import dataclass and typing
+from typing import List, Optional, Generic, Union
 from dataclasses import dataclass, field
 import inspect
+import re
 
 # custom modules
 # Dimensional Analysisis modules
@@ -35,26 +33,22 @@ from Src.PyDASA.Pi.coef import PiCoefficient
 
 # data structures modules
 from Src.PyDASA.DStructs.Tables.scht import SCHashTable
-from Src.PyDASA.DStructs.Tables.htme import MapEntry
 
 # FDU regex manager
 from Src.PyDASA.Utils.cstm import RegexManager
 
 # generic error handling and type checking
-from Src.PyDASA.Utils.err import error_handler as error
+from Src.PyDASA.Utils.err import error_handler as _error
 from Src.PyDASA.Utils.dflt import T
 
-# importing PyDASA's regex for managing FDUs
-# using the 'as' allows shared variable edition
-from Src.PyDASA.Utils import cfg as config
+# import the 'cfg' module with to allow global variable edition
+from Src.PyDASA.Utils import cfg
 
 # Generalizing input type for class typing
 FDUElm = Union[FDU, dict]
-FDUEnt = MapEntry[Tuple[str, FDU]]
 
 # checking custom modules
-assert error
-assert config
+assert _error
 assert T
 
 # global variables
@@ -64,18 +58,29 @@ MAX_IN: int = 10
 
 @dataclass
 class DimensionalModel(Generic[T]):
-    """*DimensionalModel* class creates *Dimensional Model* in *PyDASA*. Dimensional Models are used to define the dimensions of physical or digital quantities, the parameters, and the relevance list of the system
-
-    # TODO complete docstring
+    """*DimensionalModel* Represents a Dimensional Model in *PyDASA*.
 
     Args:
         Generic (T): Generic type for a Python data structure.
+
+    Returns:
+        DimensionalModel: An object with the following attributes:
+            - _idx (int): Index of the *DimensionalModel*.
+            - _sym (str): Symbol of the *DimensionalModel*.
+            - _fwk (str): Framework of the *DimensionalModel* using the *FDU_FWK_DT* map. By default, it is set to `PHYSICAL`.
+            - _fdu_ht (SCHashTable): Custom FDU hash table.
+            - _fdu_regex (RegexManager): FDU regex manager.
+            - _param_lt (List[Parameter]): List of *Parameter* objects.
+            - _relevance_lt (List[Parameter]): List of relevant *Parameter* objects.
+            - name (str): Name of the *DimensionalModel*.
+            - description (str): Summary of the *DimensionalModel*.
+            - io_fdu (Optional[List[dict]]): Optional list of user-defined FDUs (Fundamental Dimensions).
     """
     # Private attributes with validation logic
     # :attr: _idx
     _idx: int = -1
     """
-    Index of the *DimensionalModel*. It is the unique integer for the column's order in the dimensional matrix.
+    Unique identifier/index of the *DimensionalModel*.
     """
 
     # Symbol of the FDU
@@ -89,102 +94,96 @@ class DimensionalModel(Generic[T]):
     # :attr: _fwk
     _fwk: str = "PHYSICAL"
     """
-    Framework the *DimensionalModel* follows in accordance with the FDU. It can be one of the following: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`. Parameters and FDUs must be in the same framework.
+    Framework of the *DimensionalModel*, can be one of the following: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`. By default, it is set to `PHYSICAL`.
     """
 
     # FDUs hash table
     # :attr: _fdu_ht
-    _fdu_ht: SCHashTable[FDUEnt] = field(default_factory=SCHashTable)
+    _fdu_ht: SCHashTable = field(default_factory=SCHashTable)
     """
-    FDU hash table. Custom hash table for storing FDUs. It is a dictionary-like structure that allows for fast lookups and insertions.
+    Custom Hash Table for the *DimensionalModel* FDUs. It is used to store the FDUs and their properties.
     """
 
     # FDU regex manager
     # :attr: _fdu_regex
     _fdu_regex: RegexManager = field(default_factory=RegexManager)
     """
-    FDU regex manager. It is used to validate and configure the FDU's symbols, working regex, and precedence list.
+    FDU Regex Manager of the *DimensionalModel*. It is used to validate the user-defined FDUs and their properties if necessary.
     """
 
     # List of parameters
     # :attr: _param_lt
     _param_lt: List[Parameter] = field(default_factory=list)
     """
-    List of *Parameter* objects. It is used to store the parameters of the system and is the base for the relevance list.
+    List of *Parameter* objects. It is used to store the parameters of the system and to create the relevance list.
     """
 
     # List of relevant parameters
     # :attr: _relevance_lt
     _relevance_lt: List[Parameter] = field(default_factory=list)
     """
-    List of relevant *Parameter* objects. It is used to store the parameters use to solve the Dimensional Matrix. It is a subset of the `_param_lt` list with the 'relevance' attribute set to `True`.
+    List of relevant *Parameter* objects. It is a subset of the `_param_lt` list with the 'relevance' attribute set to `True`. It is the basis for the Dimensional Matrix.
     """
 
     # Public attributes
     # :attr: name
     name: str = ""
     """
-    Name of the *DimensionalModel*. User-friendly name of the dimensional model.
+    User-friendly name of the *DimensionalModel*.
     """
 
     # :attr: description
     description: str = ""
     """
-    Description of the *DimensionalModel*. It is a small summary of the dimensional model.
+    Small summary of the *DimensionalModel*.
     """
 
     # list of user defined FDUs
     # :attr: io_fdu
-    io_fdu: Optional[List[dict]] = None
+    io_fdu: Optional[List[FDUElm]] = None
     """
-    Optional list of user-defined FDUs (Fundamental Dimensions). This list stores FDUs as dictionaries or strings, including their symbols and frameworks.
-
-    Purpose:
-        - Used to populate the `_fdu_ht` hash table.
-        - If empty, the `_fdu_ht` hash table will use the default FDUs from the `config` module.
-        - If not empty, it will use the user-defined FDUs.
+    User-defined FDUs. The list can be Python dictionaries or *FDU* objects. It defines the FDUs used in the *DimensionalModel*.
     """
 
     def __post_init__(self) -> None:
         """__post_init__ _summary_
         """
-        # TODO implement this method
-        # set up the hash table for the FDUs
-        self._setup_fdu_ht()
-        # set up the FDU precedence list
+        if self._fdu_ht.empty:
+            self._setup_fdu_map()
+
+        # if self._fdu_regex.fdu_prec_lt is None:
         self._setup_fdu_precedence()
-        # set up the FDU regex manager
         self._setup_fdu_regex()
 
         # TODO maybe I dont need the if, because of hwo RegexManager is implemented
 
-    def _setup_fdu_ht(self) -> None:
-        """*_setup_fdu_ht()* sets up the hash table for the FDUs. It uses the `_fwk` attribute to determine the framework of the FDUs.
+    def _setup_fdu_map(self) -> None:
+        """*_setup_fdu_map()* Sets up the hash table for FDUs based on the framework.
 
         Raises:
             ValueError: error if the framework is invalid.
         """
-        if self._fwk in config.FDU_FWK_DT and self._fwk != "CUSTOM":
+        if self._fwk in cfg.FDU_FWK_DT and self._fwk != "CUSTOM":
             self._configure_default_fdus()
         elif self._fwk == "CUSTOM" and self.io_fdu:
             self._configure_custom_fdus()
         else:
             _msg = f"Invalid framework: {self._fwk}. "
             _msg += "Must be one of the following: "
-            _msg += f"{', '.join(config.FDU_FWK_DT.keys())}."
+            _msg += f"{', '.join(cfg.FDU_FWK_DT.keys())}."
             raise ValueError(_msg)
 
     def _configure_default_fdus(self) -> None:
-        """*_configure_default_fdus()* configures the default FDUs in the hash table. It uses the `_fwk` attribute to determine the framework of the FDUs.
+        """*_configure_default_fdus()* Configures default FDUs in the hash table.
 
         Raises:
             ValueError: error if the framework is invalid.
         """
         # map for easy access to the FDUs
         _frk_dt = {
-            "PHYSICAL": config.PHY_FDU_PREC_DT,
-            "COMPUTATION": config.COMPU_FDU_PREC_DT,
-            "DIGITAL": config.DIGI_FDU_PREC_DT,
+            "PHYSICAL": cfg.PHY_FDU_PREC_DT,
+            "COMPUTATION": cfg.COMPU_FDU_PREC_DT,
+            "DIGITAL": cfg.DIGI_FDU_PREC_DT,
         }
         # get the framework dictionary
         fdu_data = _frk_dt.get(self._fwk, {})
@@ -192,7 +191,7 @@ class DimensionalModel(Generic[T]):
         if not fdu_data:
             _msg = f"Invalid framework: {self._fwk}. "
             _msg += "Must be one of the following: "
-            _msg += f"{', '.join(config.FDU_FWK_DT.keys())}."
+            _msg += f"{', '.join(cfg.FDU_FWK_DT.keys())}."
             raise ValueError(_msg)
         # otherwise, configure the FDUs
         for i, (_sym, _desc) in enumerate(fdu_data.items()):
@@ -204,7 +203,9 @@ class DimensionalModel(Generic[T]):
             self._fdu_ht.insert(_fdu.sym, _fdu)
 
     def _configure_custom_fdus(self) -> None:
-        """*configure_custom_fdus()* configures the custom FDUs in the hash table. It uses the `io_fdu` attribute to determine the framework of the FDUs.
+        """*configure_custom_fdus()* Configures custom FDUs provided by the user.
+
+        NOTE: this method uses the optional `io_fdu` attribute to determine the FDUs.
         """
         # TODO maybe I can improve this for more genericity
         for i, fdu_data in enumerate(self.io_fdu):
@@ -227,20 +228,20 @@ class DimensionalModel(Generic[T]):
             _msg += f"Current Size: {self._fdu_ht.size()}."
             _msg += "Please configure the FDU hash table before setting up the precedence list."
             raise ValueError(_msg)
-        config.DFLT_FDU_PREC_LT = list(self._fdu_ht.keys())
-        MAX_IN = len(config.DFLT_FDU_PREC_LT)
+        cfg.DFLT_FDU_PREC_LT = list(self._fdu_ht.keys())
+        MAX_IN = len(cfg.DFLT_FDU_PREC_LT)
 
     def _setup_fdu_regex(self) -> None:
         """_setup_fdu_regex _summary_
         """
-        _PREC_LT = config.DFLT_FDU_PREC_LT.copy()
+        _PREC_LT = cfg.DFLT_FDU_PREC_LT
         self._fdu_regex = RegexManager(_fwk=self._fwk,
                                        _fdu_prec_lt=_PREC_LT)
         self._fdu_regex.update_global_regex()
 
     @property
     def idx(self) -> int:
-        """*idx* property gets the *DimensionalModel* index in the program.
+        """*idx* Get the *DimensionalModel* index in the program.
 
         Returns:
             int: ID of the *DimensionalModel*.
@@ -248,11 +249,11 @@ class DimensionalModel(Generic[T]):
         return self._idx
 
     @idx.setter
-    def idx(self, value: str) -> None:
-        """*idx* property to set the *DimensionalModel* index in the dimensional matrix. It must be alphanumeric.
+    def idx(self, value: int) -> None:
+        """*idx* Sets the *DimensionalModel* index in the program. It must be an integer.
 
         Args:
-            value (str): ID of the *DimensionalModel*.
+            value (int): Index of the *DimensionalModel*.
 
         Raises:
             ValueError: error if the Index is not an integer.
@@ -265,19 +266,19 @@ class DimensionalModel(Generic[T]):
 
     @property
     def sym(self) -> str:
-        """*sym* property to get the symbol of the *DimensionalModel*. It must be alphanumeric (preferably a single character, a Latin or Greek letter).
+        """*sym* Get the symbol of the *DimensionalModel*.
 
         Returns:
-            str: Symbol of the *DimensionalModel*. i.e.: V, d, D, m, Q, \\rho, etc.
+            str: Symbol of the *DimensionalModel*.
         """
         return self._sym
 
     @sym.setter
     def sym(self, value: str) -> None:
-        """*sym* property to set the symbol of *DimensionalModel*. It must be alphanumeric (preferably a single character, a Latin or Greek letter).
+        """*sym* Sets the symbol of the *DimensionalModel*. It must be alphanumeric (preferably a single character, a Latin or Greek letter).
 
         Args:
-            value (str): Symbol of the *DimensionalModel*. . i.e.: V, d, D, m, Q, \\rho, etc.
+            value (str): Symbol of the *DimensionalModel*.
 
         Raises:
             ValueError: error if the symbol is not alphanumeric.
@@ -291,27 +292,27 @@ class DimensionalModel(Generic[T]):
 
     @property
     def fwk(self) -> str:
-        """*fwk* property to get the framework of the *DimensionalModel*.
+        """*fwk* Gets the working framework of the *DimensionalModel*.
 
         Returns:
-            str: Framework of the *DimensionalModel*. It can be one of the following: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`.
+            str: Working framework of the *DimensionalModel*.
         """
         return self._fwk
 
     @fwk.setter
     def fwk(self, value: str) -> None:
-        """*fwk* property of the framework of the *DimensionalModel*. It must be one of the following: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`.
+        """*fwk* Sets the working framework of the *DimensionalModel*.
 
         Args:
-            value (str): Framework of the *DimensionalModel*. Must be the same as the FDU framework.
+            value (str): Worjing Framework of the *DimensionalModel*. It must be a supported FDU framework
 
         Raises:
-            ValueError: If the framework is not one of the allowed values.
+            ValueError: error if value is not a valid framework.
         """
-        if value not in config.FDU_FWK_DT.keys():
+        if value not in cfg.FDU_FWK_DT.keys():
             _msg = f"Invalid framework: {value}. "
             _msg += "Must be one of the following: "
-            _msg += f"{', '.join(config.FDU_FWK_DT.keys())}."
+            _msg += f"{', '.join(cfg.FDU_FWK_DT.keys())}."
             raise ValueError(_msg)
         self._fwk = value
 
@@ -384,6 +385,7 @@ class DimensionalModel(Generic[T]):
         self._n_in = len([p for p in param_lt if p.cat == "INPUT"])
         self._n_out = len([p for p in param_lt if p.cat == "OUTPUT"])
         self._n_ctrl = self._n_param - self._n_in - self._n_out
+        self._n_relv = len([p for p in param_lt if p.relevant])
 
         # check if the number of outputs is valid, ONLY ONE OUTPUT!
         if self._n_out > MAX_OUT:
@@ -431,7 +433,7 @@ class DimensionalModel(Generic[T]):
         """
         _context = self.__class__.__name__
         _function_name = inspect.currentframe().f_code.co_name
-        error(_context, _function_name, err)
+        _error(_context, _function_name, err)
 
     def __str__(self) -> str:
         """*__str__()* returns a string representation of the *DimensionalModel* object.
@@ -469,4 +471,106 @@ class DimensionalAnalyzer(DimensionalModel[T]):
     Args:
         Generic (T): Generic type for a Python data structure.
     """
-    pass
+    output: Optional[Parameter] = None
+    _wrk_fdu_lt: List[str] = field(default_factory=list)
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        if self._validate_param_lt(self.param_lt):
+            self.output = self._setup_output()
+            self._wrk_fdu_lt = self._setup_working_fdu(self.relevance_lt)
+            self._wrk_fdu_lt = self._sort_working_fdu(self._wrk_fdu_lt)
+            self._fdu_ht = self._update_fdu_map(self._wrk_fdu_lt)
+            self._relevance_lt = self._sort_by_category(self.relevance_lt)
+
+    def _setup_output(self) -> Parameter:
+        """*_setup_da_output()* Sets up the output parameter for the *DimensionalAnalyzer*.
+
+        Returns:
+            Parameter: Output parameter for the *DimensionalAnalyzer*.
+        """
+        output = None
+        if self._n_out > 0:
+            for param in self._param_lt:
+                if param.cat == "OUTPUT":
+                    output = param
+                    break
+        return output
+
+    def _setup_working_fdu(self, relevant_lt: List[Parameter]) -> List[str]:
+        """*_setup_working_fdu()* Sets up the working FDUs for the *DimensionalAnalyzer*.
+
+        Args:
+            relevant_lt (List[Parameter]): List of relevant parameters.
+
+        Returns:
+            List[str]: List of working FDUs.
+        """
+        print("Setting up working FDUs")
+        print("Relevant parameters:", relevant_lt)
+        _wrk_fdu_lt = []
+        for param in relevant_lt:
+            matches = re.findall(cfg.WKNG_FDU_SYM_REGEX, param.std_dims)
+            print("Matches:", matches)
+            for m in matches:
+                if m not in _wrk_fdu_lt:
+                    _wrk_fdu_lt.append(m)
+        print("Working FDUs:", _wrk_fdu_lt)
+        return _wrk_fdu_lt
+
+    def _sort_working_fdu(self, fdu_lt: List[str]) -> List[str]:
+        """*_sort_working_fdu()* Sorts the working FDUs based on the framework.
+
+        Args:
+            fdu_lt (List[str]): List of working FDUs.
+
+        Returns:
+            List[str]: Sorted list of working FDUs.
+        """
+        print("Sorting working FDUs")
+        print("Working FDUs:", fdu_lt)
+        print("Precedence list:", cfg.WKNG_FDU_PREC_LT)
+        _sorted_lt = sorted(fdu_lt,
+                            key=lambda x: cfg.WKNG_FDU_PREC_LT.index(x))
+        # fdu_lt.sort(key=lambda x: cfg.WKNG_FDU_PREC_LT.index(x))
+        print("Sorted working FDUs:", _sorted_lt)
+        return _sorted_lt
+
+    def _update_fdu_map(self, fdu_lt: List[str]) -> SCHashTable:
+        """_update_fdu_map _summary_
+
+        Args:
+            fdu_lt (List[str]): _description_
+
+        Returns:
+            SCHashTable: _description_
+        """
+        _new_fdu_ht = SCHashTable()
+        _fdu_ht_keys = self._fdu_ht.keys()
+        print("keys", _fdu_ht_keys)
+        print("FDU hash table:", self._fdu_ht.size)
+        for key in fdu_lt:
+            print(key)
+            if key in list(_fdu_ht_keys):
+                print("ajaaaaaa!!!!!")
+                fdu = self._fdu_ht.delete(key)
+                print("---- removing FDU!!", fdu)
+                _new_fdu_ht.insert(key, fdu)
+        return _new_fdu_ht
+
+    def _sort_by_category(self, param_lt: List[Parameter]) -> List[Parameter]:
+        """*_sort_by_category()* Sorts the relevant parameters by category.
+
+        Args:
+            param_lt (List[Parameter]): List of relevant parameters.
+
+        Returns:
+            List[Parameter]: Sorted list of relevant parameters.
+        """
+        category = list(cfg.PARAMS_CAT_DT.keys())
+        print("Sorting by category")
+        print("Relevant parameters:", param_lt)
+        print("Categories:", category)
+        _sorted_lt = sorted(param_lt,
+                            key=lambda p: category.index(p.cat))
+        return _sorted_lt

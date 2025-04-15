@@ -28,21 +28,30 @@ assert T
 
 @dataclass
 class FDU(Generic[T]):
-    """**FDU** class for creating a **Fundamental Dimensional Unit** in *PyDASA*. FDUs are the basic building blocks of dimensional analysis and are used to define the dimensions of physical and digital quantities.
+    """**FDU** class for processing the data of a **Fundamental Dimensional Unit** in *PyDASA*.
+
+    FDUs are fundamental building blocks of dimensional analysis and are used to define the dimensions of physical or digital quantities.
 
     Args:
         Generic (T): Generic type for a Python data structure.
 
     Returns:
         FDU: A FDU object with the following attributes:
-            - `_idx`: The ID of the FDU.
-            - `_sym`: The symbol of the FDU.
-            - `_fwk`: The framework of the FDU. It can be one of the following: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`.
-            - `name`: The name of the FDU.
-            - `description`: The description of the FDU.
+            - _idx (int): The Index of the FDU.
+            - _sym (str): The symbol of the FDU.
+            - _fwk (str): The framework of the FDU. It can be one supported frameworks.
+            - name (str): User-friendly name of the FDU.
+            - description (str): Brief summary of the FDU.
     """
 
     # Private attributes with validation logic
+    # Precedence of the FDU in the dimensional matrix
+    # :attr: _idx
+    _idx: int = -1
+    """
+    Order of Precedence of the FDU rows in the Dimensional Matrix.
+    """
+
     # Unique FDU symbol in the system
     # :attr: _sym
     _sym: str = ""
@@ -53,14 +62,7 @@ class FDU(Generic[T]):
     # :attr: _fwk
     _fwk: str = "PHYSICAL"
     """
-    Framework of the FDU. It can be one of the following: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`. Useful for identifying the framework of the FDU.
-    """
-
-    # Precedence of the FDU in the dimensional matrix
-    # :attr: _idx
-    _idx: int = -1
-    """
-    Precedence of the FDU in the dimensional matrix. It is used to order the FDUs in the rows of the dimensional matrix.
+    Framework of the FDU. The supported frameworks are: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`. By default, it is set to `PHYSICAL`.
     """
 
     # Public attributes
@@ -68,19 +70,44 @@ class FDU(Generic[T]):
     # :attr: name
     name: str = ""
     """
-    Name of the FDU. User-friendly name of the FDU.
+    User-friendly name of the FDU.
     """
 
     # Description of the FDU
     # :attr: description
     description: str = ""
     """
-    Description of the FDU. It is a string with a small summary of the FDU.
+    Small summary of the FDU.
     """
 
     @property
+    def idx(self) -> int:
+        """*idx* Get the FDU precedence in the Dimensional Matrix.
+
+        Returns:
+            int: Precedence of the FDU.
+        """
+        return self._idx
+
+    @idx.setter
+    def idx(self, value: int) -> None:
+        """*idx* Set the FDU precedence in the Dimensional Matrix. It must be a non-negative integer.
+
+        Args:
+            value (int): Precedence of the FDU.
+
+        Raises:
+            ValueError: If the Index is not a non-negative integer.
+        """
+        if not isinstance(value, int) or value < 0:
+            _msg = "Precedence must be a non-negative integer. "
+            _msg += f"Provided: {value}"
+            raise ValueError(_msg)
+        self._idx = value
+
+    @property
     def sym(self) -> str:
-        """*sym* property to get the symbol of the FDU.
+        """*sym* Get the FDU symbol.
 
         Returns:
             str: Symbol of the FDU.
@@ -89,7 +116,7 @@ class FDU(Generic[T]):
 
     @sym.setter
     def sym(self, value: str) -> None:
-        """*sym* property to set the symbol of the FDU. It must be alphanumeric (preferably a single character + Latin or Greek letter).
+        """*sym* Set the FDU symbol. It must be a single alphanumeric character.
 
         Args:
             value (str): Symbol of the FDU.
@@ -105,49 +132,20 @@ class FDU(Generic[T]):
         self._sym = value
 
     @property
-    def idx(self) -> int:
-        """*idx* property to get the row order of the FDU in the dimensional matrix.
-
-        Returns:
-            int: Precedence of the FDU.
-        """
-        return self._idx
-
-    @idx.setter
-    def idx(self, value: int) -> None:
-        """*idx* property to order the FDU in the rows of the dimensional matrix.
-
-        Args:
-            value (int): Precedence of the FDU. Must be a non-negative integer.
-
-        Raises:
-            ValueError: If the ID is not alphanumeric.
-        """
-        if not isinstance(value, int) or value < 0:
-            _msg = "Precedence must be a non-negative integer. "
-            _msg += f"Provided: {value}"
-            raise ValueError(_msg)
-        if value != int(value):
-            _msg = "Precedence must be an integer. "
-            _msg += f"Provided: {value}"
-            raise ValueError(_msg)
-        self._idx = value
-
-    @property
     def fwk(self) -> str:
-        """*fwk* property to get the framework of the FDU.
+        """*fwk* Get the FDU framework.
 
         Returns:
-            str: Framework of the FDU. It can be one of the following: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`.
+            str: Working framework of the FDU.
         """
         return self._fwk
 
     @fwk.setter
     def fwk(self, value: str) -> None:
-        """*fwk* property of the allowed framework of the FDU.
+        """*fwk* Set the FDU framework. It must be one of the allowed values. The allowed values are: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`.
 
         Args:
-            value (str): Framework of the FDU. It can be one of the following: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`.
+            value (str): Framework of the FDU.
 
         Raises:
             ValueError: If the framework is not one of the allowed values.

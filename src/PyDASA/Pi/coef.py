@@ -8,17 +8,14 @@ Module for representing Dimensionless Coefficients (DN) in *PyDASA*. Defines the
 """
 
 # native python modules
-# import dataclass for class attributes and validations
 from typing import Optional, List, Generic
 from dataclasses import dataclass, field
 
 # custom modules
 from Src.PyDASA.Utils.dflt import T
-# generic error handling and type checking
 from Src.PyDASA.Utils.err import error_handler as error
 
 # importing PyDASA's regex for managing FDUs
-# using the 'as' allows shared variable edition
 from Src.PyDASA.Utils import cfg as config
 
 # checking custom modules
@@ -133,11 +130,11 @@ class PiCoefficient(Generic[T]):
         return self._idx
 
     @idx.setter
-    def idx(self, value: str) -> None:
+    def idx(self, value: int) -> None:
         """*idx* property to set the *PiCoefficient* index in the dimensional model. It must be an integer.
 
         Args:
-            value (str): ID of the *PiCoefficient*.
+            value (int): ID of the *PiCoefficient*.
 
         Raises:
             ValueError: error if the Index is not an integer.

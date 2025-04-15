@@ -30,14 +30,14 @@ VLD_DTYPE_LT: tuple = (
     dataclass,
 )
 """
-Tuple with the native data types in Python that are comparable in the structures.
+Native data types in Python that are comparable in the structures.
 """
 
 # default key for comparing dictionaries
 # :data: DFLT_DICT_KEY
 DFLT_DICT_KEY: str = "_idx"
 """
-Default key field for comparing dictionaries in the structures.
+Default field for comparing dictionaries in the structures.
 """
 
 # allowed input/output types for the ADTs
@@ -48,14 +48,14 @@ VLD_IODATA_LT: tuple = (
     set,
 )
 """
-Tuple with the allowed input/output types for the ADTs. Useful for loading and saving data in the ADTs with the *load* and *save* file methods.
+Allowed input/output types for loading and saving data in the ADTs with the *load* and *save* file methods.
 """
 
 # default big prime number for MAD compression in hash tables
 # :data: DFLT_PRIME
 DFLT_PRIME: int = 109345121
 """
-Default big prime number for MAD compression in hash tables. This number is used to calculate the hash value of the keys in the hash table.
+Default big prime number for the MAD compression function in hash tables.
 """
 
 
@@ -63,14 +63,12 @@ Default big prime number for MAD compression in hash tables. This number is used
 # :data: T: TypeVar
 T = TypeVar("T")
 """
-Type for the element stored in the list. This is used to define the type of the elements in the list and its methods.
-
-This is used to define the type of the elements in the list and its methods.
+Generic Type for defining the element types in classes and methods.
 """
 
 
 def dflt_cmp_func_lt(key: str, elm1, elm2) -> int:
-    """*lt_default_cmp_funcion()* default comparison function for the elements of the ADT List (ArrayList, SingleLinked, DoubleLinked). can be of native type or user-defined.
+    """*lt_default_cmp_funcion()* Compare two elements of the ADT List (ArrayList, SingleLinked, DoubleLinked). They can be of Python native or user-defined.
 
     Args:
         key (str): Key for comparing dictionary elements.
@@ -123,7 +121,7 @@ def dflt_cmp_func_lt(key: str, elm1, elm2) -> int:
 
 
 def dflt_cmp_func_ht(key: str, ekey1: T, entry2) -> int:
-    """*dflt_cmp_func_ht()* default comparison function for the elements of the ADT Map (Hash Table). can be of native type or user-defined.
+    """*dflt_cmp_func_ht()* Compare the entries of the ADT Map (Hash Table). can be of Python native or user-defined.
 
     Args:
         key (str): Key for comparing dictionary elements.

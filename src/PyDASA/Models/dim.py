@@ -90,7 +90,7 @@ class DimensionalModel(Generic[T]):
 
     # Symbol of the FDU
     # :attr: _sym
-    _sym: str = ""
+    _sym: str = "DA_{x}"
     """
     Symbol of the *DimensionalModel*. It must be alphanumeric (preferably a single character + Latin or Greek letter). Useful for user-friendly representation of the instance.
     """
@@ -132,7 +132,7 @@ class DimensionalModel(Generic[T]):
 
     # Public attributes
     # :attr: name
-    name: str = ""
+    name: str = "Dimensional Model"
     """
     User-friendly name of the *DimensionalModel*.
     """
@@ -242,6 +242,89 @@ class DimensionalModel(Generic[T]):
                                        _fdu_prec_lt=_PREC_LT)
         self._fdu_regex.update_global_regex()
 
+    def _adjust_param_lt(self, param_lt: List[Parameter]) -> List[Parameter]:
+        """*_adjust_param_lt()* adjusts the parameter list to set the framework and index of the parameters.
+
+        Args:
+            param_lt (List[Parameter]): List of *Parameter* objects.
+
+        Returns:
+            List[Parameter]: Adjusted list of *Parameter* objects.
+        """
+        # validate the parameter list
+        if self._validate_param_lt(param_lt):
+            # check if there is a precedence on the parameters
+            if all(p.idx == -1 for p in param_lt):
+                # set the index of the parameters
+                for i, param in enumerate(param_lt):
+                    param.idx = i
+                    # fix the framework of the parameters
+                    param.fwk = self._fwk
+        return param_lt
+
+    def _validate_param_lt(self, param_lt: List[Parameter]) -> bool:
+        """*_validate_param_lt()* validates the parameter list. It checks if the number of inputs, outputs, and control parameters are valid.
+
+        Args:
+            param_lt (List[Parameter]): List of *Parameter* objects.
+
+        Raises:
+            ValueError: error if there is more than one output *Parameter*.
+            ValueError: error if there is no output *Parameter*.
+            ValueError: error if there are more inputs *Parameter* than FDUs.
+            ValueError: error if there are no input *Parameter*.
+
+        Returns:
+            bool: True if the parameter list is valid, False otherwise.
+        """
+        # count the relevant inputs, outputs, and control parameters
+        self._n_param = len(param_lt)
+        self._n_in = len([p for p in param_lt if p.cat == "INPUT"])
+        self._n_out = len([p for p in param_lt if p.cat == "OUTPUT"])
+        self._n_relv = len([p for p in param_lt if p.relevant is True])
+        self._n_ctrl = self._n_relv - self._n_in - self._n_out
+
+        # check if the number of outputs is valid, ONLY ONE OUTPUT!
+        if self._n_out > MAX_OUT:
+            _msg = f"Number of outputs is invalid: {self._n_out}. "
+            _msg += f"Maximum allowed: {MAX_OUT}."
+            raise ValueError(_msg)
+        if self._n_out == 0:
+            _msg = "No output parameter defined. "
+            _msg += "At least one output parameter is required."
+            raise ValueError(_msg)
+        # check if the number of inputs is valid
+        if self._n_in > MAX_IN:
+            _msg = f"Number of inputs is invalid: {self._n_in}. "
+            _msg += f"Maximum allowed: {MAX_IN}."
+            raise ValueError(_msg)
+        if self._n_in == 0:
+            _msg = "No input parameter defined. "
+            _msg += "At least one input parameter is required."
+            raise ValueError(_msg)
+        return True
+
+    def _error_handler(self, err: Exception) -> None:
+        """*_error_handler()* to process the context (package/class), function name (method), and the error (exception) that was raised to format a detailed error message and traceback.
+
+        Args:
+            err (Exception): Python raised exception.
+        """
+        # TODO check the usefulness of this method
+        _context = self.__class__.__name__
+        _function_name = inspect.currentframe().f_code.co_name
+        _error(_context, _function_name, err)
+
+    def clear(self) -> None:
+        """*clear()* Clears the *DimensionalModel* object.
+        """
+        self._idx = -1
+        self._sym = "DA_{x}"
+        self._fwk = "PHYSICAL"
+        self._fdu_ht.clear()
+        self._param_lt.clear()
+        self._relevance_lt.clear()
+
     @property
     def idx(self) -> int:
         """*idx* Get the *DimensionalModel* index in the program.
@@ -349,68 +432,6 @@ class DimensionalModel(Generic[T]):
         value = self._adjust_param_lt(value)
         self._param_lt = value
 
-    def _adjust_param_lt(self, param_lt: List[Parameter]) -> List[Parameter]:
-        """*_adjust_param_lt()* adjusts the parameter list to set the framework and index of the parameters.
-
-        Args:
-            param_lt (List[Parameter]): List of *Parameter* objects.
-
-        Returns:
-            List[Parameter]: Adjusted list of *Parameter* objects.
-        """
-        # validate the parameter list
-        if self._validate_param_lt(param_lt):
-            # check if there is a precedence on the parameters
-            if all(p.idx == -1 for p in param_lt):
-                # set the index of the parameters
-                for i, param in enumerate(param_lt):
-                    param.idx = i
-                    # fix the framework of the parameters
-                    param.fwk = self._fwk
-        return param_lt
-
-    def _validate_param_lt(self, param_lt: List[Parameter]) -> bool:
-        """*_validate_param_lt()* validates the parameter list. It checks if the number of inputs, outputs, and control parameters are valid.
-
-        Args:
-            param_lt (List[Parameter]): List of *Parameter* objects.
-
-        Raises:
-            ValueError: error if there is more than one output *Parameter*.
-            ValueError: error if there is no output *Parameter*.
-            ValueError: error if there are more inputs *Parameter* than FDUs.
-            ValueError: error if there are no input *Parameter*.
-
-        Returns:
-            bool: True if the parameter list is valid, False otherwise.
-        """
-        # count the relevant inputs, outputs, and control parameters
-        self._n_param = len(param_lt)
-        self._n_in = len([p for p in param_lt if p.cat == "INPUT"])
-        self._n_out = len([p for p in param_lt if p.cat == "OUTPUT"])
-        self._n_relv = len([p for p in param_lt if p.relevant is True])
-        self._n_ctrl = self._n_relv - self._n_in - self._n_out
-
-        # check if the number of outputs is valid, ONLY ONE OUTPUT!
-        if self._n_out > MAX_OUT:
-            _msg = f"Number of outputs is invalid: {self._n_out}. "
-            _msg += f"Maximum allowed: {MAX_OUT}."
-            raise ValueError(_msg)
-        if self._n_out == 0:
-            _msg = "No output parameter defined. "
-            _msg += "At least one output parameter is required."
-            raise ValueError(_msg)
-        # check if the number of inputs is valid
-        if self._n_in > MAX_IN:
-            _msg = f"Number of inputs is invalid: {self._n_in}. "
-            _msg += f"Maximum allowed: {MAX_IN}."
-            raise ValueError(_msg)
-        if self._n_in == 0:
-            _msg = "No input parameter defined. "
-            _msg += "At least one input parameter is required."
-            raise ValueError(_msg)
-        return True
-
     @property
     def relevance_lt(self) -> List[Parameter]:
         """*relevance_lt* property to get the list of relevant parameters in the *DimensionalModel*. It is a subset of the `_param_lt` list with the 'relevant' attribute set to `True`.
@@ -428,16 +449,6 @@ class DimensionalModel(Generic[T]):
             param_lt (List[Parameter]): List of *Parameter* objects.
         """
         self._relevance_lt = [p for p in param_lt if p.relevant]
-
-    def _error_handler(self, err: Exception) -> None:
-        """*_error_handler()* to process the context (package/class), function name (method), and the error (exception) that was raised to format a detailed error message and traceback.
-
-        Args:
-            err (Exception): Python raised exception.
-        """
-        _context = self.__class__.__name__
-        _function_name = inspect.currentframe().f_code.co_name
-        _error(_context, _function_name, err)
 
     def __str__(self) -> str:
         """*__str__()* returns a string representation of the *DimensionalModel* object.
@@ -476,27 +487,107 @@ class DimensionalAnalyzer(DimensionalModel[T]):
     - Generate dimensionless coefficients (e.g., Pi groups).
 
     Attributes:
-        output (Optional[Parameter]): The output parameter of the analysis.
         _wrk_fdu_lt (List[str]): List of working Fundamental Dimensions (FDUs).
         _dim_mtx (Optional[np.ndarray]): Dimensional matrix.
         _dim_mtx_trans (Optional[np.ndarray]): Transposed dimensional matrix.
-
-    # TODO complete docstring
+        _sym_mtx (Optional[sp.Matrix]): SymPy matrix for symbolic computation.
+        _rref_mtx (Optional[np.ndarray]): Row-Reduced Echelon Form (RREF) matrix.
+        _pivot_cols (Optional[List[int]]): List of pivot columns in the RREF matrix.
+        _pi_coef_lt (List[PiCoefficient]): List of Pi coefficients.
+        _n_in (int): Number of input parameters.
+        _n_out (int): Number of output parameters.
+        _n_relv (int): Number of relevant parameters.
+        _n_ctrl (int): Number of control parameters.
+        output (Optional[Parameter]): The output parameter of the analysis.
 
     Args:
         Generic (T): Generic type for a Python data structure.
-        DimensionalModel (DimensionalModel[T]): Inherits from the *DimensionalModel* class.        
+        DimensionalModel (DimensionalModel[T]): Inherits from the *DimensionalModel* class.
     """
 
     # Private attributes with validation logic
-
-    output: Optional[Parameter] = None
+    # :attr: _wrk_fdu_lt
     _wrk_fdu_lt: List[str] = field(default_factory=list)
+    """
+    Working FDUs for the dimensional analysis. Sometimes subset of the FDU hash table.
+    """
+
+    # :attr: _dim_mtx
     _dim_mtx: Optional[np.ndarray] = None
+    """
+    Dimensional matrix for the analysis. It jas the shape of the number of FDUs and the number of relevant parameters (n_fdu, n_relv).
+    """
+
+    # :attr: _dim_mtx_trans
     _dim_mtx_trans: Optional[np.ndarray] = None
+    """
+    Transposed dimensional matrix for the analysis. It has the shape of the number of relevant parameters and the number of FDUs (n_relv, n_fdu).
+    """
+
+    # :attr: _sym_mtx
+    _sym_mtx: Optional[sp.Matrix] = None
+    """
+    SymPy matrix for SymPy computation. It is used to compute the Row-Reduced Echelon Form (RREF) of the dimensional matrix.
+    """
+
+    # :attr: _rref_mtx
+    _rref_mtx: Optional[np.ndarray] = None
+    """
+    Row-Reduced Echelon Form (RREF) matrix for the analysis. It is used to compute the Pi coefficients. Can check Linear Independence of parameters.
+    """
+
+    # :attr: _pivot_cols
+    _pivot_cols: Optional[List[int]] = None
+    """
+    Pivot columns in the RREF matrix. It is a set of the indices of the parameters that are linearly independent in the dimensional matrix.
+    """
+
+    # :attr: _pi_coef_lt
+    _pi_coef_lt: List[PiCoefficient] = field(default_factory=list)
+    """
+    List of the resulting Pi coefficients. It is a list of *PiCoefficient* objects.
+    """
+
+    # working attributes
+    # :attr: _n_param
+    _n_param: int = 0
+    """
+    Number of parameters in the model. It is the size of the parameter list.
+    """
+
+    # :attr: _n_relv
+    _n_relv: int = 0
+    """
+    Number of relevant parameters. It is the size of the relevance list, which is a subset of the parameter list. Therefore, _n_param >= _n_relv.
+    """
+
+    # :attr: _n_in
+    _n_in: int = 0
+    """
+    Number of INPUT relevant parameters. Max Number must the size of the FDUs. Conforms the columns of the main Dimensional Matrix.
+    """
+
+    # :attr: _n_out
+    _n_out: int = 0
+    """
+    Number of OUTPUT parameters. Max Number must be 1. Conforms the output vector of the main Dimensional Matrix.
+    """
+
+    # :attr: _n_ctrl
+    _n_ctrl: int = 0
+    """
+    Number of CONTROL parameters. It is the number of relevant parameters minus the number of input and output parameters. Conforms the residual Dimensional Matrix and can be as many as necessary
+    """
+
+    # Public attributes
+    # :attr: output
+    output: Optional[Parameter] = None
+    """
+    Output parameter of the analysis. It must be a single *Parameter* object with the 'cat' and 'relevance' attributes set to `OUTPUT` and `True`, respectively. It is used to define the output vector of the dimensional matrix.
+    """
 
     def __post_init__(self) -> None:
-        """__post_init__ _summary_
+        """*__post_init__()* initializes the *DimensionalAnalyzer* object. It sets up the dimensional matrix and the relevant parameters.
         """
         super().__post_init__()
         if self._validate_param_lt(self.param_lt):
@@ -599,13 +690,6 @@ class DimensionalAnalyzer(DimensionalModel[T]):
             mtx[:, relv.idx] = np.array(relv.dim_col, dtype=float)
         return mtx
 
-    def create_matrix(self) -> None:
-        """*create_matrix()* uilds the dimensional matrix and its transpose.
-        """
-        self._dim_mtx = self._setup_matrix(self._n_in, self._n_relv)
-        self._dim_mtx = self._fill_matrix(self.relevance_lt, self._dim_mtx)
-        self._dim_mtx_trans = self._dim_mtx.T
-
     def _diagonalize_matrix(self,
                             mtx: np.ndarray) -> tuple[np.ndarray, List[int]]:
         """*_diagonalize_matrix()* Computes the Row-Reduced Echelon Form (RREF) of the matrix.
@@ -622,6 +706,13 @@ class DimensionalAnalyzer(DimensionalModel[T]):
         rref_mtx, pivot_cols = self._sym_mtx.rref()
         # return the casted RREF matrix and the pivot columns
         return sp.matrix2numpy(rref_mtx, dtype=float), pivot_cols
+
+    def create_matrix(self) -> None:
+        """*create_matrix()* uilds the dimensional matrix and its transpose.
+        """
+        self._dim_mtx = self._setup_matrix(self._n_in, self._n_relv)
+        self._dim_mtx = self._fill_matrix(self.relevance_lt, self._dim_mtx)
+        self._dim_mtx_trans = self._dim_mtx.T
 
     def generate_pi_coefficients(self,
                                  relevance_lt: List[Parameter],
@@ -653,7 +744,7 @@ class DimensionalAnalyzer(DimensionalModel[T]):
                 description=f"Pi-Group {i} computed with {', '.join(piparam)}"
             ))
 
-        # OLD CODE VERSION
+        # OLD CODE VERSION, keep for future reference! :3
         # nullspace_vectors = mtx.nullspace()
         # symbol_lt = [param.sym for param in relevance_lt]
         # coefficients = [
@@ -677,6 +768,22 @@ class DimensionalAnalyzer(DimensionalModel[T]):
         self._rref_mtx, self._pivot_cols = ans
         self._pi_coef_lt = self.generate_pi_coefficients(self.relevance_lt,
                                                          self._sym_mtx)
+
+    def clear(self):
+        super().clear()
+        self._wrk_fdu_lt.clear()
+        self._dim_mtx = None
+        self._dim_mtx_trans = None
+        self._sym_mtx = None
+        self._rref_mtx = None
+        self._pivot_cols = None
+        self._pi_coef_lt.clear()
+        self._n_param = 0
+        self._n_relv = 0
+        self._n_in = 0
+        self._n_out = 0
+        self._n_ctrl = 0
+        self.output = None
 
     @property
     def pi_coef_lt(self) -> List[PiCoefficient]:

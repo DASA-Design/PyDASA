@@ -12,6 +12,7 @@ Module for representing the **FDU** or **Fundamental Dimensional Unit** for Dime
 from dataclasses import dataclass
 # import modules for defining the MapEntry type
 from typing import Generic
+import re
 
 # custom modules
 # generic error handling and type checking
@@ -19,7 +20,8 @@ from Src.PyDASA.Utils.err import error_handler as error
 from Src.PyDASA.Utils.dflt import T
 
 # import global variables
-from Src.PyDASA.Utils.cfg import FDU_FWK_DT
+from Src.PyDASA.Utils.cfg import FDU_FWK_DT, LATEX_REGEX
+
 
 # checking custom modules
 assert error
@@ -90,20 +92,20 @@ class FDU(Generic[T]):
         return self._idx
 
     @idx.setter
-    def idx(self, value: int) -> None:
+    def idx(self, val: int) -> None:
         """*idx* Set the FDU precedence in the Dimensional Matrix. It must be a non-negative integer.
 
         Args:
-            value (int): Precedence of the FDU.
+            val (int): Precedence of the FDU.
 
         Raises:
             ValueError: If the Index is not a non-negative integer.
         """
-        if not isinstance(value, int) or value < 0:
+        if not isinstance(val, int) or val < 0:
             _msg = "Precedence must be a non-negative integer. "
-            _msg += f"Provided: {value}"
+            _msg += f"Provided: {val}"
             raise ValueError(_msg)
-        self._idx = value
+        self._idx = val
 
     @property
     def sym(self) -> str:
@@ -115,21 +117,23 @@ class FDU(Generic[T]):
         return self._sym
 
     @sym.setter
-    def sym(self, value: str) -> None:
+    def sym(self, val: str) -> None:
         """*sym* Set the FDU symbol. It must be a single alphanumeric character.
 
         Args:
-            value (str): Symbol of the FDU.
+            val (str): Symbol of the FDU.
 
         Raises:
             ValueError: If the symbol is not alphanumeric.
         """
-        if not value.isalnum() or len(value) != 1:
-            _msg = "Symbol must be a single alphanumeric character. "
-            _msg += f"Provided: {value}"
-            _msg += "Preferably a Latin or Greek letter."
+
+        # Regular expression to match valid LaTeX strings or alphanumeric strings
+        if not (val.isalnum() or re.match(LATEX_REGEX, val)) or len(val) != 1:
+            _msg = "Symbol must be alphanumeric or a valid LaTeX string. "
+            _msg += f"Provided: '{val}' "
+            _msg += "Examples: 'V', 'd', '\\Pi_{0}', '\\rho'."
             raise ValueError(_msg)
-        self._sym = value
+        self._sym = val
 
     @property
     def fwk(self) -> str:
@@ -141,21 +145,21 @@ class FDU(Generic[T]):
         return self._fwk
 
     @fwk.setter
-    def fwk(self, value: str) -> None:
+    def fwk(self, val: str) -> None:
         """*fwk* Set the FDU framework. It must be one of the allowed values. The allowed values are: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`.
 
         Args:
-            value (str): Framework of the FDU.
+            val (str): Framework of the FDU.
 
         Raises:
             ValueError: If the framework is not one of the allowed values.
         """
-        if value not in FDU_FWK_DT.keys():
-            _msg = f"Invalid framework: {value}. "
+        if val not in FDU_FWK_DT.keys():
+            _msg = f"Invalid framework: {val}. "
             _msg += "Framework must be one of the following: "
             _msg += f"{', '.join(FDU_FWK_DT.keys())}."
             raise ValueError(_msg)
-        self._fwk = value
+        self._fwk = val
 
     def __str__(self) -> str:
         """*__str__()* returns a string representation of the FDU object.
@@ -164,13 +168,13 @@ class FDU(Generic[T]):
             str: String representation of the FDU object.
         """
         _attr_lt = []
-        for attr, value in vars(self).items():
+        for attr, val in vars(self).items():
             # Skip private attributes starting with "__"
             if attr.startswith("__"):
                 continue
             # Format attribute name and value
             _attr_name = attr.lstrip("_")
-            _attr_lt.append(f"{_attr_name}={repr(value)}")
+            _attr_lt.append(f"{_attr_name}={repr(val)}")
         # Format the string representation of the ArrayList class and its attributes
         _str = f"{self.__class__.__name__}({', '.join(_attr_lt)})"
         return _str

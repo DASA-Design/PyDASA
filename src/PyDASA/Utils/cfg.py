@@ -151,6 +151,15 @@ Purpose:
     - Validates parameter and variable dimensions in *PyDASA*.
 """
 
+#  Regex pattern for matching LaTeX symbols
+# :attr: LATEX_REGEX
+LATEX_REGEX: str = r"^\\[a-zA-Z]+(_\{[a-zA-Z0-9]+\})?$"
+# Allow valid LaTeX strings starting with a backslash or alphanumeric strings
+
+"""
+LaTeX regex pattern to match LaTeX symbols (e.g., '\alpha', '\beta_{1}') in *PyDASA*.
+"""
+
 # Default regex pattern for matching FDUs
 # :attr: DFLT_FDU_REGEX
 DFLT_FDU_REGEX: str = rf"^[{''.join(DFLT_FDU_PREC_LT)}](\^-?\d+)?(\*[{''.join(DFLT_FDU_PREC_LT)}](?:\^-?\d+)?)*$"

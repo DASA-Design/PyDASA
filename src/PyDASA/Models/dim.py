@@ -335,20 +335,20 @@ class DimensionalModel(Generic[T]):
         return self._idx
 
     @idx.setter
-    def idx(self, value: int) -> None:
+    def idx(self, val: int) -> None:
         """*idx* Sets the *DimensionalModel* index in the program. It must be an integer.
 
         Args:
-            value (int): Index of the *DimensionalModel*.
+            val (int): Index of the *DimensionalModel*.
 
         Raises:
             ValueError: error if the Index is not an integer.
         """
-        if not isinstance(value, int):
+        if not isinstance(val, int):
             _msg = "Index must be an integer, "
-            _msg += f"Provided type: {type(value)}"
+            _msg += f"Provided type: {type(val)}"
             raise ValueError(_msg)
-        self._idx = value
+        self._idx = val
 
     @property
     def sym(self) -> str:
@@ -360,21 +360,22 @@ class DimensionalModel(Generic[T]):
         return self._sym
 
     @sym.setter
-    def sym(self, value: str) -> None:
+    def sym(self, val: str) -> None:
         """*sym* Sets the symbol of the *DimensionalModel*. It must be alphanumeric (preferably a single character, a Latin or Greek letter).
 
         Args:
-            value (str): Symbol of the *DimensionalModel*.
+            val (str): Symbol of the *DimensionalModel*.
 
         Raises:
             ValueError: error if the symbol is not alphanumeric.
         """
-        if not value.isalnum():
-            _msg = "Symbol must be alphanumeric. "
-            _msg += f"Provided: {value}"
-            _msg += "Preferably a Latin or Greek letter."
+        # Regular expression to match valid LaTeX strings or alphanumeric strings
+        if not (val.isalnum() or re.match(cfg.LATEX_REGEX, val)):
+            _msg = "Symbol must be alphanumeric or a valid LaTeX string. "
+            _msg += f"Provided: '{val}' "
+            _msg += "Examples: 'V', 'd', '\\Pi_{0}', '\\rho'."
             raise ValueError(_msg)
-        self._sym = value
+        self._sym = val 
 
     @property
     def fwk(self) -> str:
@@ -386,21 +387,21 @@ class DimensionalModel(Generic[T]):
         return self._fwk
 
     @fwk.setter
-    def fwk(self, value: str) -> None:
+    def fwk(self, val: str) -> None:
         """*fwk* Sets the working framework of the *DimensionalModel*.
 
         Args:
-            value (str): Worjing Framework of the *DimensionalModel*. It must be a supported FDU framework
+            val (str): Worjing Framework of the *DimensionalModel*. It must be a supported FDU framework
 
         Raises:
-            ValueError: error if value is not a valid framework.
+            ValueError: error if the framework is not valid.
         """
-        if value not in cfg.FDU_FWK_DT.keys():
-            _msg = f"Invalid framework: {value}. "
+        if val not in cfg.FDU_FWK_DT.keys():
+            _msg = f"Invalid framework: {val}. "
             _msg += "Must be one of the following: "
             _msg += f"{', '.join(cfg.FDU_FWK_DT.keys())}."
             raise ValueError(_msg)
-        self._fwk = value
+        self._fwk = val
 
     @property
     def param_lt(self) -> List[Parameter]:
@@ -412,25 +413,25 @@ class DimensionalModel(Generic[T]):
         return self._param_lt
 
     @param_lt.setter
-    def param_lt(self, value: List[Parameter]) -> None:
+    def param_lt(self, val: List[Parameter]) -> None:
         """*param_lt* property to set the list of parameters in the *DimensionalModel*. It must be a list of *Parameter* objects.
 
         Args:
-            value (List[Parameter]): List of *Parameter* objects.
+            val (List[Parameter]): List of *Parameter* objects.
 
         Raises:
             ValueError: If the parameter list is empty.
         """
-        if not value:
+        if not val:
             _msg = "Parameter list cannot be empty. "
-            _msg += f"Provided: {value}"
+            _msg += f"Provided: {val}"
             raise ValueError(_msg)
-        if not all(isinstance(p, Parameter) for p in value):
+        if not all(isinstance(p, Parameter) for p in val):
             _msg = "Parameter list must be a list of Parameter objects. "
-            _msg += f"Provided: {value}"
+            _msg += f"Provided: {val}"
             raise ValueError(_msg)
-        value = self._adjust_param_lt(value)
-        self._param_lt = value
+        val = self._adjust_param_lt(val)
+        self._param_lt = val
 
     @property
     def relevance_lt(self) -> List[Parameter]:
@@ -457,13 +458,13 @@ class DimensionalModel(Generic[T]):
             str: String representation of the *DimensionalModel* object.
         """
         _attr_lt = []
-        for attr, value in vars(self).items():
+        for attr, val in vars(self).items():
             # Skip private attributes starting with "__"
             # if attr.startswith("__"):
             #    continue
             # Format attribute name and value
             _attr_name = attr.lstrip("_")
-            _attr_lt.append(f"{_attr_name}={repr(value)}")
+            _attr_lt.append(f"{_attr_name}={repr(val)}")
         # Format the string representation of the ArrayList class and its attributes
         _str = f"{self.__class__.__name__}({', '.join(_attr_lt)})"
         return _str
@@ -730,12 +731,15 @@ class DimensionalAnalyzer(DimensionalModel[T]):
         symbols = [param.sym for param in relevance_lt]
         coefficients = []
         for i, vector in enumerate(nullspace_vectors):
-            vector_np = sp.matrix2numpy(vector, dtype=float).T
+            vector_np = sp.matrix2numpy(vector, dtype=float)
             # Extract symbols of the parameters involved in the coefficient
             piparam = [symbols[j] for j, c in enumerate(vector_np[0]) if c != 0]
+            # casting np.ndarray to list
+            vector_np = vector_np.reshape(1, -1)
+            vector_np = vector_np.flatten().tolist()
             coefficients.append(PiCoefficient(
                 _idx=i,
-                _sym=f"\\Pi{{{i}}}",
+                _sym=f"\\Pi_{{{i}}}",
                 _fwk=self._fwk,
                 _param_lt=symbols,
                 _pivot_lt=self._pivot_cols,
@@ -795,14 +799,14 @@ class DimensionalAnalyzer(DimensionalModel[T]):
         return self._pi_coef_lt
 
     @pi_coef_lt.setter
-    def pi_coef_lt(self, value: List[PiCoefficient]) -> None:
+    def pi_coef_lt(self, val: List[PiCoefficient]) -> None:
         """*pi_coef_lt* property to set the list of Pi-Coefficients in the *DimensionalAnalyzer*. It must be a list of *PiCoefficient* objects.
 
         Args:
-            value (List[PiCoefficient]): List of *PiCoefficient* objects.
+            val (List[PiCoefficient]): List of *PiCoefficient* objects.
         """
-        if not all(isinstance(p, PiCoefficient) for p in value):
+        if not all(isinstance(p, PiCoefficient) for p in val):
             _msg = "Coefficient list must be a list of PiCoefficient objects. "
-            _msg += f"Provided: {value}"
+            _msg += f"Provided: {val}"
             raise ValueError(_msg)
-        self._pi_coef_lt = value
+        self._pi_coef_lt = val

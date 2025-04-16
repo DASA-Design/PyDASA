@@ -254,20 +254,20 @@ class Parameter(Generic[T]):
         return self._idx
 
     @idx.setter
-    def idx(self, value: int) -> None:
+    def idx(self, val: int) -> None:
         """*idx* Sets the index of the *Parameter* in the dimensional matrix. It must be an integer.
 
         Args:
-            value (int): Index of the *Parameter*.
+            val (int): Index of the *Parameter*.
 
         Raises:
             ValueError: If the Index is not a non-negative integer.
         """
-        if not isinstance(value, int) or value < 0:
+        if not isinstance(val, int) or val < 0:
             _msg = "Precedence must be a non-negative integer. "
-            _msg += f"Provided: {value}"
+            _msg += f"Provided: {val}"
             raise ValueError(_msg)
-        self._idx = value
+        self._idx = val
 
     @property
     def sym(self) -> str:
@@ -279,21 +279,22 @@ class Parameter(Generic[T]):
         return self._sym
 
     @sym.setter
-    def sym(self, value: str) -> None:
+    def sym(self, val: str) -> None:
         """*sym* Sets the symbol of *Parameter*. It must be alphanumeric.
 
         Args:
-            value (str): Symbol of the *Parameter*.
+            val (str): Symbol of the *Parameter*.
 
         Raises:
             ValueError: If the symbol is not alphanumeric.
         """
-        if not value.isalnum():
-            _msg = "Symbol must be alphanumeric. "
-            _msg += f"Provided: {value}"
-            _msg += "Preferably a Latin or Greek letter."
+        # Regular expression to match valid LaTeX strings or alphanumeric strings
+        if not (val.isalnum() or re.match(cfg.LATEX_REGEX, val)):
+            _msg = "Symbol must be alphanumeric or a valid LaTeX string. "
+            _msg += f"Provided: '{val}' "
+            _msg += "Examples: 'V', 'd', '\\Pi_{0}', '\\rho'."
             raise ValueError(_msg)
-        self._sym = value
+        self._sym = val
 
     @property
     def fwk(self) -> str:
@@ -305,21 +306,21 @@ class Parameter(Generic[T]):
         return self._fwk
 
     @fwk.setter
-    def fwk(self, value: str) -> None:
+    def fwk(self, val: str) -> None:
         """*fwk* Sets the framework of the *Parameter*. It must be one of the allowed values. The allowed values are: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`.
 
         Args:
-            value (str): Framework of the *Parameter*. Must be the same as the FDU framework.
+            val (str): Framework of the *Parameter*. Must be the same as the FDU framework.
 
         Raises:
             ValueError: If the framework is not one of the allowed values.
         """
-        if value not in cfg.FDU_FWK_DT.keys():
-            _msg = f"Invalid framework: {value}. "
+        if val not in cfg.FDU_FWK_DT.keys():
+            _msg = f"Invalid framework: {val}. "
             _msg += "Framework must be one of the following: "
             _msg += f"{', '.join(cfg.FDU_FWK_DT.keys())}."
             raise ValueError(_msg)
-        self._fwk = value
+        self._fwk = val
 
     @property
     def cat(self) -> str:
@@ -331,21 +332,21 @@ class Parameter(Generic[T]):
         return self._cat
 
     @cat.setter
-    def cat(self, value: str) -> None:
+    def cat(self, val: str) -> None:
         """*cat* Sets the category of the *Parameter*. It must be one of the allowed values. The allowed values are: `INPUT`, `OUTPUT`, or `CONTROL`.
 
         Args:
-            value (str): Category of the *Parameter*.
+            val (str): Category of the *Parameter*.
 
         Raises:
             ValueError: If the category is not one of the allowed values.
         """
-        if value.upper() not in cfg.PARAMS_CAT_DT.keys():
-            _msg = f"Invalid category: {value}. "
+        if val.upper() not in cfg.PARAMS_CAT_DT.keys():
+            _msg = f"Invalid category: {val}. "
             _msg += "Category must be one of the following: "
             _msg += f"{', '.join(cfg.PARAMS_CAT_DT.keys())}."
             raise ValueError(_msg)
-        self._cat = value.upper()
+        self._cat = val.upper()
 
     @property
     def dims(self) -> str:
@@ -357,18 +358,18 @@ class Parameter(Generic[T]):
         return self._dims
 
     @dims.setter
-    def dims(self, value: str) -> None:
+    def dims(self, val: str) -> None:
         """*dims* Sets the dimensions of the *Parameter*.
 
         Args:
-            value (str): Dimensions of the *Parameter*. e.g.: [T^2*L^-1]
+            val (str): Dimensions of the *Parameter*. e.g.: [T^2*L^-1]
 
         Raises:
             ValueError: If the string is empty.
         """
-        if value is not None and not value.strip():
+        if val is not None and not val.strip():
             raise ValueError("Dimensions cannot be empty.")
-        self._dims = value
+        self._dims = val
         # automatically prepare the dimensions for analysis
         self._prepare_dims()
 
@@ -382,18 +383,18 @@ class Parameter(Generic[T]):
         return self._std_dims
 
     @std_dims.setter
-    def std_dims(self, value: str) -> None:
+    def std_dims(self, val: str) -> None:
         """*std_dims* Sets the standarized dimensions of the *Parameter*.
 
         Args:
-            value (str): Dimensional expression of the *Parameter*. e.g.: [L^(-1)*T^(2)]
+            val (str): Dimensional expression of the *Parameter*. e.g.: [L^(-1)*T^(2)]
 
         Raises:
             ValueError: If the string is empty.
         """
-        if value is not None and not value.strip():
+        if val is not None and not val.strip():
             raise ValueError("Dimensional expression cannot be empty.")
-        self._std_dims = value
+        self._std_dims = val
 
     @property
     def sym_exp(self) -> Optional[str]:
@@ -405,18 +406,18 @@ class Parameter(Generic[T]):
         return self._sym_exp
 
     @sym_exp.setter
-    def sym_exp(self, value: str) -> None:
+    def sym_exp(self, val: str) -> None:
         """*sym_exp* Sets the symbolic processed dimensional expression of the *Parameter*. It is suitable for Sympy processing.
 
         Args:
-            value (str): Dimensional expression of the *Parameter* suitable for Sympy processing. e.g.: [T**2*L**(-1)]
+            val (str): Dimensional expression of the *Parameter* suitable for Sympy processing. e.g.: [T**2*L**(-1)]
 
         Raises:
             ValueError: If the string is empty.
         """
-        if value is not None and not value.strip():
+        if val is not None and not val.strip():
             raise ValueError("Dimensional expression cannot be empty.")
-        self._sym_exp = value
+        self._sym_exp = val
 
     @property
     def dim_col(self) -> Optional[List[int]]:
@@ -428,18 +429,18 @@ class Parameter(Generic[T]):
         return self._dim_col
 
     @dim_col.setter
-    def dim_col(self, value: List[int]) -> None:
+    def dim_col(self, val: List[int]) -> None:
         """*dim_col* Sets the dimensional column (list) of the *Parameter*.
 
         Args:
-            value (List[int]): List with the exponents of the dimensions in the parameter. i.e..: [2, -1]
+            val (List[int]): List with the exponents of the dimensions in the parameter. i.e..: [2, -1]
 
         Raises:
-            ValueError: if the value is not a list of integers.
+            ValueError: if the val is not a list of integers.
         """
-        if value is not None and not isinstance(value, list):
+        if val is not None and not isinstance(val, list):
             raise ValueError("Exponents list must be a list of integers.")
-        self._dim_col = value
+        self._dim_col = val
 
     @property
     def units(self) -> str:
@@ -451,18 +452,18 @@ class Parameter(Generic[T]):
         return self._units
 
     @units.setter
-    def units(self, value: str) -> None:
+    def units(self, val: str) -> None:
         """*units* Sets the Units of Measure of the *Parameter*. It must be a non-empty string.
 
         Args:
-            value (str): Units of measure of the *Parameter*. i.e `m/s`, `kg/m3`, etc.
+            val (str): Units of measure of the *Parameter*. i.e `m/s`, `kg/m3`, etc.
 
         Raises:
             ValueError: If the string is empty.
         """
-        if value is not None and not value.strip():
+        if val is not None and not val.strip():
             raise ValueError("Unit of Measure cannot be empty.")
-        self._units = value
+        self._units = val
 
     def clear(self) -> None:
         """*clear()* Resets all attributes to their default values in the *Parameter* object.
@@ -487,13 +488,13 @@ class Parameter(Generic[T]):
             str: String representation of the *Parameter* object.
         """
         _attr_lt = []
-        for attr, value in vars(self).items():
+        for attr, val in vars(self).items():
             # Skip private attributes starting with "__"
             if attr.startswith("__"):
                 continue
-            # Format attribute name and value
+            # Format attribute name and val
             _attr_name = attr.lstrip("_")
-            _attr_lt.append(f"{_attr_name}={repr(value)}")
+            _attr_lt.append(f"{_attr_name}={repr(val)}")
         # Format the string representation of the ArrayList class and its attributes
         _str = f"{self.__class__.__name__}({', '.join(_attr_lt)})"
         return _str
@@ -559,7 +560,7 @@ class Variable(Parameter[T]):
     # :attr: _std_step
     _std_step: Optional[float] = 1 / 1000
     """
-    step value of the *Variable*. It is a very small float value used for sensitivity analysis and simulations.
+    Step of the *Variable* range. It is a very small float used for sensitivity analysis and simulations.
     """
 
     @property
@@ -572,51 +573,51 @@ class Variable(Parameter[T]):
         return self._min
 
     @min.setter
-    def min(self, value: Optional[float]) -> None:
+    def min(self, val: Optional[float]) -> None:
         """*min* Sets the minimum range of the *Variable*.
 
         Args:
-            value (Optional[float]): Minimum value of the *Variable*.
+            val (Optional[float]): Minimum range of the *Variable*.
 
         Raises:
-            ValueError: If the value is not a number.
-            ValueError: If the value is greater than the maximum range.
+            ValueError: If the minimum range is not a number.
+            ValueError: If the minimum is greater than the maximum range.
         """
-        if value is not None and not isinstance(value, (int, float)):
+        if val is not None and not isinstance(val, (int, float)):
             raise ValueError("Minimum range must be a number.")
-        if value > self._max:
-            _msg = f"Minimum range {value} cannot be greater"
+        if val > self._max:
+            _msg = f"Minimum range {val} cannot be greater"
             _msg = f" than maximum range {self._max}."
             raise ValueError(_msg)
-        self._min = value
+        self._min = val
 
     @property
     def max(self) -> Optional[float]:
         """*max* Get the maximum range of the *Variable*.
 
         Returns:
-            Optional[float]: maximum value of the *Variable*.
+            Optional[float]: maximum range of the *Variable*.
         """
         return self._max
 
     @max.setter
-    def max(self, value: Optional[float]) -> None:
+    def max(self, val: Optional[float]) -> None:
         """*max* Sets the maximum range of the *Variable*.
 
         Args:
-            value (Optional[float]): maximum value of the *Variable*.
+            val (Optional[float]): maximum range of the *Variable*.
 
         Raises:
-            ValueError: If the value is not a number.
-            ValueError: If the value is less than the minimum range.
+            ValueError: If the maximum range is not a number.
+            ValueError: If the maximum is less than the minimum range.
         """
-        if value is not None and not isinstance(value, (int, float)):
-            raise ValueError("Maximum value must be a number.")
-        if value < self._min:
-            _msg = f"Maximum range {value} cannot be less"
+        if val is not None and not isinstance(val, (int, float)):
+            raise ValueError("Maximum val must be a number.")
+        if val < self._min:
+            _msg = f"Maximum range {val} cannot be less"
             _msg = f" than minimum range {self._min}."
             raise ValueError(_msg)
-        self._max = value
+        self._max = val
 
     @property
     def std_units(self) -> Optional[str]:
@@ -628,104 +629,104 @@ class Variable(Parameter[T]):
         return self._std_units
 
     @std_units.setter
-    def std_units(self, value: Optional[str]) -> None:
+    def std_units(self, val: Optional[str]) -> None:
         """*std_units* Sets the standardized Unit of Measure of the *Variable*. It must be a non-empty string.
 
         Args:
-            value (Optional[str]): standardized Unit of Measure of the *Variable*.
+            val (Optional[str]): standardized Unit of Measure of the *Variable*.
 
         Raises:
             ValueError: If the string is empty.
         """
-        if value is not None and not value.strip():
+        if val is not None and not val.strip():
             raise ValueError("Standard Unit of Measure cannot be empty.")
-        self._std_units = value
+        self._std_units = val
 
     @property
     def std_min(self) -> Optional[float]:
         """*std_min* Get the standardized minimum range of the *Variable*.
 
         Returns:
-            Optional[float]: standardized minimum value of the *Variable*.
+            Optional[float]: standardized minimum range of the *Variable*.
         """
         return self._std_min
 
     @std_min.setter
-    def std_min(self, value: Optional[float]) -> None:
+    def std_min(self, val: Optional[float]) -> None:
         """*std_min* Sets the standardized minimum range of the *Variable*.
 
         Args:
-            value (Optional[float]): standardized minimum range of the *Variable*.
+            val (Optional[float]): standardized minimum range of the *Variable*.
 
         Raises:
-            ValueError: If the value is not a number.
-            ValueError: If the value is greater than the maximum range.
+            ValueError: If the minimum range is not a number.
+            ValueError: If the minimum is greater than the maximum range.
         """
-        if value is not None and not isinstance(value, (int, float)):
-            raise ValueError("Standard minimum value must be a number.")
-        if value > self._std_max:
-            _msg = f"Standard minimum value {value} cannot be greater"
-            _msg = f" than standard maximum value {self._std_max}."
+        if val is not None and not isinstance(val, (int, float)):
+            raise ValueError("Standard minimum val must be a number.")
+        if val > self._std_max:
+            _msg = f"Standard minimum val {val} cannot be greater"
+            _msg = f" than standard maximum val {self._std_max}."
             raise ValueError(_msg)
-        self._std_min = value
+        self._std_min = val
 
     @property
     def std_max(self) -> Optional[float]:
         """*std_max* Get the standardized maximum range of the *Variable*.
 
         Returns:
-            Optional[float]: standardized maximum value of the *Variable*.
+            Optional[float]: standardized maximum range of the *Variable*.
         """
         return self._std_max
 
     @std_max.setter
-    def std_max(self, value: Optional[float]) -> None:
+    def std_max(self, val: Optional[float]) -> None:
         """*std_max* Sets the standardized maximum range of the *Variable*.
 
         Raises:
-            ValueError: If the value is not a number.
-            ValueError: If the value is less than the minimum range.
+            ValueError: If the maximum range is not a number.
+            ValueError: If the maximum is less than the minimum range.
         """
-        if value is not None and not isinstance(value, (int, float)):
-            raise ValueError("Standard maximum value must be a number.")
-        if value < self._std_min:
-            _msg = f"Standard maximum *Variable* {value} cannot be less"
+        if val is not None and not isinstance(val, (int, float)):
+            raise ValueError("Standard maximum val must be a number.")
+        if val < self._std_min:
+            _msg = f"Standard maximum *Variable* {val} cannot be less"
             _msg = f" than standard minimum *Variable* {self._std_min}."
             raise ValueError(_msg)
-        self._std_max = value
+        self._std_max = val
 
     @property
     def std_step(self) -> Optional[float]:
-        """*std_step* Get the standarized step value of the *Variable*.
+        """*std_step* Get the standarized step of the *Variable*.
         It is used for sensitivity analysis and simulations.
 
         Returns:
-            Optional[float]: standarized step value of the *Variable*.
+            Optional[float]: standarized step of the *Variable*.
         """
         return self._std_step
 
     @std_step.setter
-    def std_step(self, value: Optional[float]) -> None:
-        """*std_step* Sets the standarized step value of the *Variable*. It must be a number.
+    def std_step(self, val: Optional[float]) -> None:
+        """*std_step* Sets the standarized step of the *Variable*. It must be a number.
 
         Args:
-            value (Optional[float]): standarized step value of the *Variable*.
+            val (Optional[float]): standarized step of the *Variable*.
 
         Raises:
-            ValueError: If the value is not a number.
-            ValueError: If the value is zero.
-            ValueError: If the value is greater than or equal to the range of values.
+            ValueError: If the step is not a number.
+            ValueError: If the step is zero.
+            ValueError: If the step is greater than or equal to the range of values.
         """
-        if value is not None and not isinstance(value, (int, float)):
+        if val is not None and not isinstance(val, (int, float)):
             raise ValueError("Step must be a number.")
-        if value == 0:
+        if val == 0:
             raise ValueError("Step cannot be zero.")
-        if value >= self._std_max - self._std_min:
-            _msg = f"Step {value} cannot be greater than or equal to"
+        if val >= self._std_max - self._std_min:
+            _msg = f"Step {val} cannot be greater than or equal to"
             _msg = f" the range of values {self._std_max - self._std_min}."
             _msg += f"between {self._std_min} and {self._std_max}."
             raise ValueError(_msg)
-        self._std_step = value
+        self._std_step = val
 
     def clear(self) -> None:
         """*clear()* Resets all attributes to their default values in the *Variable* object. It extends from *Parameter* class.

@@ -145,9 +145,10 @@ print(rm, "\n")
 # rm.update_global_vars()
 
 fdu_lt = [
-    {"_idx": 0, "_sym": "T", "_fwk": "CUSTOM", "description": "Time~~~~~~~~~~~~~"},
-    {"_idx": 1, "_sym": "M", "_fwk": "CUSTOM", "description": "Mass~~~~~~~~~~~~"},
-    {"_idx": 2, "_sym": "L", "_fwk": "CUSTOM", "description": "Longitude~~~~~~~~"},
+    {"_idx": 0, "_sym": "M", "_fwk": "CUSTOM", "description": "Mass~~~~~~~~~~~~"},
+    {"_idx": 1, "_sym": "L", "_fwk": "CUSTOM", "description": "Longitude~~~~~~~~"},
+    {"_idx": 2, "_sym": "T", "_fwk": "CUSTOM", "description": "Time~~~~~~~~~~~~~"},
+
 ]
 
 b = SingleLinkedList(iodata=fdu_lt)
@@ -292,7 +293,14 @@ print(DAnalysis.output, "\n")
 
 DAnalysis.create_matrix()
 DAnalysis.solve_matrix()
+
+print(DAnalysis._pivot_cols, "\n")
+print(DAnalysis, "\n")
+
+for k, v in vars(DAnalysis).items():
+    print(f"{k}: {v}")
+print("\n")
+
 # print(len(DAnalysis.pi_coef_lt), "\n")
 for pi in DAnalysis.pi_coef_lt:
-    print(pi, "\n")
-print(DAnalysis._pivot_cols, "\n")
+    print(pi.sym, "=", pi.pi_expr, "\n")

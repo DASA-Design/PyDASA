@@ -88,42 +88,36 @@ class DimensionalModel(Generic[T]):
     Unique identifier/index of the *DimensionalModel*.
     """
 
-    # Symbol of the FDU
     # :attr: _sym
     _sym: str = "DA_{x}"
     """
     Symbol of the *DimensionalModel*. It must be alphanumeric (preferably a single character + Latin or Greek letter). Useful for user-friendly representation of the instance.
     """
 
-    # Working framework of the FDU
     # :attr: _fwk
     _fwk: str = "PHYSICAL"
     """
     Framework of the *DimensionalModel*, can be one of the following: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`. By default, it is set to `PHYSICAL`.
     """
 
-    # FDUs hash table
     # :attr: _fdu_ht
     _fdu_ht: SCHashTable = field(default_factory=SCHashTable)
     """
     Custom Hash Table for the *DimensionalModel* FDUs. It is used to store the FDUs and their properties.
     """
 
-    # FDU regex manager
     # :attr: _fdu_regex
     _fdu_regex: RegexManager = field(default_factory=RegexManager)
     """
     FDU Regex Manager of the *DimensionalModel*. It is used to validate the user-defined FDUs and their properties if necessary.
     """
 
-    # List of parameters
     # :attr: _param_lt
     _param_lt: List[Parameter] = field(default_factory=list)
     """
     List of *Parameter* objects. It is used to store the parameters of the system and to create the relevance list.
     """
 
-    # List of relevant parameters
     # :attr: _relevance_lt
     _relevance_lt: List[Parameter] = field(default_factory=list)
     """

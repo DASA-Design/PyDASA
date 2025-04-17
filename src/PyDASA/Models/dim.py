@@ -73,7 +73,7 @@ class DimensionalModel(Generic[T]):
             - _idx (int): Index of the *DimensionalModel*.
             - _sym (str): Symbol of the *DimensionalModel*.
             - _fwk (str): Framework of the *DimensionalModel* using the *FDU_FWK_DT* map. By default, it is set to `PHYSICAL`.
-            - _fdu_ht (SCHashTable): Custom FDU hash table.
+            - _fdu_mp (SCHashTable): Custom FDU hash table.
             - _fdu_regex (RegexManager): FDU regex manager.
             - _param_lt (List[Parameter]): List of *Parameter* objects.
             - _relevance_lt (List[Parameter]): List of relevant *Parameter* objects.
@@ -100,8 +100,8 @@ class DimensionalModel(Generic[T]):
     Framework of the *DimensionalModel*, can be one of the following: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`. By default, it is set to `PHYSICAL`.
     """
 
-    # :attr: _fdu_ht
-    _fdu_ht: SCHashTable = field(default_factory=SCHashTable)
+    # :attr: _fdu_mp
+    _fdu_mp: SCHashTable = field(default_factory=SCHashTable)
     """
     Custom Hash Table for the *DimensionalModel* FDUs. It is used to store the FDUs and their properties.
     """
@@ -147,7 +147,7 @@ class DimensionalModel(Generic[T]):
     def __post_init__(self) -> None:
         """*__post_init__()* initializes the *DimensionalModel* object. It sets up the FDU hash table, FDU precedence list, and FDU regex manager.
         """
-        if self._fdu_ht.empty:
+        if self._fdu_mp.empty:
             self._filter_fdu_map()
 
         # if self._fdu_regex.fdu_prec_lt is None:
@@ -197,7 +197,7 @@ class DimensionalModel(Generic[T]):
                        _idx=i,
                        name=_desc,
                        description=_desc)
-            self._fdu_ht.insert(_fdu.sym, _fdu)
+            self._fdu_mp.insert(_fdu.sym, _fdu)
 
     def _configure_custom_fdus(self) -> None:
         """*configure_custom_fdus()* Configures custom FDUs provided by the user.
@@ -210,7 +210,7 @@ class DimensionalModel(Generic[T]):
             fdu_data["_fwk"] = self._fwk
             fdu_data["_idx"] = i
             fdu = FDU(**fdu_data)
-            self._fdu_ht.insert(fdu.sym, fdu)
+            self._fdu_mp.insert(fdu.sym, fdu)
 
     def _setup_fdu_precedence(self) -> None:
         """*_setup_fdu_precedence()* Sets up the FDU precedence list with the FDUs in the hash table.
@@ -220,12 +220,12 @@ class DimensionalModel(Generic[T]):
         """
         # TODO dont like this global, maybe improve this method
         global MAX_IN
-        if self._fdu_ht.empty:
+        if self._fdu_mp.empty:
             _msg = "FDU hash table is empty. "
-            _msg += f"Current Size: {self._fdu_ht.size()}."
+            _msg += f"Current Size: {self._fdu_mp.size()}."
             _msg += "Please configure the FDU hash table before setting up the precedence list."
             raise ValueError(_msg)
-        cfg.DFLT_FDU_PREC_LT = list(self._fdu_ht.keys())
+        cfg.DFLT_FDU_PREC_LT = list(self._fdu_mp.keys())
         MAX_IN = len(cfg.DFLT_FDU_PREC_LT)
 
     def _setup_fdu_regex(self) -> None:
@@ -315,7 +315,7 @@ class DimensionalModel(Generic[T]):
         self._idx = -1
         self._sym = "DA_{x}"
         self._fwk = "PHYSICAL"
-        self._fdu_ht.clear()
+        self._fdu_mp.clear()
         self._param_lt.clear()
         self._relevance_lt.clear()
 
@@ -438,11 +438,17 @@ class DimensionalModel(Generic[T]):
 
     @relevance_lt.setter
     def relevance_lt(self, param_lt: List[Parameter]) -> None:
-        """*set_relevance_lt()* sets the relevance list of the *DimensionalModel*. It is a subset of the `_param_lt` list with the 'relevance' attribute set to `True`.
+        """*relevance_lt* sets the relevance list of the *DimensionalModel*. It is a subset of the `_param_lt` list with the 'relevance' attribute set to `True`.
 
         Args:
             param_lt (List[Parameter]): List of *Parameter* objects.
         """
+        # check if the parameter list is empty
+        if not param_lt:
+            _msg = "Parameter list cannot be empty. "
+            _msg += f"Provided: {param_lt}"
+            raise ValueError(_msg)
+        # set the relevance list
         self._relevance_lt = [p for p in param_lt if p.relevant]
 
     def __str__(self) -> str:
@@ -589,7 +595,7 @@ class DimensionalAnalyzer(DimensionalModel[T]):
             self.output = self._setup_output()
             self._wrk_fdu_lt = self._extract_fdu(self.relevance_lt)
             self._wrk_fdu_lt = self._sort_fdu(self._wrk_fdu_lt)
-            self._fdu_ht = self._filter_fdu_map(self._wrk_fdu_lt)
+            self._fdu_mp = self._filter_fdu_map(self._wrk_fdu_lt)
             self._relevance_lt = self._sort_by_category(self.relevance_lt)
 
     def _setup_output(self) -> Optional[Parameter]:
@@ -638,8 +644,8 @@ class DimensionalAnalyzer(DimensionalModel[T]):
         """
         new_fdu_ht = SCHashTable()
         for key in fdu_lt:
-            if key in self._fdu_ht.keys():
-                new_fdu_ht.insert(key, self._fdu_ht.delete(key))
+            if key in self._fdu_mp.keys():
+                new_fdu_ht.insert(key, self._fdu_mp.delete(key))
         return new_fdu_ht
 
     def _sort_by_category(self, param_lt: List[Parameter]) -> List[Parameter]:

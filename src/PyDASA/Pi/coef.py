@@ -17,13 +17,15 @@ import numpy as np
 
 # custom modules
 from Src.PyDASA.Utils.dflt import T
-from Src.PyDASA.Utils.err import error_handler as error
+from Src.PyDASA.Utils.err import error_handler as _error
+from Src.PyDASA.Utils.err import inspect_name as _insp_var
 
 # import the 'cfg' module to allow global variable edition
 from Src.PyDASA.Utils import cfg
 
 # checking custom modules
-assert error
+assert _error
+assert _insp_var
 assert cfg
 assert T
 
@@ -109,8 +111,8 @@ class PiCoefficient(Generic[T]):
     Description of the *PiCoefficient*. It is a small summary of the parameter.
     """
 
-    # :attr: _relevance
-    relevance: bool = False
+    # :attr: relevance
+    relevance: bool = True
     """
     Boolean indicating if the *PiCoefficient* is relevant or not. It is used to identify whether the parameter is inside the main dimensional matrix or not.
     """
@@ -135,34 +137,31 @@ class PiCoefficient(Generic[T]):
         self.pi_expr, self.pi_dims = self._build_expression(self._param_lt,
                                                             self._dim_col)
 
-    def _validate_list(self, lt: List, exp_type: List[type], name: str) -> bool:
+    def _validate_list(self, lt: List, exp_type: List[type]) -> bool:
         """*_validate_list()* validates the list of parameters used in the *PiCoefficient* with the expected type.
 
         Args:
             lt (List): list to validate.
             exp_type (List[type]): expected possible types of the list elements.
-            exp_type (type): expected type of the list elements.
-            name (str): name of the list to validate.
 
         Raises:
             ValueError: if the list is not a Python list.
             ValueError: if the elements of the list are not of the expected type.
             ValueError: if the list is empty.
-            ValueError: if the list length is not equal to the FDU precedence list length.
 
         Returns:
             bool: True if the list is valid, Raise ValueError otherwise.
         """
         if not isinstance(lt, list):
-            _msg = f"{name} must be a list. "
+            _msg = f"{_insp_var(lt)} must be a list. "
             _msg += f"Provided: {type(lt)}"
             raise ValueError(_msg)
         if not all(isinstance(x, exp_type) for x in lt):
-            _msg = f"{name} must contain {exp_type.__name__} elements. "
-            _msg += f"Provided: {[type(x).__name__ for x in lt]}"
+            _msg = f"{_insp_var(lt)} must contain {exp_type} elements."
+            _msg += f" Provided: {[type(x).__name__ for x in lt]}"
             raise ValueError(_msg)
         if len(lt) == 0:
-            _msg = f"{name} cannot be empty. "
+            _msg = f"{_insp_var(lt)} cannot be empty. "
             _msg += f"Provided: {lt}"
             raise ValueError(_msg)
         return True
@@ -236,7 +235,7 @@ class PiCoefficient(Generic[T]):
         self._pi_expr = None
         self.name = ""
         self.description = ""
-        self.relevance = False
+        self.relevance = True
         self.pi_dims = None
 
     @property
@@ -360,7 +359,7 @@ class PiCoefficient(Generic[T]):
             val (List[Parameter]): List of parameters used in the *PiCoefficient*.
         """
         # if the list is valid, set the parameter list
-        if self._validate_list(val, (str,), "param_lt"):
+        if self._validate_list(val, (str,)):
             self._param_lt = val
 
     @property
@@ -380,7 +379,7 @@ class PiCoefficient(Generic[T]):
             val (List[int]): Dimensional column of the *PiCoefficient*.
         """
         # if the dimensional column is valid, set the dimensional column
-        if self._validate_list(val, (int, float), "dim_col"):
+        if self._validate_list(val, (int, float)):
             self._dim_col
 
     @property

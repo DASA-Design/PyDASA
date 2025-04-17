@@ -10,7 +10,6 @@ Module for representing the **FDU** or **Fundamental Dimensional Unit** for Dime
 # native python modules
 # import dataclass for defining the node class
 from dataclasses import dataclass
-# import modules for defining the MapEntry type
 from typing import Generic
 import re
 
@@ -21,7 +20,6 @@ from Src.PyDASA.Utils.dflt import T
 
 # import global variables
 from Src.PyDASA.Utils.cfg import FDU_FWK_DT, LATEX_REGEX
-
 
 # checking custom modules
 assert error
@@ -47,35 +45,31 @@ class FDU(Generic[T]):
     """
 
     # Private attributes with validation logic
-    # Precedence of the FDU in the dimensional matrix
     # :attr: _idx
     _idx: int = -1
     """
-    Order of Precedence of the FDU rows in the Dimensional Matrix.
+    Unique identifier/index of the *FDU*. It is  the order of precedence in the rows of the Dimensional Matrix.
     """
 
-    # Unique FDU symbol in the system
     # :attr: _sym
     _sym: str = ""
     """
-    Unique FDU's symbol. It must be a single alphanumeric character (preferably a single Latin or Greek letter).
+    Symbol of the *FDU*. It is a LaTeX or an alphanumeric string (preferably a single Latin or Greek letter). It is used for user-friendly representation of the instance.
     """
 
     # :attr: _fwk
     _fwk: str = "PHYSICAL"
     """
-    Framework of the FDU. The supported frameworks are: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`. By default, it is set to `PHYSICAL`.
+    Framework of the *FDU* in the Dimensional Matrix. Can be: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`.
     """
 
     # Public attributes
-    # Name of the FDU
     # :attr: name
     name: str = ""
     """
     User-friendly name of the FDU.
     """
 
-    # Description of the FDU
     # :attr: description
     description: str = ""
     """

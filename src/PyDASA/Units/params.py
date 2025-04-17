@@ -9,19 +9,20 @@ Module for representing *Parameters* and Variables in Dimensional Analysis for *
 
 # native python modules
 import re
-# import modules for defining Parameter and Variable types
 from typing import Optional, List, Generic
-# import dataclass for class attributes and validations
 from dataclasses import dataclass, field
+
+# Third-party modules
+import numpy as np
 
 # custom modules
 # generic error handling and type checking
 from Src.PyDASA.Utils.dflt import T
-
-# import the 'cfg' module with to allow global variable edition
+# import the 'cfg' module to allow global variable edition
 from Src.PyDASA.Utils import cfg
 
 # checking custom modules
+assert cfg
 assert T
 
 
@@ -52,38 +53,33 @@ class Parameter(Generic[T]):
     # :attr: _idx
     _idx: int = -1
     """
-    *Parameter* Unique Index. It is the column order in the Dimensional Matrix.
+    Unique identifier/index of the *Parameter*. It is a non-negative integer for the column order in the Dimensional Matrix.
     """
 
-    # Symbol of the FDU
     # :attr: _sym
     _sym: str = ""
     """
-    Unique *Parameter* symbol. It must be a single alphanumeric character (preferably a single Latin or Greek letter).
+    Symbol of the *Parameter*. It is a LaTeX or an alphanumeric string (preferably a single Latin or Greek letter). It is used for user-friendly representation of the instance.
     """
 
-    # Working framework of the FDU
     # :attr: _fwk
     _fwk: str = "PHYSICAL"
     """
-    *Parameter* Framework. The supported frameworks are: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`. By default, it is set to `PHYSICAL`.
+    Framework of the *Parameter* in the Dimensional Matrix. It must be the same as the FDU framework. Can be: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`.
     """
 
-    # Category of the parameter, can be: `INPUT`, `OUTPUT`, or `CONTROL`
     # :attr: _cat`
     _cat: str = "INPUT"
     """
-    Category of the *Parameter*. It define where the parameter sits in the Dimensional Matrix; `INPUT` goes in the main diagonal matrix, `OUTPUT` goes in the output vector, and `CONTROL` goes in residual matrix.
+    Category of the *Parameter* in the Dimensional Matrix. It can be one of the following: `INPUT`, `OUTPUT`, or `CONTROL` going in the main diagonal matrix, output vector, and residual matrix respectively.
     """
 
-    # user input dimensional expression for the parameter
     # :attr: _dims
     _dims: str = ""
     """
-    Dimensional representation of the *Parameter*. It is a user-defined string with the FDUs. e.g.: [T^2*L^-1] or [T^2*L].
-"""
+    Dimensions of the *Parameter*. It is a regex with the FDU formula of the parameter. e.g.: [T^2*L^-1].
+    """
 
-    # user dimensional expression
     # :attr: _std_dims
     _std_dims: Optional[str] = None
     """
@@ -94,7 +90,7 @@ class Parameter(Generic[T]):
     # :attr: _sym_exp
     _sym_exp: Optional[str] = None
     """
-    Symbolic Dimensional Expression of the *Parameter* for sympy processing. It is a string suitable for Sympy processing. e.g.: from [T^2*L^-1] to [T**2*L**(-1)].
+    Standardized Dimensional Expression of the *Parameter* for sympy processing. e.g.: from [T^2*L^-1] to [T**2*L**(-1)].
     """
 
     # list with the dimensions exponent as integers
@@ -104,7 +100,6 @@ class Parameter(Generic[T]):
     Dimensional Column (list) of the *Parameter* for analysis. It is a list with the exponents of the dimensions in the parameter. e.g.: from [T^2*L^-1] to [2, -1].
     """
 
-    # public attributes
     # :attr: _units
     _units: str = ""
     """
@@ -542,19 +537,19 @@ class Variable(Parameter[T]):
     # :attr: _std_units
     _std_units: Optional[str] = ""
     """
-    Standarized Unit of Measure of the *Variable*. It is a string with the standarized dimensional Units of Measure. e.g `m/s`, `kg/m3`, etc.
+    Standarized Unit of Measure of the *Variable*. It is a string with the standarized dimensional Units of Measure. e.g from `km/h`, kByte/s` to `m/s`, `bit/s`.
     """
 
     # :attr: _std_min
     _std_min: Optional[float] = None
     """
-    Standardized minimum range of the *Variable*, after unit convertion.
+    Standardized minimum range of the *Variable* after unit convertion.
     """
 
     # :attr: _std_max
     _std_max: Optional[float] = None
     """
-    Standardized maximum varangelue of the *Variable*, after unit convertion.
+    Standardized maximum varangelue of the *Variable* after unit convertion.
     """
 
     # :attr: _std_step
@@ -562,6 +557,20 @@ class Variable(Parameter[T]):
     """
     Step of the *Variable* range. It is a very small float used for sensitivity analysis and simulations.
     """
+
+    # :attr: _std_rng
+    _std_rng: Optional[np.ndarray] = np.array([])
+    """
+    Range of the *Variable*. It is a numpy array with the data range of the variable used for sensitivity analysis and simulations.
+    """
+
+    def __post_init__(self):
+        super().__post_init__()
+        if all((self._std_min, self._std_max, self._std_step)):
+            # set the data to the range of values between std_min and std_max with a step of std_step
+            self.range = np.arange(self.std_min,
+                                   self.std_max,
+                                   self.std_step)
 
     @property
     def min(self) -> Optional[float]:
@@ -728,6 +737,37 @@ class Variable(Parameter[T]):
             raise ValueError(_msg)
         self._std_step = val
 
+    @property
+    def std_rng(self) -> np.ndarray:
+        """*std_rng* Get the data array for the Variable.
+
+        Returns:
+            np.ndarray: Data array for the Variable.
+        """
+        return self._std_rng
+
+    @std_rng.setter
+    def std_rng(self, val: Optional[np.ndarray]) -> None:
+        """*std_rng* Set the data array for the Variable." if `val` is None, it will be set to the range of values between `std_min` and `std_max` with a step of `std_step`.
+
+        Args:
+            val (Optional[np.ndarray]): Data array for the Variable.
+
+        Raises:
+            ValueError: if the data range is not a numpy array.
+        """
+        if val is None:
+            self._std_rng = np.arange(self.std_min,
+                                      self.std_max,
+                                      self.std_step)
+        elif not isinstance(val, np.ndarray):
+            _msg = "Invalid data type. "
+            _msg += "Range must be a numpy array."
+            _msg += f" Provided: {type(val)}."
+            raise ValueError(_msg)
+        else:
+            self._std_rng = val
+
     def clear(self) -> None:
         """*clear()* Resets all attributes to their default values in the *Variable* object. It extends from *Parameter* class.
         """
@@ -738,6 +778,7 @@ class Variable(Parameter[T]):
         self._std_min = None
         self._std_max = None
         self._std_step = 1 / 1000
+        self._std_rng = np.array([])
 
     def __str__(self) -> str:
         """*__str__()* Returns a string representation of the *Variable*. It extends from *Parameter* class.

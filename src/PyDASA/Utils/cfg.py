@@ -153,7 +153,9 @@ Purpose:
 
 #  Regex pattern for matching LaTeX symbols
 # :attr: LATEX_REGEX
-LATEX_REGEX: str = r"^\\[a-zA-Z]+(_\{[a-zA-Z0-9]+\})?$"
+LATEX_REGEX: str = r"^(\\?[a-zA-Z]+)(_\{[a-zA-Z0-9]+\})?$"
+
+# LATEX_REGEX: str = r"^\\[a-zA-Z]+(_\{[a-zA-Z0-9]+\})?$"
 # Allow valid LaTeX strings starting with a backslash or alphanumeric strings
 
 """

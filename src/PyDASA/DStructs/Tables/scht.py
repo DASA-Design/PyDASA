@@ -199,7 +199,6 @@ class SCHashTable(Generic[T]):
     """
 
     # actual number of used entries (n) in the hash table
-    # FIXME inconsistent use of _size and size()
     # :attr: _size
     _size: int = 0
     """
@@ -665,7 +664,6 @@ class SCHashTable(Generic[T]):
         Returns:
             bool: True if the type of the key in the *MapEntry* matches the expected type in the *SCHashTable*, False otherwise.-
         """
-        # TODO check usability of this function
         key = entry.key
         # if the new entry is the same type as the other entries
         if self._key_type is not type(key):
@@ -687,7 +685,6 @@ class SCHashTable(Generic[T]):
         Returns:
             bool: True if the type of the value in the *MapEntry* matches the expected type in the *SCHashTable*, False otherwise.
         """
-        # TODO check usability of this function
         value = entry.value
         # if the new entry is the same type as the other entries
         if self._value_type is not type(value):

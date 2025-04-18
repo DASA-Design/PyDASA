@@ -24,6 +24,8 @@ from Src.PyDASA.Units.params import Parameter, Variable
 # Dimensional Matrix Modelling module
 from Src.PyDASA.Models.dim import DimensionalModel, DimensionalAnalyzer
 
+from Src.PyDASA.Simul.sen import SensitivityAnalysis
+
 # for FDU regex management
 # for Dimensional Analysisis modules
 # complete module withe the FDU's regex
@@ -278,14 +280,14 @@ print(DAModel._n_param, "\n")
 DAnalysis = DimensionalAnalyzer(_fwk="CUSTOM",
                                 _idx=0,
                                 io_fdu=fdu_lt,
-                                _fdu_ht=DAModel._fdu_ht,
+                                _fdu_mp=DAModel._fdu_mp,
                                 _param_lt=DAModel.param_lt,
                                 _relevance_lt=DAModel.relevance_lt,)
 print(DAnalysis.relevance_lt, "\n")
 print(len(DAnalysis.relevance_lt), "\n")
 print(DAnalysis, "\n")
 print(DAnalysis._wrk_fdu_lt, "\n")
-print(DAnalysis._fdu_ht, "\n")
+print(DAnalysis._fdu_mp, "\n")
 
 for relv in DAnalysis.relevance_lt:
     print("blaaaaa", relv.idx, relv.cat, relv.sym, relv.name)
@@ -304,3 +306,83 @@ print("\n")
 # print(len(DAnalysis.pi_coef_lt), "\n")
 for pi in DAnalysis.pi_coef_lt:
     print(pi.sym, "=", pi.pi_expr, "\n")
+
+vars_lt = []
+extr_data_lt = [
+    {   # Fluid velocity
+        "_min": 0.0,
+        "_max": 15.0,
+        "_std_units": "m/s",
+        "_std_min": 0.0,
+        "_std_max": 15.0,
+        "_std_step": 0.1,
+    },
+    {   # Distance from the wall
+        "_min": 0.0,
+        "_max": 10.0,
+        "_std_units": "m",
+        "_std_min": 0.0,
+        "_std_max": 10.0,
+        "_std_step": 0.1,
+    },
+    {   # Channel diameter
+        "_min": 0.0,
+        "_max": 5.0,
+        "_std_units": "m",
+        "_std_min": 0.0,
+        "_std_max": 5.0,
+        "_std_step": 0.1,
+    },
+    {   # Velocity of the wall
+        "_min": 0.0,
+        "_max": 15.0,
+        "_std_units": "m/s",
+        "_std_min": 0.0,
+        "_std_max": 15.0,
+        "_std_step": 0.1,
+    },
+    {   # Pressure drop across the channel
+        "_min": 0.0,
+        "_max": 100000.0,
+        "_std_units": "Pa",
+        "_std_min": 0.0,
+        "_std_max": 100000.0,
+        "_std_step": 100.0,
+    },
+    {   # Kinematic viscosity of the fluid
+        "_min": 0.0,
+        "_max": 1.0,
+        "_std_units": "m^2/s",
+        "_std_min": 0.0,
+        "_std_max": 1.0,
+        "_std_step": 0.01,
+    },
+]
+
+print("Variables:")
+for param, extra in zip(DAnalysis.param_lt, extr_data_lt):
+    var = Variable(_sym=param.sym,
+                   _fwk=param.fwk,
+                   name=param.name,
+                   description=param.description,
+                   _idx=param.idx,
+                   _cat=param.cat,
+                   _units=param.units,
+                   _dims=param.dims,
+                   **extra,)
+    print(var, "\n")
+    vars_lt.append(var)
+
+print("Dimensionless Coefficients:")
+for coef in DAnalysis.pi_coef_lt:
+    print(coef, "\n")
+
+sena = SensitivityAnalysis(_idx=0,
+                           _sym="SA_{0}",
+                           _fwk="CUSTOM",
+                           name="Sensitivity Analysis",
+                           description="Sensitivity Analysis",
+                           _relevance_lt=vars_lt,
+                           _coefficient_lt=DAnalysis.pi_coef_lt,)
+print(sena)
+print(sena._coefficient_mp.keys(), "\n")

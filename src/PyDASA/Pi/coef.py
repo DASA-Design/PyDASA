@@ -16,12 +16,12 @@ import re
 import numpy as np
 
 # custom modules
-from Src.PyDASA.Utils.dflt import T
-from Src.PyDASA.Utils.err import error_handler as _error
-from Src.PyDASA.Utils.err import inspect_name as _insp_var
+from Src.PyDASA.Util.dflt import T
+from Src.PyDASA.Util.err import error_handler as _error
+from Src.PyDASA.Util.err import inspect_name as _insp_var
 
 # import the 'cfg' module to allow global variable edition
-from Src.PyDASA.Utils import cfg
+from Src.PyDASA.Util import cfg
 
 # checking custom modules
 assert _error

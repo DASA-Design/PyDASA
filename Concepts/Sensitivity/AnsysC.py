@@ -1,7 +1,10 @@
 ﻿import numpy as np
 from SALib.sample.fast_sampler import sample
 from SALib.analyze.fast import analyze
-import re
+from sympy.parsing.latex import parse_latex
+from sympy import lambdify  # , symbols
+# import re
+# Beware pip install should be: pip install antlr4-python3-runtime==4.11
 
 
 def generate_function_from_latex(latex_expr: str):
@@ -13,47 +16,66 @@ def generate_function_from_latex(latex_expr: str):
 
     Returns:
         function: A Python function that evaluates the expression.
+        variables: List of variables in the function.
     """
-    # Replace LaTeX-specific syntax with Python-compatible syntax
-    python_expr = latex_expr.replace("^", "**")
+    # Parse the LaTeX expression into a sympy expression
+    sympy_expr = parse_latex(latex_expr)
 
-    # Extract variable names from the LaTeX expression
-    variables = sorted(set(re.findall(r"[a-zA-Z_]\w*", python_expr)))
+    # Extract variables from the sympy expression
+    variables = sorted(sympy_expr.free_symbols, key=lambda s: s.name)
 
-    # Define the function dynamically using eval
-    func_code = f"lambda {', '.join(variables)}: {python_expr}"
-    custom_function = eval(func_code)
+    # Generate a callable function using lambdify
+    custom_function = lambdify(variables, sympy_expr, "numpy")
 
-    return custom_function, variables
+    return custom_function, [str(v) for v in variables]
 
 
-# Example LaTeX expression
-latex_expression = "x^2 * y + y * z^3"
+# Define LaTeX expressions
+latex_expressions = [
+    r"\frac{u}{U}",
+    r"\frac{y*P}{U^2.0}",
+    r"\frac{v}{y*U}"
+]
 
-# Generate the custom function
-custom_function, variables = generate_function_from_latex(latex_expression)
+# Process each LaTeX expression to generate functions
+functions = []
+problems = []
 
-# Define the problem
-problem = {
-    "num_vars": len(variables),  # Number of variables
-    "names": variables,  # Names of the variables
-    "bounds": [[0, 1]] * len(variables),  # Bounds for each variable
-}
+for latex_expr in latex_expressions:
+    custom_function, variables = generate_function_from_latex(latex_expr)
 
-# Generate samples using the FAST method
+    # Define the problem for SALib
+    problem = {
+        "num_vars": len(variables),  # Number of variables
+        "names": variables,  # Names of the variables
+        "bounds": [[0.1, 10]] * len(variables),  # Bounds for each variable
+    }
+
+    functions.append((custom_function, variables))
+    problems.append(problem)
+
+# Perform sensitivity analysis for each function
 num_samples = 1000
-param_values = sample(problem, num_samples)
 
-# Reshape the samples to match the expected input format for the custom function
-param_values = param_values.reshape(-1, problem["num_vars"])
+for i, (custom_function, variables) in enumerate(functions):
+    print(f"\nAnalyzing Function {i + 1}: {latex_expressions[i]}")
 
-# Evaluate the custom function for all samples
-Y = np.apply_along_axis(lambda row: custom_function(*row), 1, param_values)
+    # Get the corresponding problem definition
+    problem = problems[i]
 
-# Perform sensitivity analysis using FAST
-Si = analyze(problem, Y)
+    # Generate samples using the FAST method
+    param_values = sample(problem, num_samples)
 
-# Print results
-print("Sensitivity Indices:")
-for name, S1 in zip(problem["names"], Si["S1"]):
-    print(f"  {name}: {S1:.6f}")
+    # Reshape the samples to match the expected input format for the custom function
+    param_values = param_values.reshape(-1, problem["num_vars"])
+
+    # Evaluate the custom function for all samples
+    Y = np.apply_along_axis(lambda row: custom_function(*row), 1, param_values)
+
+    # Perform sensitivity analysis using FAST
+    Si = analyze(problem, Y)
+
+    # Print results
+    print("Sensitivity Indices:")
+    for name, S1 in zip(problem["names"], Si["S1"]):
+        print(f"  {name}: {S1:.6f}")

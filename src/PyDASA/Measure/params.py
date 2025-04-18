@@ -17,9 +17,9 @@ import numpy as np
 
 # custom modules
 # generic error handling and type checking
-from Src.PyDASA.Utils.dflt import T
+from Src.PyDASA.Util.dflt import T
 # import the 'cfg' module to allow global variable edition
-from Src.PyDASA.Utils import cfg
+from Src.PyDASA.Util import cfg
 
 # checking custom modules
 assert cfg

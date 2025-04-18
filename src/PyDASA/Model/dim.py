@@ -32,22 +32,22 @@ import numpy as np
 
 # custom modules
 # Dimensional Analysisis modules
-from Src.PyDASA.Units.fdu import FDU
-from Src.PyDASA.Units.params import Parameter
+from Src.PyDASA.Measure.fdu import FDU
+from Src.PyDASA.Measure.params import Parameter
 from Src.PyDASA.Pi.coef import PiCoefficient
 
 # data structures modules
-from Src.PyDASA.DStructs.Tables.scht import SCHashTable
+from Src.PyDASA.DStruct.Tables.scht import SCHashTable
 
 # FDU regex manager
-from Src.PyDASA.Utils.cstm import RegexManager
+from Src.PyDASA.Util.cstm import RegexManager
 
 # generic error handling and type checking
-from Src.PyDASA.Utils.err import error_handler as _error
-from Src.PyDASA.Utils.dflt import T
+from Src.PyDASA.Util.err import error_handler as _error
+from Src.PyDASA.Util.dflt import T
 
 # import the 'cfg' module with to allow global variable edition
-from Src.PyDASA.Utils import cfg
+from Src.PyDASA.Util import cfg
 
 # Generalizing input type for class typing
 FDUElm = Union[FDU, dict]
@@ -369,7 +369,7 @@ class DimensionalModel(Generic[T]):
             _msg += f"Provided: '{val}' "
             _msg += "Examples: 'V', 'd', '\\Pi_{0}', '\\rho'."
             raise ValueError(_msg)
-        self._sym = val 
+        self._sym = val
 
     @property
     def fwk(self) -> str:

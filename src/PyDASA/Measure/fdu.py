@@ -15,11 +15,11 @@ import re
 
 # custom modules
 # generic error handling and type checking
-from Src.PyDASA.Utils.err import error_handler as error
-from Src.PyDASA.Utils.dflt import T
+from Src.PyDASA.Util.err import error_handler as error
+from Src.PyDASA.Util.dflt import T
 
 # import global variables
-from Src.PyDASA.Utils.cfg import FDU_FWK_DT, LATEX_REGEX
+from Src.PyDASA.Util.cfg import FDU_FWK_DT, LATEX_REGEX
 
 # checking custom modules
 assert error

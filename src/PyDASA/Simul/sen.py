@@ -1,12 +1,11 @@
 ﻿# -*- coding: utf-8 -*-
 """
-Module for sensitivity analysis using Fourier Amplitude Sensitivity Testing (FAST).
+Module for sensitivity analysis in *PyDASA*.
 
-This module provides the `SensitivityAnalysis` class, which performs sensitivity analysis on a list of *PiNumbers* and *Variables*.
+Uses SymPy for analytical sensitivity analysis (derivatives) and SALib for numerical sensitivity analysis (FAST).
 
-It computes the sensitivity of each *PiNumber* based on the provided *Variable* samples and ranks them accordingly.
+The *SensitivityAnalysis* class computes sensitivities for *PiNumbers* based on *Variables* and ranks them in *SensitivitReport*.
 """
-
 # native python modules
 from typing import Optional, List, Generic
 from dataclasses import dataclass, field
@@ -15,23 +14,29 @@ import re
 
 # Third-party modules
 import numpy as np
+import sympy as sp
+from sympy.parsing.latex import parse_latex
+from sympy import symbols, diff, lambdify
+import SALib
+from SALib.sample.fast_sampler import sample
+from SALib.analyze.fast import analyze
 
 # Custom modules
 # Dimensional Analysis modules
-from Src.PyDASA.Units.fdu import FDU
-from Src.PyDASA.Units.params import Variable
+from Src.PyDASA.Measure.fdu import FDU
+from Src.PyDASA.Measure.params import Variable
 from Src.PyDASA.Pi.coef import PiCoefficient, PiNumber
 
 # Data Structures
-from Src.PyDASA.DStructs.Tables.scht import SCHashTable
+from Src.PyDASA.DStruct.Tables.scht import SCHashTable
 
 # Utils modules
-from Src.PyDASA.Utils.dflt import T
-from Src.PyDASA.Utils.err import error_handler as _error
-from Src.PyDASA.Utils.err import inspect_name as _insp_var
+from Src.PyDASA.Util.dflt import T
+from Src.PyDASA.Util.err import error_handler as _error
+from Src.PyDASA.Util.err import inspect_name as _insp_var
 
 # import the 'cfg' module to allow global variable edition
-from Src.PyDASA.Utils import cfg
+from Src.PyDASA.Util import cfg
 
 # checking custom modules
 assert _error
@@ -39,7 +44,7 @@ assert _insp_var
 assert cfg
 assert T
 
-# TODO maybe i need a Sensitivity class to store the results of the analysis
+# TODO maybe i need a SensitivitReport class to store the results of the analysis
 
 
 @dataclass
@@ -53,7 +58,7 @@ class SensitivityAnalysis(Generic[T]):
     """
 
     # :attr: _sym
-    _sym: str = "DA_{x}"
+    _sym: str = "SEN ANSYS_{x}"
     """
     Symbol of the *SensitivityAnalysis*. It must be alphanumeric (preferably a single character + Latin or Greek letter). Useful for user-friendly representation of the instance.
     """

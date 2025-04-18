@@ -3,26 +3,26 @@
 # PyDASA modules
 # data structures modules
 # lists modules
-from Src.PyDASA.DStructs.Lists.arlt import ArrayList
-from Src.PyDASA.DStructs.Lists.sllt import SingleLinkedList
-from Src.PyDASA.DStructs.Lists.ndlt import Node, SLNode, DLNode
+from Src.PyDASA.DStruct.Lists.arlt import ArrayList
+from Src.PyDASA.DStruct.Lists.sllt import SingleLinkedList
+from Src.PyDASA.DStruct.Lists.ndlt import Node, SLNode, DLNode
 # hash tables modules
-from Src.PyDASA.DStructs.Tables.htme import MapEntry
-from Src.PyDASA.DStructs.Tables.scht import SCHashTable
-from Src.PyDASA.DStructs.Tables.scht import Bucket
+from Src.PyDASA.DStruct.Tables.htme import MapEntry
+from Src.PyDASA.DStruct.Tables.scht import SCHashTable
+from Src.PyDASA.DStruct.Tables.scht import Bucket
 
 
 # dimensionl analysis modules
 # config module
-from Src.PyDASA.Utils import cfg as config
+from Src.PyDASA.Util import cfg as config
 # FDU regex management
-from Src.PyDASA.Utils.cstm import RegexManager
+from Src.PyDASA.Util.cstm import RegexManager
 # FDU modules
-from Src.PyDASA.Units.fdu import FDU
+from Src.PyDASA.Measure.fdu import FDU
 # Parameter and Variable modules
-from Src.PyDASA.Units.params import Parameter, Variable
+from Src.PyDASA.Measure.params import Parameter, Variable
 # Dimensional Matrix Modelling module
-from Src.PyDASA.Models.dim import DimensionalModel, DimensionalAnalyzer
+from Src.PyDASA.Model.dim import DimensionalModel, DimensionalAnalyzer
 
 from Src.PyDASA.Simul.sen import SensitivityAnalysis
 

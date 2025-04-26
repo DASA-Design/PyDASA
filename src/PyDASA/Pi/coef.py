@@ -75,6 +75,7 @@ class PiCoefficient(Generic[T]):
     Category of the *PiCoefficient*. It is used to identify the origin of the coefficient. Can be `COMPUTED` or `DERIVED` for the coefficient computed from the Buckingham Pi in the dimensional matrix and those derived from other `COMPUTED` coefficients.
     """
 
+    # :attr: _param_lt
     _param_lt: List[str] = field(default_factory=list)
     """
     Parameter symbols used in the *PiCoefficient*. It is a list of `str` objects to identify the parameters used to calculate the coefficient.
@@ -220,7 +221,7 @@ class PiCoefficient(Generic[T]):
             # build the LaTeX expression for the denominator
             denom_str = "*".join(denominator)
             # create the LaTeX expression for the whole coefficient
-            return f"$\\frac{{{num_str}}}{{{denom_str}}}$", parameters
+            return f"\\frac{{{num_str}}}{{{denom_str}}}", parameters
 
     def clear(self) -> None:
         """*clear()* Resets all attributes to their default values in the *PiCoefficient* object.

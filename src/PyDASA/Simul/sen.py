@@ -7,7 +7,7 @@ Uses SymPy for analytical sensitivity analysis (derivatives) and SALib for numer
 The *SensitivityAnalysis* class computes sensitivities for *PiNumbers* based on *Variables* and ranks them in *SensitivitReport*.
 """
 # native python modules
-from typing import Optional, List, Generic
+from typing import Optional, List, Generic, Callable
 from dataclasses import dataclass, field
 import inspect
 import re
@@ -44,7 +44,166 @@ assert _insp_var
 assert cfg
 assert T
 
-# TODO maybe i need a SensitivitReport class to store the results of the analysis
+
+@dataclass
+class Sensitivity(Generic[T]):
+    """
+    Class to store the results of the sensitivity analysis.
+    """
+    # Private attributes with validation logic
+    # :attr: _idx
+    _idx: int = -1
+    """
+    Unique identifier/index of the *PiCoefficient*. It is the order of in which the coefficient is calculated in the dimensional model.
+    """
+
+    # :attr: _sym
+    _sym: str = "\\Pi_{}"
+    """
+    Symbol of the *PiCoefficient*. It is a LaTeX or an alphanumeric string (preferably a single Latin or Greek letter). It is used for user-friendly representation of the instance. The default LaTeX symbol is `\\Pi_{}`. e.g.: `\\Pi_{1}`.
+    """
+
+    # :attr: _fwk
+    _fwk: str = "PHYSICAL"
+    """
+    Framework of the *PiCoefficient*. It must be the same as the FDU framework. It must be the same as the *FDU* and *Parameter* framework. It must be the same as the FDU framework. Can be: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`.
+    """
+
+    # TODO add attributes to store the results of the analysis
+    # :attr: _pi_expr
+    _pi_expr: Optional[str] = None
+    """
+    Symbolic expression of the *PiCoefficient* formula. It is a string in the LateX format. e.g.: `\\Pi_{1} = \\frac{u* L}{\\rho}`.
+    """
+
+    # :attr: _latex_expr
+    _var_lt: List[str] = field(default_factory=list)
+    """
+    Parameter symbols used in the *PiCoefficient*. It is a list of `str` objects to identify the parameters used to calculate the coefficient.
+    """
+
+    sympy_expr: Callable = None
+    numpy_func: Callable = None
+
+    # Public attributes
+    # :attr: name
+    name: str = ""
+    """
+    Name of the *PiCoefficient*. User-friendly name of the parameter.
+    """
+
+    # :attr: description
+    description: str = ""
+    """
+    Description of the *PiCoefficient*. It is a small summary of the parameter.
+    """
+
+    report: dict = field(default_factory=dict)
+
+    def _parce_expr(self, expr: str) -> None:
+        """*parse_expr* parses the LaTeX expression into a sympy expression.
+
+        Args:
+            expr (str): The LaTeX expression to convert.
+        """
+        # Parse the LaTeX expression into a sympy expression
+        self.sympy_expr = parse_latex(expr)
+
+    def _extract_variables(self) -> None:
+        """*extract_variables* extracts variables from the sympy expression."""
+        # Extract variables from the sympy expression
+        self.variables = sorted(self.sympy_expr.free_symbols, key=lambda s: s.name)
+        self.variables = [str(v) for v in self.variables]
+
+    def _generate_function(self) -> None:
+        """*generate_function* generates a callable function using lambdify."""
+        # Generate a callable function using lambdify
+        self.numpy_func = lambdify(self.variables, self.sympy_expr, "numpy")
+
+    def analyze_symbolically(self, variables: SCHashTable) -> None:
+        sens = {}
+        print(f"Analyzing Symbolically: {self.latex_expr}, {self.variables}")
+        for p in self.variables:
+            part_der = diff(self.sympy_expr, p)
+            print(f"Partial Derivative: {part_der}")
+            self.numpy_func = lambdify(self.variables, part_der, "numpy")
+            print(f"values[p]: {variables.get_entry(p)}")
+            sens_v = self.numpy_func(*[values[p] for p in self.variables])
+            sens[p] = sens_v
+        self.report = sens
+
+    def analyze_numerically(self,
+                            bounds: dict,
+                            num_samples: int = 1000) -> None:
+        # Generate samples using the FAST method
+        p_vals = sample(bounds, num_samples)
+
+        # Reshape the samples to match the expected input format for the custom function
+        p_vals = p_vals.reshape(-1, bounds["num_vars"])
+
+        # Evaluate the custom function for all samples
+        Y = np.apply_along_axis(lambda row: self.numpy_func(*row), 1, p_vals)
+
+        # Perform sensitivity analysis using FAST
+        n_ansys = analyze(bounds, Y)
+        self.report = n_ansys
+
+    @property
+    def idx(self) -> int:
+        """*idx* Get the *Sensitivity* index in the program.
+
+        Returns:
+            int: ID of the *Sensitivity*.
+        """
+        return self._idx
+
+    @idx.setter
+    def idx(self, val: int) -> None:
+        """*idx* Sets the *Sensitivity* index in the program. It must be an integer.
+
+        Args:
+            val (int): Index of the *Sensitivity*.
+
+        Raises:
+            ValueError: error if the Index is not an integer.
+        """
+        if not isinstance(val, int):
+            _msg = "Index must be an integer, "
+            _msg += f"Provided type: {type(val)}"
+            raise ValueError(_msg)
+        self._idx = val
+
+    @property
+    def latex_expr(self) -> str:
+        """*latex_expr* Get the LaTeX expression of the *Sensitivity*.
+
+        Returns:
+            str: LaTeX expression of the *Sensitivity*.
+        """
+        return self._latex_expr
+
+    @latex_expr.setter
+    def latex_expr(self, val: str) -> None:
+        """*latex_expr* Sets the LaTeX expression of the *Sensitivity*. It must be a valid LaTeX expression.
+
+        Args:
+            val (str): LaTeX expression of the *Sensitivity*.
+
+        Raises:
+            ValueError: error if the LaTeX expression is not valid.
+        """
+        # FIXME REGEX not working!!!!
+        # Regular expression to match valid LaTeX strings or alphanumeric strings
+        if not (val.isalnum() or re.match(cfg.LATEX_REGEX, val)):
+            _msg = "LaTeX expression must be a valid string. "
+            _msg += f"Provided: '{val}' "
+            _msg += "Examples: 'V', 'd', '\\Pi_{0}', '\\rho'."
+            # raise ValueError(_msg)
+        self._latex_expr = val
+        # automatically parse the expression and generate the function
+        self._parce_expr(self._latex_expr)
+        self._extract_variables()
+        self._generate_function()
 
 
 @dataclass
@@ -67,6 +226,12 @@ class SensitivityAnalysis(Generic[T]):
     _fwk: str = "PHYSICAL"
     """
     Framework of the *SensitivityAnalysis*, can be one of the following: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`. By default, it is set to `PHYSICAL`.
+    """
+
+    # :attr: _cat`
+    _cat: str = "SYMBOLIC"
+    """
+    Category of the *SensitivityAnalysis*. It can be one of the following: `SYMBOLIC`, `NUMERICAL` or `CUSTOM` and decides which method to use for the analysis. By default, it is set to `SYMBOLIC`.
     """
 
     # :attr: _relevance_lt
@@ -113,7 +278,7 @@ class SensitivityAnalysis(Generic[T]):
     """
 
     # :attr: sensitivity_rpt
-    sensitivity_rpt: Optional[List[dict]] = None
+    sensitivity_rpt: Optional[List[Sensitivity]] = None
     """
     Report of the sensitivity analysis results. It contains the computed sensitivity according to the Fourier Amplitude Sensitivity Testing (FAST) method.
     """
@@ -203,7 +368,6 @@ class SensitivityAnalysis(Generic[T]):
         return True
 
     # TODO add public methods to get the results of the analysis.
-
     @property
     def idx(self) -> int:
         """*idx* Get the *SensitivityAnalysis* index in the program.
@@ -283,6 +447,32 @@ class SensitivityAnalysis(Generic[T]):
         self._fwk = val
 
     @property
+    def cat(self) -> str:
+        """*cat* Get the category of the *SensitivityAnalysis*.
+
+        Returns:
+            str: Category of the *SensitivityAnalysis*.
+        """
+        return self._cat
+
+    @cat.setter
+    def cat(self, val: str) -> None:
+        """*cat* Sets the category of the *SensitivityAnalysis*. It can be one of the following: `SYMBOLIC`, `NUMERICAL` or `CUSTOM`.
+
+        Args:
+            val (str): Category of the *SensitivityAnalysis*.
+
+        Raises:
+            ValueError: error if the category is not valid.
+        """
+        if val not in cfg.SENS_ANSYS_DT.keys():
+            _msg = f"Invalid category: {val}. "
+            _msg += "Must be one of the following: "
+            _msg += f"{', '.join(cfg.SENS_ANSYS_DT.keys())}."
+            raise ValueError(_msg)
+        self._cat = val
+
+    @property
     def relevance_lt(self) -> List[Variable]:
         """*relevance_lt* property to get the list of relevant parameters in the *SensitivityAnalysis*.
 
@@ -342,6 +532,25 @@ class SensitivityAnalysis(Generic[T]):
         if self._validate_list(val, (PiNumber,)):
             self._pi_numbers = val
 
+    def analyze_pi_sensitivity(self, cutoff: str = "avg") -> None:
+
+        # prepare the sensitivity analysis
+        for coef in self.coefficient_lt:
+            print(f"Analyzing Pi Coefficient: {coef.sym}: {coef.pi_expr}")
+            val = self._relevance_mp.get_entry(coef.sym)
+            if val is None:
+                _msg = f"Variable {coef.sym} not found in the relevance list."
+                raise ValueError(_msg)
+            
+            pi_sen = Sensitivity()
+            pi_sen.latex_expr = coef.pi_expr
+            print(pi_sen)
+            pi_sen._parce_expr(coef.pi_expr)
+            pi_sen._extract_variables()
+            pi_sen._generate_function()
+            pi_sen.analyze_symbolically(val)
+            print(pi_sen)
+
     def __str__(self) -> str:
         """*__str__()* returns a string representation of the *SensitivityAnalysis* object.
 
@@ -367,87 +576,3 @@ class SensitivityAnalysis(Generic[T]):
             str: String representation of the *SensitivityAnalysis* object.
         """
         return self.__str__()
-
-
-    # OLD METHODS + TODOs + CODE IMPROVEMENTS + TODOs
-    def perform_analysis(self, samples: int = 1000) -> None:
-        """
-        Performs sensitivity analysis using FAST and ranks the PiNumbers.
-
-        Args:
-            samples (int): Number of samples for the analysis. Default is 1000.
-        """
-        # FIXME old code, deprecate!!!
-        # Generate random samples for each variable
-        variable_samples = {
-            var.name: np.random.uniform(var.min, var.max, samples)
-            for var in self.variables
-        }
-
-        # Analyze each PiNumber
-        for pi in self.pi_numbers:
-            pi_values = self._compute_pi_values(pi, variable_samples)
-            pi.sensitivity = self._compute_sensitivity(pi_values)
-            pi.max_value = np.max(pi_values)
-            pi.min_value = np.min(pi_values)
-            pi.avg_value = np.mean(pi_values)
-
-        # Sort PiNumbers by sensitivity in descending order
-        self.pi_numbers.sort(key=lambda x: x.sensitivity, reverse=True)
-
-    def _compute_pi_values(self, pi: PiNumber, variable_samples: dict) -> np.ndarray:
-        """
-        Computes the values of a PiNumber based on variable samples.
-
-        Args:
-            pi (PiNumber): The PiNumber object.
-            variable_samples (dict): Dictionary of variable samples.
-
-        Returns:
-            np.ndarray: Array of computed Pi values.
-        """
-        # FIXME old code, deprecate!!!
-        pi_values = np.ones(len(next(iter(variable_samples.values()))))
-        for var, exp in zip(pi.param_lt, pi.dim_col):
-            if var in variable_samples:
-                pi_values *= variable_samples[var] ** exp
-        return pi_values
-
-    def _compute_sensitivity(self, pi_values: np.ndarray) -> float:
-        """
-        Computes the sensitivity of a PiNumber using FAST.
-
-        Args:
-            pi_values (np.ndarray): Array of computed Pi values.
-
-        Returns:
-            float: Sensitivity score.
-        """
-        # FIXME old code, deprecate!!!
-        # Perform Fourier Transform
-        fft_values = np.fft.fft(pi_values)
-        amplitudes = np.abs(fft_values)
-
-        # Compute sensitivity as the ratio of the first harmonic to the total amplitude
-        sensitivity = amplitudes[1] / np.sum(amplitudes)
-        return sensitivity
-
-    def get_results(self) -> List[dict]:
-        # FIXME old code, deprecate!!!
-        """
-        Returns the ranked PiNumbers with their sensitivity, max, min, and avg values.
-
-        Returns:
-            List[dict]: List of dictionaries containing PiNumber analysis results.
-        """
-        # TODO tthis are the attrs for the report class
-        return [
-            {
-                "pi_number": pi.sym,
-                "sensitivity": pi.sensitivity,
-                "max": pi.max_value,
-                "min": pi.min_value,
-                "avg": pi.avg_value,
-            }
-            for pi in self.pi_numbers
-        ]

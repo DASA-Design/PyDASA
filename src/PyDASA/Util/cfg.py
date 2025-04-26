@@ -23,6 +23,12 @@ Supported Frameworks:
     - DIGITAL: Software architecture dimensional framework.
     - CUSTOM: User-defined dimensional framework.
 
+Supported Sensitivity Analysis Parameters:
+    - SYMBOLIC: Sensitivity analysis for symbolic processable Parameters (e.g., 'x + y').
+    - NUMERIC: Sensitivity analysis for numeric Variables (e.g., 1.0, 2.5).
+    - HYBRID: Sensitivty analysis that includes both symbolic and numeric sensitivity analysis.
+    - CUSTOM: User-defined sensitivity analysis for specific use cases.
+
 Default Patterns:
     - `DFLT_FDU_REGEX`: Matches FDUs with exponents (e.g., 'M*L^-1*T^-2').
     - `DFLT_POW_REGEX`: Matches exponents in FDUs (e.g., '^1', '^-2').
@@ -140,6 +146,15 @@ Purpose:
     - Helps in organizing and managing dimensionless coefficients in the analysis.
 """
 
+# Supported Sensitivity Analysis Parameters
+# :data: SENS_ANSYS_DT
+SENS_ANSYS_DT: dict = {
+    "SYMBOLIC": "Sensitivity analysis for symbolic processable Parameters (e.g., 'x + y').",
+    "NUMERIC": "Sensitivity analysis for numeric Variables (e.g., 1.0, 2.5).",
+    "HYBRID": "Sensitivity analysis that includes both symbolic and numeric sensitivity analysis.",
+    "CUSTOM": "User-defined sensitivity analysis for specific use cases.",
+}
+
 # Default Fundamental Dimensional Units (FDU) precedence list
 # :attr: DFLT_FDU_PREC_LT
 DFLT_FDU_PREC_LT: list = list(PHY_FDU_PREC_DT.keys())
@@ -151,12 +166,18 @@ Purpose:
     - Validates parameter and variable dimensions in *PyDASA*.
 """
 
-#  Regex pattern for matching LaTeX symbols
+# TODO clean the regex when test are finished
+# Allow valid LaTeX strings starting with a backslash or alphanumeric strings
 # :attr: LATEX_REGEX
+# LATEX_REGEX = r"^(\\[a-zA-Z]+(_\{[a-zA-Z0-9]+\})?(\^\{[a-zA-Z0-9.+\-*/]+\})?(\*[a-zA-Z0-9]*)?(\{[a-zA-Z0-9*+\-/^]+\})?(\{[a-zA-Z0-9*+\-/^]+\})?|[a-zA-Z0-9]+(\([a-zA-Z0-9*+\-/^]+\))?(\*[a-zA-Z0-9]+)?(/[a-zA-Z0-9*+\-/^()]+)?|\\frac\{[a-zA-Z0-9*+\-/^]+\}\{[a-zA-Z0-9*+\-/^0-9.]+\})$"
+
 LATEX_REGEX: str = r"^(\\?[a-zA-Z]+)(_\{[a-zA-Z0-9]+\})?$"
 
+# LATEX_REGEX = r"^(\\?[a-zA-Z]+(_\{[a-zA-Z0-9]+\})?(\^\{[a-zA-Z0-9]+\})?(\*?[a-zA-Z0-9]*)*(\\frac\{[a-zA-Z0-9*+\-/]+\}\{[a-zA-Z0-9*+\-/]+\})?)$"
+
+# LATEX_REGEX = r"^(\\?[a-zA-Z]+(_\{[a-zA-Z0-9]+\})?(\^\{[a-zA-Z0-9]+\})?(\*?[a-zA-Z0-9]*)*(\\frac\{[a-zA-Z0-9*+-/]+\}\{[a-zA-Z0-9*+-/]+\})?)$"
+
 # LATEX_REGEX: str = r"^\\[a-zA-Z]+(_\{[a-zA-Z0-9]+\})?$"
-# Allow valid LaTeX strings starting with a backslash or alphanumeric strings
 
 """
 LaTeX regex pattern to match LaTeX symbols (e.g., '\alpha', '\beta_{1}') in *PyDASA*.

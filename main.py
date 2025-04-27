@@ -24,7 +24,8 @@ from Src.PyDASA.Measure.params import Parameter, Variable
 # Dimensional Matrix Modelling module
 from Src.PyDASA.Model.dim import DimensionalModel, DimensionalAnalyzer
 
-from Src.PyDASA.Simul.sen import SensitivityAnalysis
+from Src.PyDASA.Simul.sens import Sensitivity
+from Src.PyDASA.Simul.rprt import SensitivityAnalysis
 
 # for FDU regex management
 # for Dimensional Analysisis modules
@@ -370,11 +371,12 @@ for param, extra in zip(DAnalysis.param_lt, extr_data_lt):
                    _units=param.units,
                    _dims=param.dims,
                    **extra,)
-    print(var, "\n")
+    # print(var, "\n")
     vars_lt.append(var)
 
 print("Dimensionless Coefficients:")
 for coef in DAnalysis.pi_coef_lt:
+    print(f"{coef.sym} = {coef.pi_expr}")
     print(coef, "\n")
 
 sena = SensitivityAnalysis(_idx=0,
@@ -384,5 +386,29 @@ sena = SensitivityAnalysis(_idx=0,
                            description="Sensitivity Analysis",
                            _relevance_lt=vars_lt,
                            _coefficient_lt=DAnalysis.pi_coef_lt,)
-print(sena)
-print(sena._coefficient_mp.keys(), "\n")
+# print(sena)
+# print(sena._coefficient_mp.keys(), "\n")
+
+print("=== Sensitivity Analysis: ===")
+print(f"Coefficients: {DAnalysis.pi_coef_lt[0]}\n")
+
+sen = Sensitivity(_idx=0,
+                  _sym="S_{0}",
+                  _fwk="CUSTOM",
+                  name="Sensitivity",
+                  description="Sensitivity Analysis",
+                  _pi_expr=DAnalysis.pi_coef_lt[0].pi_expr,
+                  _variables=list(DAnalysis.pi_coef_lt[0].par_dims.keys())
+                  )
+print("=== Sensitivity: ===")
+print(sen, "\n")
+td = DAnalysis.pi_coef_lt[0].par_dims
+td["d"] = 5.05
+td["y"] = 5.05
+print(td, "\n")
+r = sen.analyze_symbolically(td)
+print(r, "\n")
+r = sen.analyze_numerically([0.1, 10.0])
+print(r, "\n")
+# print("\n=== Sensitivity Analysis: === \n")
+# sena.analyze_pi_sensitivity(cutoff="max")

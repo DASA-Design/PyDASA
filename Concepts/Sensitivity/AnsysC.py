@@ -51,6 +51,7 @@ def numeric_sensitivity_analysis(function: callable,
     param_values = param_values.reshape(-1, bounds["num_vars"])
 
     # Evaluate the custom function for all samples
+    print(function)
     Y = np.apply_along_axis(lambda row: function(*row), 1, param_values)
 
     # Perform sensitivity analysis using FAST
@@ -122,6 +123,7 @@ for latex_expr in latex_expressions:
     custom_function, variables = generate_function_from_latex(latex_expr)
 
     # Define the problem for SALib
+    print("variables", variables)
     problem = {
         "num_vars": len(variables),  # Number of variables
         "names": variables,  # Names of the variables
@@ -144,6 +146,7 @@ for i, (custom_function, problem) in enumerate(functions):
 
     param_values = setup_parameters(problem["names"],
                                     problem["bounds"])
+    print(f"Parameter values: {param_values}")
     s_ansys = symbolic_sensitivity_analysis(latex_expressions[i],
                                             problem["names"],
                                             param_values)

@@ -118,8 +118,8 @@ class PiCoefficient(Generic[T]):
     Boolean indicating if the *PiCoefficient* is relevant or not. It is used to identify whether the parameter is inside the main dimensional matrix or not.
     """
 
-    # :attr: pi_dims
-    pi_dims: Optional[dict] = None
+    # :attr: par_dims
+    par_dims: Optional[dict] = None
     """
     Dimensional parameter exponents in the *PiCoefficient*. It is a dictionary for the parameter exponents used to calculate the coefficient. e.g.: `{'u': 1, 'L': 1, '\\rho': -1}`.
     """
@@ -135,8 +135,8 @@ class PiCoefficient(Generic[T]):
         self.param_lt = self._param_lt
         self.dim_col = self._dim_col
         self._pivot_lt = self._pivot_lt
-        self.pi_expr, self.pi_dims = self._build_expression(self._param_lt,
-                                                            self._dim_col)
+        self.pi_expr, self.par_dims = self._build_expression(self._param_lt,
+                                                             self._dim_col)
 
     def _validate_list(self, lt: List, exp_type: List[type]) -> bool:
         """*_validate_list()* validates the list of parameters used in the *PiCoefficient* with the expected type.
@@ -237,7 +237,7 @@ class PiCoefficient(Generic[T]):
         self.name = ""
         self.description = ""
         self.relevance = True
-        self.pi_dims = None
+        self.par_dims = None
 
     @property
     def idx(self) -> int:

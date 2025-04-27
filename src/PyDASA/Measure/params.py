@@ -534,6 +534,12 @@ class Variable(Parameter[T]):
     Maximum range of the *Variable*.
     """
 
+    # :attr: _avg
+    _avg: Optional[float] = None
+    """
+    Average value of the *Variable*.
+    """
+
     # :attr: _std_units
     _std_units: Optional[str] = ""
     """
@@ -550,6 +556,12 @@ class Variable(Parameter[T]):
     _std_max: Optional[float] = None
     """
     Standardized maximum varangelue of the *Variable* after unit convertion.
+    """
+
+    # :attr: _std_avg
+    _std_avg: Optional[float] = None
+    """
+    Standardized average value of the *Variable* after unit convertion.
     """
 
     # :attr: _std_step
@@ -629,6 +641,35 @@ class Variable(Parameter[T]):
         self._max = val
 
     @property
+    def avg(self) -> Optional[float]:
+        """*avg* Get the average value of the *Variable*.
+
+        Returns:
+            Optional[float]: average value of the *Variable*.
+        """
+        return self._avg
+
+    @avg.setter
+    def avg(self, val: Optional[float]) -> None:
+        """*avg* Sets the average value of the *Variable*. It must be a number.
+
+        Args:
+            val (Optional[float]): average value of the *Variable*.
+
+        Raises:
+            ValueError: If the average value is not a number.
+            ValueError: If the average is less than the minimum range.
+            ValueError: If the average is greater than the maximum range.
+        """
+        if val is not None and not isinstance(val, (int, float)):
+            raise ValueError("Average value must be a number.")
+        if val < self._min or val > self._max:
+            _msg = f"Invalid average value {val}. "
+            _msg += f"Must be between {self._min} and {self._max}."
+            raise ValueError(_msg)
+        self._avg = val
+
+    @property
     def std_units(self) -> Optional[str]:
         """*std_units* Get the standardized Unit of Measure of the *Variable*.
 
@@ -703,6 +744,35 @@ class Variable(Parameter[T]):
             _msg = f" than standard minimum *Variable* {self._std_min}."
             raise ValueError(_msg)
         self._std_max = val
+
+    @property
+    def std_avg(self) -> Optional[float]:
+        """*std_avg* Get the standardized average value of the *Variable*.
+
+        Returns:
+            Optional[float]: standardized average value of the *Variable*.
+        """
+        return self._std_avg
+
+    @std_avg.setter
+    def std_avg(self, val: Optional[float]) -> None:
+        """*std_avg* Sets the standardized average value of the *Variable*. It must be a number.
+
+        Args:
+            val (Optional[float]): standardized average value of the *Variable*.
+
+        Raises:
+            ValueError: If the average value is not a number.
+            ValueError: If the average is less than the minimum range.
+            ValueError: If the average is greater than the maximum range.
+        """
+        if val is not None and not isinstance(val, (int, float)):
+            raise ValueError("Standard average value must be a number.")
+        if val < self._std_min or val > self._std_max:
+            _msg = f"Invalid standard average value {val}. "
+            _msg += f"Must be between {self._std_min} and {self._std_max}."
+            raise ValueError(_msg)
+        self._std_avg = val
 
     @property
     def std_step(self) -> Optional[float]:

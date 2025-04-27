@@ -7,25 +7,26 @@ Uses SymPy for analytical sensitivity analysis (derivatives) and SALib for numer
 The *SensitivityAnalysis* class computes sensitivities for *PiNumbers* based on *Variables* and ranks them in *SensitivitReport*.
 """
 # native python modules
-from typing import Optional, List, Generic, Callable
+from typing import Optional, List, Generic, Callable, Union
 from dataclasses import dataclass, field
 import inspect
 import re
 
-# Third-party modules
-import numpy as np
-import sympy as sp
-from sympy.parsing.latex import parse_latex
-from sympy import symbols, diff, lambdify
-import SALib
-from SALib.sample.fast_sampler import sample
-from SALib.analyze.fast import analyze
+# # Third-party modules
+# import numpy as np
+# import sympy as sp
+# from sympy.parsing.latex import parse_latex
+# from sympy import symbols, diff, lambdify
+# import SALib
+# from SALib.sample.fast_sampler import sample
+# from SALib.analyze.fast import analyze
 
 # Custom modules
 # Dimensional Analysis modules
 from Src.PyDASA.Measure.fdu import FDU
 from Src.PyDASA.Measure.params import Variable
 from Src.PyDASA.Pi.coef import PiCoefficient, PiNumber
+from Src.PyDASA.Simul.sens import Sensitivity
 
 # Data Structures
 from Src.PyDASA.DStruct.Tables.scht import SCHashTable
@@ -43,168 +44,6 @@ assert _error
 assert _insp_var
 assert cfg
 assert T
-
-
-@dataclass
-class Sensitivity(Generic[T]):
-    """
-    Class to store the results of the sensitivity analysis.
-    """
-    # Private attributes with validation logic
-    # :attr: _idx
-    _idx: int = -1
-    """
-    Unique identifier/index of the *PiCoefficient*. It is the order of in which the coefficient is calculated in the dimensional model.
-    """
-
-    # :attr: _sym
-    _sym: str = "\\Pi_{}"
-    """
-    Symbol of the *PiCoefficient*. It is a LaTeX or an alphanumeric string (preferably a single Latin or Greek letter). It is used for user-friendly representation of the instance. The default LaTeX symbol is `\\Pi_{}`. e.g.: `\\Pi_{1}`.
-    """
-
-    # :attr: _fwk
-    _fwk: str = "PHYSICAL"
-    """
-    Framework of the *PiCoefficient*. It must be the same as the FDU framework. It must be the same as the *FDU* and *Parameter* framework. It must be the same as the FDU framework. Can be: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`.
-    """
-
-    # TODO add attributes to store the results of the analysis
-    # :attr: _pi_expr
-    _pi_expr: Optional[str] = None
-    """
-    Symbolic expression of the *PiCoefficient* formula. It is a string in the LateX format. e.g.: `\\Pi_{1} = \\frac{u* L}{\\rho}`.
-    """
-
-    # :attr: _latex_expr
-    _var_lt: List[str] = field(default_factory=list)
-    """
-    Parameter symbols used in the *PiCoefficient*. It is a list of `str` objects to identify the parameters used to calculate the coefficient.
-    """
-
-    sympy_expr: Callable = None
-    numpy_func: Callable = None
-
-    # Public attributes
-    # :attr: name
-    name: str = ""
-    """
-    Name of the *PiCoefficient*. User-friendly name of the parameter.
-    """
-
-    # :attr: description
-    description: str = ""
-    """
-    Description of the *PiCoefficient*. It is a small summary of the parameter.
-    """
-
-    report: dict = field(default_factory=dict)
-
-    def _parce_expr(self, expr: str) -> None:
-        """*parse_expr* parses the LaTeX expression into a sympy expression.
-
-        Args:
-            expr (str): The LaTeX expression to convert.
-        """
-        # Parse the LaTeX expression into a sympy expression
-        self.sympy_expr = parse_latex(expr)
-
-    def _extract_variables(self) -> None:
-        """*extract_variables* extracts variables from the sympy expression."""
-        # Extract variables from the sympy expression
-        self.variables = sorted(self.sympy_expr.free_symbols, key=lambda s: s.name)
-        self.variables = [str(v) for v in self.variables]
-
-    def _generate_function(self) -> None:
-        """*generate_function* generates a callable function using lambdify."""
-        # Generate a callable function using lambdify
-        self.numpy_func = lambdify(self.variables, self.sympy_expr, "numpy")
-
-    def analyze_symbolically(self, variables: SCHashTable) -> None:
-        sens = {}
-        print(f"Analyzing Symbolically: {self.latex_expr}, {self.variables}")
-        for p in self.variables:
-            part_der = diff(self.sympy_expr, p)
-            print(f"Partial Derivative: {part_der}")
-            self.numpy_func = lambdify(self.variables, part_der, "numpy")
-            print(f"values[p]: {variables.get_entry(p)}")
-            sens_v = self.numpy_func(*[values[p] for p in self.variables])
-            sens[p] = sens_v
-        self.report = sens
-
-    def analyze_numerically(self,
-                            bounds: dict,
-                            num_samples: int = 1000) -> None:
-        # Generate samples using the FAST method
-        p_vals = sample(bounds, num_samples)
-
-        # Reshape the samples to match the expected input format for the custom function
-        p_vals = p_vals.reshape(-1, bounds["num_vars"])
-
-        # Evaluate the custom function for all samples
-        Y = np.apply_along_axis(lambda row: self.numpy_func(*row), 1, p_vals)
-
-        # Perform sensitivity analysis using FAST
-        n_ansys = analyze(bounds, Y)
-        self.report = n_ansys
-
-    @property
-    def idx(self) -> int:
-        """*idx* Get the *Sensitivity* index in the program.
-
-        Returns:
-            int: ID of the *Sensitivity*.
-        """
-        return self._idx
-
-    @idx.setter
-    def idx(self, val: int) -> None:
-        """*idx* Sets the *Sensitivity* index in the program. It must be an integer.
-
-        Args:
-            val (int): Index of the *Sensitivity*.
-
-        Raises:
-            ValueError: error if the Index is not an integer.
-        """
-        if not isinstance(val, int):
-            _msg = "Index must be an integer, "
-            _msg += f"Provided type: {type(val)}"
-            raise ValueError(_msg)
-        self._idx = val
-
-    @property
-    def latex_expr(self) -> str:
-        """*latex_expr* Get the LaTeX expression of the *Sensitivity*.
-
-        Returns:
-            str: LaTeX expression of the *Sensitivity*.
-        """
-        return self._latex_expr
-
-    @latex_expr.setter
-    def latex_expr(self, val: str) -> None:
-        """*latex_expr* Sets the LaTeX expression of the *Sensitivity*. It must be a valid LaTeX expression.
-
-        Args:
-            val (str): LaTeX expression of the *Sensitivity*.
-
-        Raises:
-            ValueError: error if the LaTeX expression is not valid.
-        """
-        # FIXME REGEX not working!!!!
-        # Regular expression to match valid LaTeX strings or alphanumeric strings
-        if not (val.isalnum() or re.match(cfg.LATEX_REGEX, val)):
-            _msg = "LaTeX expression must be a valid string. "
-            _msg += f"Provided: '{val}' "
-            _msg += "Examples: 'V', 'd', '\\Pi_{0}', '\\rho'."
-            # raise ValueError(_msg)
-        self._latex_expr = val
-        # automatically parse the expression and generate the function
-        self._parce_expr(self._latex_expr)
-        self._extract_variables()
-        self._generate_function()
-
 
 @dataclass
 class SensitivityAnalysis(Generic[T]):
@@ -541,9 +380,9 @@ class SensitivityAnalysis(Generic[T]):
             if val is None:
                 _msg = f"Variable {coef.sym} not found in the relevance list."
                 raise ValueError(_msg)
-            
+
             pi_sen = Sensitivity()
-            pi_sen.latex_expr = coef.pi_expr
+            pi_sen.pi_expr = coef.pi_expr
             print(pi_sen)
             pi_sen._parce_expr(coef.pi_expr)
             pi_sen._extract_variables()
@@ -576,3 +415,12 @@ class SensitivityAnalysis(Generic[T]):
             str: String representation of the *SensitivityAnalysis* object.
         """
         return self.__str__()
+
+    @property
+    def np_val(self) -> Callable:
+        """*np_val* Get the numpy function of the *SensitivityAnalysis*.
+
+        Returns:
+            Callable: Numpy function of the *SensitivityAnalysis*.
+        """
+        return self.var_val

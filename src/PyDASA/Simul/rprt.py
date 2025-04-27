@@ -7,7 +7,7 @@ Uses SymPy for analytical sensitivity analysis (derivatives) and SALib for numer
 The *SensitivityAnalysis* class computes sensitivities for *PiNumbers* based on *Variables* and ranks them in *SensitivitReport*.
 """
 # native python modules
-from typing import Optional, List, Generic, Callable, Union
+from typing import Optional, List, Generic, Union
 from dataclasses import dataclass, field
 import inspect
 import re
@@ -23,8 +23,8 @@ import re
 
 # Custom modules
 # Dimensional Analysis modules
-from Src.PyDASA.Measure.fdu import FDU
-from Src.PyDASA.Measure.params import Variable
+# from Src.PyDASA.Measure.fdu import FDU
+from Src.PyDASA.Measure.params import Parameter, Variable
 from Src.PyDASA.Pi.coef import PiCoefficient, PiNumber
 from Src.PyDASA.Simul.sens import Sensitivity
 
@@ -45,6 +45,7 @@ assert _insp_var
 assert cfg
 assert T
 
+
 @dataclass
 class SensitivityAnalysis(Generic[T]):
 
@@ -56,7 +57,7 @@ class SensitivityAnalysis(Generic[T]):
     """
 
     # :attr: _sym
-    _sym: str = "SEN ANSYS_{x}"
+    _sym: str = "SEN ANSYS RPRT_{x}"
     """
     Symbol of the *SensitivityAnalysis*. It must be alphanumeric (preferably a single character + Latin or Greek letter). Useful for user-friendly representation of the instance.
     """
@@ -74,13 +75,13 @@ class SensitivityAnalysis(Generic[T]):
     """
 
     # :attr: _relevance_lt
-    _relevance_lt: List[Variable] = field(default_factory=list)
+    _relevance_lt: List[Union[Parameter, Variable]] = field(default_factory=list)
     """
     List of relevant *Variable* objects. Need to be defined before performing the sensitivity analysis with the *DimensionalAnalyzer*.
     """
 
     # :attr: _coefficient_lt
-    _coefficient_lt: List[PiNumber] = field(default_factory=list)
+    _coefficient_lt: List[Union[PiCoefficient, PiNumber]] = field(default_factory=list)
     """
     List of relevant *PiCoefficients* objects. Need to be defined before performing the sensitivity analysis with the *DimensionalSolver*.
     """
@@ -97,12 +98,6 @@ class SensitivityAnalysis(Generic[T]):
     Hash table for storing *PiCoefficients* objects. It is used to quickly access and manage the Pi coefficients in the sensitivity analysis.
     """
 
-    # :attr: _pi_numbers
-    _pi_numbers: List[PiNumber] = field(default_factory=list)
-    """
-    List of resulting *PiNumbers* after performing the sensitivity analysis. It contains the computed Pi numbers and their corresponding sensitivity order in the `sensitivity` attribute.
-    """
-
     # Public attributes
     # :attr: name
     name: str = "Sensitivity Analysis"
@@ -116,8 +111,8 @@ class SensitivityAnalysis(Generic[T]):
     Small summary of the *SensitivityAnalysis*.
     """
 
-    # :attr: sensitivity_rpt
-    sensitivity_rpt: Optional[List[Sensitivity]] = None
+    # :attr: report
+    report: List[Sensitivity] = field(default_factory=list)
     """
     Report of the sensitivity analysis results. It contains the computed sensitivity according to the Fourier Amplitude Sensitivity Testing (FAST) method.
     """
@@ -142,8 +137,6 @@ class SensitivityAnalysis(Generic[T]):
         self.fwk = self._fwk
         self.relevance_lt = self._relevance_lt
         self.coefficient_lt = self._coefficient_lt
-        if self._pi_numbers:
-            self.pi_numbers = self._pi_numbers
 
     # TODO: add private methods.
     def _setup_variables_map(self, var_lt: List[Variable]) -> None:
@@ -206,7 +199,6 @@ class SensitivityAnalysis(Generic[T]):
             raise ValueError(_msg)
         return True
 
-    # TODO add public methods to get the results of the analysis.
     @property
     def idx(self) -> int:
         """*idx* Get the *SensitivityAnalysis* index in the program.
@@ -348,47 +340,71 @@ class SensitivityAnalysis(Generic[T]):
             val (List[PiCoefficient]): List of *PiCoefficient* objects.
         """
         # if the list is valid, set the parameter list
-        if self._validate_list(val, (PiCoefficient,)):
+        if self._validate_list(val, (PiCoefficient, PiNumber)):
             self._coefficient_lt = val
 
-    @property
-    def pi_numbers(self) -> List[PiNumber]:
-        """*pi_numbers* Get the list of coefficients in the *SensitivityAnalysis*.
-
-        Returns:
-            List[PiNumber]: List of *PiNumber* objects.
-        """
-        return self._pi_numbers
-
-    @pi_numbers.setter
-    def pi_numbers(self, val: List[PiNumber]) -> None:
-        """*set_coefficient_lt()* sets the coefficient list of the *SensitivityAnalysis*.
-
-        Args:
-            val (List[PiNumber]): List of *PiNumber* objects.
-        """
-        # if the list is valid, set the parameter list
-        if self._validate_list(val, (PiNumber,)):
-            self._pi_numbers = val
-
-    def analyze_pi_sensitivity(self, cutoff: str = "avg") -> None:
-
+    def _setup_report(self,
+                      category: str = "SYMBOLIC") -> None:
+        """*setup_report* sets up the report for the *SensitivityAnalysis*."""
         # prepare the sensitivity analysis
         for coef in self.coefficient_lt:
-            print(f"Analyzing Pi Coefficient: {coef.sym}: {coef.pi_expr}")
-            val = self._relevance_mp.get_entry(coef.sym)
-            if val is None:
-                _msg = f"Variable {coef.sym} not found in the relevance list."
+            # print(f"Analyzing Pi Coefficient: {coef.sym}: {coef.pi_expr}")
+            entry = self._coefficient_mp.get_entry(str(coef.sym)).value
+            # print(f"Value: {entry}")
+            if entry is None:
+                _msg = f"Pi Coefficient {coef.sym} not found in the relevance list."
                 raise ValueError(_msg)
+            entry = list(entry.par_dims.keys())
+            # print(f"Entry: {entry}")
+            sens = Sensitivity(_idx=coef.idx,
+                               _sym=coef.sym,
+                               _fwk=self.fwk,
+                               _pi_expr=coef.pi_expr,
+                               _variables=entry,)
+            self.report.append(sens)
 
-            pi_sen = Sensitivity()
-            pi_sen.pi_expr = coef.pi_expr
-            print(pi_sen)
-            pi_sen._parce_expr(coef.pi_expr)
-            pi_sen._extract_variables()
-            pi_sen._generate_function()
-            pi_sen.analyze_symbolically(val)
-            print(pi_sen)
+    def analyze_pi_sensitivity(self,
+                               category: str = "SYMBOLIC",
+                               cutoff: str = "avg") -> None:
+        self._setup_report()
+        for sen in self.report:
+            print(f"Analyzing Pi Coefficient: {sen.sym}: {sen.pi_expr}")
+            print(f"Variables: {sen.variables}")
+            # print(f"Value: {entry}")
+            if category == "SYMBOLIC":
+                td = {}
+                for param in sen.variables:
+                    details = self._relevance_mp.get_entry(param).value
+                    # print(f"Entry: {details}")
+                    if cutoff == "avg":
+                        # print(f"Calculating average for {param}")
+                        td[param] = details.std_avg
+                    elif cutoff == "max":
+                        # print(f"Calculating max for {param}")
+                        td[param] = details.std_max
+                    elif cutoff == "min":
+                        # print(f"Calculating min for {param}")
+                        td[param] = details.std_min
+                    else:
+                        _msg = f"Invalid cutoff method: {cutoff}. "
+                        _msg += "Must be one of the following: "
+                        _msg += f"{', '.join(cfg.CUTOFF_METHODS.keys())}."
+                        raise ValueError(_msg)
+                print(td)
+                sen.analyze_symbolically(td)
+                print(f"Report: {sen.result}")
+            elif category == "NUMERICAL":
+                rg_lt = []
+                for param in sen.variables:
+                    details = self._relevance_mp.get_entry(param).value
+                    # print(f"Entry: {details}")
+                    trg = (details.std_min, details.std_max)
+                    print(f"Calculating range for {param}: {trg}")
+                    rg_lt.append(trg)
+                print(f"Range: {rg_lt}")
+                # Perform numerical analysis using the FAST method
+                sen.analyze_numerically(rg_lt)
+                print(f"Report: {sen.result}")
 
     def __str__(self) -> str:
         """*__str__()* returns a string representation of the *SensitivityAnalysis* object.
@@ -415,12 +431,3 @@ class SensitivityAnalysis(Generic[T]):
             str: String representation of the *SensitivityAnalysis* object.
         """
         return self.__str__()
-
-    @property
-    def np_val(self) -> Callable:
-        """*np_val* Get the numpy function of the *SensitivityAnalysis*.
-
-        Returns:
-            Callable: Numpy function of the *SensitivityAnalysis*.
-        """
-        return self.var_val

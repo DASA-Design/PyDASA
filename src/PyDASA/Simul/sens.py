@@ -55,7 +55,7 @@ class Sensitivity(Generic[T]):
             - var_val (Union[int, float, list, np.ndarray]): The Value for the *Sensitivity* analysis.
             - name (str): The Name of the *Sensitivity*.
             - description (str): The Description of the *Sensitivity*.
-            - report (dict): The Report of the *Sensitivity*.
+            - result (dict): The Report of the *Sensitivity*.
     """
 
     # Private attributes with validation logic
@@ -120,8 +120,8 @@ class Sensitivity(Generic[T]):
     Description of the *Sensitivity*. It is a small summary of the parameter.
     """
 
-    # :attr: report
-    report: dict = field(default_factory=dict)
+    # :attr: result
+    result: dict = field(default_factory=dict)
     """
     Report of the *Sensitivity*. It is a dictionary with the results of the sensitivity analysis.
     """
@@ -153,16 +153,16 @@ class Sensitivity(Generic[T]):
         Returns:
             dict: Sensitivity results.
         """
-        self.report = {
+        self.result = {
             var: lambdify(self.variables, diff(self.sym_fun, var), "numpy")(
                 *[values[v] for v in self.variables]
             )
             for var in self.variables
         }
-        return self.report
+        return self.result
 
     def analyze_numerically(self,
-                            bounds: List[Union[int, float]],
+                            bounds: List[List[Union[int, float]]],
                             num_samples: int = 1000) -> dict:
         """
         Perform numerical sensitivity analysis using SALib.
@@ -177,13 +177,13 @@ class Sensitivity(Generic[T]):
         problem = {
             "num_vars": len(self.variables),
             "names": self.variables,
-            "bounds": [bounds] * len(self.variables),
+            "bounds": bounds,
         }
         self.var_val = sample(
             problem, num_samples).reshape(-1, len(self.variables))
         Y = np.apply_along_axis(lambda v: self._exe_fun(*v), 1, self.var_val)
-        self.report = analyze(problem, Y)
-        return self.report
+        self.result = analyze(problem, Y)
+        return self.result
 
     @property
     def idx(self) -> int:
@@ -380,7 +380,7 @@ class Sensitivity(Generic[T]):
         self.var_val = None
         self.name = ""
         self.description = ""
-        self.report = {}
+        self.result = {}
 
     def __str__(self) -> str:
         """*__str__()* returns a string representation of the *Parameter* object.

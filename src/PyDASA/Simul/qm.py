@@ -132,7 +132,10 @@ class QueueModel:
         return gamma(n + 1)
 
 
-def create_queue_model(arrival_rate: float, service_rate: float, servers: int = 1, capacity: Optional[int] = None) -> QueueModel:
+def create_queue(arrival_rate: float,
+                 service_rate: float,
+                 servers: int = 1,
+                 capacity: Optional[int] = None) -> QueueModel:
     """
     Factory function to create a QueueModel instance.
 

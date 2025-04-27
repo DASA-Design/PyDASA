@@ -53,7 +53,7 @@ class QueueModel:
         rho = self.utilization()
         if self.capacity is None:
             raise ValueError("Capacity (K) must be specified for M/M/1/K.")
-        P0 = (1 - rho) / (1 - rho ** (self.capacity + 1))
+        p0 = (1 - rho) / (1 - rho ** (self.capacity + 1))
         L = rho * (1 - (self.capacity + 1) * rho ** self.capacity + self.capacity * rho ** (self.capacity + 1)) / (
             (1 - rho) * (1 - rho ** (self.capacity + 1))
         )
@@ -61,7 +61,7 @@ class QueueModel:
             "L": L,
             "W": L / (self.arrival_rate * (1 - rho ** self.capacity)),
             "rho": rho,
-            "P0": P0,
+            "P_{0}": p0,
             "flow_rate": self.flow_rate(),
         }
 
@@ -70,8 +70,8 @@ class QueueModel:
         rho = self.utilization()
         if rho >= 1:
             raise ValueError("System is unstable (ρ >= 1).")
-        P0 = self._calc_p0_mmc(rho)
-        Lq = (P0 * (self.servers * rho) ** self.servers * rho) / (
+        p0 = self._calc_p0_mmc(rho)
+        Lq = (p0 * (self.servers * rho) ** self.servers * rho) / (
             self._factorial(self.servers) * (1 - rho) ** 2
         )
         L = Lq + self.servers * rho
@@ -79,7 +79,7 @@ class QueueModel:
             "L": L,
             "W": L / self.arrival_rate,
             "rho": rho,
-            "P0": P0,
+            "P_{0}": p0,
             "flow_rate": self.flow_rate(),
         }
 
@@ -88,18 +88,18 @@ class QueueModel:
         rho = self.utilization()
         if self.capacity is None:
             raise ValueError("Capacity (K) must be specified for M/M/c/K.")
-        P0 = self._calc_p0_mmck(rho)
-        L = self._calc_l_mmck(P0, rho)
+        p0 = self._calc_p0_mmck(rho)
+        L = self._calc_l_mmck(p0, rho)
         return {
             "L": L,
-            "W": L / (self.arrival_rate * (1 - self._prob_k(P0, rho))),
+            "W": L / (self.arrival_rate * (1 - self._prob_k(p0, rho))),
             "rho": rho,
-            "P0": P0,
+            "P_{0}": p0,
             "flow_rate": self.flow_rate(),
         }
 
     def _calc_p0_mmc(self, rho: float) -> float:
-        """Calculate P0 for M/M/c."""
+        """Calculate p0 for M/M/c."""
         sum_terms = sum((self.servers * rho) ** n / self._factorial(n)
                         for n in range(self.servers))
         last_term = (self.servers * rho) ** self.servers / \
@@ -107,7 +107,7 @@ class QueueModel:
         return 1 / (sum_terms + last_term)
 
     def _calc_p0_mmck(self, rho: float) -> float:
-        """Calculate P0 for M/M/c/K."""
+        """Calculate p0 for M/M/c/K."""
         sum_terms = sum((self.servers * rho) ** n / self._factorial(n)
                         for n in range(self.servers))
         last_term = (self.servers * rho) ** self.servers * (1 - rho ** (self.capacity - self.servers + 1)) / (
@@ -115,16 +115,16 @@ class QueueModel:
         )
         return 1 / (sum_terms + last_term)
 
-    def _calc_l_mmck(self, P0: float, rho: float) -> float:
+    def _calc_l_mmck(self, p0: float, rho: float) -> float:
         """Calculate L for M/M/c/K."""
         Lq = (
-            P0 * (self.servers * rho) ** self.servers * (1 - (self.capacity - self.servers + 1) * rho ** (self.capacity - self.servers) + self.capacity * rho ** (self.capacity - self.servers + 1)) / (self._factorial(self.servers) * (1 - rho) ** 2)
+            p0 * (self.servers * rho) ** self.servers * (1 - (self.capacity - self.servers + 1) * rho ** (self.capacity - self.servers) + self.capacity * rho ** (self.capacity - self.servers + 1)) / (self._factorial(self.servers) * (1 - rho) ** 2)
         )
         return Lq + self.servers * rho
 
-    def _prob_k(self, P0: float, rho: float) -> float:
+    def _prob_k(self, p0: float, rho: float) -> float:
         """Calculate the probability of having K customers in the system."""
-        return (P0 * (self.servers * rho) ** self.capacity) / (self._factorial(self.servers) * (1 - rho))
+        return (p0 * (self.servers * rho) ** self.capacity) / (self._factorial(self.servers) * (1 - rho))
 
     @staticmethod
     def _factorial(n: float) -> float:

@@ -1,32 +1,24 @@
 ﻿# -*- coding: utf-8 -*-
 """
-Module for the **Sensitivity** analysis in *PyDASA*.
+Module for **Sensitivity** analysis in *PyDASA*.
 
-*Sensitivity* hold the variables and methods for performing sensitivity analysis on the Dimensional Coefficients and Pi Numbers.
+This module provides the `Sensitivity` class for performing sensitivity analysis on Dimensional Coefficients and Pi Numbers.
 """
 # native python modules
 from typing import Optional, List, Generic, Callable, Union
 from dataclasses import dataclass, field
-import inspect
+# import inspect
 import re
 
 # Third-party modules
 import numpy as np
-import sympy as sp
 from sympy.parsing.latex import parse_latex
-from sympy import symbols, diff, lambdify
-import SALib
+from sympy import diff, lambdify
 from SALib.sample.fast_sampler import sample
 from SALib.analyze.fast import analyze
 
 # Custom modules
 # Dimensional Analysis modules
-from Src.PyDASA.Measure.fdu import FDU
-from Src.PyDASA.Measure.params import Variable
-from Src.PyDASA.Pi.coef import PiCoefficient, PiNumber
-
-# Data Structures
-from Src.PyDASA.DStruct.Tables.scht import SCHashTable
 
 # Utils modules
 from Src.PyDASA.Util.dflt import T
@@ -45,9 +37,27 @@ assert T
 
 @dataclass
 class Sensitivity(Generic[T]):
+    """**Sensitivity** Class for performing sensitivity analysis.
+
+
+    Args:
+        Generic (T): Generic type for a Python data structure.
+
+    Returns:
+        Sensitivity: An object with the following attributes:
+            - _idx (int): The Index of the *Sensitivity*.
+            - _sym (str): The Symbol of the *Sensitivity*.
+            - _fwk (str): The Framework of the *Sensitivity*.
+            - _cat (str): The Category of the *Sensitivity*.
+            - _pi_expr (str): The LaTeX expression of the *Sensitivity*.
+            - _sym_fun (Callable): The Sympy function of the *Sensitivity*.
+            - _variables (list): The Variables of the *Sensitivity*.
+            - var_val (Union[int, float, list, np.ndarray]): The Value for the *Sensitivity* analysis.
+            - name (str): The Name of the *Sensitivity*.
+            - description (str): The Description of the *Sensitivity*.
+            - report (dict): The Report of the *Sensitivity*.
     """
-    Class to store the results of the sensitivity analysis.
-    """
+
     # Private attributes with validation logic
     # :attr: _idx
     _idx: int = -1
@@ -123,71 +133,57 @@ class Sensitivity(Generic[T]):
         self.sym = self._sym
         self.fwk = self._fwk
         self.cat = self._cat
-        self.pi_expr = self._pi_expr
-        self.variables = self._variables
-        self.name = self.name
-        self.description = self.description
-        self.report = self.report
+        if self._pi_expr:
+            self._parse_expression(self.pi_expr)
 
-    def _parce_expr(self, expr: str) -> None:
-        """*parse_expr* parses the LaTeX expression into a sympy expression.
-
-        Args:
-            expr (str): The LaTeX expression to convert.
+    def _parse_expression(self, expr: str) -> None:
+        """*_parse_expression()* Parse the LaTeX expression into a sympy function.
         """
-        # Parse the LaTeX expression into a sympy expression
         self._sym_fun = parse_latex(expr)
-
-    def _extract_variables(self) -> None:
-        """*extract_variables* extracts variables from the sympy expression.
-        """
-        # Extract variables from the sympy expression
-        self.variables = sorted(self.sym_fun.free_symbols, key=lambda s: s.name)
-        self.variables = [str(v) for v in self.variables]
-
-    def _generate_function(self) -> None:
-        """*generate_function* generates a callable function using lambdify.
-        """
-        # Generate a callable function using lambdify
-        self._exe_fun = lambdify(self.variables, self._sym_fun, "numpy")
+        self._variables = sorted([str(v) for v in self.sym_fun.free_symbols])
+        self._exe_fun = lambdify(self.variables, self.sym_fun, "numpy")
 
     def analyze_symbolically(self, values: dict) -> dict:
-        """*analyze_symbolically* performs symbolic sensitivity analysis.
+        """
+        Perform symbolic sensitivity analysis.
 
         Args:
-            values (dict): Dictionary with the variable values for the analysis.
+            values (dict): Variable values for the analysis.
 
         Returns:
-            dict: Dictionary with the results of the sensitivity analysis.
+            dict: Sensitivity results.
         """
-        sens = {}
-        for p in self.variables:
-            part_der = diff(self._sym_fun, p)
-            derf = lambdify(self.variables, part_der, "numpy")
-            # print(f"values[p]: {variables.get(p)}")
-            sens_v = derf(*[values[p] for p in self.variables])
-            sens[p] = sens_v
-        self.report = sens
-        return sens
-
-    def analyze_numerically(self, bounds: list[Union[int, float]],
-                            num_samples: int = 1000) -> None:
-
-        problem = {
-            'num_vars': len(self.variables),
-            'names': self.variables,
-            'bounds': [bounds] * len(self.variables),
+        self.report = {
+            var: lambdify(self.variables, diff(self.sym_fun, var), "numpy")(
+                *[values[v] for v in self.variables]
+            )
+            for var in self.variables
         }
+        return self.report
 
-        self.var_val = sample(problem, num_samples)
-        # Reshape the samples to match the expected input format for the custom function
-        self.var_val = self.var_val.reshape(-1, len(self.variables))
-        # Evaluate the custom function for all samples
-        Y = np.apply_along_axis(lambda j: self._exe_fun(*j), 1, self.var_val)
-        # Perform sensitivity analysis using FAST
-        n_ansys = analyze(problem, Y)
-        self.report = n_ansys
-        return n_ansys
+    def analyze_numerically(self,
+                            bounds: List[Union[int, float]],
+                            num_samples: int = 1000) -> dict:
+        """
+        Perform numerical sensitivity analysis using SALib.
+
+        Args:
+            bounds (list): Bounds for the variables.
+            num_samples (int): Number of samples for the analysis. Default is 1000.
+
+        Returns:
+            dict: Sensitivity results.
+        """
+        problem = {
+            "num_vars": len(self.variables),
+            "names": self.variables,
+            "bounds": [bounds] * len(self.variables),
+        }
+        self.var_val = sample(
+            problem, num_samples).reshape(-1, len(self.variables))
+        Y = np.apply_along_axis(lambda v: self._exe_fun(*v), 1, self.var_val)
+        self.report = analyze(problem, Y)
+        return self.report
 
     @property
     def idx(self) -> int:
@@ -321,9 +317,7 @@ class Sensitivity(Generic[T]):
             # raise ValueError(_msg)
         self._pi_expr = val
         # automatically parse the expression and generate the function
-        self._parce_expr(self._pi_expr)
-        self._extract_variables()
-        self._generate_function()
+        self._parse_expression(self._pi_expr)
 
     @property
     def variables(self) -> dict:
@@ -369,7 +363,6 @@ class Sensitivity(Generic[T]):
         Raises:
             ValueError: error if the sympy function is not valid.
         """
-        #  TODO check if the function is a valid sympy function
         if not callable(val):
             _msg = "Sympy function must be callable. "
             _msg += f"Provided: {type(val)}"
@@ -379,7 +372,7 @@ class Sensitivity(Generic[T]):
     def clear(self) -> None:
         """*clear* clears the *Sensitivity* instance."""
         self._idx = -1
-        self._sym = "\\Pi_{}"
+        self._sym = "SEN ANSYS \\Pi_{}"
         self._fwk = "PHYSICAL"
         self._cat = "SYMBOLIC"
         self._pi_expr = None
@@ -414,24 +407,3 @@ class Sensitivity(Generic[T]):
             str: String representation of the *Parameter* object.
         """
         return self.__str__()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

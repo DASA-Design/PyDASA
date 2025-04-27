@@ -313,49 +313,61 @@ extr_data_lt = [
     {   # Fluid velocity
         "_min": 0.0,
         "_max": 15.0,
+        "_avg": 7.50,
         "_std_units": "m/s",
         "_std_min": 0.0,
         "_std_max": 15.0,
+        "_std_avg": 7.50,
         "_std_step": 0.1,
     },
     {   # Distance from the wall
         "_min": 0.0,
         "_max": 10.0,
+        "_avg": 5.0,
         "_std_units": "m",
         "_std_min": 0.0,
         "_std_max": 10.0,
+        "_std_avg": 5.0,
         "_std_step": 0.1,
     },
     {   # Channel diameter
         "_min": 0.0,
         "_max": 5.0,
+        "_avg": 2.5,
         "_std_units": "m",
         "_std_min": 0.0,
         "_std_max": 5.0,
+        "_std_avg": 2.5,
         "_std_step": 0.1,
     },
     {   # Velocity of the wall
         "_min": 0.0,
         "_max": 15.0,
+        "_avg": 7.50,
         "_std_units": "m/s",
         "_std_min": 0.0,
         "_std_max": 15.0,
+        "_std_avg": 7.50,
         "_std_step": 0.1,
     },
     {   # Pressure drop across the channel
         "_min": 0.0,
         "_max": 100000.0,
+        "_avg": 50000.0,
         "_std_units": "Pa",
         "_std_min": 0.0,
         "_std_max": 100000.0,
+        "_std_avg": 50000.0,
         "_std_step": 100.0,
     },
     {   # Kinematic viscosity of the fluid
         "_min": 0.0,
         "_max": 1.0,
+        "_avg": 0.5,
         "_std_units": "m^2/s",
         "_std_min": 0.0,
         "_std_max": 1.0,
+        "_std_avg": 0.5,
         "_std_step": 0.01,
     },
 ]
@@ -379,15 +391,6 @@ for coef in DAnalysis.pi_coef_lt:
     print(f"{coef.sym} = {coef.pi_expr}")
     print(coef, "\n")
 
-sena = SensitivityAnalysis(_idx=0,
-                           _sym="SA_{0}",
-                           _fwk="CUSTOM",
-                           name="Sensitivity Analysis",
-                           description="Sensitivity Analysis",
-                           _relevance_lt=vars_lt,
-                           _coefficient_lt=DAnalysis.pi_coef_lt,)
-# print(sena)
-# print(sena._coefficient_mp.keys(), "\n")
 
 print("=== Sensitivity Analysis: ===")
 print(f"Coefficients: {DAnalysis.pi_coef_lt[0]}\n")
@@ -408,7 +411,19 @@ td["y"] = 5.05
 print(td, "\n")
 r = sen.analyze_symbolically(td)
 print(r, "\n")
-r = sen.analyze_numerically([0.1, 10.0])
+r = sen.analyze_numerically([[0.1, 10.0]] * len(sen.variables))
 print(r, "\n")
-# print("\n=== Sensitivity Analysis: === \n")
-# sena.analyze_pi_sensitivity(cutoff="max")
+
+print("\n=== Sensitivity Analysis: === \n")
+# print(sena)
+sena = SensitivityAnalysis(_idx=0,
+                           _sym="SA_{0}",
+                           _fwk="CUSTOM",
+                           name="Sensitivity Analysis",
+                           description="Sensitivity Analysis",
+                           _relevance_lt=vars_lt,
+                           _coefficient_lt=DAnalysis.pi_coef_lt,)
+# sena.analyze_pi_sensitivity(cutoff="avg")
+sena.analyze_pi_sensitivity(category="NUMERICAL")
+# print(sena._coefficient_mp.keys(), "\n")
+# print(sena._coefficient_mp.get_entry("\\Pi_{0}"))

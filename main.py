@@ -14,9 +14,9 @@ from Src.PyDASA.DStruct.Tables.scht import Bucket
 
 # dimensionl analysis modules
 # config module
-from Src.PyDASA.Util import cfg as config
+from Src.PyDASA.Utils import cfg as config
 # FDU regex management
-from Src.PyDASA.Util.cstm import RegexManager
+from Src.PyDASA.Utils.cstm import RegexManager
 # FDU modules
 from Src.PyDASA.Measure.fdu import FDU
 # Parameter and Variable modules
@@ -284,11 +284,11 @@ DAnalysis = DimensionalAnalyzer(_fwk="CUSTOM",
                                 _fdu_mp=DAModel._fdu_mp,
                                 _param_lt=DAModel.param_lt,
                                 _relevance_lt=DAModel.relevance_lt,)
-print(DAnalysis.relevance_lt, "\n")
-print(len(DAnalysis.relevance_lt), "\n")
-print(DAnalysis, "\n")
-print(DAnalysis._wrk_fdu_lt, "\n")
-print(DAnalysis._fdu_mp, "\n")
+# print(DAnalysis.relevance_lt, "\n")
+# print(len(DAnalysis.relevance_lt), "\n")
+# print(DAnalysis, "\n")
+# print(DAnalysis._wrk_fdu_lt, "\n")
+# print(DAnalysis._fdu_mp, "\n")
 
 for relv in DAnalysis.relevance_lt:
     print("blaaaaa", relv.idx, relv.cat, relv.sym, relv.name)
@@ -427,3 +427,5 @@ sena = SensitivityAnalysis(_idx=0,
 sena.analyze_pi_sensitivity(category="NUMERICAL")
 # print(sena._coefficient_mp.keys(), "\n")
 # print(sena._coefficient_mp.get_entry("\\Pi_{0}"))
+
+# montecarlo

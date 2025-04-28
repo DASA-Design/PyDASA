@@ -24,17 +24,17 @@ from Src.PyDASA.DStruct.Tables.htme import MapEntry
 from Src.PyDASA.DStruct.Lists.arlt import ArrayList
 from Src.PyDASA.DStruct.Lists.sllt import SingleLinkedList
 # util functions for the hash table
-from Src.PyDASA.Util.nos import next_prime, previous_prime
-from Src.PyDASA.Util.nos import mad_hash
-from Src.PyDASA.Util.err import error_handler as error
+from Src.PyDASA.Utils.nos import next_prime, previous_prime
+from Src.PyDASA.Utils.nos import mad_hash
+from Src.PyDASA.Utils.err import error_handler as error
 # default cmp function for the hash table
-from Src.PyDASA.Util.dflt import dflt_cmp_func_ht
+from Src.PyDASA.Utils.dflt import dflt_cmp_func_ht
 # default data type for the hash table
-from Src.PyDASA.Util.dflt import T
-from Src.PyDASA.Util.dflt import VLD_DTYPE_LT
-from Src.PyDASA.Util.dflt import DFLT_DICT_KEY
-from Src.PyDASA.Util.dflt import VLD_IODATA_LT
-from Src.PyDASA.Util.dflt import DFLT_PRIME
+from Src.PyDASA.Utils.dflt import T
+from Src.PyDASA.Utils.dflt import VLD_DTYPE_LT
+from Src.PyDASA.Utils.dflt import DFLT_DICT_KEY
+from Src.PyDASA.Utils.dflt import VLD_IODATA_LT
+from Src.PyDASA.Utils.dflt import DFLT_PRIME
 
 # checking custom modules
 assert MapEntry

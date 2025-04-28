@@ -20,11 +20,11 @@ import inspect
 # node class for the linked list
 from Src.PyDASA.DStruct.Lists.ndlt import SLNode
 # generic error handling and type checking
-from Src.PyDASA.Util.err import error_handler as error
-from Src.PyDASA.Util.dflt import dflt_cmp_func_lt
-from Src.PyDASA.Util.dflt import T
-from Src.PyDASA.Util.dflt import DFLT_DICT_KEY
-from Src.PyDASA.Util.dflt import VLD_IODATA_LT
+from Src.PyDASA.Utils.err import error_handler as error
+from Src.PyDASA.Utils.dflt import dflt_cmp_func_lt
+from Src.PyDASA.Utils.dflt import T
+from Src.PyDASA.Utils.dflt import DFLT_DICT_KEY
+from Src.PyDASA.Utils.dflt import VLD_IODATA_LT
 
 # checking custom modules
 assert error

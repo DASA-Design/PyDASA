@@ -15,8 +15,8 @@ import math
 
 # custom modules
 # dflt module handles the default global variables and comparison functions for use by all *PyDASA* and its Data Structs.
-from Src.PyDASA.Util.dflt import T
-from Src.PyDASA.Util.dflt import VLD_IODATA_LT
+from Src.PyDASA.Utils.dflt import T
+from Src.PyDASA.Utils.dflt import VLD_IODATA_LT
 # import global variables
 
 

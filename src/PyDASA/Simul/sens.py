@@ -21,12 +21,12 @@ from SALib.analyze.fast import analyze
 # Dimensional Analysis modules
 
 # Utils modules
-from Src.PyDASA.Util.dflt import T
-from Src.PyDASA.Util.err import error_handler as _error
-from Src.PyDASA.Util.err import inspect_name as _insp_var
+from Src.PyDASA.Utils.dflt import T
+from Src.PyDASA.Utils.err import error_handler as _error
+from Src.PyDASA.Utils.err import inspect_name as _insp_var
 
 # import the 'cfg' module to allow global variable edition
-from Src.PyDASA.Util import cfg
+from Src.PyDASA.Utils import cfg
 
 # checking custom modules
 assert _error
@@ -38,7 +38,6 @@ assert T
 @dataclass
 class Sensitivity(Generic[T]):
     """**Sensitivity** Class for performing sensitivity analysis.
-
 
     Args:
         Generic (T): Generic type for a Python data structure.
@@ -80,7 +79,7 @@ class Sensitivity(Generic[T]):
     # :attr: _cat`
     _cat: str = "SYMBOLIC"
     """
-    Category of the *Sensitivity*. It is used to identify the type of analysis. It can be one of the following: `SYMBOLIC`, `NUMERICAL`, `HYBRID` or `CUSTOM`. by default is `SYMBOLIC`.
+    Category of the *Sensitivity*. It is used to identify the type of analysis. It can be one of the following: `SYMBOLIC`, `NUMERIC`, `HYBRID` or `CUSTOM`. by default is `SYMBOLIC`.
     """
 
     # :attr: _pi_expr
@@ -105,7 +104,7 @@ class Sensitivity(Generic[T]):
     # :attr: var_val
     var_val: Union[int, float, list, np.ndarray] = None
     """
-    Value for the *Sensitivity* analysis. for `SYMBOLIC` analysis it uses `int` or `float` values. for `NUMERICAL` analysis it uses `list` or `numpy.ndarray` values.
+    Value for the *Sensitivity* analysis. for `SYMBOLIC` analysis it uses `int` or `float` values. for `NUMERIC` analysis it uses `list` or `numpy.ndarray` values.
     """
 
     # :attr: name
@@ -139,9 +138,11 @@ class Sensitivity(Generic[T]):
     def _parse_expression(self, expr: str) -> None:
         """*_parse_expression()* Parse the LaTeX expression into a sympy function.
         """
+        # TODO fix parse_latex to accept the expression as a string
+        # clean the expression, remove {, } and \\
         self._sym_fun = parse_latex(expr)
         self._variables = sorted([str(v) for v in self.sym_fun.free_symbols])
-        self._exe_fun = lambdify(self.variables, self.sym_fun, "numpy")
+        self._exe_fun = lambdify(self._variables, self.sym_fun, "numpy")
 
     def analyze_symbolically(self, values: dict) -> dict:
         """
@@ -165,7 +166,7 @@ class Sensitivity(Generic[T]):
                             bounds: List[List[Union[int, float]]],
                             num_samples: int = 1000) -> dict:
         """
-        Perform numerical sensitivity analysis using SALib.
+        Perform NUMERIC sensitivity analysis using SALib.
 
         Args:
             bounds (list): Bounds for the variables.
@@ -277,7 +278,7 @@ class Sensitivity(Generic[T]):
         """*cat* sets the category of the *Sensitivity*.
 
         Args:
-            val (str): Category of the *Sensitivity*. It can be one of the following: `SYMBOLIC`, `NUMERICAL` `HYBRID` or `CUSTOM`.
+            val (str): Category of the *Sensitivity*. It can be one of the following: `SYMBOLIC`, `NUMERIC` `HYBRID` or `CUSTOM`.
 
         Raises:
             ValueError: error if the category is not one of the allowed values.

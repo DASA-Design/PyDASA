@@ -16,12 +16,12 @@ import re
 import numpy as np
 
 # custom modules
-from Src.PyDASA.Util.dflt import T
-from Src.PyDASA.Util.err import error_handler as _error
-from Src.PyDASA.Util.err import inspect_name as _insp_var
+from Src.PyDASA.Utils.dflt import T
+from Src.PyDASA.Utils.err import error_handler as _error
+from Src.PyDASA.Utils.err import inspect_name as _insp_var
 
 # import the 'cfg' module to allow global variable edition
-from Src.PyDASA.Util import cfg
+from Src.PyDASA.Utils import cfg
 
 # checking custom modules
 assert _error
@@ -200,11 +200,11 @@ class PiCoefficient(Generic[T]):
         for sym, exp in zip(param_lt, dim_col):
             # check if the symbol is a valid LaTeX string for the numerator
             if exp > 0:
-                part = f"{sym}" if exp == 1 else f"{sym}^{exp}"
+                part = rf"{sym}" if exp == 1 else rf"{sym}^{exp}"
                 mumerator.append(part)
             # check if the symbol is a valid LaTeX string for the denominator
             elif exp < 0:
-                part = f"{sym}" if exp == -1 else f"{sym}^{-exp}"
+                part = rf"{sym}" if exp == -1 else rf"{sym}^{-exp}"
                 denominator.append(part)
             # ignore zero exponents
             else:
@@ -215,13 +215,13 @@ class PiCoefficient(Generic[T]):
         num_str = "1" if not mumerator else "*".join(mumerator)
         # if the denominator is empty, return the numerator only
         if not denominator:
-            return f"${num_str}$"
+            return rf"{num_str}", parameters
         # otherwise, build the LaTeX expression for the denominator
         else:
             # build the LaTeX expression for the denominator
             denom_str = "*".join(denominator)
             # create the LaTeX expression for the whole coefficient
-            return f"\\frac{{{num_str}}}{{{denom_str}}}", parameters
+            return rf"\frac{{{num_str}}}{{{denom_str}}}", parameters
 
     def clear(self) -> None:
         """*clear()* Resets all attributes to their default values in the *PiCoefficient* object.
@@ -525,6 +525,35 @@ class PiNumber(PiCoefficient[T]):
             _msg = f" than minimum range {self._min}."
             raise ValueError(_msg)
         self._max = val
+
+    @property
+    def avg(self) -> Optional[float]:
+        """*avg* Get the average range of the *PiNumber*.
+
+        Returns:
+            Optional[float]: average range of the *PiNumber*.
+        """
+        return self._avg
+
+    @avg.setter
+    def avg(self, val: Optional[float]) -> None:
+        """*avg* Sets the average range of the *PiNumber*. It must be a number.
+
+        Args:
+            val (Optional[float]): average range of the *PiNumber*.
+
+        Raises:
+            ValueError: If the average range is not a number.
+            ValueError: If the average is out of the range of values.
+        """
+        if val is not None and not isinstance(val, (int, float)):
+            raise ValueError("Average range must be a number.")
+        if val < self._min or val > self._max:
+            _msg = f"Invalid average range: {val}. "
+            _msg += "Average range must be between "
+            _msg += f"{self._min} and {self._max}."
+            raise ValueError(_msg)
+        self._avg = val
 
     @property
     def step(self) -> Optional[float]:

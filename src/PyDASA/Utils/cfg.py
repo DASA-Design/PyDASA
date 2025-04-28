@@ -88,9 +88,9 @@ Computation FDUs Precedence Dictionary.
 DIGI_FDU_PREC_DT: dict = {
     "T": "Time",
     "D": "Data",
-    "C": "Complexity",
+    "M": "Complexity",
     "K": "Conectivity",
-    "P": "Capacity",
+    "C": "Capacity",
 }
 """
 Digital or Dimensional Analysis Software Architecture (DASA) FDUs Precedence Dictionary.

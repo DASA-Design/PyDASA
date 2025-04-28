@@ -33,21 +33,21 @@ import numpy as np
 # custom modules
 # Dimensional Analysisis modules
 from Src.PyDASA.Measure.fdu import FDU
-from Src.PyDASA.Measure.params import Parameter
+from Src.PyDASA.Measure.params import Parameter, Variable
 from Src.PyDASA.Pi.coef import PiCoefficient
 
 # data structures modules
 from Src.PyDASA.DStruct.Tables.scht import SCHashTable
 
 # FDU regex manager
-from Src.PyDASA.Util.cstm import RegexManager
+from Src.PyDASA.Utils.cstm import RegexManager
 
 # generic error handling and type checking
-from Src.PyDASA.Util.err import error_handler as _error
-from Src.PyDASA.Util.dflt import T
+from Src.PyDASA.Utils.err import error_handler as _error
+from Src.PyDASA.Utils.dflt import T
 
 # import the 'cfg' module with to allow global variable edition
-from Src.PyDASA.Util import cfg
+from Src.PyDASA.Utils import cfg
 
 # Generalizing input type for class typing
 FDUElm = Union[FDU, dict]
@@ -420,7 +420,7 @@ class DimensionalModel(Generic[T]):
             _msg = "Parameter list cannot be empty. "
             _msg += f"Provided: {val}"
             raise ValueError(_msg)
-        if not all(isinstance(p, Parameter) for p in val):
+        if not all(isinstance(p, (Parameter, Variable)) for p in val):
             _msg = "Parameter list must be a list of Parameter objects. "
             _msg += f"Provided: {val}"
             raise ValueError(_msg)
@@ -711,7 +711,8 @@ class DimensionalAnalyzer(DimensionalModel[T]):
     def create_matrix(self) -> None:
         """*create_matrix()* uilds the dimensional matrix and its transpose.
         """
-        self._dim_mtx = self._setup_matrix(self._n_in, self._n_relv)
+        self._dim_mtx = self._setup_matrix(len(self._fdu_regex.fdu_prec_lt),
+                                           self._n_relv)
         self._dim_mtx = self._fill_matrix(self.relevance_lt, self._dim_mtx)
         self._dim_mtx_trans = self._dim_mtx.T
 

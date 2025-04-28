@@ -14,10 +14,10 @@ from dataclasses import dataclass
 
 # custom modules
 # generic error handling and type checking
-from Src.PyDASA.Util.dflt import T
+from Src.PyDASA.Utils.dflt import T
 
 # import PyDASA global variables (framework, precedence list, and regex)
-from Src.PyDASA.Util.cfg import (
+from Src.PyDASA.Utils.cfg import (
     FDU_FWK_DT,
     PHY_FDU_PREC_DT,
     COMPU_FDU_PREC_DT,
@@ -26,7 +26,7 @@ from Src.PyDASA.Util.cfg import (
 )
 
 # import the 'cfg' module with to allow global variable edition
-from Src.PyDASA.Util import cfg
+from Src.PyDASA.Utils import cfg
 
 # checking custom modules
 assert T

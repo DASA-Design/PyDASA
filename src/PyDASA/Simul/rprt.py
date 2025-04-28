@@ -32,12 +32,12 @@ from Src.PyDASA.Simul.sens import Sensitivity
 from Src.PyDASA.DStruct.Tables.scht import SCHashTable
 
 # Utils modules
-from Src.PyDASA.Util.dflt import T
-from Src.PyDASA.Util.err import error_handler as _error
-from Src.PyDASA.Util.err import inspect_name as _insp_var
+from Src.PyDASA.Utils.dflt import T
+from Src.PyDASA.Utils.err import error_handler as _error
+from Src.PyDASA.Utils.err import inspect_name as _insp_var
 
 # import the 'cfg' module to allow global variable edition
-from Src.PyDASA.Util import cfg
+from Src.PyDASA.Utils import cfg
 
 # checking custom modules
 assert _error
@@ -71,7 +71,7 @@ class SensitivityAnalysis(Generic[T]):
     # :attr: _cat`
     _cat: str = "SYMBOLIC"
     """
-    Category of the *SensitivityAnalysis*. It can be one of the following: `SYMBOLIC`, `NUMERICAL` or `CUSTOM` and decides which method to use for the analysis. By default, it is set to `SYMBOLIC`.
+    Category of the *SensitivityAnalysis*. It can be one of the following: `SYMBOLIC`, `NUMERIC` or `CUSTOM` and decides which method to use for the analysis. By default, it is set to `SYMBOLIC`.
     """
 
     # :attr: _relevance_lt
@@ -145,7 +145,6 @@ class SensitivityAnalysis(Generic[T]):
         Args:
             var_lt (List[Variable]): List of *Variable* objects.
         """
-        # self._relevance_mp = SCHashTable()
         for var in var_lt:
             self._relevance_mp.insert(var.sym, var)
 
@@ -288,7 +287,7 @@ class SensitivityAnalysis(Generic[T]):
 
     @cat.setter
     def cat(self, val: str) -> None:
-        """*cat* Sets the category of the *SensitivityAnalysis*. It can be one of the following: `SYMBOLIC`, `NUMERICAL` or `CUSTOM`.
+        """*cat* Sets the category of the *SensitivityAnalysis*. It can be one of the following: `SYMBOLIC`, `NUMERIC` or `CUSTOM`.
 
         Args:
             val (str): Category of the *SensitivityAnalysis*.
@@ -343,19 +342,15 @@ class SensitivityAnalysis(Generic[T]):
         if self._validate_list(val, (PiCoefficient, PiNumber)):
             self._coefficient_lt = val
 
-    def _setup_report(self,
-                      category: str = "SYMBOLIC") -> None:
+    def _setup_report(self) -> None:
         """*setup_report* sets up the report for the *SensitivityAnalysis*."""
         # prepare the sensitivity analysis
         for coef in self.coefficient_lt:
-            # print(f"Analyzing Pi Coefficient: {coef.sym}: {coef.pi_expr}")
             entry = self._coefficient_mp.get_entry(str(coef.sym)).value
-            # print(f"Value: {entry}")
             if entry is None:
                 _msg = f"Pi Coefficient {coef.sym} not found in the relevance list."
                 raise ValueError(_msg)
             entry = list(entry.par_dims.keys())
-            # print(f"Entry: {entry}")
             sens = Sensitivity(_idx=coef.idx,
                                _sym=coef.sym,
                                _fwk=self.fwk,
@@ -368,43 +363,35 @@ class SensitivityAnalysis(Generic[T]):
                                cutoff: str = "avg") -> None:
         self._setup_report()
         for sen in self.report:
-            print(f"Analyzing Pi Coefficient: {sen.sym}: {sen.pi_expr}")
-            print(f"Variables: {sen.variables}")
-            # print(f"Value: {entry}")
             if category == "SYMBOLIC":
                 td = {}
                 for param in sen.variables:
                     details = self._relevance_mp.get_entry(param).value
-                    # print(f"Entry: {details}")
                     if cutoff == "avg":
-                        # print(f"Calculating average for {param}")
                         td[param] = details.std_avg
                     elif cutoff == "max":
-                        # print(f"Calculating max for {param}")
                         td[param] = details.std_max
                     elif cutoff == "min":
-                        # print(f"Calculating min for {param}")
                         td[param] = details.std_min
                     else:
                         _msg = f"Invalid cutoff method: {cutoff}. "
                         _msg += "Must be one of the following: "
                         _msg += f"{', '.join(cfg.CUTOFF_METHODS.keys())}."
                         raise ValueError(_msg)
-                print(td)
                 sen.analyze_symbolically(td)
-                print(f"Report: {sen.result}")
-            elif category == "NUMERICAL":
+            elif category == "NUMERIC":
                 rg_lt = []
                 for param in sen.variables:
                     details = self._relevance_mp.get_entry(param).value
-                    # print(f"Entry: {details}")
                     trg = (details.std_min, details.std_max)
-                    print(f"Calculating range for {param}: {trg}")
                     rg_lt.append(trg)
-                print(f"Range: {rg_lt}")
                 # Perform numerical analysis using the FAST method
                 sen.analyze_numerically(rg_lt)
-                print(f"Report: {sen.result}")
+            else:
+                _msg = f"Invalid category: {category}. "
+                _msg += "Must be one of the following: "
+                _msg += f"{', '.join(cfg.SENS_ANSYS_DT.keys())}."
+                raise ValueError(_msg)
 
     def __str__(self) -> str:
         """*__str__()* returns a string representation of the *SensitivityAnalysis* object.

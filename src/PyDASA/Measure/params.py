@@ -106,6 +106,12 @@ class Parameter(Generic[T]):
     Units of Measure of the *Parameter*. It is a string with the dimensional Units of Measure the parameter was defined in. e.g.: `m/s`, `kg/m3`, bit/s, etc.
     """
 
+    # :attr: _varsym
+    _varsym: Optional[str] = None
+    """
+    Python var synonym of the *Parameter*. It is a string with the executable Python variable name of the parameter. e.g.: `l1`, `W2`, `L1`, `N2`, `u`, `l`, `x`.
+    """
+
     # Public attributes
     # :attr: name
     name: str = ""
@@ -460,6 +466,29 @@ class Parameter(Generic[T]):
             raise ValueError("Unit of Measure cannot be empty.")
         self._units = val
 
+    @property
+    def varsym(self) -> Optional[str]:
+        """*varsym* Get the Python var synonym of the *Parameter*.
+
+        Returns:
+            Optional[str]: Python var synonym of the *Parameter*. e.g.: `l1`, `W2`, `L1`, `N2`, `u`, `l`, `x`.
+        """
+        return self._varsym
+
+    @varsym.setter
+    def varsym(self, val: str) -> None:
+        """*varsym* Sets the Python var synonym of the *Parameter*. It must be a non-empty string.
+
+        Args:
+            val (str): Python var synonym of the *Parameter*. e.g.: `l1`, `W2`, `L1`, `N2`, `u`, `l`, `x`.
+
+        Raises:
+            ValueError: If the string is empty.
+        """
+        if val is not None and not val.strip():
+            raise ValueError("Python var synonym cannot be empty.")
+        self._varsym = val
+
     def clear(self) -> None:
         """*clear()* Resets all attributes to their default values in the *Parameter* object.
         """
@@ -472,6 +501,7 @@ class Parameter(Generic[T]):
         self._sym_exp = None
         self._dim_col = None
         self._units = ""
+        self._varsym = None
         self.name = ""
         self.description = ""
         self.relevant = False

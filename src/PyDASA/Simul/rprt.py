@@ -146,7 +146,6 @@ class SensitivityAnalysis(Generic[T]):
             var_lt (List[Variable]): List of *Variable* objects.
         """
         for var in var_lt:
-            print(f"Adding {var.sym} to relevance map")
             self._relevance_mp.insert(var.sym, var)
 
     def _setup_coefficients_map(self, pi_lt: List[PiCoefficient]) -> None:
@@ -383,9 +382,12 @@ class SensitivityAnalysis(Generic[T]):
             elif category == "NUMERIC":
                 rg_lt = []
                 for var in sen.variables:
-                    print(sen)
-                    print(f"Getting {var} from the relevance map")
-                    print(f"map keys: {self._relevance_mp.keys()}")
+                    # FIXME hotfix to reading longer vars, make it consistent!!
+                    if len(var) > 1:
+                        var = "\\" + var
+                    # print(sen)
+                    # print(f"Getting {var} from the relevance map")
+                    # print(f"map keys: {self._relevance_mp.keys()}")
                     details = self._relevance_mp.get_entry(var).value
                     trg = (details.std_min, details.std_max)
                     rg_lt.append(trg)

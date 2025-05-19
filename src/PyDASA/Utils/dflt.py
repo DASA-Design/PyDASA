@@ -201,7 +201,7 @@ def parse_latex_symbols(expr: str) -> tuple:
     sym_dt = {name: symbols(name) for name in all_vars}
     # parse the LaTeX expression
     expr = parse_latex(expr)
-    print(all_vars)
+    # print(all_vars)
     # iterate over the LaTeX variable names and replace them with sympy symbols
     for var in all_vars:
         # convert Python var back to LaTeX for matching
@@ -217,7 +217,7 @@ def parse_latex_symbols(expr: str) -> tuple:
     # substitute all variables with our symbols (ensures correct mapping)
     expr = expr.subs(sym_dt)
     # sort the variable names in alphabetical order
-    print(f"Parsed: {expr}", all_vars)
+    # print(f"Parsed: {expr}", all_vars)
     return expr, all_vars
 
 
@@ -232,7 +232,7 @@ def extract_latex_vars(expr: str) -> list:
         list: list of variable names in the expression.
     """
     # Matches names like l_{1}, W_{2}, L_{1}, N_{2}, u, l, x, and LaTeX commands
-    print(expr, LATEX_RE)
+    # print(expr, LATEX_RE)
     matches = re.findall(LATEX_RE, expr)
     ignore = {"\\frac", "\\sqrt", "\\sin", "\\cos",
               "\\tan", "\\log", "\\exp"}  # add more as needed

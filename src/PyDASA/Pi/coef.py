@@ -284,7 +284,7 @@ class PiCoefficient(Generic[T]):
             ValueError: error if the symbol is not alphanumeric.
         """
         # Regular expression to match valid LaTeX strings or alphanumeric strings
-        if not (val.isalnum() or re.match(cfg.LATEX_REGEX, val)):
+        if not (val.isalnum() or re.match(cfg.LATEX_RE, val)):
             _msg = "Symbol must be alphanumeric or a valid LaTeX string. "
             _msg += f"Provided: '{val}' "
             _msg += "Examples: 'V', 'd', '\\Pi_{0}', '\\rho'."

@@ -30,10 +30,10 @@ VALID_DOMAINS_LT = [
     ]
 
 # regex for the dimensional unit class
-FDU_REGEX = r"([LMT]?)(\^?-?\d+)?"
-SAFDU_REGEX = r"([ADT]?)(\^?-?\d+)?"
+FDU_RE = r"([LMT]?)(\^?-?\d+)?"
+SAFDU_RE = r"([ADT]?)(\^?-?\d+)?"
 
-OP_REGEX = r"[\^\+"
+OP_RE = r"[\^\+"
 
 # err msg for the dimensional unit class
 DOM_ERR_MSG = f"the valid domains are: {VALID_DOMAINS_LT}"
@@ -166,9 +166,9 @@ class Dimensions:
         """
         work_regex = None
         if self.domain == VALID_DOMAINS_LT[0]:      # physical
-            work_regex = FDU_REGEX
+            work_regex = FDU_RE
         elif self.domain == VALID_DOMAINS_LT[1]:    # logical
-            work_regex = SAFDU_REGEX
+            work_regex = SAFDU_RE
         else:
             raise ValueError(f"Invalid domain: {self.domain}")
         return work_regex

@@ -364,7 +364,7 @@ class DimensionalModel(Generic[T]):
             ValueError: error if the symbol is not alphanumeric.
         """
         # Regular expression to match valid LaTeX strings or alphanumeric strings
-        if not (val.isalnum() or re.match(cfg.LATEX_REGEX, val)):
+        if not (val.isalnum() or re.match(cfg.LATEX_RE, val)):
             _msg = "Symbol must be alphanumeric or a valid LaTeX string. "
             _msg += f"Provided: '{val}' "
             _msg += "Examples: 'V', 'd', '\\Pi_{0}', '\\rho'."
@@ -617,9 +617,9 @@ class DimensionalAnalyzer(DimensionalModel[T]):
             List[str]: List of working FDUs.
         """
         match = [p.std_dims for p in relevance_lt]
-        fdus = [d for d in re.findall(cfg.WKNG_FDU_SYM_REGEX, str(match))]
+        fdus = [d for d in re.findall(cfg.WKNG_FDU_SYM_RE, str(match))]
         fdus = list({fdus[i] for i in range(len(fdus))})
-        # return list({m for p in relevance_lt for m in re.findall(cfg.WKNG_FDU_SYM_REGEX, p.std_dims)})
+        # return list({m for p in relevance_lt for m in re.findall(cfg.WKNG_FDU_SYM_RE, p.std_dims)})
         return fdus
 
     def _sort_fdu(self, fdu_lt: List[str]) -> List[str]:

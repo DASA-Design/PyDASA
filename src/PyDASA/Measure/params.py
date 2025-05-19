@@ -133,7 +133,7 @@ class Parameter(Generic[T]):
         """
         # check for valid dimensions
         if self._dims != "":
-            if not self._validate(self.dims, cfg.WKNG_FDU_REGEX):
+            if not self._validate(self.dims, cfg.WKNG_FDU_RE):
                 _msg = f"Invalid dimensions in Parameter '{self.name}' "
                 _msg += f"Check FDUs in: {self._dims}."
                 _msg += " in acordance with the FDU precedence list:, "
@@ -173,10 +173,10 @@ class Parameter(Generic[T]):
             str: Standarized dimensions of the *Parameter*. e.g.: [T^(2)*L^(-1)]
         """
         # add parentheses to powers in dimensions
-        _regex_pat = re.compile(cfg.WKNG_POW_REGEX)
+        _regex_pat = re.compile(cfg.WKNG_POW_RE)
         _dims = _regex_pat.sub(lambda m: f"({m.group(0)})", dims)
         # add ^1 to * and / operations in dimensions
-        _regex_pat = re.compile(cfg.WKNG_NO_POW_REGEX)
+        _regex_pat = re.compile(cfg.WKNG_NO_POW_RE)
         _dims = _regex_pat.sub(lambda m: f"{m.group(0)}^(1)", _dims)
         # return standarized dimensions
         return _dims
@@ -232,9 +232,9 @@ class Parameter(Generic[T]):
         col = [0] * len(cfg.WKNG_FDU_PREC_LT)
         for dim in dims_list:
             # match the exponent of the dimension
-            exponent = int(re.search(cfg.WKNG_POW_REGEX, dim).group(0))
+            exponent = int(re.search(cfg.WKNG_POW_RE, dim).group(0))
             # match the symbol of the dimension
-            symbol = re.search(cfg.WKNG_FDU_SYM_REGEX, dim).group(0)
+            symbol = re.search(cfg.WKNG_FDU_SYM_RE, dim).group(0)
             # update the column with the exponent of the dimension
             col[cfg.WKNG_FDU_PREC_LT.index(symbol)] = exponent
         return col
@@ -284,7 +284,7 @@ class Parameter(Generic[T]):
             ValueError: If the symbol is not alphanumeric.
         """
         # Regular expression to match valid LaTeX strings or alphanumeric strings
-        if not (val.isalnum() or re.match(cfg.LATEX_REGEX, val)):
+        if not (val.isalnum() or re.match(cfg.LATEX_RE, val)):
             _msg = "Symbol must be alphanumeric or a valid LaTeX string. "
             _msg += f"Provided: '{val}' "
             _msg += "Examples: 'V', 'd', '\\Pi_{0}', '\\rho'."

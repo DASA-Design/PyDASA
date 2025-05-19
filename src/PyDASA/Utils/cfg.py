@@ -30,16 +30,16 @@ Supported Sensitivity Analysis Parameters:
     - CUSTOM: User-defined sensitivity analysis for specific use cases.
 
 Default Patterns:
-    - `DFLT_FDU_REGEX`: Matches FDUs with exponents (e.g., 'M*L^-1*T^-2').
-    - `DFLT_POW_REGEX`: Matches exponents in FDUs (e.g., '^1', '^-2').
-    - `DFLT_NO_POW_REGEX`: Matches FDUs without exponents (e.g., 'M', 'L', 'T').
-    - `DFLT_FDU_SYM_REGEX`: Matches FDU symbols for symbolic processing (e.g., 'M^(1)*L^(-1)*T^(-2)').
+    - `DFLT_FDU_RE`: Matches FDUs with exponents (e.g., 'M*L^-1*T^-2').
+    - `DFLT_POW_RE`: Matches exponents in FDUs (e.g., '^1', '^-2').
+    - `DFLT_NO_POW_RE`: Matches FDUs without exponents (e.g., 'M', 'L', 'T').
+    - `DFLT_FDU_SYM_RE`: Matches FDU symbols for symbolic processing (e.g., 'M^(1)*L^(-1)*T^(-2)').
 
 Working Patterns:
-    - `WKNG_FDU_REGEX`: Working regex for user-defined/configured FDUs.
-    - `WKNG_POW_REGEX`: Matches exponents in custom FDUs.
-    - `WKNG_NO_POW_REGEX`: Matches custom FDUs without exponents.
-    - `WKNG_FDU_SYM_REGEX`: Matches custom FDU symbols for symbolic processing.
+    - `WKNG_FDU_RE`: Working regex for user-defined/configured FDUs.
+    - `WKNG_POW_RE`: Matches exponents in custom FDUs.
+    - `WKNG_NO_POW_RE`: Matches custom FDUs without exponents.
+    - `WKNG_FDU_SYM_RE`: Matches custom FDU symbols for symbolic processing.
 
 *IMPORTANT* Based on:
     # H.Gorter, *Dimensionalanalyse: Eine Theoririe der physikalischen Dimensionen mit Anwendungen*
@@ -168,46 +168,37 @@ Purpose:
 
 # TODO clean the regex when test are finished
 # Allow valid LaTeX strings starting with a backslash or alphanumeric strings
-# :attr: LATEX_REGEX
-# LATEX_REGEX = r"^(\\[a-zA-Z]+(_\{[a-zA-Z0-9]+\})?(\^\{[a-zA-Z0-9.+\-*/]+\})?(\*[a-zA-Z0-9]*)?(\{[a-zA-Z0-9*+\-/^]+\})?(\{[a-zA-Z0-9*+\-/^]+\})?|[a-zA-Z0-9]+(\([a-zA-Z0-9*+\-/^]+\))?(\*[a-zA-Z0-9]+)?(/[a-zA-Z0-9*+\-/^()]+)?|\\frac\{[a-zA-Z0-9*+\-/^]+\}\{[a-zA-Z0-9*+\-/^0-9.]+\})$"
-
-LATEX_REGEX: str = r"^(\\?[a-zA-Z]+)(_\{[a-zA-Z0-9]+\})?$"
-
-# LATEX_REGEX = r"^(\\?[a-zA-Z]+(_\{[a-zA-Z0-9]+\})?(\^\{[a-zA-Z0-9]+\})?(\*?[a-zA-Z0-9]*)*(\\frac\{[a-zA-Z0-9*+\-/]+\}\{[a-zA-Z0-9*+\-/]+\})?)$"
-
-# LATEX_REGEX = r"^(\\?[a-zA-Z]+(_\{[a-zA-Z0-9]+\})?(\^\{[a-zA-Z0-9]+\})?(\*?[a-zA-Z0-9]*)*(\\frac\{[a-zA-Z0-9*+-/]+\}\{[a-zA-Z0-9*+-/]+\})?)$"
-
-# LATEX_REGEX: str = r"^\\[a-zA-Z]+(_\{[a-zA-Z0-9]+\})?$"
-
+# :attr: LATEX_RE
+LATEX_RE: str = r"(\\?[a-zA-Z]+)(?:_\{\d+\})?"
 """
 LaTeX regex pattern to match LaTeX symbols (e.g., '\alpha', '\beta_{1}') in *PyDASA*.
 """
 
 # Default regex pattern for matching FDUs
-# :attr: DFLT_FDU_REGEX
-DFLT_FDU_REGEX: str = rf"^[{''.join(DFLT_FDU_PREC_LT)}](\^-?\d+)?(\*[{''.join(DFLT_FDU_PREC_LT)}](?:\^-?\d+)?)*$"
-# DFLT_FDU_REGEX: str = r"^[LMTθINJ](\^-?\d+)?(\*[LMTθINJ](?:\^-?\d+)?)*$"
+# :attr: DFLT_FDU_RE
+DFLT_FDU_RE: str = rf"^[{''.join(DFLT_FDU_PREC_LT)}](\^-?\d+)?(\*[{''.join(DFLT_FDU_PREC_LT)}](?:\^-?\d+)?)*$"
+# DFLT_FDU_RE: str = r"^[LMTθINJ](\^-?\d+)?(\*[LMTθINJ](?:\^-?\d+)?)*$"
 """
 Default regex pattern to match FDUs in *PyDASA* (e.g., 'M*L^-1*T^-2' to 'M^(1)*L^(-1)*T^(-2)').
 """
 
 # Default regex pattern for matching dimensions with exponent
-# :attr: DFLT_POW_REGEX
-DFLT_POW_REGEX: str = r"\-?\d+"   # r'\^(-?\d+)'
+# :attr: DFLT_POW_RE
+DFLT_POW_RE: str = r"\-?\d+"   # r'\^(-?\d+)'
 """
 Default regex to match FDUs with exponents (e.g., 'M*L^-1*T^-2' to 'M^(1)*L^(-1)*T^(-2)').
 """
 
 # Default regex pattern for matching dimensions WITHOUT exponent
-# :attr: DFLT_NO_POW_REGEX
-DFLT_NO_POW_REGEX: str = rf"[{''.join(DFLT_FDU_PREC_LT)}](?!\^)"
+# :attr: DFLT_NO_POW_RE
+DFLT_NO_POW_RE: str = rf"[{''.join(DFLT_FDU_PREC_LT)}](?!\^)"
 """
 Default regex to match FDUs without exponents (e.g., 'M*L*T' instead of 'M*L^-1*T^-2').
 # """
 
 # Default regex pattern for matching FDUs in Sympy symbolic processor
-# :attr: DFLT_FDU_SYM_REGEX
-DFLT_FDU_SYM_REGEX: str = rf"[{''.join(DFLT_FDU_PREC_LT)}]"
+# :attr: DFLT_FDU_SYM_RE
+DFLT_FDU_SYM_RE: str = rf"[{''.join(DFLT_FDU_PREC_LT)}]"
 """
 Default regex to match FDU symbols in *PyDASA* (e.g., 'M^(1)*L^(-1)*T^(-2)' to 'L**(-1)*M**(1)*T**(-2)').
 """
@@ -220,29 +211,29 @@ Working FDUs precedence list for the dimensional matrix, allowing custom dimensi
 """
 
 # Working regex pattern for matching FDUs
-# :attr: WKNG_FDU_REGEX
-WKNG_FDU_REGEX: str = DFLT_FDU_REGEX
+# :attr: WKNG_FDU_RE
+WKNG_FDU_RE: str = DFLT_FDU_RE
 """
 Working regex to match FDUs in *PyDASA* (e.g., 'T^2*D^-1' to 'T^(2)*D^(-1)').
 """
 
 # Working regex pattern for matching dimensions with exponent
-# :attr: WKNG_POW_REGEX
-WKNG_POW_REGEX: str = DFLT_POW_REGEX
+# :attr: WKNG_POW_RE
+WKNG_POW_RE: str = DFLT_POW_RE
 """
 Working regex to match FDUs with exponents in *PyDASA* (e.g., 'T^2*D^-1' to 'T^(2)*D^(-1)').
 """
 
 # Working regex pattern for matching dimensions WITHOUT exponent
-# :attr: WKNG_NO_POW_REGEX
-WKNG_NO_POW_REGEX: str = DFLT_NO_POW_REGEX
+# :attr: WKNG_NO_POW_RE
+WKNG_NO_POW_RE: str = DFLT_NO_POW_RE
 """
 Working regex to match FDUs without exponents (e.g., 'T*D' instead of 'T^2*D^-1').
 """
 
 # Working regex pattern for matching dimensions in Sympy symbolic processor
-# :attr: WKNG_FDU_SYM_REGEX
-WKNG_FDU_SYM_REGEX: str = DFLT_FDU_SYM_REGEX
+# :attr: WKNG_FDU_SYM_RE
+WKNG_FDU_SYM_RE: str = DFLT_FDU_SYM_RE
 """
 Working regex to match FDU symbols in *PyDASA* (e.g., 'T^(1)*D^(-1)' to 'D**(-1)*T**(2)').
 """

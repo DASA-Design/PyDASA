@@ -22,6 +22,7 @@ from SALib.analyze.fast import analyze
 
 # Utils modules
 from Src.PyDASA.Utils.dflt import T
+from Src.PyDASA.Utils.dflt import parse_latex_symbols
 from Src.PyDASA.Utils.err import error_handler as _error
 from Src.PyDASA.Utils.err import inspect_name as _insp_var
 
@@ -140,8 +141,13 @@ class Sensitivity(Generic[T]):
         """
         # TODO fix parse_latex to accept the expression as a string
         # clean the expression, remove {, } and \\
-        self._sym_fun = parse_latex(expr)
+        # self._sym_fun = parse_latex(expr)
+        # self._exe_fun = lambdify(self._variables, self.sym_fun, "numpy")
+        # parse the expression and generate the function
+        self._sym_fun, self._variables = parse_latex_symbols(expr)
+        # create sympy symbols dict for all variables
         self._variables = sorted([str(v) for v in self.sym_fun.free_symbols])
+        # create sympy function
         self._exe_fun = lambdify(self._variables, self.sym_fun, "numpy")
 
     def analyze_symbolically(self, values: dict) -> dict:
@@ -231,7 +237,7 @@ class Sensitivity(Generic[T]):
             ValueError: error if the symbol is not alphanumeric.
         """
         # Regular expression to match valid LaTeX strings or alphanumeric strings
-        if not (val.isalnum() or re.match(cfg.LATEX_REGEX, val)):
+        if not (val.isalnum() or re.match(cfg.LATEX_RE, val)):
             _msg = "Symbol must be alphanumeric or a valid LaTeX string. "
             _msg += f"Provided: '{val}' "
             _msg += "Examples: 'V', 'd', '\\Pi_{0}', '\\rho'."
@@ -310,7 +316,7 @@ class Sensitivity(Generic[T]):
             ValueError: error if the LaTeX expression is not valid.
         """
         # Regular expression to match valid LaTeX strings or alphanumeric strings
-        if not (val.isalnum() or re.match(cfg.LATEX_REGEX, val)):
+        if not (val.isalnum() or re.match(cfg.LATEX_RE, val)):
             _msg = "LaTeX expression must be a valid string. "
             _msg += f"Provided: '{val}' "
             _msg += "Examples: 'V', 'd', '\\Pi_{0}', '\\rho'."

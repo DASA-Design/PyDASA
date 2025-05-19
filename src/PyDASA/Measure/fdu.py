@@ -19,7 +19,7 @@ from Src.PyDASA.Utils.err import error_handler as error
 from Src.PyDASA.Utils.dflt import T
 
 # import global variables
-from Src.PyDASA.Utils.cfg import FDU_FWK_DT, LATEX_REGEX
+from Src.PyDASA.Utils.cfg import FDU_FWK_DT, LATEX_RE
 
 # checking custom modules
 assert error
@@ -122,7 +122,7 @@ class FDU(Generic[T]):
         """
 
         # Regular expression to match valid LaTeX strings or alphanumeric strings
-        if not (val.isalnum() or re.match(LATEX_REGEX, val)) or len(val) != 1:
+        if not (val.isalnum() or re.match(LATEX_RE, val)) or len(val) != 1:
             _msg = "Symbol must be alphanumeric or a valid LaTeX string. "
             _msg += f"Provided: '{val}' "
             _msg += "Examples: 'V', 'd', '\\Pi_{0}', '\\rho'."

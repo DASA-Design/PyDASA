@@ -22,7 +22,7 @@ from Src.PyDASA.Utils.cfg import (
     PHY_FDU_PREC_DT,
     COMPU_FDU_PREC_DT,
     DIGI_FDU_PREC_DT,
-    DFLT_POW_REGEX
+    DFLT_POW_RE
 )
 
 # import the 'cfg' module with to allow global variable edition
@@ -64,30 +64,30 @@ class RegexManager(Generic[T]):
     FDU precedence list, define the order of the FDU regex pattern and the columns in the dimensional matrix. By default, it is set to `None`.
     """
 
-    # FDUs matching regex pattern, linked to WKNG_FDU_REGEX.
+    # FDUs matching regex pattern, linked to WKNG_FDU_RE.
     # :attr: _fdu_regex
     _fdu_regex: Optional[str] = None
     """
     Main FDU Regex pattern for matching FDUs in *PyDASA*. (e.g., 'M/L*T^-2' to 'M^1*L^-1*T^-2').
     """
 
-    # FDUs matching regex pattern for dimensions with exponents, linked to WKNG_POW_REGEX.
+    # FDUs matching regex pattern for dimensions with exponents, linked to WKNG_POW_RE.
     # :attr: _fdu_pow_regex
     _fdu_pow_regex: Optional[str] = None
     """
     Regex pattern for matching FDUs with exponents. (e.g., 'M*L^-1*T^-2' to 'M^(1)*L^(-1)*T^(-2)').
     """
 
-    # FDUs matching regex pattern for dimensions without exponents, linked to WKNG_NO_POW_REGEX.
+    # FDUs matching regex pattern for dimensions without exponents, linked to WKNG_NO_POW_RE.
     # :attr: _fdu_no_pow_regex
-    _fdu_no_pow_regex: Optional[str] = DFLT_POW_REGEX
+    _fdu_no_pow_regex: Optional[str] = DFLT_POW_RE
     """
     Regex pattern for matching FDUs without exponents. (e.g., 'M*L*T' to 'M^(1)*L^(1)*T^(1)').
 
     NOTE: This pattern doesn't change under any circumstances.
     """
 
-    # FDUs matching regex pattern for dimensions in Sympy symbolic processor, linked to WKNG_FDU_SYM_REGEX.
+    # FDUs matching regex pattern for dimensions in Sympy symbolic processor, linked to WKNG_FDU_SYM_RE.
     # :attr: _fdu_sym_regex
     _fdu_sym_regex: Optional[str] = None
     """
@@ -167,7 +167,7 @@ class RegexManager(Generic[T]):
         self.fdu_regex = self._fdu_regex
 
         # compile FDU regex patterns with exponent and check for errors
-        self._fdu_pow_regex = DFLT_POW_REGEX
+        self._fdu_pow_regex = DFLT_POW_RE
         self.fdu_pow_regex = self._fdu_pow_regex
 
         # compile FDU regex patterns without exponent and check for errors
@@ -182,10 +182,10 @@ class RegexManager(Generic[T]):
         """*update_global_regex()* Updates global config variables with the custom regex patterns.
         """
         cfg.WKNG_FDU_PREC_LT = self._fdu_prec_lt
-        cfg.WKNG_FDU_REGEX = self._fdu_regex
-        cfg.WKNG_POW_REGEX = self._fdu_pow_regex
-        cfg.WKNG_NO_POW_REGEX = self._fdu_no_pow_regex
-        cfg.WKNG_FDU_SYM_REGEX = self._fdu_sym_regex
+        cfg.WKNG_FDU_RE = self._fdu_regex
+        cfg.WKNG_POW_RE = self._fdu_pow_regex
+        cfg.WKNG_NO_POW_RE = self._fdu_no_pow_regex
+        cfg.WKNG_FDU_SYM_RE = self._fdu_sym_regex
 
     @property
     def fwk(self) -> str:

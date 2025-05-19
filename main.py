@@ -184,7 +184,7 @@ print("\tWKNG_FDU_SYM_REGEX:", config.WKNG_FDU_SYM_REGEX)
 # v: kinematic viscosity of the fluid
 
 dim_relevance_lt = [
-    Parameter(_sym="u",
+    Parameter(_sym="\\miu",
               _fwk="CUSTOM",
               name="Fluid Velocity",
               description="Fluid velocity in the channel",
@@ -424,8 +424,7 @@ sena = SensitivityAnalysis(_idx=0,
                            _relevance_lt=vars_lt,
                            _coefficient_lt=DAnalysis.pi_coef_lt,)
 # sena.analyze_pi_sensitivity(cutoff="avg")
-sena.analyze_pi_sensitivity(category="NUMERICAL")
+sena.analyze_pi_sensitivity(category="NUMERIC")
 # print(sena._coefficient_mp.keys(), "\n")
 # print(sena._coefficient_mp.get_entry("\\Pi_{0}"))
-
 # montecarlo

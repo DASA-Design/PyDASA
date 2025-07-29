@@ -8,8 +8,8 @@ Key Features:
     - Supports physical, digital, and custom dimensional frameworks.
 
 Physical FDUs Precedence List:
-    - Length [L], Mass [M], Time [T], Temperature [θ], Electric Current [I],
-      Amount of Substance [N], Luminous Intensity [J].
+    - Length [L], Mass [M], Time [T], Temperature [θ], Electric Current [A],
+      Amount of Substance [N], Luminous Intensity [cd].
 
 Digital FDUs Precedence List:
     - Time [T], Space [S], Complexity [N].
@@ -88,17 +88,17 @@ Computation FDUs Precedence Dictionary.
 DIGI_FDU_PREC_DT: dict = {
     "T": "Time",
     "D": "Data",
-    "M": "Complexity",
-    "K": "Conectivity",
-    "C": "Capacity",
+    "E": "Effort",
+    "C": "Conectivity",
+    "A": "Capacity",
 }
 """
 Digital or Dimensional Analysis Software Architecture (DASA) FDUs Precedence Dictionary.
         - T: Time, the duration of an event or interval.
         - D: Data, the information processed by a system.
-        - C: Complexity, the measure of interconnectedness or intricacy in a component operation.
-        - K: Conectivity, the measure of interconnections between components in a system.
-        - P: Capacity, the maximum amount of data or information that can be stored or processed in a system component.
+        - E: Effort, the meassure of how much computational effort/complexity the task demand to complete
+        - C: Conectivity, the measure of interconnections between components in a system.
+        - A: Capacity, the maximum amount of data or information that can be stored or processed in a system component.
 """
 
 # Supported Fundamental Dimensional Unit (FDU) Frameworks

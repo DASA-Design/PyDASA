@@ -12,7 +12,7 @@ import re
 
 # Third-party modules
 import numpy as np
-from sympy.parsing.latex import parse_latex
+# from sympy.parsing.latex import parse_latex
 from sympy import diff, lambdify
 from SALib.sample.fast_sampler import sample
 from SALib.analyze.fast import analyze

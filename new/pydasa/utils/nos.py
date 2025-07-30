@@ -1,0 +1,138 @@
+﻿# -*- coding: utf-8 -*-
+"""
+Module with utility functions for handling data in the maps of *PyDASA*. Specifically for Separate Chaining and Linear Probing Hash Tables.
+
+*IMPORTANT:* based on the implementations proposed by the following authors/books:
+
+    #. Algorithms, 4th Edition, Robert Sedgewick and Kevin Wayne.
+    #. Data Structure and Algorithms in Python, M.T. Goodrich, R. Tamassia, M.H. Goldwasser.
+
+*NOTE:* code contributed by Sanjit_Prasad in https://www.geeksforgeeks.org/prime-numbers/
+"""
+# python native modules
+# math module handles mathematical functions
+import math
+
+# custom modules
+# dflt module handles the default global variables and comparison functions for use by all *PyDASA* and its Data Structs.
+from Src.PyDASA.Utils.dflt import T
+from Src.PyDASA.Utils.dflt import VLD_IODATA_LT
+# import global variables
+
+
+def is_prime(n: int) -> bool:
+    """*is_prime()* checks if a number is prime or not. Original code from Sanjit_Prasad.
+
+    Args:
+        n (int): number to check if it is prime.
+
+    Returns:
+        bool: True if the number is prime, False otherwise.
+    """
+    # we asume that the number is prime
+    # Corner cases
+    # check if n is 1 or 0
+    prime = True
+    if n < 2:
+        return False
+
+    # checking if n is 2 or 3
+    if n < 4:
+        return prime
+
+    # checking if n is divisible by 2 or 3
+    if n % 2 == 0 or n % 3 == 0:
+        return False
+
+    # checking if n is divisible by 5 to to square root of n
+    for i in range(5, int(math.sqrt(n) + 1), 6):
+        if n % i == 0 or n % (i + 2) == 0:
+            return False
+    # return True if the number is prime
+    return prime
+
+
+def next_prime(n: int) -> int:
+    """*next_prime()* returns the next prime number greater than n.
+
+    Args:
+        n (int): number to check if it is prime.
+
+    Returns:
+        int: the next prime number greater than n.
+    """
+    # base case
+    if n < 2:
+        return 2
+
+    # working with the next odd number
+    prime = n
+    found = False
+
+    # Loop continuously until isPrime returns
+    while not found:
+        prime += 1
+        # True for a prime number greater than n
+        if is_prime(prime) is True:
+            found = True
+    # return the next prime number to n
+    return prime
+
+
+def previous_prime(n: int) -> int:
+    """*previous_prime()* returns the previous prime number less than n.
+
+    Args:
+        n (int): number to check if it is prime.
+
+    Returns:
+        int: the previous prime number less than n.
+    """
+    # base case
+    if n < 2:
+        return 2
+
+    # working with the next odd number
+    prime = n
+    found = False
+
+    # Loop continuously until isPrime returns
+    while not found:
+        prime -= 1
+        # True for a prime number greater than n
+        if is_prime(prime) is True:
+            found = True
+
+
+def mad_hash(key: T,
+             scale: int,
+             shift: int,
+             prime: int,
+             mcap: int) -> int:
+    """*mad_hash()* function to compress the indices of the Hash tables using the MAD (Multiply-Add-and-Divide) method.
+
+    MAD is defined as: mad_hash(y) = ((a*y + b) % p) % M, where:
+        a (scale) and b (shift) are random integers in the range [0,p-1], with a > 0
+        p (prime) is a prime number greater than M,
+        M (capacity) is the size of the table, prime
+
+    Args:
+        key (T): key to calculate the index in the Hash table, Can be any native data type in Python or user-defined.
+        scale (int): line slope of the compression function.
+        shift (int): offset of the compression function.
+        prime (int): prime number much greater than the capacity of the Hash table.
+        mcap (int): size of the Hash table, it is a prime number to avoid collisions.
+
+    Returns:
+        int: the index of the element in the Hash table.
+    """
+    # TODO is easier if we cast the dynamic keys to strings?
+    # if it is a dynamic data type, we cast it to string
+    # data types are (dict, list, set, tuple)
+    if isinstance(key, VLD_IODATA_LT) or isinstance(key, dict):
+        key = str(key)
+    # getting the hash from the key
+    hkey = hash(key)
+    # calculating the index with the MAD compression function
+    idx = int((abs(scale * hkey + shift) % prime) % mcap)
+    return idx

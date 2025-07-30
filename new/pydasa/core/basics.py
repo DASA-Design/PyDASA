@@ -31,46 +31,122 @@ from new.pydasa.utils.config import FDU_FWK_DT, LATEX_RE
 
 
 @dataclass
-class CoreValidation(ABC):
-    """**Validation** Base class for all dimensional analysis entities.
-
-    Provides common validation logic and attributes shared by FDU, Variable, and Coeffcient classes.
+class SymValidation(ABC):
+    """**SymValidation** Base class for entities with symbols and framework functionalities.
 
     Attributes:
-        name (str): User-friendly name
-        description (str): Brief summary or description
+        _sym (str): Symbol representation.
+        _fwk (str): Framework context.
     """
 
-    # :attr: name
-    name: str = ""
-    """User-friendly name of the entity."""
+    # :attr: _sym
+    _sym: str = ""
+    """Symbol representation (LaTeX or alphanumeric)."""
 
-    # :attr: description
-    description: str = ""
-    """Brief summary or description of the entity."""
+    # :attr: _fwk
+    _fwk: str = "PHYSICAL"
+    """Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM)."""
 
     def __post_init__(self) -> None:
-        """Post-initialization processing with description capitalization."""
-        if self.description:
-            self.description = self.description.capitalize()
+        """Post-initialization processing with symbol and framework validation."""
+        # super().__post_init__()
+        # Validate the symbol and framework
+        if not self._sym:
+            self._sym = self._sym.strip()
+        if not self._fwk:
+            self._fwk = self._fwk.strip()
 
-    def _validate_name(self, name: str) -> None:
-        """Validate the name format.
+    @property
+    def sym(self) -> str:
+        """*sym* Get the symbol.
+
+        Returns:
+            str: Symbol value.
+        """
+        return self._sym
+
+    @sym.setter
+    def sym(self, val: str) -> None:
+        """*sym* Set the symbol with validation.
 
         Args:
-            name (str): Name to validate.
+            val (str): Symbol value.
 
         Raises:
-            ValueError: If name is not a non-empty string.
+            ValueError: If symbol format is invalid.
         """
-        if not isinstance(name, str) or not name.strip():
-            _msg = f"Name must be a non-empty string. Provided: {name}"
+        self._validate_sym(val)
+        self._sym = val
+
+    @property
+    def fwk(self) -> str:
+        """*fwk* Get the framework.
+
+        Returns:
+            str: Framework value.
+        """
+        return self._fwk
+
+    @fwk.setter
+    def fwk(self, val: str) -> None:
+        """*fwk* Set the framework with validation.
+
+        Args:
+            val (str): Framework value.
+
+        Raises:
+            ValueError: If framework is not supported.
+        """
+        self._validate_fwk(val)
+        self._fwk = val
+
+    def _validate_sym(self, val: str) -> None:
+        """*_validate_sym()* Validate symbol format.
+
+        Args:
+            val (str): Symbol to validate.
+
+        Raises:
+            ValueError: If symbol format is invalid.
+        """
+        if not isinstance(val, str) or not val.strip():
+            _msg = f"Symbol must be a non-empty string. Provided: {val}"
             raise ValueError(_msg)
-        self.name = name.strip()
+
+        # Accept valid LaTeX or alphanumeric symbols
+        is_latex = re.match(LATEX_RE, val)
+        is_alnum = val.isalnum()
+
+        # Optionally restrict length for non-LaTeX symbols
+        # TODO check this, might be wrong!!!
+        if not (is_alnum or is_latex):
+            msg = (
+                "Symbol must be alphanumeric or a valid LaTeX string. "
+                f"Provided: '{val}'. "
+                "Examples: 'V', 'd', '\\Pi_{0}', '\\rho'."
+            )
+            raise ValueError(msg)
+
+    # Add this to your Validation or SymValidation class
+    def _validate_fwk(self, value: str) -> None:
+        """*_validate_fwk()* Validates the framework identifier.
+
+        Args:
+            value (str): Framework identifier to validate.
+
+        Raises:
+            ValueError: If the framework identifier is invalid.
+        """
+        # from src.pydasa.utils.config import FDU_FWK_DT
+        if value not in FDU_FWK_DT:
+            msg = f"Invalid framework: {value}. "
+            msg += "Framework must be one of the following: "
+            msg += f"{', '.join(FDU_FWK_DT.keys())}."
+            raise ValueError(msg)
 
 
 @dataclass
-class IdxValidation(CoreValidation):
+class IdxValidation(SymValidation):
     """**IdxValidation** Base class for entities with index/precedence functionality.
 
     Attributes:
@@ -125,119 +201,42 @@ class IdxValidation(CoreValidation):
 
 
 @dataclass
-class SymValidation(IdxValidation):
-    """**SymValidation** Base class for entities with symbols and framework functionality.
+class Validation(IdxValidation):
+    """**Validation** Base class for all dimensional analysis entities.
+
+    Provides common validation logic and attributes shared by FDU, Variable, and Coeffcient classes.
 
     Attributes:
-        _sym (str): Symbol representation.
-        _fwk (str): Framework context.
+        name (str): User-friendly name
+        description (str): Brief summary or description
     """
 
-    # :attr: _sym
-    _sym: str = ""
-    """Symbol representation (LaTeX or alphanumeric)."""
+    # :attr: name
+    name: str = ""
+    """User-friendly name of the entity."""
 
-    # :attr: _fwk
-    _fwk: str = "PHYSICAL"
-    """Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM)."""
+    # :attr: description
+    description: str = ""
+    """Brief summary or description of the entity."""
 
     def __post_init__(self) -> None:
-        """Post-initialization processing with symbol and framework validation."""
-        super().__post_init__()
+        """Post-initialization processing with description capitalization."""
+        if self.description:
+            self.description = self.description.capitalize()
 
-        # Validate the symbol and framework
-        if not self._sym:
-            self._sym = self._sym.strip()
-        if not self._fwk:
-            self._fwk = self._fwk.strip()
-
-    @property
-    def sym(self) -> str:
-        """*sym* Get the symbol.
-
-        Returns:
-            str: Symbol value.
-        """
-        return self._sym
-
-    @sym.setter
-    def sym(self, val: str) -> None:
-        """*sym* Set the symbol with validation.
+    def _validate_name(self, name: str) -> None:
+        """Validate the name format.
 
         Args:
-            val (str): Symbol value.
+            name (str): Name to validate.
 
         Raises:
-            ValueError: If symbol format is invalid.
+            ValueError: If name is not a non-empty string.
         """
-        self._validate_sym(val)
-        self._sym = val
-
-    @property
-    def fwk(self) -> str:
-        """*fwk* Get the framework.
-
-        Returns:
-            str: Framework value.
-        """
-        return self._fwk
-
-    @fwk.setter
-    def fwk(self, val: str) -> None:
-        """*fwk* Set the framework with validation.
-
-        Args:
-            val (str): Framework value.
-
-        Raises:
-            ValueError: If framework is not supported.
-        """
-        self._validate_fwk(val)
-        self._fwk = val
-
-    def _validate_sym(self, val: str) -> None:
-        """*sym* Validate symbol format.
-
-        Args:
-            val (str): Symbol to validate.
-
-        Raises:
-            ValueError: If symbol format is invalid.
-        """
-        if not isinstance(val, str) or not val.strip():
-            _msg = f"Symbol must be a non-empty string. Provided: {val}"
+        if not isinstance(name, str) or not name.strip():
+            _msg = f"Name must be a non-empty string. Provided: {name}"
             raise ValueError(_msg)
-
-        # Accept valid LaTeX or alphanumeric symbols
-        is_latex = re.match(LATEX_RE, val)
-        is_alnum = val.isalnum()
-
-        # Optionally restrict length for non-LaTeX symbols
-        # TODO check this, might be wrong!!!
-        if not (is_alnum or is_latex):
-            msg = (
-                "Symbol must be alphanumeric or a valid LaTeX string. "
-                f"Provided: '{val}'. "
-                "Examples: 'V', 'd', '\\Pi_{0}', '\\rho'."
-            )
-            raise ValueError(msg)
-
-    # Add this to your Validation or SymValidation class
-    def _validate_fwk(self, value: str) -> None:
-        """*_validate_fwk()* Validates the framework identifier.
-
-        Args:
-            value (str): Framework identifier to validate.
-
-        Raises:
-            ValueError: If the framework identifier is invalid.
-        """
-        # from src.pydasa.utils.config import FDU_FWK_DT
-        if value not in FDU_FWK_DT:
-            msg = f"Invalid framework: {value}. "
-            msg += "Framework must be one of the following: "
-            msg += f"{', '.join(FDU_FWK_DT.keys())}."
-            raise ValueError(msg)
+        self.name = name.strip()
 
     def __str__(self) -> str:
         """*__str__()* String representation showing all non-private attributes.

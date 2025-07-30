@@ -15,7 +15,7 @@ from typing import Generic
 # import re
 
 # custom modules
-from new.pydasa.core.basics import SymValidation
+from new.pydasa.core.basics import Validation
 
 # generic error handling and type checking
 from new.pydasa.utils.error import handle_error as error
@@ -30,7 +30,7 @@ assert T
 
 
 @dataclass
-class Dimension(SymValidation, Generic[T]):
+class Dimension(Validation, Generic[T]):
     """
     **Dimension** class for processing the data of a Fundamental Dimensional Unit (FDU) in *PyDASA*.
 

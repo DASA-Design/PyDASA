@@ -49,7 +49,7 @@ class Parameter(Generic[T]):
             - relevant (bool): Flag indicating if the Parameter is relevant or not. It decides if the parameter is inside the Dimensional Matrix or not.
     """
 
-    # Private attributes with validation logic
+    # Private attributecs with validation logic
     # :attr: _idx
     _idx: int = -1
     """
@@ -68,7 +68,7 @@ class Parameter(Generic[T]):
     Framework of the *Parameter* in the Dimensional Matrix. It must be the same as the FDU framework. Can be: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`.
     """
 
-    # :attr: _cat`
+    # :attr: _cat
     _cat: str = "INPUT"
     """
     Category of the *Parameter* in the Dimensional Matrix. It can be one of the following: `INPUT`, `OUTPUT`, or `CONTROL` going in the main diagonal matrix, output vector, and residual matrix respectively.

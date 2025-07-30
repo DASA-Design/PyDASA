@@ -19,11 +19,11 @@ from new.pydasa.utils import config
 # FDU modules
 from new.pydasa.core.fundamental import Dimension
 
-# # FDU regex management
-# from new.pydasa.dimensional.framework import DimFramework
+# FDU regex management
+from new.pydasa.dimensional.framework import DimFramework
 
-# # Variable and Variable modules
-# from new.pydasa.core.parameters import Variable
+# Variable and Variable modules
+from new.pydasa.core.parameters import Variable
 
 # # Dimensional Matrix Modelling module
 # from new.pydasa.dimensional.model import DimMatrix

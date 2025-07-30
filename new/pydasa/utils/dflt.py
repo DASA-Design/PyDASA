@@ -1,4 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
+# FIXME old code, remove when tests are finished
 """
 Module for default global variables and comparison functions for use by all *PyDASA* and its Data Structs.
 

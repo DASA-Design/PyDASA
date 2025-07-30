@@ -1,4 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
+# FIXME old code, remove when tests are finished
+
 """
 Module with utility functions for handling memory allocation in the Data Structures of *PyDASA*.
 """

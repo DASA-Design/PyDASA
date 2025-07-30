@@ -1,4 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
+# FIXME old code, remove when tests are finished
 """
 Configuration module for Fundamental Dimensional Units (FDUs), Parameters, and Variables in *PyDASA*.
 
@@ -8,19 +9,19 @@ Key Features:
     - Supports physical, digital, and custom dimensional frameworks.
 
 Physical FDUs Precedence List:
-    - Length [L], Mass [M], Time [T], Temperature [θ], Electric Current [A],
-      Amount of Substance [N], Luminous Intensity [cd].
+    - Length [L], Mass [M], Time [T], Temperature [K], Electric Current [A],
+    Amount of Substance [N/n/mol], Luminous Intensity [C/c/cd].
 
 Digital FDUs Precedence List:
     - Time [T], Space [S], Complexity [N].
 
 Software Architecture Custom FDUs precedence List:
-    - Time [T], Data [D], Complexity [C], Conectivity [K], Capacity [P].
+    - Time [T], Data [D], Effort [E], Connectivity [K], Capacity [A].
 
 Supported Frameworks:
     - PHYSICAL: Traditional physical dimensional framework.
     - COMPUTATION: Computer science dimensional framework.
-    - DIGITAL: Software architecture dimensional framework.
+    - SOFTWARE: Software architecture dimensional framework.
     - CUSTOM: User-defined dimensional framework.
 
 Supported Sensitivity Analysis Parameters:
@@ -53,20 +54,20 @@ PHY_FDU_PREC_DT: dict = {
     "L": "Length",
     "M": "Mass",
     "T": "Time",
-    "θ": "Temperature",
+    "K": "Temperature",
     "I": "Electric Current",
     "N": "Amount of Substance",
-    "J": "Luminous Intensity",
+    "C": "Luminous Intensity",
 }
 """
 Physical FDUs Precedence Dictionary.
     - Length [L]: Distance between two points in space.
     - Mass [M]: Amount of matter in an object.
     - Time [T]: Duration of an event or interval.
-    - Temperature [θ]: Measure of average kinetic energy of particles.
+    - Temperature [K]: Measure of average kinetic energy of particles.
     - Electric Current [I]: Flow of electric charge.
-    - Amount of Substance [N]: Quantity of entities (e.g., atoms, molecules).
-    - Luminous Intensity [J]: Perceived power of light in a given direction.
+    - Amount of Substance [N/n/mol]: Quantity of entities (e.g., atoms, molecules).
+    - Luminous Intensity [C/c/cd]: Perceived power of light in a given direction.
 """
 
 # Computation FDUs precedence dict
@@ -89,15 +90,15 @@ DIGI_FDU_PREC_DT: dict = {
     "T": "Time",
     "D": "Data",
     "E": "Effort",
-    "C": "Conectivity",
+    "C": "Connectivity",
     "A": "Capacity",
 }
 """
 Digital or Dimensional Analysis Software Architecture (DASA) FDUs Precedence Dictionary.
         - T: Time, the duration of an event or interval.
         - D: Data, the information processed by a system.
-        - E: Effort, the meassure of how much computational effort/complexity the task demand to complete
-        - C: Conectivity, the measure of interconnections between components in a system.
+        - E: Effort, the measure of how much computational effort/complexity the task demands to complete.
+        - C: Connectivity, the measure of interconnections between components in a system.
         - A: Capacity, the maximum amount of data or information that can be stored or processed in a system component.
 """
 
@@ -106,7 +107,7 @@ Digital or Dimensional Analysis Software Architecture (DASA) FDUs Precedence Dic
 FDU_FWK_DT: dict = {
     "PHYSICAL": "Traditional physical dimensional framework (e.g., Length, Mass, Time).",
     "COMPUTATION": "Computer science dimensional framework (e.g., Time, Space, Complexity).",
-    "DIGITAL": "Software architecture dimensional framework (e.g., Time, Data, Connectivity).",
+    "SOFTWARE": "Software architecture dimensional framework (e.g., Time, Data, Connectivity).",
     "CUSTOM": "User-defined dimensional framework for specific use cases.",
 }
 """

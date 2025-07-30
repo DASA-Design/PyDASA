@@ -1,4 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
+# FIXME old code, remove when tests are finished
+
 """
 Module with utility functions for handling data in the maps of *PyDASA*. Specifically for Separate Chaining and Linear Probing Hash Tables.
 

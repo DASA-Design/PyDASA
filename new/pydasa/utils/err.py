@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# FIXME old code, remove when tests are finished
+
 """
 General error handling module/function for the PyDASA Data Structures and Algorithms in PyDASA package.
 """

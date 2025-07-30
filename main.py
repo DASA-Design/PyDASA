@@ -19,16 +19,19 @@ from new.pydasa.utils import config
 # FDU modules
 from new.pydasa.core.fundamental import Dimension
 
-# FDU regex management
-from new.pydasa.dimensional.framework import DimFramework
+# # FDU regex management
+# from new.pydasa.dimensional.framework import DimFramework
 
-# Parameter and Variable modules
-from new.pydasa.core.parameters import Variable
+# # Parameter and Variable modules
+# from new.pydasa.core.parameters import Variable
 
-# Dimensional Matrix Modelling module
-from new.pydasa.dimensional.model import DimMatrix
+# # Dimensional Matrix Modelling module
+# from new.pydasa.dimensional.model import DimMatrix
 
-from new.pydasa.analysis.influence import Sensitivity
+# from new.pydasa.analysis.influence import Sensitivity
+
+
+
 # TODO need to know where to put the new
 # from new.pydasa.analysis.influence import SensitivityAnalysis
 

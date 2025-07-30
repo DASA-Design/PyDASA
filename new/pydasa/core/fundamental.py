@@ -1,1 +1,97 @@
-﻿
+﻿# -*- coding: utf-8 -*-
+"""
+Module for representing the **FDU** or **Fundamental Dimensional Unit** for Dimensional Analysis in *PyDASA*.
+
+*IMPORTANT:* Based on the theory from:
+
+    # H.Gorter, *Dimensionalanalyse: Eine Theoririe der physikalischen Dimensionen mit Anwendungen*
+"""
+
+# native python modules
+# import dataclass for defining the node class
+from __future__ import annotations
+from dataclasses import dataclass
+from typing import Generic
+# import re
+
+# custom modules
+from new.pydasa.core.basics import SymValidation
+
+# generic error handling and type checking
+from new.pydasa.utils.error import handle_error as error
+from new.pydasa.utils.default import T
+
+# import global variables
+# from new.pydasa.utils.config import FDU_FWK_DT, LATEX_RE
+
+# checking custom modules
+assert error
+assert T
+
+
+@dataclass
+class Dimension(SymValidation, Generic[T]):
+    """
+    **Dimension** class for processing the data of a Fundamental Dimensional Unit (FDU) in *PyDASA*.
+
+    FDUs are fundamental building blocks of dimensional analysis and are used to define the dimensions of physical and digital quantities.
+
+    Args:
+        Generic (T): Generic type for a Python data structure.
+
+    Attributes:
+        _idx (int): The Index of the Fundamental Dimension (precedence in the Dimensional Matrix).
+        _sym (str): The symbol of the Fundamental Dimension (LaTeX or alphanumeric).
+        _fwk (str): The framework of the Fundamental Dimension (PHYSICAL, COMPUTATION, DIGITAL, CUSTOM).
+        _unit (str): The basic unit of the Fundamental Dimension, useful for unit of meassure convertion (e.g.: km -> m or GB -> bit).
+        name (str): User-friendly name of the Fundamental Dimension.
+        description (str): Brief summary of the Fundamental Dimension.
+    """
+    # All attributes and validation logic are inherited from SymValidation.
+    # You can add any FDU-specific methods or overrides here if needed.
+
+    # :attr: _idx
+    _unit: str = ""
+    """Basic unit of the Fundamental Dimension (e.g.: m, s, bit)."""
+
+    def __post_init__(self) -> None:
+        """Post-initialization processing with validation."""
+        # Call the parent class's post-init
+        super().__post_init__()
+
+        # Validate the unit
+        self._validate_unit(self._unit)
+
+    @property
+    def unit(self) -> str:
+        """*unit* Get the framework.
+
+        Returns:
+            str: Framework value
+        """
+        return self._unit
+
+    @unit.setter
+    def unit(self, val: str) -> None:
+        """*unit* Set the unit with validation.
+
+        Args:
+            val (str): Unit value
+
+        Raises:
+            ValueError: If unit is not supported
+        """
+        self._validate_unit(val)
+        self._unit = val
+
+    def _validate_unit(self, val: str) -> None:
+        """*unit* Validate unit format.
+
+        Args:
+            val (str): Unit to validate
+
+        Raises:
+            ValueError: If unit format is invalid
+        """
+        if not isinstance(val, str) or not val.strip():
+            raise ValueError("Unit must be a non-empty string.")

@@ -22,7 +22,7 @@ from new.pydasa.core.fundamental import Dimension
 # # FDU regex management
 # from new.pydasa.dimensional.framework import DimFramework
 
-# # Parameter and Variable modules
+# # Variable and Variable modules
 # from new.pydasa.core.parameters import Variable
 
 # # Dimensional Matrix Modelling module
@@ -38,7 +38,6 @@ from new.pydasa.core.fundamental import Dimension
 # for FDU regex management
 # for Dimensional Analysis modules
 # complete module with the FDU's regex
-
 
 def test_cmp(a, b) -> int:
     """Test comparison function."""
@@ -125,16 +124,19 @@ print("\tWKNG_POW_RE:", config.WKNG_POW_RE)
 print("\tWKNG_NO_POW_RE:", config.WKNG_NO_POW_RE)
 print("\tWKNG_FDU_SYM_RE:", config.WKNG_FDU_SYM_RE)
 
-fdu = FDU()
+fdu = Dimension()
 print(fdu, "\n")
 
-p = Parameter()
-print(p, "\n")
+fdu = Dimension("Length",
+                "Length of a physical quantity",
+                1, "L", "PHYSICAL", "m")
+print(fdu, "\n")
+
 
 v = Variable()
 print(v, "\n")
 
-p1 = Parameter(name="U_1",
+p1 = Variable(name="U_1",
                description="Service Rate",
                _sym="U_{1}",
                _fwk="DIGITAL",
@@ -192,7 +194,7 @@ print(p1, "\n")
 # # v: kinematic viscosity of the fluid
 
 # dim_relevance_lt = [
-#     Parameter(_sym="\\miu",
+#     Variable(_sym="\\miu",
 #               _varsym="miu",
 #               _fwk="CUSTOM",
 #               name="Fluid Velocity",
@@ -202,7 +204,7 @@ print(p1, "\n")
 #               _cat="OUTPUT",
 #               _units="m/s",
 #               _dims="L*T^-1",),
-#     Parameter(_sym="y",
+#     Variable(_sym="y",
 #               _varsym="y",
 #               _fwk="CUSTOM",
 #               name="Distance from the wall",
@@ -212,7 +214,7 @@ print(p1, "\n")
 #               _cat="INPUT",
 #               _units="m",
 #               _dims="L",),
-#     Parameter(_sym="d",
+#     Variable(_sym="d",
 #               _varsym="d",
 #               _fwk="CUSTOM",
 #               name="Channel diameter",
@@ -222,7 +224,7 @@ print(p1, "\n")
 #               _cat="INPUT",
 #               _units="m",
 #               _dims="L",),
-#     Parameter(_sym="U",
+#     Variable(_sym="U",
 #               _varsym="U",
 #               _fwk="CUSTOM",
 #               name="Velocity of the wall",
@@ -232,7 +234,7 @@ print(p1, "\n")
 #               _cat="INPUT",
 #               _units="m/s",
 #               _dims="L*T^-1",),
-#     Parameter(_sym="P",
+#     Variable(_sym="P",
 #               _varsym="P",
 #               _fwk="CUSTOM",
 #               name="Channel Pressure Drop",
@@ -242,7 +244,7 @@ print(p1, "\n")
 #               _cat="CONTROL",
 #               _units="Pa",
 #               _dims="T^-2*L^1",),
-#     Parameter(_sym="v",
+#     Variable(_sym="v",
 #               _varsym="v",
 #               _fwk="CUSTOM",
 #               name="Fluid Viscosity",
@@ -252,7 +254,7 @@ print(p1, "\n")
 #               _cat="CONTROL",
 #               _units="m^2/s",
 #               _dims="L^2*T^-1",),
-#     Parameter(_sym="g",
+#     Variable(_sym="g",
 #               _varsym="g",
 #               _fwk="CUSTOM",
 #               name="Gravity",
@@ -261,7 +263,7 @@ print(p1, "\n")
 #               _cat="CONTROL",
 #               _units="m/s^2",
 #               _dims="L*T^-2",),
-#     Parameter(_sym="f",
+#     Variable(_sym="f",
 #               _varsym="f",
 #               _fwk="CUSTOM",
 #               name="Fluid Frequency",

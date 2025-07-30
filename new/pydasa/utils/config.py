@@ -238,10 +238,4 @@ WKNG_FDU_SYM_RE: str = DFLT_FDU_SYM_RE
 Working regex to match FDU symbols in *PyDASA* (e.g., 'T^(1)*D^(-1)' to 'D**(-1)*T**(2)').
 """
 
-"""
-Purpose:
-    - Define FDUs and their precedence for dimensional analysis.
-    - Provide regex patterns for validating and processing FDUs.
-    - Support physical, digital, and custom dimensional frameworks.
-"""
 # End of file

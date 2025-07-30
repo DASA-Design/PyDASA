@@ -64,7 +64,8 @@ class CoreValidation(ABC):
             ValueError: If name is not a non-empty string.
         """
         if not isinstance(name, str) or not name.strip():
-            raise ValueError("Name must be a non-empty string.")
+            _msg = f"Name must be a non-empty string. Provided: {name}"
+            raise ValueError(_msg)
         self.name = name.strip()
 
 
@@ -79,6 +80,12 @@ class IdxValidation(CoreValidation):
     # :attr: _idx
     _idx: int = -1
     """Unique identifier/index for ordering in dimensional matrix."""
+
+    def __post_init__(self) -> None:
+        """Post-initialization processing with index validation."""
+        super().__post_init__()
+        if self._idx != -1:
+            self.idx = self._idx
 
     @property
     def idx(self) -> int:
@@ -99,11 +106,22 @@ class IdxValidation(CoreValidation):
         Raises:
             ValueError: If index is not a non-negative integer.
         """
-        if not isinstance(val, int) or val < 0:
-            msg = "Index must be a non-negative integer. "
-            msg += f"Provided: {val}"
-            raise ValueError(msg)
+
+        self._validate_idx(val)
         self._idx = val
+
+    def _validate_idx(self, val: int) -> None:
+        """*idx* Validate index/precedence value.
+
+        Args:
+            val (int): Index value to validate.
+
+        Raises:
+            ValueError: If index is not a non-negative integer.
+        """
+        if not isinstance(val, int) or val < 0:
+            _msg = f"Index must be a non-negative integer. Provided: {val}"
+            raise ValueError(_msg)
 
 
 @dataclass
@@ -122,6 +140,16 @@ class SymValidation(IdxValidation):
     # :attr: _fwk
     _fwk: str = "PHYSICAL"
     """Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM)."""
+
+    def __post_init__(self) -> None:
+        """Post-initialization processing with symbol and framework validation."""
+        super().__post_init__()
+
+        # Validate the symbol and framework
+        if not self._sym:
+            self._sym = self._sym.strip()
+        if not self._fwk:
+            self._fwk = self._fwk.strip()
 
     @property
     def sym(self) -> str:
@@ -177,13 +205,15 @@ class SymValidation(IdxValidation):
             ValueError: If symbol format is invalid.
         """
         if not isinstance(val, str) or not val.strip():
-            raise ValueError("Symbol must be a non-empty string.")
+            _msg = f"Symbol must be a non-empty string. Provided: {val}"
+            raise ValueError(_msg)
 
         # Accept valid LaTeX or alphanumeric symbols
         is_latex = re.match(LATEX_RE, val)
         is_alnum = val.isalnum()
 
         # Optionally restrict length for non-LaTeX symbols
+        # TODO check this, might be wrong!!!
         if not (is_alnum or is_latex):
             msg = (
                 "Symbol must be alphanumeric or a valid LaTeX string. "

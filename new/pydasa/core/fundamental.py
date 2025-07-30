@@ -60,7 +60,8 @@ class Dimension(SymValidation, Generic[T]):
         super().__post_init__()
 
         # Validate the unit
-        self._validate_unit(self._unit)
+        if not self._unit:
+            self._unit = self._unit.strip()
 
     @property
     def unit(self) -> str:
@@ -94,4 +95,5 @@ class Dimension(SymValidation, Generic[T]):
             ValueError: If unit format is invalid
         """
         if not isinstance(val, str) or not val.strip():
-            raise ValueError("Unit must be a non-empty string.")
+            _msg = f"Unit must be a non-empty string. Provided: {val}"
+            raise ValueError(_msg)

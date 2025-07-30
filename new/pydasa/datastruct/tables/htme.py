@@ -18,8 +18,8 @@ import inspect
 
 # custom modules
 # generic error handling and type checking
-from Src.PyDASA.Utils.err import error_handler as error
-from Src.PyDASA.Utils.dflt import T
+from new.pydasa.utils.error import handle_error as error
+from new.pydasa.utils.default import T
 
 # checking custom modules
 assert error

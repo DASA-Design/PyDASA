@@ -20,21 +20,23 @@ import random
 
 # custom modules
 # generic error handling and type checking
-from Src.PyDASA.DStruct.Tables.htme import MapEntry
-from Src.PyDASA.DStruct.Lists.arlt import ArrayList
-from Src.PyDASA.DStruct.Lists.sllt import SingleLinkedList
+from new.pydasa.datastruct.tables.htme import MapEntry
+from new.pydasa.datastruct.lists.arlt import ArrayList
+from new.pydasa.datastruct.lists.sllt import SingleLinkedList
 # util functions for the hash table
-from Src.PyDASA.Utils.nos import next_prime, previous_prime
-from Src.PyDASA.Utils.nos import mad_hash
-from Src.PyDASA.Utils.err import error_handler as error
+from new.pydasa.utils.helpers import next_prime, previous_prime
+from new.pydasa.utils.helpers import mad_hash
+from new.pydasa.utils.error import handle_error as error
+
+
 # default cmp function for the hash table
-from Src.PyDASA.Utils.dflt import dflt_cmp_func_ht
+from new.pydasa.utils.default import dflt_cmp_func_ht
 # default data type for the hash table
-from Src.PyDASA.Utils.dflt import T
-from Src.PyDASA.Utils.dflt import VLD_DTYPE_LT
-from Src.PyDASA.Utils.dflt import DFLT_DICT_KEY
-from Src.PyDASA.Utils.dflt import VLD_IODATA_LT
-from Src.PyDASA.Utils.dflt import DFLT_PRIME
+from new.pydasa.utils.default import T
+from new.pydasa.utils.default import VLD_DTYPE_LT
+from new.pydasa.utils.default import DFLT_DICT_KEY
+from new.pydasa.utils.default import VLD_IODATA_LT
+from new.pydasa.utils.default import DFLT_PRIME
 
 # checking custom modules
 assert MapEntry

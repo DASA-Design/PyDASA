@@ -56,7 +56,7 @@ class Variable(Validation):
         _std_min (float): Minimum value in standard units.
         _std_max (float): Maximum value in standard units.
         _std_avg (float): Average value in standard units.
-        _std_step (float): Step size for simulations.
+        _step (float): Step size for simulations.
         _std_range (np.ndarray): Range array for analysis.
     """
 
@@ -122,8 +122,8 @@ class Variable(Validation):
     _std_avg: Optional[float] = None
     """Average value in standard units."""
 
-    # :attr: _std_step
-    _std_step: float = 1e-3
+    # :attr: _step
+    _step: float = 1e-3
     """Step size for simulations."""
 
     # :attr: _std_range
@@ -156,10 +156,10 @@ class Variable(Validation):
             self._prepare_dims()
 
         # Set up range array if all required values are provided
-        if all([self._std_min, self._std_max, self._std_step]):
+        if all([self._std_min, self._std_max, self._step]):
             self._std_range = np.arange(self._std_min,
                                         self._std_max,
-                                        self._std_step)
+                                        self._step)
 
     def _validate_exp(self, exp: str, regex: str) -> bool:
         """*_validate_exp()* Validates an expression using a regex pattern (inclde dimensions and units,).
@@ -581,10 +581,10 @@ class Variable(Validation):
         # Update range if all values are available
         if all([self._std_min is not None,
                 self._std_max is not None,
-                self._std_step is not None]):
-            self._std_rng = np.arange(self._std_min,
-                                      self._std_max,
-                                      self._std_step)
+                self._step is not None]):
+            self._std_range = np.arange(self._std_min,
+                                        self._std_max,
+                                        self._step)
         self._std_min = val
 
     @property
@@ -613,10 +613,10 @@ class Variable(Validation):
         # Update range if all values are available
         if all([self._std_min is not None,
                 self._std_max is not None,
-                self._std_step is not None]):
-            self._std_rng = np.arange(self._std_min,
-                                      self._std_max,
-                                      self._std_step)
+                self._step is not None]):
+            self._std_range = np.arange(self._std_min,
+                                        self._std_max,
+                                        self._step)
         self._std_max = val
 
     @property
@@ -651,17 +651,17 @@ class Variable(Validation):
         self._std_avg = val
 
     @property
-    def std_step(self) -> Optional[float]:
-        """*std_step* Get standardized step size.
+    def step(self) -> Optional[float]:
+        """*step* Get standardized step size.
 
         Returns:
             Optional[float]: Step size (always standardized).
         """
-        return self._std_step
+        return self._step
 
-    @std_step.setter
-    def std_step(self, val: Optional[float]) -> None:
-        """*std_step* Set standardized step size.
+    @step.setter
+    def step(self, val: Optional[float]) -> None:
+        """*step* Set standardized step size.
 
         Args:
             val (Optional[float]): Step size (always standardized).
@@ -682,14 +682,14 @@ class Variable(Validation):
             raise ValueError(_msg)
 
         # Update range if all values are available
-        if all([self._std_min is not None, 
-                self._std_max is not None, 
-                self._std_step is not None]):
-            self._std_rng = np.arange(self._std_min, 
-                                      self._std_max, 
-                                      self._std_step)
+        if all([self._std_min is not None,
+                self._std_max is not None,
+                self._step is not None]):
+            self._std_range = np.arange(self._std_min,
+                                        self._std_max,
+                                        self._step)
 
-        self._std_step = val
+        self._step = val
 
     @property
     def std_range(self) -> np.ndarray:
@@ -714,10 +714,10 @@ class Variable(Validation):
             # Generate range from min, max, step
             if all([self._std_min is not None,
                     self._std_max is not None,
-                    self._std_step is not None]):
-                self._std_rng = np.arange(self._std_min,
-                                          self._std_max,
-                                          self._std_step)
+                    self._step is not None]):
+                self._std_range = np.arange(self._std_min,
+                                            self._std_max,
+                                            self._step)
 
         elif not isinstance(val, np.ndarray):
             _msg = f"Range must be a numpy array, got {type(val)}"
@@ -752,7 +752,7 @@ class Variable(Validation):
         self._std_min = None
         self._std_max = None
         self._std_avg = None
-        self._std_step = 1e-3
+        self._step = 1e-3
         self._std_range = np.array([])
         self.relevant = False
 
@@ -779,7 +779,7 @@ class Variable(Validation):
             "std_min": self._std_min,
             "std_max": self._std_max,
             "std_avg": self._std_avg,
-            "std_step": self._std_step,
+            "step": self._step,
             "relevant": self.relevant
         }
 

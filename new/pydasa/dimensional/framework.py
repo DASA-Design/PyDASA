@@ -220,19 +220,15 @@ class DimFramework(Validation, Generic[T]):
 
         # Generate main regex for dimensional expressions
         self._fdu_regex = rf"^[{_fdu_chars}](\^-?\d+)?(\*[{_fdu_chars}](?:\^-?\d+)?)*$"
-        self.fdu_regex = self._fdu_regex
 
         # Use default regex for exponents
         self._fdu_pow_regex = DFLT_POW_RE
-        self.fdu_pow_regex = self._fdu_pow_regex
 
         # Generate regex for dimensions without exponents
         self._fdu_no_pow_regex = rf"[{_fdu_chars}](?!\^)"
-        self.fdu_no_pow_regex = self._fdu_no_pow_regex
 
         # Generate regex for dimensions in symbolic expressions
         self._fdu_sym_regex = rf"[{_fdu_chars}]"
-        self.fdu_sym_regex = self._fdu_sym_regex
 
     def update_global_config(self) -> None:
         """*update_global_config()* Updates global config variables with current framework settings.

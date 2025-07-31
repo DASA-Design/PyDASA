@@ -25,10 +25,10 @@ from new.pydasa.dimensional.framework import DimFramework
 # Variable and Variable modules
 from new.pydasa.core.parameters import Variable
 
-# # Dimensional Matrix Modelling module
-# from new.pydasa.dimensional.model import DimMatrix
+# Dimensional Matrix Modelling module
+from new.pydasa.dimensional.model import DimMatrix
 
-# from new.pydasa.analysis.influence import Sensitivity
+from new.pydasa.analysis.influence import Sensitivity
 
 
 
@@ -160,6 +160,8 @@ fdu_lt = [
 ]
 
 rm = DimFramework(_fdus=fdu_lt, _fwk="CUSTOM")
+
+rm.update_global_config()
 print(rm, "\n")
 
 b = SingleLinkedList(iodata=fdu_lt)
@@ -174,114 +176,114 @@ for fdu in b:
 #                            io_fdu=fdu_lt)
 # print(DAModel, "\n")
 
-# # custom regex for FDU
-# print("\n==== Custom Regex ====")
-# print("\tWKNG_DFLT_FDU_PREC_LT:", config.WKNG_FDU_PREC_LT)
-# print("\tWKNG_FDU_RE:", config.WKNG_FDU_RE)
-# print("\tWKNG_POW_RE:", config.WKNG_POW_RE)
-# print("\tWKNG_NO_POW_RE:", config.WKNG_NO_POW_RE)
-# print("\tWKNG_FDU_SYM_RE:", config.WKNG_FDU_SYM_RE)
+# custom regex for FDU
+print("\n==== Custom Regex ====")
+print("\tWKNG_DFLT_FDU_PREC_LT:", config.WKNG_FDU_PREC_LT)
+print("\tWKNG_FDU_RE:", config.WKNG_FDU_RE)
+print("\tWKNG_POW_RE:", config.WKNG_POW_RE)
+print("\tWKNG_NO_POW_RE:", config.WKNG_NO_POW_RE)
+print("\tWKNG_FDU_SYM_RE:", config.WKNG_FDU_SYM_RE)
 
-# # Planar Channel Flow with a Moving Wall
-# # u = f(y, d, U, P, v)
-# # u: fluid velocity
-# # y: distance from the wall
-# # d: distance from the wall to the center of the channel (diameter)
-# # U: velocity of the wall
-# # P: pressure drop across the channel
-# # v: kinematic viscosity of the fluid
+# Planar Channel Flow with a Moving Wall
+# u = f(y, d, U, P, v)
+# u: fluid velocity
+# y: distance from the wall
+# d: distance from the wall to the center of the channel (diameter)
+# U: velocity of the wall
+# P: pressure drop across the channel
+# v: kinematic viscosity of the fluid
 
-# dim_relevance_lt = [
-#     Variable(_sym="\\miu",
-#               _varsym="miu",
-#               _fwk="CUSTOM",
-#               name="Fluid Velocity",
-#               description="Fluid velocity in the channel",
-#               relevant=True,
-#               _idx=0,
-#               _cat="OUTPUT",
-#               _units="m/s",
-#               _dims="L*T^-1",),
-#     Variable(_sym="y",
-#               _varsym="y",
-#               _fwk="CUSTOM",
-#               name="Distance from the wall",
-#               description="Distance from the wall to the center of the channel",
-#               relevant=True,
-#               _idx=1,
-#               _cat="INPUT",
-#               _units="m",
-#               _dims="L",),
-#     Variable(_sym="d",
-#               _varsym="d",
-#               _fwk="CUSTOM",
-#               name="Channel diameter",
-#               relevant=True,
-#               description="Diameter of the channel",
-#               _idx=2,
-#               _cat="INPUT",
-#               _units="m",
-#               _dims="L",),
-#     Variable(_sym="U",
-#               _varsym="U",
-#               _fwk="CUSTOM",
-#               name="Velocity of the wall",
-#               relevant=True,
-#               description="Velocity of the fluid wall",
-#               _idx=3,
-#               _cat="INPUT",
-#               _units="m/s",
-#               _dims="L*T^-1",),
-#     Variable(_sym="P",
-#               _varsym="P",
-#               _fwk="CUSTOM",
-#               name="Channel Pressure Drop",
-#               relevant=True,
-#               description="Pressure drop across the channel",
-#               _idx=4,
-#               _cat="CONTROL",
-#               _units="Pa",
-#               _dims="T^-2*L^1",),
-#     Variable(_sym="v",
-#               _varsym="v",
-#               _fwk="CUSTOM",
-#               name="Fluid Viscosity",
-#               relevant=True,
-#               description="Kinematic viscosity of the fluid",
-#               _idx=5,
-#               _cat="CONTROL",
-#               _units="m^2/s",
-#               _dims="L^2*T^-1",),
-#     Variable(_sym="g",
-#               _varsym="g",
-#               _fwk="CUSTOM",
-#               name="Gravity",
-#               description="Acceleration due to gravity",
-#               _idx=6,
-#               _cat="CONTROL",
-#               _units="m/s^2",
-#               _dims="L*T^-2",),
-#     Variable(_sym="f",
-#               _varsym="f",
-#               _fwk="CUSTOM",
-#               name="Fluid Frequency",
-#               description="Fluid frequency",
-#               _idx=7,
-#               _cat="CONTROL",
-#               _units="Hz",
-#               _dims="T^-1",),
-# ]
+dim_relevance_lt = [
+    Variable(_sym="\\miu",
+             _varsym="miu",
+             _fwk="CUSTOM",
+             name="Fluid Velocity",
+             description="Fluid velocity in the channel",
+             relevant=True,
+             _idx=0,
+             _cat="OUTPUT",
+             _units="m/s",
+             _dims="L*T^-1",),
+    Variable(_sym="y",
+             _varsym="y",
+             _fwk="CUSTOM",
+             name="Distance from the wall",
+             description="Distance from the wall to the center of the channel",
+             relevant=True,
+             _idx=1,
+             _cat="INPUT",
+             _units="m",
+             _dims="L",),
+    Variable(_sym="d",
+             _varsym="d",
+             _fwk="CUSTOM",
+             name="Channel diameter",
+             relevant=True,
+             description="Diameter of the channel",
+             _idx=2,
+             _cat="INPUT",
+             _units="m",
+             _dims="L",),
+    Variable(_sym="U",
+             _varsym="U",
+             _fwk="CUSTOM",
+             name="Velocity of the wall",
+             relevant=True,
+             description="Velocity of the fluid wall",
+             _idx=3,
+             _cat="INPUT",
+             _units="m/s",
+             _dims="L*T^-1",),
+    Variable(_sym="P",
+             _varsym="P",
+             _fwk="CUSTOM",
+             name="Channel Pressure Drop",
+             relevant=True,
+             description="Pressure drop across the channel",
+             _idx=4,
+             _cat="CONTROL",
+             _units="Pa",
+             _dims="T^-2*L^1",),
+    Variable(_sym="v",
+             _varsym="v",
+             _fwk="CUSTOM",
+             name="Fluid Viscosity",
+             relevant=True,
+             description="Kinematic viscosity of the fluid",
+             _idx=5,
+             _cat="CONTROL",
+             _units="m^2/s",
+             _dims="L^2*T^-1",),
+    Variable(_sym="g",
+             _varsym="g",
+             _fwk="CUSTOM",
+             name="Gravity",
+             description="Acceleration due to gravity",
+             _idx=6,
+             _cat="CONTROL",
+             _units="m/s^2",
+             _dims="L*T^-2",),
+    Variable(_sym="f",
+             _varsym="f",
+             _fwk="CUSTOM",
+             name="Fluid Frequency",
+             description="Fluid frequency",
+             _idx=7,
+             _cat="CONTROL",
+             _units="Hz",
+             _dims="T^-1",),
+]
 
-# print(type(dim_relevance_lt))
-# print("Dimensional relevance of the parameters:")
-# for p in dim_relevance_lt:
-#     print(p)
+print(type(dim_relevance_lt))
+print("Dimensional relevance of the parameters:")
+for p in dim_relevance_lt:
+    print(p)
 
-# fdu_lt = [
-#     {"_idx": 0, "_sym": "Tt", "_fwk": "CUSTOM", "description": "Time~~~~~~~!!!~~~~~~"},
-#     {"_idx": 1, "_sym": "Mm", "_fwk": "CUSTOM", "description": "Mass~~~~~!!!!!~~~~~~~"},
-#     {"_idx": 2, "_sym": "Ll", "_fwk": "CUSTOM", "description": "Longitude~~~!!!!!!!~~~~~"},
-# ]
+fdu_lt = [
+    {"_idx": 0, "_sym": "Tt", "_fwk": "CUSTOM", "description": "Time~~~~~~~!!!~~~~~~"},
+    {"_idx": 1, "_sym": "Mm", "_fwk": "CUSTOM", "description": "Mass~~~~~!!!!!~~~~~~~"},
+    {"_idx": 2, "_sym": "Ll", "_fwk": "CUSTOM", "description": "Longitude~~~!!!!!!!~~~~~"},
+]
 
 # print("Setting parameters for the dimensional analysis")
 # DAModel.param_lt = dim_relevance_lt

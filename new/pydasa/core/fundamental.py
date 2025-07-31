@@ -60,7 +60,7 @@ class Dimension(Validation, Generic[T]):
         super().__post_init__()
 
         # Validate the unit
-        if not self._unit:
+        if not self.unit:
             self._unit = self._unit.strip()
 
     @property

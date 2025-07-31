@@ -2,9 +2,6 @@
 """
 Module for representing **Variable** entities in Dimensional Analysis for *PyDASA*.
 
-This module provides a unified Variable class that combines the functionality
-of both Parameter and Variable into a single comprehensive implementation.
-
 *IMPORTANT:* Based on the theory from:
     # H.Gorter, *Dimensionalanalyse: Eine Theoririe der physikalischen Dimensionen mit Anwendungen*
 """

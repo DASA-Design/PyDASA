@@ -50,13 +50,41 @@ Working Patterns:
 # Physical FDUs precedence dict
 # :attr: PHY_FDU_PREC_DT
 PHY_FDU_PREC_DT: dict = {
-    "L": "Length",
-    "M": "Mass",
-    "T": "Time",
-    "K": "Temperature",
-    "I": "Electric Current",
-    "N": "Amount of Substance",
-    "C": "Luminous Intensity",
+    "L": {
+        "_unit": "m",
+        "name": "Length",
+        "description": "Distance between two points in space."
+    },
+    "M": {
+        "_unit": "kg",
+        "name": "Mass",
+        "description": "Amount of matter in an object."
+    },
+    "T": {
+        "_unit": "s",
+        "name": "Time",
+        "description": "Duration of an event or interval."
+    },
+    "K": {
+        "_unit": "K",
+        "name": "Temperature",
+        "description": "Measure of average kinetic energy of particles."
+    },
+    "I": {
+        "_unit": "A",
+        "name": "Electric Current",
+        "description": "Flow of electric charge."
+    },
+    "N": {
+        "_unit": "mol",
+        "name": "Amount of Substance",
+        "description": "Quantity of entities (e.g., atoms, molecules)."
+    },
+    "C": {
+        "_unit": "cd",
+        "name": "Luminous Intensity",
+        "description": "Perceived power of light in a given direction."
+    },
 }
 """
 Physical FDUs Precedence Dictionary.
@@ -72,9 +100,21 @@ Physical FDUs Precedence Dictionary.
 # Computation FDUs precedence dict
 # :attr: COMPU_FDU_PREC_DT
 COMPU_FDU_PREC_DT: dict = {
-    "T": "Time",
-    "S": "Space",
-    "N": "Complexity",
+    "T": {
+        "_unit": "s",
+        "name": "Time",
+        "description": "Duration of an event or interval."
+    },
+    "S": {
+        "_unit": "bit",
+        "name": "Space",
+        "description": "Physical extent in three dimensions."
+    },
+    "N": {
+        "_unit": "op",
+        "name": "Complexity",
+        "description": "Measure of interconnectedness or intricacy in a system."
+    },
 }
 """
 Computation FDUs Precedence Dictionary.
@@ -84,13 +124,33 @@ Computation FDUs Precedence Dictionary.
 """
 
 # Software Architecture FDUs precedence dict
-# :attr: DIGI_FDU_PREC_DT
-DIGI_FDU_PREC_DT: dict = {
-    "T": "Time",
-    "D": "Data",
-    "E": "Effort",
-    "C": "Connectivity",
-    "A": "Capacity",
+# :attr: SOFT_FDU_PREC_DT
+SOFT_FDU_PREC_DT: dict = {
+    "T": {
+        "_unit": "s",
+        "name": "Time",
+        "description": "Duration of an event or interval."
+    },
+    "D": {
+        "_unit": "bit",
+        "name": "Data",
+        "description": "Information processed by a system."
+    },
+    "E": {
+        "_unit": "req",
+        "name": "Effort",
+        "description": "Measure of computational effort/complexity."
+    },
+    "C": {
+        "_unit": "node",
+        "name": "Connectivity",
+        "description": "Measure of interconnections between components."
+    },
+    "A": {
+        "_unit": "task",
+        "name": "Capacity",
+        "description": "Maximum amount of data that can be stored/processed."
+    },
 }
 """
 Digital or Dimensional Analysis Software Architecture (DASA) FDUs Precedence Dictionary.

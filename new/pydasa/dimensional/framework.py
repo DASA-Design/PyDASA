@@ -1,1 +1,560 @@
-﻿
+﻿# -*- coding: utf-8 -*-
+"""
+Module for **DimFramework** to manage Fundamental Dimensional Units (FDUs) for Dimensional Analysis in *PyDASA*.
+
+This module provides the DimFramework class which manages dimensional frameworks, FDU precedence, and regex patterns for dimensional expression validation.
+
+*IMPORTANT:* Based on the theory from:
+    # H.Gorter, *Dimensionalanalyse: Eine Theoririe der physikalischen Dimensionen mit Anwendungen*
+"""
+
+from __future__ import annotations
+from typing import List, Dict, Optional, Generic
+from dataclasses import dataclass, field
+
+# Import validation base classes
+from new.pydasa.core.basics import Validation
+
+# Import Dimension class
+from new.pydasa.core.fundamental import Dimension
+
+# Import generic type
+from new.pydasa.utils.default import T
+
+# Import global variables
+from new.pydasa.utils.config import (
+    FDU_FWK_DT,
+    PHY_FDU_PREC_DT,
+    COMPU_FDU_PREC_DT,
+    SOFT_FDU_PREC_DT,
+    DFLT_POW_RE
+)
+
+# Import the 'cfg' module to allow global variable editing
+from new.pydasa.utils import config as cfg
+
+
+@dataclass
+class DimFramework(Validation, Generic[T]):
+    """**DimFramework** Manages dimensional frameworks and FDUs for *PyDASA*.
+
+    Maintains a collection of Dimensions with their precedence, provides regex patterns
+    for dimensional expressions, and manages the dimensional framework context.
+
+    Attributes:
+        _fdus (List[Dimension]): List of Fundamental Dimensional Units in precedence order.
+        _fdu_map (Dict[str, Dimension]): Dictionary mapping FDU symbols to Dimension objects.
+        _fdu_regex (str): Regex pattern for matching dimensional expressions (e.g., 'M/L*T^-2' to 'M^1*L^-1*T^-2').
+        _fdu_pow_regex (str): Regex pattern for matching dimensions with exponents. (e.g., 'M*L^-1*T^-2' to 'M^(1)*L^(-1)*T^(-2)').
+        _fdu_no_pow_regex (str): Regex pattern for matching dimensions without exponents. (e.g., 'M*L*T' to 'M^(1)*L^(1)*T^(1)').
+        _fdu_sym_regex (str): Regex pattern for matching FDUs in symbolic expressions. (e.g., 'M^(1)*L^(-1)*T^(-2)' to 'L**(-1)*M**(1)*T**(-2)').
+    """
+
+    # FDUs storage
+    # FDU precedence list, linked to WKNG_FDU_PREC_LT.
+    # :attr: _fdus
+    _fdus: List[Dimension] = field(default_factory=list)
+    """List of Fundamental Dimensional Units in precedence order."""
+
+    # FDU framework
+    # :attr: _fwk
+    _fdu_map: Dict[str, Dimension] = field(default_factory=dict)
+    """Dictionary mapping FDU symbols to Dimension objects."""
+
+    # Regex patterns
+    # FDUs matching regex pattern, linked to WKNG_FDU_RE.
+    # :attr: _fdu_regex
+    _fdu_regex: str = ""
+    """Regex pattern for matching dimensional expressions."""
+
+    # FDU power regex pattern, linked to WKNG_POW_RE.
+    # :attr: _fdu_pow_regex
+    _fdu_pow_regex: str = DFLT_POW_RE
+    """Regex pattern for matching dimensions with exponents."""
+
+    # FDU no power regex pattern, linked to WKNG_NO_POW_RE.
+    # :attr: _fdu_no_pow_regex
+    _fdu_no_pow_regex: str = ""
+    """Regex pattern for matching dimensions without exponents
+
+    NOTE: This pattern doesn't change under any circumstances.
+    """
+
+    # FDU symbolic regex pattern, linked to WKNG_FDU_SYM_RE.
+    # :attr: _fdu_sym_regex
+    _fdu_sym_regex: str = ""
+    """Regex pattern for matching FDUs in symbolic expressions."""
+
+    def __post_init__(self) -> None:
+        """*__post_init__()* Initializes the framework and sets up regex patterns.
+        """
+        # Initialize base class
+        super().__post_init__()
+
+        # Initialize FDUs based on framework
+        self._setup_fdus()
+        # Generate regex patterns
+        self._setup_regex()
+
+    def _setup_fdus(self) -> None:
+        """*_setup_fdus()* Initializes FDUs based on the selected framework.
+
+        Creates and adds standard FDUs for the selected framework (PHYSICAL,
+        COMPUTATION, DIGITAL) or validates custom FDUs.
+
+        Raises:
+            ValueError: If the framework is invalid or custom FDUs are not properly defined.
+        """
+        # if the framework is supported, configure the default
+        if self.fwk in FDU_FWK_DT and self.fwk != "CUSTOM":
+            self.fdus = self._setup_fdu_framework()
+        # if the framework is user-defined, use the provided list[dict]
+        elif self.fwk in FDU_FWK_DT and self.fwk == "CUSTOM" and self._fdus:
+            self.fdus = self._setup_custom_framework(self._fdus)
+        # otherwise, raise an error
+        else:
+            _msg = f"Invalid Framework: {self.fwk}. "
+            _msg += "Must be one of the following: "
+            _msg += f"{', '.join(FDU_FWK_DT.keys())}."
+            raise ValueError(_msg)
+
+    def _setup_custom_framework(self, fdu_lt: List[Dict]) -> List[Dimension]:
+        """*_setup_custom_framework()* Initializes a custom framework with the provided FDUs.
+
+        Args:
+            fdu_lt (List[Dict]): List of dictionaries representing custom FDUs.
+
+        Returns:
+            List[Dimension]: List of Dimension objects created from the provided FDUs.
+        """
+        # detecting custom framework
+        ans = []
+        if self.fwk == "CUSTOM":
+            # Create custom FDU set
+            for idx, data in enumerate(fdu_lt):
+                print(idx, data, type(data))
+                # data = dict(data)
+                fdu = Dimension(
+                    _idx=idx,
+                    _sym=data.get("_sym"),
+                    _fwk=self._fwk,
+                    _unit=data.get("_unit"),
+                    name=data.get("name", ""),
+                    description=data.get("description", "")
+                )
+                print(fdu)
+                # self.add_fdu(fdu)
+                ans.append(fdu)
+        return ans
+
+    def _setup_fdu_framework(self) -> List[Dimension]:
+        """*_setup_fdu_framework()* Returns the default FDU precedence list for the specified framework.
+
+        Raises:
+            ValueError: error if the framework is invalid.
+
+        Returns:
+            List[str]: Default FDUs precedence list based on the framework map.
+        """
+        # map for easy access to the FDUs
+        _frk_map = {
+            "PHYSICAL": PHY_FDU_PREC_DT,
+            "COMPUTATION": COMPU_FDU_PREC_DT,
+            "SOFTWARE": SOFT_FDU_PREC_DT,
+        }
+        ans = []
+        # select FDU framework
+        if self.fwk in _frk_map:
+            # Create standard FDU set
+            for idx, (sym, data) in enumerate(_frk_map[self.fwk].items()):
+                fdu = Dimension(
+                    _idx=idx,
+                    _sym=sym,
+                    _fwk=self._fwk,
+                    _unit=data.get("_unit", ""),
+                    name=data.get("name", ""),
+                    description=data.get("description", "")
+                )
+                ans.append(fdu)
+            # _prec_lt = list(_frk_map[self.fwk].keys())
+        return ans
+
+    def _validate_fdu_precedence(self) -> None:
+        """*_validate_fdu_precedence()* Ensures FDUs have valid and unique precedence values.
+
+        Raises:
+            ValueError: If FDU precedence values are invalid or duplicated.
+        """
+        if not self._fdus:
+            return
+
+        # Check for duplicate precedence values
+        indices = [fdu.idx for fdu in self._fdus]
+        if len(indices) != len(set(indices)):
+            raise ValueError("Duplicate precedence values in FDUs.")
+
+        # Sort FDUs by idx precedence
+        self._fdus.sort(key=lambda fdu: fdu.idx)
+
+    def _update_fdu_map(self) -> None:
+        """*_update_fdu_map()* Updates the FDU symbol to object mapping.
+        """
+        self._fdu_map.clear()
+        for fdu in self._fdus:
+            self._fdu_map[fdu.sym] = fdu
+
+    def _setup_regex(self) -> None:
+        """*_setup_regex()* Sets up regex patterns for dimensional validation. Generates regex patterns for:
+            - validating dimensional expressions.
+            - parsing exponents.
+            - completing expressions with exponent.
+            - handling symbolic expressions.
+        """
+        # trick to do nothing if FDU set is null
+        if not self._fdus:
+            return None
+
+        # Get FDU symbols in precedence order
+        # fdu_symbols = [fdu.sym for fdu in self._fdus]
+        _fdu_chars = ''.join(self.fdu_symbols)
+
+        # Generate main regex for dimensional expressions
+        self._fdu_regex = rf"^[{_fdu_chars}](\^-?\d+)?(\*[{_fdu_chars}](?:\^-?\d+)?)*$"
+        self.fdu_regex = self._fdu_regex
+
+        # Use default regex for exponents
+        self._fdu_pow_regex = DFLT_POW_RE
+        self.fdu_pow_regex = self._fdu_pow_regex
+
+        # Generate regex for dimensions without exponents
+        self._fdu_no_pow_regex = rf"[{_fdu_chars}](?!\^)"
+        self.fdu_no_pow_regex = self._fdu_no_pow_regex
+
+        # Generate regex for dimensions in symbolic expressions
+        self._fdu_sym_regex = rf"[{_fdu_chars}]"
+        self.fdu_sym_regex = self._fdu_sym_regex
+
+    def update_global_config(self) -> None:
+        """*update_global_config()* Updates global config variables with current framework settings.
+
+        Makes the current framework's settings available globally for all PyDASA components.
+        """
+        # Get FDU symbols in precedence order
+        # fdu_symbols = [fdu.sym for fdu in self._fdus]
+
+        # Update global configuration
+        cfg.WKNG_FDU_PREC_LT = self.fdu_symbols
+        cfg.WKNG_FDU_RE = self._fdu_regex
+        cfg.WKNG_POW_RE = self._fdu_pow_regex
+        cfg.WKNG_NO_POW_RE = self._fdu_no_pow_regex
+        cfg.WKNG_FDU_SYM_RE = self._fdu_sym_regex
+
+    # propierties getters and setters
+
+    @property
+    def fdus(self) -> List[Dimension]:
+        """*fdus* Get the list of FDUs in precedence order.
+
+        Returns:
+            List[Dimension]: List of FDUs.
+        """
+        return self._fdus.copy()
+
+    @fdus.setter
+    def fdus(self, val: List[Dimension]) -> None:
+        """*fdus* Set the FDUs in precedence order.
+
+        Args:
+            val (List[Dimension]): List of FDUs.
+
+        Raises:
+            ValueError: If the FDUs list is empty or invalid.
+        """
+        if not val or not all(isinstance(i, Dimension) for i in val):
+            _msg = "FDUs list must be a non-empty list of Dimensions. "
+            _msg += f"Provided: {val}"
+            raise ValueError(_msg)
+        self._fdus = val
+
+    @property
+    def fdu_symbols(self) -> List[str]:
+        """*fdu_symbols* Get the list of FDU symbols in precedence order.
+
+        Returns:
+            List[str]: List of FDU symbols.
+        """
+        return [fdu.sym for fdu in self._fdus]
+
+    @property
+    def fdu_count(self) -> int:
+        """*fdu_count* Get the number of FDUs in the framework.
+
+        Returns:
+            int: Number of FDUs.
+        """
+        return len(self._fdus)
+
+    @property
+    def fdu_regex(self) -> str:
+        """*fdu_regex* Get the FDU regex pattern.
+
+        Returns:
+            str: Regex pattern for validating dimensional expressions.
+        """
+        return self._fdu_regex
+
+    @fdu_regex.setter
+    def fdu_regex(self, val: str) -> None:
+        """*fdu_regex* Set the FDUs regex pattern.
+
+        Args:
+            val (str): FDUs regex pattern.
+
+        Raises:
+            ValueError: If the FDUs regex pattern is empty or invalid.
+        """
+        if not val or not isinstance(val, str):
+            _msg = "FDUs regex pattern must be a non-empty string. "
+            _msg += f"Provided: {val}"
+            raise ValueError(_msg)
+        self._fdu_regex = val
+
+    @property
+    def fdu_pow_regex(self) -> str:
+        """*fdu_pow_regex* Get the FDU powered regex pattern.
+
+        Returns:
+            str: Regex pattern for matching dimensions with exponents.
+        """
+        return self._fdu_pow_regex
+
+    @fdu_pow_regex.setter
+    def fdu_pow_regex(self, val: str) -> None:
+        """*fdu_pow_regex* Set the FDUs powered regex pattern.
+
+        Args:
+            val (str): FDUs powered regex pattern for matching dimensions with exponent.
+
+        Raises:
+            ValueError: If the FDUs powered regex pattern is empty or invalid.
+        """
+        if not val or not isinstance(val, str):
+            _msg = "FDUs powered regex pattern for dimensions with exponent must be a non-empty string. "
+            _msg += f"Provided: {val}"
+            raise ValueError(_msg)
+        self._fdu_pow_regex = val
+
+    @property
+    def fdu_no_pow_regex(self) -> str:
+        """*fdu_no_pow_regex* Get the FDU no-power regex pattern.
+
+        Returns:
+            str: Regex pattern for matching dimensions without exponents.
+        """
+        return self._fdu_no_pow_regex
+
+    @fdu_no_pow_regex.setter
+    def fdu_no_pow_regex(self, val: str) -> None:
+        """*fdu_no_pow_regex* Set the FDUs no-power regex pattern.
+
+        Args:
+            val (str): FDUs no-power regex pattern for matching dimensions without exponent.
+
+        Raises:
+            ValueError: If the FDUs no-power regex pattern is empty or invalid.
+        """
+        if not val or not isinstance(val, str):
+            _msg = "FDUs no-power regex pattern for dimensions without exponent must be a non-empty string. "
+            _msg += f"Provided: {val}"
+            raise ValueError(_msg)
+        self._fdu_no_pow_regex = val
+
+    @property
+    def fdu_sym_regex(self) -> str:
+        """*fdu_sym_regex* Get the FDU symbol regex pattern.
+
+        Returns:
+            str: Regex pattern for matching FDUs in symbolic expressions.
+        """
+        return self._fdu_sym_regex
+
+    @fdu_sym_regex.setter
+    def fdu_sym_regex(self, val: str) -> None:
+        """*fdu_sym_regex* Set the FDUs symbol regex pattern.
+
+        Args:
+            val (str): FDUs symbol regex pattern for matching dimensions in symbolic expressions.
+
+        Raises:
+            ValueError: If the FDUs symbol regex pattern is empty or invalid.
+        """
+        if not val or not isinstance(val, str):
+            _msg = "FDUs symbol regex pattern for matching dimensions in symbolic expressions must be a non-empty string. "
+            _msg += f"Provided: {val}"
+            raise ValueError(_msg)
+        self._fdu_sym_regex = val
+
+    def get_fdu(self, symbol: str) -> Optional[Dimension]:
+        """*get_fdu()* Get an FDU by its symbol.
+
+        Args:
+            symbol (str): FDU symbol.
+
+        Returns:
+            Optional[Dimension]: FDU object if found, None otherwise.
+        """
+        return self._fdu_map.get(symbol)
+
+    def has_fdu(self, symbol: str) -> bool:
+        """*has_fdu()* Check if an FDU with the given symbol exists.
+
+        Args:
+            symbol (str): FDU symbol.
+
+        Returns:
+            bool: True if the FDU exists, False otherwise.
+        """
+        return symbol in self._fdu_map
+
+    def add_fdu(self, fdu: Dimension) -> None:
+        """*add_fdu()* Add an FDU to the framework.
+
+        Args:
+            fdu (Dimension): FDU to add.
+
+        Raises:
+            ValueError: If an FDU with the same symbol already exists.
+        """
+        if self.has_fdu(fdu.sym):
+            raise ValueError(f"FDU with symbol '{fdu.sym}' already exists.")
+
+        # Set framework
+        if fdu.fwk != self._fwk:
+            _msg = "FDU framework mismatch: "
+            _msg += f"Expected '{self._fwk}', got '{fdu.fwk}'"
+
+        # Add FDU
+        self._fdus.append(fdu)
+
+        # Update indices and map
+        self._validate_fdu_precedence()
+        self._update_fdu_map()
+
+        # Update regex patterns
+        self._setup_regex()
+
+    def remove_fdu(self, sym: str) -> bool:
+        """*remove_fdu()* Remove an FDU from the framework.
+
+        Args:
+            sym (str): Symbol of the FDU to remove.
+
+        Returns:
+            bool: True if the FDU was removed, False if not found.
+        """
+        if not self.has_fdu(sym):
+            raise ValueError(f"FDU with symbol '{sym}' does not exist.")
+            # return False
+
+        # Remove FDU
+        # find index with the symbol
+        rmv = Dimension(_sym=sym)
+        if rmv in self._fdus:
+            self._fdus.remove(rmv)
+        # _idx = self._fdus.
+        # self._fdus = [f for f in self._fdus if f.sym != symbol]
+
+        # Update indices and map
+        self._validate_fdu_precedence()
+        self._update_fdu_map()
+
+        # Update regex patterns
+        self._setup_regex()
+
+        return True
+
+    def clear_fdus(self) -> None:
+        """*clear_fdus()* Remove all FDUs from the framework."""
+        self._fdus.clear()
+        self._fdu_map.clear()
+
+        # Reset regex patterns
+        self._fdu_regex = ""
+        self._fdu_no_pow_regex = ""
+        self._fdu_sym_regex = ""
+
+    # def validate_dimensional_expression(self, expression: str) -> bool:
+    #     """*validate_dimensional_expression()* Check if a dimensional expression is valid.
+
+    #     Args:
+    #         expression (str): Dimensional expression to validate.
+
+    #     Returns:
+    #         bool: True if the expression is valid, False otherwise.
+    #     """
+    #     import re
+
+    #     if not expression or not self._fdu_regex:
+    #         return False
+
+    #     return bool(re.match(self._fdu_regex, expression))
+
+    # def parse_dimensional_expression(self, expression: str) -> Dict[str, int]:
+    #     """*parse_dimensional_expression()* Parse a dimensional expression into a dictionary.
+
+    #     Args:
+    #         expression (str): Dimensional expression to parse.
+
+    #     Returns:
+    #         Dict[str, int]: Dictionary mapping FDU symbols to exponents.
+
+    #     Raises:
+    #         ValueError: If the expression is invalid.
+    #     """
+    #     if not self.validate_dimensional_expression(expression):
+    #         raise ValueError(f"Invalid dimensional expression: {expression}")
+
+    #     # Initialize result with zeros for all FDUs
+    #     result = {fdu.sym: 0 for fdu in self._fdus}
+
+    #     # Split by multiplication operator
+    #     terms = expression.split('*')
+
+    #     # Process each term
+    #     for term in terms:
+    #         # Extract symbol and exponent
+    #         if '^' in term:
+    #             symbol, exponent_str = term.split('^')
+    #             exponent = int(exponent_str)
+    #         else:
+    #             symbol = term
+    #             exponent = 1
+
+    #         # Update result
+    #         result[symbol] = exponent
+
+    #     return result
+
+    # def format_dimensional_expression(self, dimensions: Dict[str, int]) -> str:
+    #     """*format_dimensional_expression()* Format a dictionary of dimensions into an expression.
+
+    #     Args:
+    #         dimensions (Dict[str, int]): Dictionary mapping FDU symbols to exponents.
+
+    #     Returns:
+    #         str: Formatted dimensional expression.
+    #     """
+    #     # Sort by FDU precedence
+    #     terms = []
+
+    #     # Process dimensions in precedence order
+    #     for fdu in self._fdus:
+    #         exponent = dimensions.get(fdu.sym, 0)
+    #         if exponent != 0:
+    #             if exponent == 1:
+    #                 terms.append(fdu.sym)
+    #             else:
+    #                 terms.append(f"{fdu.sym}^{exponent}")
+
+    #     # Join terms with multiplication operator
+    #     return '*'.join(terms) if terms else "1"

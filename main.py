@@ -137,38 +137,36 @@ v = Variable()
 print(v, "\n")
 
 p1 = Variable(name="U_1",
-               description="Service Rate",
-               _sym="U_{1}",
-               _fwk="DIGITAL",
-               _idx=1,
-               _cat="INPUT",
-               _units="kPa",
-               _dims="M*T^-2*L^-1",)
+              description="Service Rate",
+              _sym="U_{1}",
+              _fwk="DIGITAL",
+              _idx=1,
+              _cat="INPUT",
+              _units="kPa",
+              _dims="M*T^-2*L^-1",)
 print(p1, "\n")
 
-# fdu = FDU()
-# print(fdu, "\n")
+rm = DimFramework(_fwk="SOFTWARE",)
+print(rm, "\n")
 
-# rm = RegexManager(_fdu_prec_lt=["T", "D", "C"],)
-# print(rm, "\n")
 
-# rm = RegexManager(_fwk="DIGITAL",)
-# print(rm, "\n")
+rm.update_global_config()
+print(rm, "\n")
 
-# # rm.update_global_vars()
+fdu_lt = [
+    {"_idx": 0, "_sym": "M", "_fwk": "CUSTOM", "description": "Mass~~~~~~~~~~~~", "_unit": "kg", "name": "Mass"},
+    {"_idx": 1, "_sym": "L", "_fwk": "CUSTOM", "description": "Longitude~~~~~~~~", "_unit": "m", "name": "Longitude"},
+    {"_idx": 2, "_sym": "T", "_fwk": "CUSTOM", "description": "Time~~~~~~~~~~~~~", "_unit": "s", "name": "Time"},
+]
 
-# fdu_lt = [
-#     {"_idx": 0, "_sym": "M", "_fwk": "CUSTOM", "description": "Mass~~~~~~~~~~~~"},
-#     {"_idx": 1, "_sym": "L", "_fwk": "CUSTOM", "description": "Longitude~~~~~~~~"},
-#     {"_idx": 2, "_sym": "T", "_fwk": "CUSTOM", "description": "Time~~~~~~~~~~~~~"},
+rm = DimFramework(_fdus=fdu_lt, _fwk="CUSTOM")
+print(rm, "\n")
 
-# ]
-
-# b = SingleLinkedList(iodata=fdu_lt)
-# print(b.first, "\n", b.last, "\n")
-# print(b, "\n")
-# for fdu in b:
-#     print(fdu, "\n")
+b = SingleLinkedList(iodata=fdu_lt)
+print(b.first, "\n", b.last, "\n")
+print(b, "\n")
+for fdu in b:
+    print(fdu, "\n")
 
 
 # DAModel = DimensionalModel(_fwk="CUSTOM",

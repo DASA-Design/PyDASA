@@ -180,7 +180,7 @@ class DimensionalModel(Generic[T]):
         _frk_dt = {
             "PHYSICAL": cfg.PHY_FDU_PREC_DT,
             "COMPUTATION": cfg.COMPU_FDU_PREC_DT,
-            "DIGITAL": cfg.DIGI_FDU_PREC_DT,
+            "DIGITAL": cfg.SOFT_FDU_PREC_DT,
         }
         # get the framework dictionary
         fdu_data = _frk_dt.get(self._fwk, {})

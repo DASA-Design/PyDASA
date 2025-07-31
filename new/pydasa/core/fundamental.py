@@ -97,3 +97,16 @@ class Dimension(Validation, Generic[T]):
         if not isinstance(val, str) or not val.strip():
             _msg = f"Unit must be a non-empty string. Provided: {val}"
             raise ValueError(_msg)
+
+    def __eq__(self, other: object) -> bool:
+        """*__eq__()* Check equality of two Dimension objects.
+
+        Args:
+            other (object): The other object to compare.
+
+        Returns:
+            bool: True if equal, False otherwise.
+        """
+        if not isinstance(other, Dimension):
+            return NotImplemented
+        return (self._sym == other._sym and self._fwk == other._fwk)

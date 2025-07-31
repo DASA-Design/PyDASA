@@ -21,7 +21,7 @@ from Src.PyDASA.Utils.cfg import (
     FDU_FWK_DT,
     PHY_FDU_PREC_DT,
     COMPU_FDU_PREC_DT,
-    DIGI_FDU_PREC_DT,
+    SOFT_FDU_PREC_DT,
     DFLT_POW_RE
 )
 
@@ -134,7 +134,7 @@ class RegexManager(Generic[T]):
         _frk_map = {
             "PHYSICAL": PHY_FDU_PREC_DT,
             "COMPUTATION": COMPU_FDU_PREC_DT,
-            "DIGITAL": DIGI_FDU_PREC_DT,
+            "DIGITAL": SOFT_FDU_PREC_DT,
         }
         if self.fwk in _frk_map:
             _prec_lt = list(_frk_map[self.fwk].keys())
@@ -146,7 +146,7 @@ class RegexManager(Generic[T]):
         raise ValueError(_msg)
 
     def setup_regex(self) -> None:
-        """*_setup_wkng_regex()* Sets up regex patterns for FDUs based on the precedence list.
+        """*setup_regex()* Sets up regex patterns for FDUs based on the precedence list.
 
         Raises:
             ValueError: error if not all elements in the precedence list are strings.

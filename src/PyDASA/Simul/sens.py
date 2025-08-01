@@ -78,9 +78,9 @@ class Sensitivity(Generic[T]):
     """
 
     # :attr: _cat`
-    _cat: str = "SYMBOLIC"
+    _cat: str = "SYM"
     """
-    Category of the *Sensitivity*. It is used to identify the type of analysis. It can be one of the following: `SYMBOLIC`, `NUMERIC`, `HYBRID` or `CUSTOM`. by default is `SYMBOLIC`.
+    Category of the *Sensitivity*. It is used to identify the type of analysis. It can be one of the following: `SYM`, `NUM`, `HYB` or `CUSTOM`. by default is `SYM`.
     """
 
     # :attr: _pi_expr
@@ -105,7 +105,7 @@ class Sensitivity(Generic[T]):
     # :attr: var_val
     var_val: Union[int, float, list, np.ndarray] = None
     """
-    Value for the *Sensitivity* analysis. for `SYMBOLIC` analysis it uses `int` or `float` values. for `NUMERIC` analysis it uses `list` or `numpy.ndarray` values.
+    Value for the *Sensitivity* analysis. for `SYM` analysis it uses `int` or `float` values. for `NUM` analysis it uses `list` or `numpy.ndarray` values.
     """
 
     # :attr: name
@@ -172,7 +172,7 @@ class Sensitivity(Generic[T]):
                             bounds: List[List[Union[int, float]]],
                             num_samples: int = 1000) -> dict:
         """
-        Perform NUMERIC sensitivity analysis using SALib.
+        Perform NUM sensitivity analysis using SALib.
 
         Args:
             bounds (list): Bounds for the variables.
@@ -284,7 +284,7 @@ class Sensitivity(Generic[T]):
         """*cat* sets the category of the *Sensitivity*.
 
         Args:
-            val (str): Category of the *Sensitivity*. It can be one of the following: `SYMBOLIC`, `NUMERIC` `HYBRID` or `CUSTOM`.
+            val (str): Category of the *Sensitivity*. It can be one of the following: `SYM`, `NUM` `HYB` or `CUSTOM`.
 
         Raises:
             ValueError: error if the category is not one of the allowed values.
@@ -381,7 +381,7 @@ class Sensitivity(Generic[T]):
         self._idx = -1
         self._sym = "SEN ANSYS \\Pi_{}"
         self._fwk = "PHYSICAL"
-        self._cat = "SYMBOLIC"
+        self._cat = "SYM"
         self._pi_expr = None
         self._variables = None
         self.var_val = None

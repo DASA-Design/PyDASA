@@ -23,17 +23,15 @@ from new.pydasa.core.fundamental import Dimension
 from new.pydasa.dimensional.framework import DimFramework
 
 # Variable and Variable modules
-from new.pydasa.core.parameters import Variable
+from new.pydasa.core.parameter import Variable
 
 # Dimensional Matrix Modelling module
 from new.pydasa.dimensional.model import DimMatrix
 
-# from new.pydasa.dimensional.influence import Sensitivity
-
-
+from new.pydasa.analysis.scenario import DimSensitivity
 
 # TODO need to know where to put the new
-# from new.pydasa.analysis.influence import SensitivityAnalysis
+# from new.pydasa.dimensional.influence import SensitivityAnalysis
 
 # for FDU regex management
 # for Dimensional Analysis modules
@@ -370,27 +368,26 @@ for pi in DAModel.coef_lt:
     print(pi.sym, "=", pi.pi_expr, "\n")
 
 
-# print("=== Sensitivity Analysis: ===")
-# print(f"Coefficients: {DAnalysis.pi_coef_lt[0]}\n")
+print("=== Sensitivity Analysis: ===")
+print(f"Coefficients: {DAModel.coef_lt[0]}\n")
 
-# sen = Sensitivity(_idx=0,
-#                   _sym="S_{0}",
-#                   _fwk="CUSTOM",
-#                   name="Sensitivity",
-#                   description="Sensitivity Analysis",
-#                   _pi_expr=DAnalysis.pi_coef_lt[0].pi_expr,
-#                   _variables=list(DAnalysis.pi_coef_lt[0].par_dims.keys())
-#                   )
-# print("=== Sensitivity: ===")
-# print(sen, "\n")
-# td = DAnalysis.pi_coef_lt[0].par_dims
-# td["d"] = 5.05
-# td["y"] = 5.05
-# print(td, "\n")
-# r = sen.analyze_symbolically(td)
-# print(r, "\n")
-# r = sen.analyze_numerically([[0.1, 10.0]] * len(sen.variables))
-# print(r, "\n")
+sen = DimSensitivity(_idx=0,
+                     _sym="S_{0}",
+                     _fwk="CUSTOM",
+                     name="Sensitivity",
+                     description="Sensitivity Analysis",
+                     _pi_expr=DAModel.coef_lt[0].pi_expr,
+                     _variables=list(DAModel.coef_lt[0].par_dims.keys()))
+print("=== Sensitivity: ===")
+print(sen, "\n")
+td = DAModel.coef_lt[0].par_dims
+td["d"] = 5.05
+td["y"] = 5.05
+print(td, "\n")
+r = sen.analyze_symbolically(td)
+print(r, "\n")
+r = sen.analyze_numerically([[0.1, 10.0]] * len(sen.variables))
+print(r, "\n")
 
 # print("\n=== Sensitivity Analysis: === \n")
 # # print(sena)
@@ -400,9 +397,9 @@ for pi in DAModel.coef_lt:
 #                            name="Sensitivity Analysis",
 #                            description="Sensitivity Analysis",
 #                            _relevance_lt=vars_lt,
-#                            _coefficient_lt=DAnalysis.pi_coef_lt,)
+#                            _coefficient_lt=DAModel.pi_coef_lt,)
 # # sena.analyze_pi_sensitivity(cutoff="avg")
-# sena.analyze_pi_sensitivity(category="NUMERIC")
+# sena.analyze_pi_sensitivity(category="NUM")
 # # print(sena._coefficient_mp.keys(), "\n")
 # # print(sena._coefficient_mp.get_entry("\\Pi_{0}"))
 # # montecarlo

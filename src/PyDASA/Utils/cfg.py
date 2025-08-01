@@ -24,9 +24,9 @@ Supported Frameworks:
     - CUSTOM: User-defined dimensional framework.
 
 Supported Sensitivity Analysis Parameters:
-    - SYMBOLIC: Sensitivity analysis for symbolic processable Parameters (e.g., 'x + y').
-    - NUMERIC: Sensitivity analysis for numeric Variables (e.g., 1.0, 2.5).
-    - HYBRID: Sensitivty analysis that includes both symbolic and numeric sensitivity analysis.
+    - SYM: Sensitivity analysis for symbolic processable Parameters (e.g., 'x + y').
+    - NUM: Sensitivity analysis for numeric Variables (e.g., 1.0, 2.5).
+    - HYB: Sensitivty analysis that includes both symbolic and numeric sensitivity analysis.
     - CUSTOM: User-defined sensitivity analysis for specific use cases.
 
 Default Patterns:
@@ -149,9 +149,9 @@ Purpose:
 # Supported Sensitivity Analysis Parameters
 # :data: SENS_ANSYS_DT
 SENS_ANSYS_DT: dict = {
-    "SYMBOLIC": "Sensitivity analysis for symbolic processable Parameters (e.g., 'x + y').",
-    "NUMERIC": "Sensitivity analysis for numeric Variables (e.g., 1.0, 2.5).",
-    "HYBRID": "Sensitivity analysis that includes both symbolic and numeric sensitivity analysis.",
+    "SYM": "Sensitivity analysis for symbolic processable Parameters (e.g., 'x + y').",
+    "NUM": "Sensitivity analysis for numeric Variables (e.g., 1.0, 2.5).",
+    "HYB": "Sensitivity analysis that includes both symbolic and numeric sensitivity analysis.",
     "CUSTOM": "User-defined sensitivity analysis for specific use cases.",
 }
 

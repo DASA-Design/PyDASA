@@ -20,10 +20,10 @@ import numpy as np
 import sympy as sp
 
 # Import validation base classes
-from new.pydasa.core.basics import Validation
+from new.pydasa.core.basic import Validation
 
 # Import related classes
-from new.pydasa.core.parameters import Variable
+from new.pydasa.core.parameter import Variable
 from new.pydasa.dimensional.framework import DimFramework
 from new.pydasa.buckingham.vashchy import Coefficient
 
@@ -47,7 +47,7 @@ class DimMatrix(Validation, Generic[T]):
         description (str): Brief summary of the dimensional model.
         _idx (int): Index/precedence of the dimensional model.
         _sym (str): Symbol representation (LaTeX or alphanumeric).
-        _fwk (str): Framework context (PHYSICAL, COMPUTATION, DIGITAL, CUSTOM).
+        _fwk (str): Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
 
         # Framework Management
         _framework (DimFramework): Dimensional framework managing FDUs.
@@ -576,13 +576,14 @@ class DimMatrix(Validation, Generic[T]):
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> DimMatrix:
         """*from_dict()* Create dimensional model from dictionary.
-        
+
         Args:
             data (Dict[str, Any]): Dictionary representation of the model.
-            
+
         Returns:
             DimMatrix: New dimensional model instance.
         """
+        # TODO test this, needs depuration
         # Create variables from dictionary
         variables = []
         if "variables" in data:

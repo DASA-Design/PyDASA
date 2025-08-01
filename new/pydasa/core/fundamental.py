@@ -15,7 +15,7 @@ from typing import Generic
 # import re
 
 # custom modules
-from new.pydasa.core.basics import Validation
+from new.pydasa.core.basic import Validation
 
 # generic error handling and type checking
 from new.pydasa.utils.error import handle_error as error

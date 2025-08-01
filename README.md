@@ -21,6 +21,13 @@ I need an object oriented design option to include the following requirements in
 - to simulate the dimensionless formula with its coeffcients and have a detailed behavioural data.
 - to plot or graph possible dimensionless charts using the behaviour of dimensionless coefficients and the dimensional parameters.
 
+## Emoji
+
+1. DONT DO ❌
+2. WORKING 🔶👨‍💻
+3. DONE ✅
+4. WARNING ⚠️
+
 ## Path Structure
 
 1. **pydasa**
@@ -28,7 +35,7 @@ I need an object oriented design option to include the following requirements in
    1. **analysis**
 
       1. conversion.py unit conversion handler for the solver, OUT OF SCOPE for now!!!❌
-      2. scenario.py:  contains the Sensitivity class for understanding variance in the coefficients. 🔶👨‍💻
+      2. scenario.py:  contains the Sensitivity class for understanding variance in the coefficients. ✅
       3. simulation.py: monte carlo slmulator for one coefficient🔶👨‍💻
 
       ---
@@ -63,7 +70,7 @@ I need an object oriented design option to include the following requirements in
 
       1. domain.py unit conversion handler/manager for the the matrix UnitsManager, OUT OF SCOPE for now!!!❌
       2. framework.py: contaons de DimFramework class to manage and control the DimMatrix in the solving process. ✅
-      3. influence.py: contains the SensitivityReport class for understanding variance in the coefficients. 🔶👨‍💻
+      3. influence.py: contains the SensitivityReport class for understanding variance in the coefficients. ✅
       4. model.py: contains de DimMatrix class to solve de dimensional matrix. ✅
       5. phenomena.py: has the main Solver() class of the project 🔶👨‍💻
       6. practical.py contains the SimulationManager class to control all the montecartlo simulations of all data 🔶👨‍💻
@@ -79,7 +86,7 @@ I need an object oriented design option to include the following requirements in
       6. io.py: contains all the input/ouput functions for saving data of the analyisis, also exports to be use in other platforms (MATPLOTLIB and files!!) NOT NOW❌
 
       ---
-   7. math ⚠️⚠️⚠️ TODO ⚠️⚠️⚠️
+   7. math ⚠️⚠️⚠️ TODO ⚠️⚠️⚠️ do i need them????
 
       1. numbers.py
       2. queues.py

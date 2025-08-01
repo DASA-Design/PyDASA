@@ -13,7 +13,7 @@ import re
 import numpy as np
 
 # Import validation base classes
-from new.pydasa.core.basics import Validation
+from new.pydasa.core.basic import Validation
 
 # Import configuration
 from new.pydasa.utils import config as cfg

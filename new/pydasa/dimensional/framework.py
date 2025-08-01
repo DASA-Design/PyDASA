@@ -13,7 +13,7 @@ from typing import List, Dict, Optional, Generic
 from dataclasses import dataclass, field
 
 # Import validation base classes
-from new.pydasa.core.basics import Validation
+from new.pydasa.core.basic import Validation
 
 # Import Dimension class
 from new.pydasa.core.fundamental import Dimension

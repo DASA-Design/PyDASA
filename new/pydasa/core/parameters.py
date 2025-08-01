@@ -33,7 +33,7 @@ class Variable(Validation):
         _idx (int): Index/precedence in the dimensional matrix.
         _sym (str): Symbol representation (LaTeX or alphanumeric).
         _fwk (str): Framework context (PHYSICAL, COMPUTATION, DIGITAL, CUSTOM).
-        _cat (str): Category (INPUT, OUTPUT, CONTROL).
+        _cat (str): Category (INPUT, OUT, CTRL).
         _varsym (str): Python variable synonym for code generation.
         relevant (bool): Flag indicating if variable is relevant for analysis.
 
@@ -61,10 +61,10 @@ class Variable(Validation):
     """
 
     # Private attributes
-    # Category attribute (INPUT, OUTPUT, CONTROL)
+    # Category attribute (INPUT, OUT, CTRL)
     # :attr: _cat
-    _cat: str = "INPUT"
-    """Category of the variable (INPUT, OUTPUT, CONTROL)."""
+    _cat: str = "IN"
+    """Category of the variable (INPUT, OUT, CTRL)."""
 
     # Dimensional properties
     # :attr: _dims
@@ -266,7 +266,7 @@ class Variable(Validation):
         """*cat* Get the category of the variable.
 
         Returns:
-            str: Category (INPUT, OUTPUT, CONTROL).
+            str: Category (INPUT, OUT, CTRL).
         """
         return self._cat
 
@@ -275,7 +275,7 @@ class Variable(Validation):
         """*cat* Set the category of the variable.
 
         Args:
-            val (str): Category (INPUT, OUTPUT, CONTROL).
+            val (str): Category (INPUT, OUT, CTRL).
 
         Raises:
             ValueError: If category is invalid.
@@ -738,7 +738,7 @@ class Variable(Validation):
         self.description = ""
 
         # Reset variable-specific attributes
-        self._cat = "INPUT"
+        self._cat = "IN"
         self._dims = ""
         self._units = ""
         self._varsym = None

@@ -180,7 +180,7 @@ class DimensionalModel(Generic[T]):
         _frk_dt = {
             "PHYSICAL": cfg.PHY_FDU_PREC_DT,
             "COMPUTATION": cfg.COMPU_FDU_PREC_DT,
-            "DIGITAL": cfg.DIGI_FDU_PREC_DT,
+            "DIGITAL": cfg.SOFT_FDU_PREC_DT,
         }
         # get the framework dictionary
         fdu_data = _frk_dt.get(self._fwk, {})
@@ -274,7 +274,7 @@ class DimensionalModel(Generic[T]):
         # count the relevant inputs, outputs, and control parameters
         self._n_param = len(param_lt)
         self._n_in = len([p for p in param_lt if p.cat == "IN"])
-        self._n_out = len([p for p in param_lt if p.cat == "OUT"])
+        self._n_out = len([p for p in param_lt if p.cat == "IN"])
         self._n_relv = len([p for p in param_lt if p.relevant is True])
         self._n_ctrl = self._n_relv - self._n_in - self._n_out
 
@@ -605,7 +605,7 @@ class DimensionalAnalyzer(DimensionalModel[T]):
             Optional[Parameter]: The output parameter of the analysis. None if not found.
         """
         # use next for better performance and readability
-        return next((p for p in self._param_lt if p.cat == "OUT"), None)
+        return next((p for p in self._param_lt if p.cat == "IN"), None)
 
     def _extract_fdu(self, relevance_lt: List[Parameter]) -> List[str]:
         """*_extract_fdu()* Extracts working FDUs from relevant parameters.

@@ -8,4 +8,4 @@ Configuration module for...
 
     # H.Gorter, *Dimensionalanalyse: Eine Theoririe der physikalischen Dimensionen mit Anwendungen*
 """
-# TODO add Montecarlo class for one coefficient
+# TODO add UnitConverter for one variable/parameter

@@ -179,9 +179,9 @@ Purpose:
 # Supported Parameter and Variable categories
 # :data: PARAMS_CAT_DT
 PARAMS_CAT_DT: dict = {
-    "INPUT": "Parameters that influence the system (e.g., known inputs).",
-    "OUTPUT": "Parameters that represent the results of the analysis.",
-    "CONTROL": "Parameters used to control or constrain the system (e.g., constants).",
+    "IN": "Parameters that influence the system (e.g., known inputs).",
+    "OUT": "Parameters that represent the results of the analysis.",
+    "CTRL": "Parameters used to control or constrain the system (e.g., constants).",
 }
 """
 Supported Parameter and Variable categories in *PyDASA*.

@@ -61,6 +61,10 @@ class DimFramework(Validation, Generic[T]):
     _fdu_map: Dict[str, Dimension] = field(default_factory=dict)
     """Dictionary mapping FDU symbols to Dimension objects."""
 
+    # :attr: _fdu_symbols
+    _fdu_symbols: List[str] = field(default_factory=list)
+    """List of FDU symbols in the framework."""
+
     # Regex patterns
     # FDUs matching regex pattern, linked to WKNG_FDU_RE.
     # :attr: _fdu_regex
@@ -93,6 +97,12 @@ class DimFramework(Validation, Generic[T]):
 
         # Initialize FDUs based on framework
         self._setup_fdus()
+
+        # Initialize indices, map, and symbol precedence
+        self._validate_fdu_precedence()
+        self._update_fdu_map()
+        self._update_fdu_symbols()
+
         # Generate regex patterns
         self._setup_regex()
 
@@ -185,6 +195,7 @@ class DimFramework(Validation, Generic[T]):
         Raises:
             ValueError: If FDU precedence values are invalid or duplicated.
         """
+        # trick to do nothing if FDU set is null
         if not self._fdus:
             return
 
@@ -202,6 +213,10 @@ class DimFramework(Validation, Generic[T]):
         self._fdu_map.clear()
         for fdu in self._fdus:
             self._fdu_map[fdu.sym] = fdu
+
+    def _update_fdu_symbols(self) -> None:
+        """*_update_fdu_symbols()* Updates the list of FDU symbols in precedence order."""
+        self._fdu_symbols = [fdu.sym for fdu in self._fdus]
 
     def _setup_regex(self) -> None:
         """*_setup_regex()* Sets up regex patterns for dimensional validation. Generates regex patterns for:
@@ -279,7 +294,7 @@ class DimFramework(Validation, Generic[T]):
         Returns:
             List[str]: List of FDU symbols.
         """
-        return [fdu.sym for fdu in self._fdus]
+        return self._fdu_symbols.copy()
 
     @property
     def fdu_count(self) -> int:
@@ -432,9 +447,10 @@ class DimFramework(Validation, Generic[T]):
         # Add FDU
         self._fdus.append(fdu)
 
-        # Update indices and map
+        # Update indices, map, and symbol precedence
         self._validate_fdu_precedence()
         self._update_fdu_map()
+        self._update_fdu_symbols()
 
         # Update regex patterns
         self._setup_regex()
@@ -460,9 +476,10 @@ class DimFramework(Validation, Generic[T]):
         # _idx = self._fdus.
         # self._fdus = [f for f in self._fdus if f.sym != symbol]
 
-        # Update indices and map
+        # Update indices, map, and symbol precedence
         self._validate_fdu_precedence()
         self._update_fdu_map()
+        self._update_fdu_symbols()
 
         # Update regex patterns
         self._setup_regex()

@@ -134,7 +134,7 @@ class PiCoefficient(Generic[T]):
         self.cat = self._cat
         self.param_lt = self._param_lt
         self.dim_col = self._dim_col
-        self.pivot_lt = self._pivot_lt
+        self._pivot_lt = self._pivot_lt
         self.pi_expr, self.par_dims = self._build_expression(self._param_lt,
                                                              self._dim_col)
 
@@ -579,10 +579,8 @@ class PiNumber(PiCoefficient[T]):
         """
         if val is not None and not isinstance(val, (int, float)):
             raise ValueError("Step must be a number.")
-
         if val == 0:
             raise ValueError("Step cannot be zero.")
-
         if val >= self._max - self._min:
             _msg = f"Step {val} cannot be greater than or equal to"
             _msg = f" the range of values {self._max - self._min}."

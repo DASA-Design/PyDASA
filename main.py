@@ -28,7 +28,7 @@ from new.pydasa.core.parameters import Variable
 # Dimensional Matrix Modelling module
 from new.pydasa.dimensional.model import DimMatrix
 
-from new.pydasa.analysis.influence import Sensitivity
+# from new.pydasa.dimensional.influence import Sensitivity
 
 
 
@@ -38,6 +38,7 @@ from new.pydasa.analysis.influence import Sensitivity
 # for FDU regex management
 # for Dimensional Analysis modules
 # complete module with the FDU's regex
+
 
 def test_cmp(a, b) -> int:
     """Test comparison function."""
@@ -124,6 +125,7 @@ print("\tWKNG_POW_RE:", config.WKNG_POW_RE)
 print("\tWKNG_NO_POW_RE:", config.WKNG_NO_POW_RE)
 print("\tWKNG_FDU_SYM_RE:", config.WKNG_FDU_SYM_RE)
 
+print("\n==== testing FDU ====")
 fdu = Dimension()
 print(fdu, "\n")
 
@@ -132,7 +134,7 @@ fdu = Dimension("Length",
                 1, "L", "PHYSICAL", "m")
 print(fdu, "\n")
 
-
+print("==== testing Variable ====")
 v = Variable()
 print(v, "\n")
 
@@ -141,7 +143,7 @@ p1 = Variable(name="U_1",
               _sym="U_{1}",
               _fwk="DIGITAL",
               _idx=1,
-              _cat="INPUT",
+              _cat="IN",
               _units="kPa",
               _dims="M*T^-2*L^-1",)
 print(p1, "\n")
@@ -164,17 +166,17 @@ rm = DimFramework(_fdus=fdu_lt, _fwk="CUSTOM")
 rm.update_global_config()
 print(rm, "\n")
 
-b = SingleLinkedList(iodata=fdu_lt)
-print(b.first, "\n", b.last, "\n")
-print(b, "\n")
-for fdu in b:
-    print(fdu, "\n")
+# b = SingleLinkedList(iodata=fdu_lt)
+# print(b.first, "\n", b.last, "\n")
+# print(b, "\n")
+# for fdu in b:
+#     print(fdu, "\n")
 
 
-# DAModel = DimensionalModel(_fwk="CUSTOM",
-#                            _idx=0,
-#                            io_fdu=fdu_lt)
-# print(DAModel, "\n")
+DAModel = DimMatrix(_fwk="CUSTOM",
+                    _idx=0,
+                    _framework=rm)
+print(DAModel, "\n")
 
 # custom regex for FDU
 print("\n==== Custom Regex ====")
@@ -201,9 +203,17 @@ dim_relevance_lt = [
              description="Fluid velocity in the channel",
              relevant=True,
              _idx=0,
-             _cat="OUTPUT",
+             _cat="OUT",
              _units="m/s",
-             _dims="L*T^-1",),
+             _dims="L*T^-1",
+             _min=0.0,
+             _max=15.0,
+             _avg=7.50,
+             _std_units="m/s",
+             _std_min=0.0,
+             _std_max=15.0,
+             _std_avg=7.50,
+             _step=0.1,),
     Variable(_sym="y",
              _varsym="y",
              _fwk="CUSTOM",
@@ -211,9 +221,17 @@ dim_relevance_lt = [
              description="Distance from the wall to the center of the channel",
              relevant=True,
              _idx=1,
-             _cat="INPUT",
+             _cat="IN",
              _units="m",
-             _dims="L",),
+             _dims="L",
+             _min=0.0,
+             _max=10.0,
+             _avg=5.0,
+             _std_units="m",
+             _std_min=0.0,
+             _std_max=10.0,
+             _std_avg=5.0,
+             _step=0.1),
     Variable(_sym="d",
              _varsym="d",
              _fwk="CUSTOM",
@@ -221,9 +239,17 @@ dim_relevance_lt = [
              relevant=True,
              description="Diameter of the channel",
              _idx=2,
-             _cat="INPUT",
+             _cat="IN",
              _units="m",
-             _dims="L",),
+             _dims="L",
+             _min=0.0,
+             _max=5.0,
+             _avg=2.5,
+             _std_units="m",
+             _std_min=0.0,
+             _std_max=5.0,
+             _std_avg=2.5,
+             _step=0.1),
     Variable(_sym="U",
              _varsym="U",
              _fwk="CUSTOM",
@@ -231,9 +257,17 @@ dim_relevance_lt = [
              relevant=True,
              description="Velocity of the fluid wall",
              _idx=3,
-             _cat="INPUT",
+             _cat="IN",
              _units="m/s",
-             _dims="L*T^-1",),
+             _dims="L*T^-1",
+             _min=0.0,
+             _max=15.0,
+             _avg=7.50,
+             _std_units="m/s",
+             _std_min=0.0,
+             _std_max=15.0,
+             _std_avg=7.50,
+             _step=0.1),
     Variable(_sym="P",
              _varsym="P",
              _fwk="CUSTOM",
@@ -241,9 +275,17 @@ dim_relevance_lt = [
              relevant=True,
              description="Pressure drop across the channel",
              _idx=4,
-             _cat="CONTROL",
+             _cat="CTRL",
              _units="Pa",
-             _dims="T^-2*L^1",),
+             _dims="T^-2*L^1",
+             _min=0.0,
+             _max=100000.0,
+             _avg=50000.0,
+             _std_units="Pa",
+             _std_min=0.0,
+             _std_max=100000.0,
+             _std_avg=50000.0,
+             _step=100.0),
     Variable(_sym="v",
              _varsym="v",
              _fwk="CUSTOM",
@@ -251,16 +293,24 @@ dim_relevance_lt = [
              relevant=True,
              description="Kinematic viscosity of the fluid",
              _idx=5,
-             _cat="CONTROL",
+             _cat="CTRL",
              _units="m^2/s",
-             _dims="L^2*T^-1",),
+             _dims="L^2*T^-1",
+             _min=0.0,
+             _max=1.0,
+             _avg=0.5,
+             _std_units="m^2/s",
+             _std_min=0.0,
+             _std_max=1.0,
+             _std_avg=0.5,
+             _step=0.01),
     Variable(_sym="g",
              _varsym="g",
              _fwk="CUSTOM",
              name="Gravity",
              description="Acceleration due to gravity",
              _idx=6,
-             _cat="CONTROL",
+             _cat="CTRL",
              _units="m/s^2",
              _dims="L*T^-2",),
     Variable(_sym="f",
@@ -269,7 +319,7 @@ dim_relevance_lt = [
              name="Fluid Frequency",
              description="Fluid frequency",
              _idx=7,
-             _cat="CONTROL",
+             _cat="CTRL",
              _units="Hz",
              _dims="T^-1",),
 ]
@@ -285,129 +335,39 @@ fdu_lt = [
     {"_idx": 2, "_sym": "Ll", "_fwk": "CUSTOM", "description": "Longitude~~~!!!!!!!~~~~~"},
 ]
 
-# print("Setting parameters for the dimensional analysis")
-# DAModel.param_lt = dim_relevance_lt
-# print(len(DAModel.param_lt), DAModel.param_lt, "\n")
-# print("Setting the relevance list for dimensional analysis")
-# DAModel.relevance_lt = dim_relevance_lt
-# print(len(DAModel.relevance_lt), DAModel.relevance_lt, "\n")
+print("Setting parameters for the dimensional analysis")
+DAModel.var_lt = dim_relevance_lt
+print(len(DAModel.var_lt), DAModel.var_lt, "\n")
+print("Setting the relevance list for dimensional analysis")
+DAModel.relevant_lt = dim_relevance_lt
+print(len(DAModel.relevant_lt), DAModel.relevant_lt, "\n")
 
-# print(DAModel, "\n")
+print(DAModel, "\n")
 
-# print(DAModel._n_param, "\n")
+print(DAModel._n_var, "\n")
 
-# DAnalysis = DimensionalAnalyzer(_fwk="CUSTOM",
-#                                 _idx=0,
-#                                 io_fdu=fdu_lt,
-#                                 _fdu_mp=DAModel._fdu_mp,
-#                                 _param_lt=DAModel.param_lt,
-#                                 _relevance_lt=DAModel.relevance_lt,)
-# # print(DAnalysis.relevance_lt, "\n")
-# # print(len(DAnalysis.relevance_lt), "\n")
-# # print(DAnalysis, "\n")
-# # print(DAnalysis._wrk_fdu_lt, "\n")
-# # print(DAnalysis._fdu_mp, "\n")
+print(DAModel.relevant_lt, "\n")
+print(len(DAModel.relevant_lt), "\n")
+print(DAModel, "\n")
+print(DAModel.working_fdus, "\n")
 
-# for relv in DAnalysis.relevance_lt:
-#     print("blaaaaa", relv.idx, relv.cat, relv.sym, relv.name)
-# print(DAnalysis.output, "\n")
+for relv in DAModel.relevant_lt:
+    print("blaaaaa", relv.idx, relv.cat, relv.sym, relv.name)
+print(DAModel.output, "\n")
 
-# DAnalysis.create_matrix()
-# DAnalysis.solve_matrix()
+DAModel.create_matrix()
+DAModel.solve_matrix()
 
-# print(DAnalysis._pivot_cols, "\n")
-# print(DAnalysis, "\n")
+print(DAModel._pivot_cols, "\n")
+print(DAModel, "\n")
 
-# for k, v in vars(DAnalysis).items():
-#     print(f"{k}: {v}")
-# print("\n")
+for k, v in vars(DAModel).items():
+    print(f"{k}: {v}")
+print("\n")
 
-# # print(len(DAnalysis.pi_coef_lt), "\n")
-# for pi in DAnalysis.pi_coef_lt:
-#     print(pi.sym, "=", pi.pi_expr, "\n")
-
-# vars_lt = []
-# extr_data_lt = [
-#     {   # Fluid velocity
-#         "_min": 0.0,
-#         "_max": 15.0,
-#         "_avg": 7.50,
-#         "_std_units": "m/s",
-#         "_std_min": 0.0,
-#         "_std_max": 15.0,
-#         "_std_avg": 7.50,
-#         "_std_step": 0.1,
-#     },
-#     {   # Distance from the wall
-#         "_min": 0.0,
-#         "_max": 10.0,
-#         "_avg": 5.0,
-#         "_std_units": "m",
-#         "_std_min": 0.0,
-#         "_std_max": 10.0,
-#         "_std_avg": 5.0,
-#         "_std_step": 0.1,
-#     },
-#     {   # Channel diameter
-#         "_min": 0.0,
-#         "_max": 5.0,
-#         "_avg": 2.5,
-#         "_std_units": "m",
-#         "_std_min": 0.0,
-#         "_std_max": 5.0,
-#         "_std_avg": 2.5,
-#         "_std_step": 0.1,
-#     },
-#     {   # Velocity of the wall
-#         "_min": 0.0,
-#         "_max": 15.0,
-#         "_avg": 7.50,
-#         "_std_units": "m/s",
-#         "_std_min": 0.0,
-#         "_std_max": 15.0,
-#         "_std_avg": 7.50,
-#         "_std_step": 0.1,
-#     },
-#     {   # Pressure drop across the channel
-#         "_min": 0.0,
-#         "_max": 100000.0,
-#         "_avg": 50000.0,
-#         "_std_units": "Pa",
-#         "_std_min": 0.0,
-#         "_std_max": 100000.0,
-#         "_std_avg": 50000.0,
-#         "_std_step": 100.0,
-#     },
-#     {   # Kinematic viscosity of the fluid
-#         "_min": 0.0,
-#         "_max": 1.0,
-#         "_avg": 0.5,
-#         "_std_units": "m^2/s",
-#         "_std_min": 0.0,
-#         "_std_max": 1.0,
-#         "_std_avg": 0.5,
-#         "_std_step": 0.01,
-#     },
-# ]
-
-# print("Variables:")
-# for param, extra in zip(DAnalysis.param_lt, extr_data_lt):
-#     var = Variable(_sym=param.sym,
-#                    _fwk=param.fwk,
-#                    name=param.name,
-#                    description=param.description,
-#                    _idx=param.idx,
-#                    _cat=param.cat,
-#                    _units=param.units,
-#                    _dims=param.dims,
-#                    **extra,)
-#     # print(var, "\n")
-#     vars_lt.append(var)
-
-# print("Dimensionless Coefficients:")
-# for coef in DAnalysis.pi_coef_lt:
-#     print(f"{coef.sym} = {coef.pi_expr}")
-#     print(coef, "\n")
+# print(len(DAModel.pi_coef_lt), "\n")
+for pi in DAModel.coef_lt:
+    print(pi.sym, "=", pi.pi_expr, "\n")
 
 
 # print("=== Sensitivity Analysis: ===")

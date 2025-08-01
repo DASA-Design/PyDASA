@@ -38,7 +38,7 @@ class Parameter(Generic[T]):
             - _idx (int): The Index of the Parameter.
             - _sym (str): The symbol of the Parameter.
             - _fwk (str): The framework of the Parameter. It can be one supported frameworks.
-            - _cat (str): The category of the Parameter. It can be one of the following: `INPUT`, `OUTPUT`, or `CONTROL`.
+            - _cat (str): The category of the Parameter. It can be one of the following: `INPUT`, `OUT`, or `CTRL`.
             - _dims (str): The dimensions of the Parameter. It is a string with the FDU formula of the parameter. e.g.: [T^2*L^-1]
             - _std_dims (str): Standarized dimensional expression of the Parameter. It is a string with propper parenthesis and exponents. e.g.: [L^(-1)*T^(2)]
             - _sym_exp (str): The symbolic processed dimensional expression of the Parameter. It is a string suitable for Sympy processing. e.g.: [T**2*L**(-1)]
@@ -69,9 +69,9 @@ class Parameter(Generic[T]):
     """
 
     # :attr: _cat
-    _cat: str = "INPUT"
+    _cat: str = "IN"
     """
-    Category of the *Parameter* in the Dimensional Matrix. It can be one of the following: `INPUT`, `OUTPUT`, or `CONTROL` going in the main diagonal matrix, output vector, and residual matrix respectively.
+    Category of the *Parameter* in the Dimensional Matrix. It can be one of the following: `INPUT`, `OUT`, or `CTRL` going in the main diagonal matrix, output vector, and residual matrix respectively.
     """
 
     # :attr: _dims
@@ -334,7 +334,7 @@ class Parameter(Generic[T]):
 
     @cat.setter
     def cat(self, val: str) -> None:
-        """*cat* Sets the category of the *Parameter*. It must be one of the allowed values. The allowed values are: `INPUT`, `OUTPUT`, or `CONTROL`.
+        """*cat* Sets the category of the *Parameter*. It must be one of the allowed values. The allowed values are: `INPUT`, `OUT`, or `CTRL`.
 
         Args:
             val (str): Category of the *Parameter*.
@@ -495,7 +495,7 @@ class Parameter(Generic[T]):
         self._idx = -1
         self._sym = ""
         self._fwk = "PHYSICAL"
-        self._cat = "INPUT"
+        self._cat = "IN"
         self._dims = ""
         self._std_dims = None
         self._sym_exp = None

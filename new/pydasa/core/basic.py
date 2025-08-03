@@ -36,12 +36,17 @@ class SymValidation(ABC):
 
     Attributes:
         _sym (str): Symbol representation.
+        _pyalias (str): Python-compatible alias for use in code.
         _fwk (str): Framework context.
     """
 
     # :attr: _sym
     _sym: str = ""
     """Symbol representation (LaTeX or alphanumeric)."""
+
+    # :attr: _pyalias
+    _pyalias: str = ""
+    """Python-compatible alias for symbol, used in executable code."""
 
     # :attr: _fwk
     _fwk: str = "PHYSICAL"
@@ -55,6 +60,8 @@ class SymValidation(ABC):
             self._sym = self._sym.strip()
         if not self._fwk:
             self._fwk = self._fwk.strip()
+        if not self._pyalias:
+            self._pyalias = self._pyalias.strip()
 
     @property
     def sym(self) -> str:
@@ -99,6 +106,30 @@ class SymValidation(ABC):
         """
         self._validate_fwk(val)
         self._fwk = val
+
+    @property
+    def pyalias(self) -> str:
+        """*pyalias* Get the Python alias for the variable symbol.
+
+        Returns:
+            str: Python-compatible alias for use in executable code.
+        """
+        return self._pyalias
+
+    @pyalias.setter
+    def pyalias(self, val: str) -> None:
+        """*pyalias* Set the Python alias with validation.
+
+        Args:
+            val (str): Python alias value.
+
+        Raises:
+            ValueError: If Python alias is not a valid Python identifier.
+        """
+        if not val.isidentifier():
+            _msg = f"Python alias must be a valid Python identifier. Provided: {val}"
+            raise ValueError(_msg)
+        self._pyalias = val
 
     def _validate_sym(self, val: str) -> None:
         """*_validate_sym()* Validate symbol format.

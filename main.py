@@ -31,7 +31,7 @@ from new.pydasa.dimensional.model import DimMatrix
 from new.pydasa.analysis.scenario import DimSensitivity
 
 # TODO need to know where to put the new
-# from new.pydasa.dimensional.influence import SensitivityAnalysis
+from new.pydasa.dimensional.influence import SensitivityHandler
 
 # for FDU regex management
 # for Dimensional Analysis modules
@@ -193,9 +193,9 @@ print("\tWKNG_FDU_SYM_RE:", config.WKNG_FDU_SYM_RE)
 # P: pressure drop across the channel
 # v: kinematic viscosity of the fluid
 
-dim_relevance_lt = [
+vars_lt = [
     Variable(_sym="\\miu",
-             _varsym="miu",
+             _pyalias="miu",
              _fwk="CUSTOM",
              name="Fluid Velocity",
              description="Fluid velocity in the channel",
@@ -213,7 +213,7 @@ dim_relevance_lt = [
              _std_avg=7.50,
              _step=0.1,),
     Variable(_sym="y",
-             _varsym="y",
+             _pyalias="y",
              _fwk="CUSTOM",
              name="Distance from the wall",
              description="Distance from the wall to the center of the channel",
@@ -231,7 +231,7 @@ dim_relevance_lt = [
              _std_avg=5.0,
              _step=0.1),
     Variable(_sym="d",
-             _varsym="d",
+             _pyalias="d",
              _fwk="CUSTOM",
              name="Channel diameter",
              relevant=True,
@@ -249,7 +249,7 @@ dim_relevance_lt = [
              _std_avg=2.5,
              _step=0.1),
     Variable(_sym="U",
-             _varsym="U",
+             _pyalias="U",
              _fwk="CUSTOM",
              name="Velocity of the wall",
              relevant=True,
@@ -267,7 +267,7 @@ dim_relevance_lt = [
              _std_avg=7.50,
              _step=0.1),
     Variable(_sym="P",
-             _varsym="P",
+             _pyalias="P",
              _fwk="CUSTOM",
              name="Channel Pressure Drop",
              relevant=True,
@@ -285,7 +285,7 @@ dim_relevance_lt = [
              _std_avg=50000.0,
              _step=100.0),
     Variable(_sym="v",
-             _varsym="v",
+             _pyalias="v",
              _fwk="CUSTOM",
              name="Fluid Viscosity",
              relevant=True,
@@ -303,7 +303,7 @@ dim_relevance_lt = [
              _std_avg=0.5,
              _step=0.01),
     Variable(_sym="g",
-             _varsym="g",
+             _pyalias="g",
              _fwk="CUSTOM",
              name="Gravity",
              description="Acceleration due to gravity",
@@ -312,7 +312,7 @@ dim_relevance_lt = [
              _units="m/s^2",
              _dims="L*T^-2",),
     Variable(_sym="f",
-             _varsym="f",
+             _pyalias="f",
              _fwk="CUSTOM",
              name="Fluid Frequency",
              description="Fluid frequency",
@@ -322,9 +322,9 @@ dim_relevance_lt = [
              _dims="T^-1",),
 ]
 
-print(type(dim_relevance_lt))
+print(type(vars_lt))
 print("Dimensional relevance of the parameters:")
-for p in dim_relevance_lt:
+for p in vars_lt:
     print(p)
 
 fdu_lt = [
@@ -334,10 +334,10 @@ fdu_lt = [
 ]
 
 print("Setting parameters for the dimensional analysis")
-DAModel.var_lt = dim_relevance_lt
-print(len(DAModel.var_lt), DAModel.var_lt, "\n")
+DAModel.variables = vars_lt
+print(len(DAModel.variables), DAModel.variables, "\n")
 print("Setting the relevance list for dimensional analysis")
-DAModel.relevant_lt = dim_relevance_lt
+DAModel.relevant_lt = vars_lt
 print(len(DAModel.relevant_lt), DAModel.relevant_lt, "\n")
 
 print(DAModel, "\n")
@@ -363,24 +363,23 @@ for k, v in vars(DAModel).items():
     print(f"{k}: {v}")
 print("\n")
 
-# print(len(DAModel.pi_coef_lt), "\n")
-for pi in DAModel.coef_lt:
+for pi in DAModel.coefficients:
     print(pi.sym, "=", pi.pi_expr, "\n")
 
 
 print("=== Sensitivity Analysis: ===")
-print(f"Coefficients: {DAModel.coef_lt[0]}\n")
+print(f"Coefficients: {DAModel.coefficients[0]}\n")
 
 sen = DimSensitivity(_idx=0,
                      _sym="S_{0}",
                      _fwk="CUSTOM",
                      name="Sensitivity",
                      description="Sensitivity Analysis",
-                     _pi_expr=DAModel.coef_lt[0].pi_expr,
-                     _variables=list(DAModel.coef_lt[0].par_dims.keys()))
+                     _pi_expr=DAModel.coefficients[0].pi_expr,
+                     _variables=list(DAModel.coefficients[0].par_dims.keys()))
 print("=== Sensitivity: ===")
 print(sen, "\n")
-td = DAModel.coef_lt[0].par_dims
+td = DAModel.coefficients[0].par_dims
 td["d"] = 5.05
 td["y"] = 5.05
 print(td, "\n")
@@ -389,17 +388,17 @@ print(r, "\n")
 r = sen.analyze_numerically([[0.1, 10.0]] * len(sen.variables))
 print(r, "\n")
 
-# print("\n=== Sensitivity Analysis: === \n")
-# # print(sena)
-# sena = SensitivityAnalysis(_idx=0,
-#                            _sym="SA_{0}",
-#                            _fwk="CUSTOM",
-#                            name="Sensitivity Analysis",
-#                            description="Sensitivity Analysis",
-#                            _relevance_lt=vars_lt,
-#                            _coefficient_lt=DAModel.pi_coef_lt,)
-# # sena.analyze_pi_sensitivity(cutoff="avg")
-# sena.analyze_pi_sensitivity(category="NUM")
-# # print(sena._coefficient_mp.keys(), "\n")
-# # print(sena._coefficient_mp.get_entry("\\Pi_{0}"))
-# # montecarlo
+print("\n=== Sensitivity Analysis: === \n")
+# print(sena)
+sena = SensitivityHandler(_idx=0,
+                           _sym="SA_{0}",
+                           _fwk="CUSTOM",
+                           name="Sensitivity Analysis",
+                           description="Sensitivity Analysis",
+                           _variables=vars_lt,
+                           _coefficients=DAModel.coefficients,)
+sena.analyze_symbolic(val_type="avg")
+sena.analyze_numeric(val_type="avg")
+# print(sena._coefficient_mp.keys(), "\n")
+# print(sena._coefficient_mp.get_entry("\\Pi_{0}"))
+# montecarlo

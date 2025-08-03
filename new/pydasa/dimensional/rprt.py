@@ -139,13 +139,13 @@ class SensitivityAnalysis(Generic[T]):
         self.coefficient_lt = self._coefficient_lt
 
     # TODO: add private methods.
-    def _setup_variables_map(self, var_lt: List[Variable]) -> None:
+    def _setup_variables_map(self, variables: List[Variable]) -> None:
         """*setup_vars_map* sets up the hash table for the *Variable* objects.
 
         Args:
-            var_lt (List[Variable]): List of *Variable* objects.
+            variables (List[Variable]): List of *Variable* objects.
         """
-        for var in var_lt:
+        for var in variables:
             self._relevance_mp.insert(var.sym, var)
 
     def _setup_coefficients_map(self, pi_lt: List[PiCoefficient]) -> None:

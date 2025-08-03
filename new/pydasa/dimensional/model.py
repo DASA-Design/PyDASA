@@ -53,7 +53,7 @@ class DimMatrix(Validation, Generic[T]):
         _framework (DimFramework): Dimensional framework managing FDUs.
 
         # Variable and Parameter Management
-        _var_lt (List[Variable]): List of all variables in the model.
+        _variables (List[Variable]): List of all variables in the model.
         _relevant_lt (List[Variable]): List of relevant variables for analysis.
 
         # Matrix Representation
@@ -64,7 +64,7 @@ class DimMatrix(Validation, Generic[T]):
         _pivot_cols (List[int]): Pivot columns in the RREF matrix.
 
         # Analysis Results
-        _coef_lt (List[Coefficient]): List of dimensionless coefficients.
+        _coefficients (List[Coefficient]): List of dimensionless coefficients.
 
         # Model Statistics
         _n_var (int): Total number of variables.
@@ -91,8 +91,8 @@ class DimMatrix(Validation, Generic[T]):
     """Dimensional framework managing FDUs."""
 
     # Variable management
-    # :attr: _var_lt
-    _var_lt: List[Variable] = field(default_factory=list)
+    # :attr: _variables
+    _variables: List[Variable] = field(default_factory=list)
     """List of all parameters/variables (*Variable*) in the model."""
 
     # :attr: _relevant_lt
@@ -121,8 +121,8 @@ class DimMatrix(Validation, Generic[T]):
     """Pivot columns in the RREF matrix."""
 
     # Analysis results
-    # :attr: _coef_lt
-    _coef_lt: List[Coefficient] = field(default_factory=list)
+    # :attr: _coefficients
+    _coefficients: List[Coefficient] = field(default_factory=list)
     """List of dimensionless coefficients( *Coefficient*)."""
 
     # Model statistics
@@ -164,7 +164,7 @@ class DimMatrix(Validation, Generic[T]):
         self._framework.update_global_config()
 
         # Process variables if provided
-        if self._var_lt:
+        if self._variables:
             self._prepare_analysis()
 
     def _prepare_analysis(self) -> None:
@@ -174,7 +174,7 @@ class DimMatrix(Validation, Generic[T]):
         self._update_variable_stats()
 
         # Identify relevant variables
-        self._relevant_lt = [v for v in self._var_lt if v.relevant]
+        self._relevant_lt = [v for v in self._variables if v.relevant]
 
         # Sort relevant variables by category
         self._relevant_lt = self._sort_by_category(self._relevant_lt)
@@ -205,7 +205,7 @@ class DimMatrix(Validation, Generic[T]):
             ValueError: If the model has invalid variable counts.
         """
         # Count variables by category
-        _vars = self._var_lt
+        _vars = self._variables
         self._n_var = len(_vars)
         self._n_relevant = len([v for v in _vars if v.relevant])
         self._n_in = len([v for v in _vars if v.cat == "IN" and v.relevant])
@@ -267,7 +267,7 @@ class DimMatrix(Validation, Generic[T]):
         #     self._output = output_vars[0]
         # get output variable in relevant list, none if not found
         # TODO check behaviour!!!!
-        self._output = next((p for p in self._var_lt if p.cat == "OUT"), None)
+        self._output = next((p for p in self._variables if p.cat == "OUT"), None)
 
     def _extract_fdus(self) -> List[str]:
         """*_extract_fdus()* Extracts FDUs from relevant variables.
@@ -349,7 +349,7 @@ class DimMatrix(Validation, Generic[T]):
         nullspace_vectors = self._sym_mtx.nullspace()
 
         # Clear existing coefficients
-        self._coef_lt.clear()
+        self._coefficients.clear()
 
         # Extract variable symbols
         var_symbols = [var._sym for var in self._relevant_lt]
@@ -377,7 +377,7 @@ class DimMatrix(Validation, Generic[T]):
                 name=f"Pi-{i}",
                 description=f"Dimensionless coefficient {i} from nullspace"
             )
-            self._coef_lt.append(coef)
+            self._coefficients.append(coef)
 
     def analyze(self) -> None:
         """*analyze()* Performs complete dimensional analysis. Creates the dimensional matrix and solves it to generate dimensionless coefficients.
@@ -396,7 +396,7 @@ class DimMatrix(Validation, Generic[T]):
         super().clear()
 
         # Clear variables and statistics
-        self._var_lt.clear()
+        self._variables.clear()
         self._relevant_lt.clear()
         self._n_var = 0
         self._n_relevant = 0
@@ -413,22 +413,22 @@ class DimMatrix(Validation, Generic[T]):
         self._pivot_cols.clear()
 
         # Clear analysis results
-        self._coef_lt.clear()
+        self._coefficients.clear()
 
     # Property getters and setters
 
     @property
-    def var_lt(self) -> List[Variable]:
-        """*var_lt* Get the list of variables.
+    def variables(self) -> List[Variable]:
+        """*variables* Get the list of variables.
 
         Returns:
             List[Variable]: List of all variables.
         """
-        return self._var_lt.copy()
+        return self._variables.copy()
 
-    @var_lt.setter
-    def var_lt(self, val: List[Variable]) -> None:
-        """*var_lt* Set the list of variables.
+    @variables.setter
+    def variables(self, val: List[Variable]) -> None:
+        """*variables* Set the list of variables.
 
         Args:
             val (List[Variable]): List of variables.
@@ -443,7 +443,7 @@ class DimMatrix(Validation, Generic[T]):
             raise ValueError("All elements must be Variable instances")
 
         # Set variables and update framework
-        self._var_lt = val
+        self._variables = val
 
         # Update relevant variables and prepare for analysis
         self._prepare_analysis()
@@ -475,7 +475,7 @@ class DimMatrix(Validation, Generic[T]):
         self._framework.update_global_config()
 
         # Prepare for analysis with new framework
-        if self._var_lt:
+        if self._variables:
             self._prepare_analysis()
 
     @property
@@ -508,13 +508,13 @@ class DimMatrix(Validation, Generic[T]):
         self._prepare_analysis()
 
     @property
-    def coef_lt(self) -> List[Coefficient]:
-        """*coef_lt* Get the list of dimensionless coefficients.
+    def coefficients(self) -> List[Coefficient]:
+        """*coefficients* Get the list of dimensionless coefficients.
 
         Returns:
             List[Coefficient]: List of dimensionless coefficients.
         """
-        return self._coef_lt.copy()
+        return self._coefficients.copy()
 
     @property
     def output(self) -> Optional[Variable]:
@@ -564,8 +564,8 @@ class DimMatrix(Validation, Generic[T]):
             "idx": self._idx,
             "sym": self._sym,
             "fwk": self._fwk,
-            "variables": [v.to_dict() for v in self._var_lt],
-            "coefficients": [c.to_dict() for c in self._coef_lt],
+            "variables": [v.to_dict() for v in self._variables],
+            "coefficients": [c.to_dict() for c in self._coefficients],
             "n_var": self._n_var,
             "n_relevant": self._n_relevant,
             "n_in": self._n_in,
@@ -597,7 +597,7 @@ class DimMatrix(Validation, Generic[T]):
 
         # Create model
         model = cls(**model_data)
-        model._var_lt = variables
+        model._variables = variables
 
         # Prepare for analysis
         if variables:

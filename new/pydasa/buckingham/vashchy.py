@@ -23,7 +23,7 @@ from new.pydasa.core.basic import Validation
 
 # Import utils
 from new.pydasa.utils.default import T
-from new.pydasa.utils.error import inspect_name as _insp_var
+from new.pydasa.utils.error import inspect_var
 # import the 'cfg' module to allow global variable edition
 from new.pydasa.utils import config as cfg
 
@@ -160,15 +160,15 @@ class Coefficient(Validation, Generic[T]):
             bool: True if the list is valid.
         """
         if not isinstance(lt, list):
-            _msg = f"{_insp_var(lt)} must be a list. "
+            _msg = f"{inspect_var(lt)} must be a list. "
             _msg += f"Provided: {type(lt)}"
             raise ValueError(_msg)
         if not all(isinstance(x, exp_type) for x in lt):
-            _msg = f"{_insp_var(lt)} must contain {exp_type} elements."
+            _msg = f"{inspect_var(lt)} must contain {exp_type} elements."
             _msg += f" Provided: {[type(x).__name__ for x in lt]}"
             raise ValueError(_msg)
         if len(lt) == 0:
-            _msg = f"{_insp_var(lt)} cannot be empty. "
+            _msg = f"{inspect_var(lt)} cannot be empty. "
             _msg += f"Provided: {lt}"
             raise ValueError(_msg)
         return True

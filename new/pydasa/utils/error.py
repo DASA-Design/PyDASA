@@ -42,8 +42,8 @@ def handle_error(ctx: str, func: str, exc: Exception) -> None:
     raise type(exc)(_err_msg).with_traceback(exc.__traceback__)
 
 
-def inspect_name(var: Any) -> str:
-    """*inspect_name() inspect a variable an gets its name in the source code.
+def inspect_var(var: Any) -> str:
+    """*inspect_var() inspect a variable an gets its name in the source code.
 
     Args:
         var (Any): The variable to inspect.
@@ -75,5 +75,5 @@ def inspect_name(var: Any) -> str:
 
 #  Example usage
 # lt = [1, 2, 3]
-# variable_name = inspect_name(lt)
+# variable_name = inspect_var(lt)
 # print(f"The name of the variable is: {variable_name}")

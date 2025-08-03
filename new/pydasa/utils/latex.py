@@ -16,10 +16,21 @@ import re
 
 # custom modules
 from sympy.parsing.latex import parse_latex
-from sympy import symbols
+from sympy import symbols, lambdify
 
 # import global variables
 from new.pydasa.utils.config import LATEX_RE
+
+# Global vars for special characters
+IGNORE_EXPR = {
+    "\\frac",
+    "\\sqrt",
+    "\\sin",
+    "\\cos",
+    "\\tan",
+    "\\log",
+    "\\exp"
+}
 
 
 def latex_to_python(expr: str) -> str:
@@ -34,13 +45,85 @@ def latex_to_python(expr: str) -> str:
     # Replace LaTeX subscript with Python style
     if expr.isalnum():
         return expr
-    # ans = re.sub(LATEX_RE, r"\1_\2", expr)
-    ans = re.sub(r'\\([a-zA-Z]+)_{(\d+)}', r'\1_\2', expr)
-    return ans
+    # TODO this regex doesnt work, check latter
+    # ans = re.sub(r"\\([a-zA-Z]+)_{(\d+)}", r"\1_\2", expr)
+    alias = expr.replace("\\", "")
+    alias = alias.replace("_{", "_").replace("}", "")
+    return alias
 
 
+def extract_latex_vars(expr: str) -> dict:
+    """*extract_latex_vars()* Parse a LaTeX expression, extract variable names and their Python-compatible aliases.
 
-def parse_latex_symbols(expr: str) -> tuple:
+    Args:
+        expr (str): The LaTeX expression to parse.
+
+    Returns:
+        dict: A dictionary mapping LaTeX variable names to Python-compatible aliases. 'var name': 'python alias'.
+    """
+    # Step 1: Extract latex variable names with regex
+    latex_syms = re.findall(LATEX_RE, str(expr))
+    # Step 2: Filter out ignored LaTeX commands
+    latex_syms = [m for m in latex_syms if m not in IGNORE_EXPR]
+    # Step 3: Use a set to ensure uniqueness
+    py_vars = list(set(latex_syms))
+    # Step 4: Convert LaTeX names to Python-compatible aliases
+    # This involves removing the backslash and converting subscript notation
+    py_vars = [m.lstrip("\\") for m in py_vars]
+    py_vars = [m.replace("_{", "_").replace("}", "") for m in py_vars]
+    # Step 5: Sort the variable names and aliases
+    # This ensures consistent ordering for reproducibility
+    py_vars.sort()
+    # Step 6: Return the mapping
+    return py_vars
+
+
+def create_latex_mapping(expr: str) -> tuple[dict, dict]:
+    """*create_latex_mapping()* Create a mapping between LaTeX symbols and Python symbols.
+
+    Args:
+        expr (str): The LaTeX expression to parse.
+
+    Returns:
+        tuple[dict, dict]: A tuple containing two dictionaries:
+            - The first dictionary maps LaTeX symbols to Python symbols.
+            - The second dictionary maps Python variable names to their corresponding sympy symbols.
+    """
+    # Parse to get LaTeX symbols
+    expr = parse_latex(expr)
+    latex_symbols = expr.free_symbols
+    print(f"freee symbols! {latex_symbols}")
+
+    # Get Python variable names
+    py_vars = extract_latex_vars(expr)
+    print(f"Symbol mapping: {py_vars}")
+
+    # Create mapping
+    symbol_map = {}
+    py_symbol_map = {}
+
+    for latex_sym in latex_symbols:
+        latex_name = str(latex_sym)
+        # Find corresponding Python name
+        for py_var in py_vars:
+            # Check if this Python var corresponds to the LaTeX symbol
+            # Direct match
+            con1 = (latex_name == py_var)
+            # Subscript conversion
+            con2 = (latex_name.replace('_{', '_').replace('}', '') == py_var)
+            # Remove backslash
+            con3 = (latex_name.replace('\\', '') == py_var)
+            # Check for correspondence between LaTeX and Python names
+            if (con1 or con2 or con3):
+                # Add to mapping if any condition matches
+                symbol_map[latex_sym] = symbols(py_var)
+                py_symbol_map[py_var] = symbols(py_var)
+                break
+
+    return symbol_map, py_symbol_map
+
+
+def parse_latex_symbols_mine(expr: str) -> tuple:
     """*parse_latex_symbols()* Parse a LaTeX expression and extract variable names.
 
     Args:
@@ -50,47 +133,36 @@ def parse_latex_symbols(expr: str) -> tuple:
         tuple: A tuple containing the parsed expression and a list of variable names in alphabetical order.
     """
     # Extract variable names
-    all_vars = set(extract_latex_vars(expr))
-    # create sympy symbols dict for all variables
-    sym_dt = {name: symbols(name) for name in all_vars}
-    # parse the LaTeX expression
-    expr = parse_latex(expr)
-    # print(all_vars)
-    # iterate over the LaTeX variable names and replace them with sympy symbols
-    for var in all_vars:
-        # convert Python var back to LaTeX for matching
-        # if the variable name contains a subscript, replace it with the corresponding LaTeX symbol
-        if "_" in var:
-            base, sub = var.split("_")
-            latex_sym = symbols(f"{base}_{{{sub}}}")
-        # otherwise, use the variable name as is
-        else:
-            latex_sym = symbols(var)
-        # replace the LaTeX symbol with the corresponding sympy symbol
-        expr = expr.subs(latex_sym, symbols(var))
-    # substitute all variables with our symbols (ensures correct mapping)
-    expr = expr.subs(sym_dt)
-    # sort the variable names in alphabetical order
-    # print(f"Parsed: {expr}", all_vars)
-    return expr, all_vars
+    py_vars = set(sorted(extract_latex_vars(expr)))
 
+    # Step 4: Parse the LaTeX expression
+    expr_sym = parse_latex(expr)
 
-def extract_latex_vars(expr: str) -> list:
-    """*extract_latex_vars()* Extract variable names from a LaTeX expression.
-    This function uses a regular expression to match LaTeX symbols (e.g., '\alpha', '\beta_{1}') in the expression.
+    # Step 5: Create symbol mapping between LaTeX symbols and Python symbols
+    symbol_map = {}
+    py_symbols = {var: symbols(var) for var in py_vars}
 
-    Args:
-        expr (str): The LaTeX expression to parse.
+    for latex_sym in expr_sym.free_symbols:
+        latex_name = str(latex_sym)
+        # Find corresponding Python variable
+        for py_var in py_vars:
+            # direct match
+            con1 = (latex_name == py_var)
+            # subscript conversion
+            con2 = (latex_name.replace('_{', '_').replace('}', '') == py_var)
+            # remove backslash
+            con3 = (latex_name.lstrip('\\') == py_var)
+            # Check for correspondence between LaTeX and Python names
+            if con1 or con2 or con3:
+                # Add to mapping if any condition matches
+                symbol_map[latex_sym] = py_symbols[py_var]
+                break
 
-    Returns:
-        list: list of variable names in the expression.
-    """
-    # Matches names like l_{1}, W_{2}, L_{1}, N_{2}, u, l, x, and LaTeX commands
-    # print(expr, LATEX_RE)
-    matches = re.findall(LATEX_RE, expr)
-    ignore = {"\\frac", "\\sqrt", "\\sin", "\\cos",
-              "\\tan", "\\log", "\\exp"}  # add more as needed
-    # Convert LaTeX subscript to Python style, e.g., l_{1} -> l_1, and filter ignored commands
-    py_vars = [m.replace("_{", "_").replace("}", "")
-               for m in matches if m not in ignore]
-    return py_vars
+    # Step 6: Substitute LaTeX symbols with Python symbols
+    for latex_sym, py_sym in symbol_map.items():
+        expr_sym = expr_sym.subs(latex_sym, py_sym)
+
+    sym_list = [symbols(v) for v in py_vars]
+    # Ensure we create a numerical function that returns floats, not symbolic expressions
+    exec_fun = lambdify(sym_list, expr_sym, "numpy")
+    return expr_sym, exec_fun, py_vars

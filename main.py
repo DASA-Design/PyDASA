@@ -376,35 +376,35 @@ sen = DimSensitivity(_idx=0,
                      name="Sensitivity",
                      description="Sensitivity Analysis",
                      _pi_expr=DAModel.coefficients[0].pi_expr,
-                     _variables=list(DAModel.coefficients[0].par_dims.keys()))
+                     _variables=list(DAModel.coefficients[0].var_dims.keys()))
 print("=== Sensitivity: ===")
 print(sen, "\n")
-td = DAModel.coefficients[0].par_dims
+td = DAModel.coefficients[0].var_dims
 td["d"] = 5.05
-td["y"] = 5.05
+td["y_2"] = 5.05
 print(td, "\n")
 r = sen.analyze_symbolically(td)
-print(r, "\n")
+print(rm, "\n")
 r = sen.analyze_numerically([[0.1, 10.0]] * len(sen.variables))
 print(r, "\n")
 print(sen, "\n")
 
-print("\n=== Sensitivity Analysis: === \n")
-# print(sena)
-sena = SensitivityHandler(_idx=0,
-                           _sym="SA_{0}",
-                           _fwk="CUSTOM",
-                           name="Sensitivity Analysis",
-                           description="Sensitivity Analysis",
-                           _variables=vars_lt,
-                           _coefficients=DAModel.coefficients,)
-sena.analyze_symbolic(val_type="avg")
-sena.analyze_numeric(num_samples=10000)
+# print("\n=== Multiple Sensitivity Analysis: === \n")
+# # print(sena)
+# sena = SensitivityHandler(_idx=0,
+#                            _sym="SA_{0}",
+#                            _fwk="CUSTOM",
+#                            name="Sensitivity Analysis",
+#                            description="Sensitivity Analysis",
+#                            _variables=vars_lt,
+#                            _coefficients=DAModel.coefficients,)
+# sena.analyze_symbolic(val_type="avg")
+# # sena.analyze_numeric(num_samples=10000)
 
-for key, val in sena.results.items():
-    txt = f"{key}: {val}"
-    print(txt)
-# print(sena.results, "\n")
-# print(sena._coefficient_map.keys(), "\n")
-# print(sena._coefficient_map.get_entry("\\Pi_{0}"))
-# montecarlo
+# for key, val in sena.results.items():
+#     txt = f"{key}: {val}"
+#     print(txt)
+# # print(sena.results, "\n")
+# # print(sena._coefficient_map.keys(), "\n")
+# # print(sena._coefficient_map.get_entry("\\Pi_{0}"))
+# # montecarlo

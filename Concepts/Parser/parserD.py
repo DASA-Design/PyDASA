@@ -72,6 +72,7 @@ for idx, latex_expr in enumerate(latex_exprs):
     # Create symbol mapping
     latex_to_py_map, py_symbol_map = create_symbol_mapping(latex_expr)
     print(f"Symbol mapping: {latex_to_py_map}")
+    print(f"Python symbols: {py_symbol_map}")
 
     # Substitute LaTeX symbols with Python symbols
     for latex_sym, py_sym in latex_to_py_map.items():

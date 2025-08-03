@@ -49,11 +49,11 @@ class Coefficient(Validation, Generic[T]):
         relevance (bool): Flag indicating if coefficient is relevant for analysis.
 
         # Coefficient Construction
-        _param_lt (List[str]): Parameter symbols used in coefficient.
+        _variables (List[str]): Variables symbols used in coefficient.
         _dim_col (List[int]): Dimensional column for matrix operations.
         _pivot_lt (List[int]): Pivot indices in dimensional matrix.
         _pi_expr (str): Symbolic expression of coefficient.
-        par_dims (Dict[str, int]): Dimensional parameter exponents.
+        var_dims (Dict[str, int]): Dimensional variable exponents.
 
         # Value Ranges
         _min (float): Minimum value of the coefficient.
@@ -69,9 +69,9 @@ class Coefficient(Validation, Generic[T]):
     """Category of the coefficient (COMPUTED, DERIVED)."""
 
     # Coefficient construction properties
-    # :attr: _param_lt
-    _param_lt: List[str] = field(default_factory=list)
-    """Parameter symbols used in the coefficient."""
+    # :attr: _variables
+    _variables: List[str] = field(default_factory=list)
+    """Variables symbols used in the coefficient."""
 
     # :attr: _dim_col
     _dim_col: List[int] = field(default_factory=list)
@@ -85,9 +85,9 @@ class Coefficient(Validation, Generic[T]):
     _pi_expr: Optional[str] = None
     """Symbolic expression of coefficient."""
 
-    # :attr: par_dims
-    par_dims: Optional[Dict[str, int]] = None
-    """Dimensional parameter exponents in coefficient."""
+    # :attr: var_dims
+    var_dims: Optional[Dict[str, int]] = None
+    """Dimensional variable exponents in coefficient."""
 
     # Value ranges
     # :attr: _min
@@ -119,10 +119,10 @@ class Coefficient(Validation, Generic[T]):
         """*__post_init__()* Initializes the coefficient and validates its properties.
 
         Performs validation of core properties and builds the coefficient expression
-        based on parameter symbols and their respective dimensional exponents.
+        based on variable symbols and their respective dimensional exponents.
 
         Raises:
-            ValueError: If parameter list and dimensional column have different lengths.
+            ValueError: If variable list and dimensional column have different lengths.
         """
         # Initialize from base class
         super().__post_init__()
@@ -138,15 +138,15 @@ class Coefficient(Validation, Generic[T]):
             self._pyalias = latex_to_python(self._sym)
 
         self.cat = self._cat
-        self.param_lt = self._param_lt
+        self.variables = self._variables
         self.dim_col = self._dim_col
         self.pivot_lt = self._pivot_lt
-        self.pi_expr, self.par_dims = self._build_expression(self._param_lt,
+        self.pi_expr, self.var_dims = self._build_expression(self._variables,
                                                              self._dim_col)
 
         # # Build expression if parameters and dimensions are provided
-        # if self._param_lt and self._dim_col:
-        #     self.pi_expr, self.par_dims = self._build_expression(self._param_lt, self._dim_col)
+        # if self._variables and self._dim_col:
+        #     self.pi_expr, self.var_dims = self._build_expression(self._variables, self._dim_col)
 
         # Set up data array if all required values are provided
         if all([self._min, self._max, self._step]):
@@ -180,23 +180,23 @@ class Coefficient(Validation, Generic[T]):
         return True
 
     def _build_expression(self,
-                          param_lt: List[str],
+                          var_lt: List[str],
                           dim_col: List[int]) -> tuple[str, dict]:
         """*_build_expression()* Builds LaTeX expression for coefficient.
 
         Args:
-            param_lt (List[str]): List of parameter symbols.
+            var_lt (List[str]): List of variable symbols.
             dim_col (List[int]): List of dimensional exponents.
 
         Raises:
-            ValueError: If parameter list and dimensional column have different lengths.
+            ValueError: If variable list and dimensional column have different lengths.
 
         Returns:
-            tuple[str, Dict[str, int]]: LaTeX expression and parameter exponents.
+            tuple[str, Dict[str, int]]: LaTeX expression and variable exponents.
         """
-        # Validate parameter list and dimensional column
-        if len(param_lt) != len(dim_col):
-            _msg = f"Parameter list len ({len(param_lt)}) and "
+        # Validate variable list and dimensional column
+        if len(var_lt) != len(dim_col):
+            _msg = f"Variables list len ({len(var_lt)}) and "
             _msg += f"dimensional column len ({len(dim_col)}) must be equal."
             raise ValueError(_msg)
 
@@ -206,7 +206,7 @@ class Coefficient(Validation, Generic[T]):
         parameters = {}
 
         # Process parameters and their exponents
-        for sym, exp in zip(param_lt, dim_col):
+        for sym, exp in zip(var_lt, dim_col):
             # Add to numerator if exponent is positive
             if exp > 0:
                 part = sym if exp == 1 else f"{sym}^{{{exp}}}"
@@ -218,7 +218,7 @@ class Coefficient(Validation, Generic[T]):
             # Skip zero exponents
             else:
                 continue
-            # Store parameter exponent
+            # Store variable exponent
             parameters[sym] = exp
 
         # Build expression
@@ -260,29 +260,29 @@ class Coefficient(Validation, Generic[T]):
         self._cat = val.upper()
 
     @property
-    def param_lt(self) -> List[str]:
-        """*param_lt* Get the parameter symbols list.
+    def variables(self) -> List[str]:
+        """*variables* Get the variable symbols list.
 
         Returns:
-            List[str]: Parameter symbols list.
+            List[str]: Variables symbols list.
         """
-        return self._param_lt
+        return self._variables
 
-    @param_lt.setter
-    def param_lt(self, val: List[str]) -> None:
-        """*param_lt* Set the parameter symbols list.
+    @variables.setter
+    def variables(self, val: List[str]) -> None:
+        """*variables* Set the variable symbols list.
 
         Args:
-            val (List[str]): Parameter symbols list.
+            val (List[str]): Variables symbols list.
 
         Raises:
             ValueError: If list is invalid.
         """
         if self._validate_list(val, (str,)):
-            self._param_lt = val
+            self._variables = val
             # # Update expression if dimensional column is available
             # if self._dim_col:
-            #     self._pi_expr, self.par_dims = self._build_expression(val, self._dim_col)
+            #     self._pi_expr, self.var_dims = self._build_expression(val, self._dim_col)
 
     @property
     def dim_col(self) -> List[int]:
@@ -305,9 +305,9 @@ class Coefficient(Validation, Generic[T]):
         """
         if self._validate_list(val, (int, float)):
             self._dim_col = [int(x) for x in val]  # Convert all to int
-            # # Update expression if parameter list is available
-            # if self._param_lt:
-            #     self._pi_expr, self.par_dims = self._build_expression(self._param_lt, self._dim_col)
+            # # Update expression if variable list is available
+            # if self._variables:
+            #     self._pi_expr, self.var_dims = self._build_expression(self._variables, self._dim_col)
 
     @property
     def pivot_lt(self) -> Optional[List[int]]:
@@ -530,11 +530,11 @@ class Coefficient(Validation, Generic[T]):
 
         # Reset coefficient-specific attributes
         self._cat = "COMPUTED"
-        self._param_lt = []
+        self._variables = []
         self._dim_col = []
         self._pivot_lt = None
         self._pi_expr = None
-        self.par_dims = None
+        self.var_dims = None
         self._min = None
         self._max = None
         self._avg = None
@@ -556,11 +556,11 @@ class Coefficient(Validation, Generic[T]):
             "pyalias": self._pyalias,
             "fwk": self._fwk,
             "cat": self._cat,
-            "param_lt": self._param_lt,
+            "variables": self._variables,
             "dim_col": self._dim_col,
             "pivot_lt": self._pivot_lt,
             "pi_expr": self._pi_expr,
-            "par_dims": self.par_dims,
+            "var_dims": self.var_dims,
             "min": self._min,
             "max": self._max,
             "avg": self._avg,

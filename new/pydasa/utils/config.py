@@ -26,6 +26,7 @@ Supported Frameworks:
 Supported Sensitivity Analysis Parameters:
     - SYM: Sensitivity analysis for symbolic processable Parameters (e.g., 'x + y').
     - NUM: Sensitivity analysis for numeric Variables (e.g., 1.0, 2.5).
+    # TODO do I need HYB + CUSTOM?
     - HYB: Sensitivty analysis that includes both symbolic and numeric sensitivity analysis.
     - CUSTOM: User-defined sensitivity analysis for specific use cases.
 
@@ -211,8 +212,9 @@ Purpose:
 SENS_ANSYS_DT: dict = {
     "SYM": "Sensitivity analysis for symbolic processable Parameters (e.g., 'x + y').",
     "NUM": "Sensitivity analysis for numeric Variables (e.g., 1.0, 2.5).",
-    "HYB": "Sensitivity analysis that includes both symbolic and numeric sensitivity analysis.",
-    "CUSTOM": "User-defined sensitivity analysis for specific use cases.",
+    # TODO do I need HYB + CUSTOM?
+    # "HYB": "Sensitivity analysis that includes both symbolic and numeric sensitivity analysis.",
+    # "CUSTOM": "User-defined sensitivity analysis for specific use cases.",
 }
 
 # Default Fundamental Dimensional Units (FDU) precedence list
@@ -230,7 +232,7 @@ Purpose:
 # Allow valid LaTeX strings starting with a backslash or alphanumeric strings
 # :attr: LATEX_RE
 # LATEX_RE: str = r"([a-zA-Z]+)(?:_\{\d+\})?"
-LATEX_RE: str = r"(\\?[a-zA-Z]+)(?:_\{\d+\})?"
+LATEX_RE: str = r'\\?[a-zA-Z]+(?:_\{\d+\})?'
 """
 LaTeX regex pattern to match LaTeX symbols (e.g., '\alpha', '\beta_{1}') in *PyDASA*.
 """

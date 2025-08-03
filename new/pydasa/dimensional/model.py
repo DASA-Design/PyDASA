@@ -373,7 +373,7 @@ class DimMatrix(Validation, Generic[T]):
                 _sym=f"\\Pi_{{{i}}}",
                 _fwk=self._fwk,
                 _cat="COMPUTED",
-                _param_lt=var_symbols,
+                _variables=var_symbols,
                 _dim_col=vector_np.tolist(),
                 _pivot_lt=self._pivot_cols,
                 name=f"Pi-{i}",

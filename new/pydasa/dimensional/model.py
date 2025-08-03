@@ -29,7 +29,8 @@ from new.pydasa.buckingham.vashchy import Coefficient
 
 # Import utils
 from new.pydasa.utils.default import T
-# import the 'cfg' module with to allow global variable edition
+# import global configuration
+# import the 'cfg' module to allow global variable edition
 from new.pydasa.utils import config as cfg
 
 # global variables
@@ -47,6 +48,7 @@ class DimMatrix(Validation, Generic[T]):
         description (str): Brief summary of the dimensional model.
         _idx (int): Index/precedence of the dimensional model.
         _sym (str): Symbol representation (LaTeX or alphanumeric).
+        _pyalias (str): Python-compatible alias for use in code.
         _fwk (str): Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
 
         # Framework Management
@@ -77,13 +79,13 @@ class DimMatrix(Validation, Generic[T]):
 
     # Identification attributes
     # Don't need them because of Validation Class
-    # # :attr: name
-    # name: str = "Dimensional Model"
-    # """User-friendly name of the dimensional model."""
+    # :attr: name
+    name: str = "Dimensional Matrix"
+    """User-friendly name of the dimensional matrix."""
 
-    # # :attr: description
-    # description: str = ""
-    # """Brief summary of the dimensional model."""
+    # :attr: description
+    description: str = ""
+    """Brief summary of the dimensional matrix."""
 
     # Framework management
     # :attr: _framework

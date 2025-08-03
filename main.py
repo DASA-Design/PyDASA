@@ -139,7 +139,7 @@ print(v, "\n")
 p1 = Variable(name="U_1",
               description="Service Rate",
               _sym="U_{1}",
-              _fwk="DIGITAL",
+              _fwk="SOFTWARE",
               _idx=1,
               _cat="IN",
               _units="kPa",
@@ -212,8 +212,8 @@ vars_lt = [
              _std_max=15.0,
              _std_avg=7.50,
              _step=0.1,),
-    Variable(_sym="y",
-             _pyalias="y",
+    Variable(_sym="y_{2}",
+             _pyalias="y_2",
              _fwk="CUSTOM",
              name="Distance from the wall",
              description="Distance from the wall to the center of the channel",
@@ -387,6 +387,7 @@ r = sen.analyze_symbolically(td)
 print(r, "\n")
 r = sen.analyze_numerically([[0.1, 10.0]] * len(sen.variables))
 print(r, "\n")
+print(sen, "\n")
 
 print("\n=== Sensitivity Analysis: === \n")
 # print(sena)
@@ -398,7 +399,12 @@ sena = SensitivityHandler(_idx=0,
                            _variables=vars_lt,
                            _coefficients=DAModel.coefficients,)
 sena.analyze_symbolic(val_type="avg")
-sena.analyze_numeric(val_type="avg")
-# print(sena._coefficient_mp.keys(), "\n")
-# print(sena._coefficient_mp.get_entry("\\Pi_{0}"))
+sena.analyze_numeric(num_samples=10000)
+
+for key, val in sena.results.items():
+    txt = f"{key}: {val}"
+    print(txt)
+# print(sena.results, "\n")
+# print(sena._coefficient_map.keys(), "\n")
+# print(sena._coefficient_map.get_entry("\\Pi_{0}"))
 # montecarlo

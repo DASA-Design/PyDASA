@@ -15,7 +15,11 @@ import numpy as np
 # Import validation base classes
 from new.pydasa.core.basic import Validation
 
+# Import utility functions
+from new.pydasa.utils.latex import latex_to_python
+
 # Import configuration
+# import the 'cfg' module to allow global variable edition
 from new.pydasa.utils import config as cfg
 
 
@@ -32,9 +36,9 @@ class Variable(Validation):
         description (str): Brief summary of the variable.
         _idx (int): Index/precedence in the dimensional matrix.
         _sym (str): Symbol representation (LaTeX or alphanumeric).
-        _fwk (str): Framework context (PHYSICAL, COMPUTATION, DIGITAL, CUSTOM).
+        _pyalias (str): Python-compatible alias for use in code.
+        _fwk (str): Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
         _cat (str): Category (INPUT, OUT, CTRL).
-        _varsym (str): Python variable synonym for code generation.
         relevant (bool): Flag indicating if variable is relevant for analysis.
 
         # Dimensional Properties
@@ -74,10 +78,6 @@ class Variable(Validation):
     # :attr: _units
     _units: str = ""
     """Units of measure (e.g., "m/s")."""
-
-    # :attr: _varsym
-    _varsym: Optional[str] = None
-    """Python variable synonym for code generation. e.g.: `l1`, `W2`, `L1`, `N2`, `u`, `l`, `x`."""
 
     # Processed dimensional attributes
     # :attr: _std_dims
@@ -146,6 +146,13 @@ class Variable(Validation):
         """
         # Initialize from base class
         super().__post_init__()
+
+        if not self._sym:
+            self._sym = f"V_{self._idx}" if self._idx >= 0 else "V_{}"
+
+        # Set the Python alias if not specified
+        if not self._pyalias:
+            self._pyalias = latex_to_python(self._sym)
 
         # Process dimensions if provided
         if self._dims:
@@ -287,29 +294,6 @@ class Variable(Validation):
             _msg += f"{', '.join(_param_keys)}."
             raise ValueError(_msg)
         self._cat = val.upper()
-
-    @property
-    def varsym(self) -> Optional[str]:
-        """*varsym* Get the Python variable synonym.
-
-        Returns:
-            Optional[str]: Python variable name. e.g.: `l_1`, `l_2`, `l1`, `N2`, `u`, `l`, `x`.
-        """
-        return self._varsym
-
-    @varsym.setter
-    def varsym(self, val: str) -> None:
-        """*varsym* Set the Python variable synonym.
-
-        Args:
-            val (str): Python variable name. e.g.: `l_1`, `l_2`, `l1`, `N2`, `u`, `l`, `x`.
-
-        Raises:
-            ValueError: If variable name is empty.
-        """
-        if val is not None and not val.strip():
-            raise ValueError("Variable py-synonym cannot be empty")
-        self._varsym = val
 
     # Dimensional Properties
 
@@ -733,6 +717,7 @@ class Variable(Validation):
         # Reset base class attributes
         self._idx = -1
         self._sym = ""
+        self._pyalias = ""
         self._fwk = "PHYSICAL"
         self.name = ""
         self.description = ""
@@ -767,6 +752,7 @@ class Variable(Validation):
             "description": self.description,
             "idx": self._idx,
             "sym": self._sym,
+            "pyalias": self._pyalias,
             "fwk": self._fwk,
             "cat": self._cat,
             "dims": self._dims,

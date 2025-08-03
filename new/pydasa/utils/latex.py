@@ -22,6 +22,24 @@ from sympy import symbols
 from new.pydasa.utils.config import LATEX_RE
 
 
+def latex_to_python(expr: str) -> str:
+    """*latex_to_python()* Convert a LaTeX expression to a Python-compatible string.
+
+    Args:
+        expr (str): The LaTeX expression to convert.
+
+    Returns:
+        str: The Python-compatible string.
+    """
+    # Replace LaTeX subscript with Python style
+    if expr.isalnum():
+        return expr
+    # ans = re.sub(LATEX_RE, r"\1_\2", expr)
+    ans = re.sub(r'\\([a-zA-Z]+)_{(\d+)}', r'\1_\2', expr)
+    return ans
+
+
+
 def parse_latex_symbols(expr: str) -> tuple:
     """*parse_latex_symbols()* Parse a LaTeX expression and extract variable names.
 

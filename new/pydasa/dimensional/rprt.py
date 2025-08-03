@@ -65,7 +65,7 @@ class SensitivityAnalysis(Generic[T]):
     # :attr: _fwk
     _fwk: str = "PHYSICAL"
     """
-    Framework of the *SensitivityAnalysis*, can be one of the following: `PHYSICAL`, `COMPUTATION`, `DIGITAL` or `CUSTOM`. By default, it is set to `PHYSICAL`.
+    Framework of the *SensitivityAnalysis*, can be one of the following: `PHYSICAL`, `COMPUTATION`, `SOFTWARE` or `CUSTOM`. By default, it is set to `PHYSICAL`.
     """
 
     # :attr: _cat`

@@ -15,10 +15,11 @@ def extract_latex_vars(expr):
 
 # Test LaTeX expressions with multi-character variable names (using _ for subscripts)
 latex_exprs = [
-    r"l_{1} W_{2}",                   # \Pi_{0} = l_{1}*W_{2}
-    r"\frac{u}{l}",                   # \Pi_{1} = u/l
-    r"\frac{x}{l}",                   # \Pi_{2} = x/l
-    r"\frac{L_{1}^{2}}{N_{2}^{2}}"    # \Pi_{3} = L_{1}^2/N_{2}^2
+    "l_{1} W_{2}",                   # \Pi_{0} = l_{1}*W_{2}
+    "\\frac{u}{l}",                   # \Pi_{1} = u/l
+    "\\frac{x}{l}",                   # \Pi_{2} = x/l
+    "\\frac{L_{1}^{2}}{N_{2}^{2}}",   # \Pi_{3} = L_{1}^2/N_{2}^2
+    # "\\alpha*\\beta_{1}",            # \Pi_{4} = \alpha*\beta_{1}
 ]
 
 # Collect all variable names from all expressions
@@ -30,10 +31,16 @@ for latex_expr in latex_exprs:
 local_dict = {name: symbols(name) for name in all_vars}
 
 # Example values for variables
-values = {'l_1': 2, 'W_2': 3, 'u': 8, 'l': 2, 'x': 10, 'L_1': 4, 'N_2': 2}
+values = {
+    'l_1': 2, 'W_2': 3,
+    'u': 8, 'l': 2,
+    'x': 10, 'L_1': 4, 'N_2': 2,
+    # 'alpha': 1.5, 'beta_1': 0.5
+}
 
 for idx, latex_expr in enumerate(latex_exprs):
     # Parse the LaTeX expression
+    # Parse using provided symbols
     expr = parse_latex(latex_expr)
     print(f"expr: {expr}")
     # Replace LaTeX subscripted symbols with Python variable names
@@ -57,3 +64,13 @@ for idx, latex_expr in enumerate(latex_exprs):
     val_args = [values[v] for v in expr_vars]
     result = f(*val_args)
     print(f"With {dict(zip(expr_vars, val_args))} => {result}\n")
+
+# for idx, latex_expr in enumerate(latex_exprs):
+#     expr = parse_latex(latex_expr)
+#     print(f"Expression {idx}: {latex_expr}")
+#     print("Parsed:", expr)
+#     expr_vars = sorted([str(s) for s in expr.free_symbols])
+#     f = lambdify([local_dict[v] for v in expr_vars], expr, "numpy")
+#     val_args = [values[v] for v in expr_vars]
+#     result = f(*val_args)
+#     print(f"With {dict(zip(expr_vars, val_args))} => {result}\n")

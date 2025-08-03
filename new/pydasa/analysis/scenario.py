@@ -29,6 +29,9 @@ from new.pydasa.buckingham.vashchy import Coefficient
 # Import utils
 from new.pydasa.utils.default import T
 from new.pydasa.utils.latex import parse_latex_symbols
+from new.pydasa.utils.latex import latex_to_python
+# Import configuration
+# Import the 'cfg' module to allow global variable editing
 from new.pydasa.utils import config as cfg
 
 
@@ -42,8 +45,9 @@ class DimSensitivity(Validation, Generic[T]):
         description (str): Brief summary of the sensitivity analysis.
         _idx (int): Index/precedence of the sensitivity analysis.
         _sym (str): Symbol representation (LaTeX or alphanumeric).
-        _fwk (str): Framework context (PHYSICAL, COMPUTATION, DIGITAL, CUSTOM).
-        _cat (str): Category of analysis (SYM, Num, HYB).
+        _pyalias (str): Python-compatible alias for use in code.
+        _fwk (str): Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
+        _cat (str): Category of analysis (SYM, NUM).
 
         # Expression Management
         _pi_expr (str): LaTeX expression to analyze.
@@ -64,7 +68,7 @@ class DimSensitivity(Validation, Generic[T]):
     # Category attribute
     # :attr: _cat
     _cat: str = "SYM"
-    """Category of sensitivity analysis (SYM, Num, HYB)."""
+    """Category of sensitivity analysis (SYM, NUM)."""
 
     # Expression properties
     # :attr: _pi_expr
@@ -113,8 +117,9 @@ class DimSensitivity(Validation, Generic[T]):
 
         # Set default symbol if not specified
         if not self._sym:
-            self._sym = f"SEN ANSYS \\Pi_{{{self._idx}}}" if self._idx >= 0 else "SEN ANSYS \\Pi_{}"
-
+            self._sym = f"SANSYS_\\Pi_{{{self._idx}}}" if self._idx >= 0 else "SANSYS_\\Pi_{}"
+        if not self._pyalias:
+            self._pyalias = latex_to_python(self._sym)
         # Process expression if provided
         if self._pi_expr:
             self._parse_expression(self._pi_expr)
@@ -133,8 +138,9 @@ class DimSensitivity(Validation, Generic[T]):
             self._sym_fun, self._variables = parse_latex_symbols(expr)
 
             # Extract variable names and sort them
-            self._variables = sorted([str(v) for v in self._sym_fun.free_symbols])
-
+            # self._variables = sorted([str(v) for v in self._sym_fun.free_symbols])
+            print(self._variables)
+            print(type(self._sym_fun))
             # Create executable function
             self._exe_fun = lambdify(self._variables, self._sym_fun, "numpy")
         except Exception as e:
@@ -198,13 +204,27 @@ class DimSensitivity(Validation, Generic[T]):
         self._var_values = values
 
         # Compute partial derivatives
+        # list comprehension version, not easy to read!!!
         self.result = {
             var: lambdify(self.variables, diff(self._sym_fun, var), "numpy")(
                 *[values[v] for v in self.variables]
             )
             for var in self.variables
         }
-
+        # # traditional calculation method, longer but readeble
+        # # Compute partial derivatives for each variable
+        # self.result = {}
+        # for var in self.variables:
+        #     # Calculate partial derivative with respect to current variable
+        #     par_deriv = diff(self._sym_fun, var)
+        #     # Create executable function from the derivative
+        #     deriv_func = lambdify(self.variables, par_deriv, "numpy")
+        #     # Prepare values in the correct order for function evaluation
+        #     ordered_values = [values[v] for v in self.variables]
+        #     # Evaluate the derivative at the given values
+        #     sensitivity_value = deriv_func(*ordered_values)
+        #     # Store the result
+        #     self.result[var] = sensitivity_value
         return self.result
 
     def analyze_numerically(self,
@@ -247,7 +267,6 @@ class DimSensitivity(Validation, Generic[T]):
 
         # Perform FAST analysis
         self.result = analyze(problem, Y)
-
         return self.result
 
     # Property getters and setters
@@ -257,7 +276,7 @@ class DimSensitivity(Validation, Generic[T]):
         """*cat* Get the analysis category.
 
         Returns:
-            str: Category (SYM, Num, HYB).
+            str: Category (SYM, NUM).
         """
         return self._cat
 
@@ -267,7 +286,7 @@ class DimSensitivity(Validation, Generic[T]):
 
         Args:
             val (str): Category value.
-            
+
         Raises:
             ValueError: If category is invalid.
         """
@@ -373,7 +392,8 @@ class DimSensitivity(Validation, Generic[T]):
         """
         # Reset base class attributes
         self._idx = -1
-        self._sym = "SEN ANSYS \\Pi_{}"
+        self._sym = "SANSYS_\\Pi_{}"
+        self._pyalias = ""
         self._fwk = "PHYSICAL"
         self.name = ""
         self.description = ""
@@ -401,6 +421,7 @@ class DimSensitivity(Validation, Generic[T]):
             "description": self.description,
             "idx": self._idx,
             "sym": self._sym,
+            "pyalias": self._pyalias,
             "fwk": self._fwk,
             "cat": self._cat,
             "pi_expr": self._pi_expr,
@@ -427,6 +448,7 @@ class DimSensitivity(Validation, Generic[T]):
             description=data.get("description", ""),
             _idx=data.get("idx", -1),
             _sym=data.get("sym", ""),
+            _pyalias=data.get("pyalias", ""),
             _fwk=data.get("fwk", "PHYSICAL"),
             _cat=data.get("cat", "SYM"),
             _pi_expr=data.get("pi_expr", None),
@@ -436,5 +458,4 @@ class DimSensitivity(Validation, Generic[T]):
         # Set additional properties if available
         if "result" in data:
             instance.result = data["result"]
-
         return instance

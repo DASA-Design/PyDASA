@@ -19,7 +19,7 @@ Classes:
 from __future__ import annotations
 from dataclasses import dataclass
 # TODO do I need the Generic, T stuf???
-# from typing import Generic
+from typing import Optional
 # from new.pydasa.utils.default import T
 
 # indicate it is an abstract base class
@@ -46,7 +46,7 @@ class SymValidation(ABC):
 
     # :attr: _pyalias
     _pyalias: str = ""
-    """Python-compatible alias for symbol, used in executable code."""
+    """Python-compatible alias for symbol, used in executable code. e.g.: `\\rho_{1}` -> `rho_1`."""
 
     # :attr: _fwk
     _fwk: str = "PHYSICAL"
@@ -129,6 +129,29 @@ class SymValidation(ABC):
         if not val.isidentifier():
             _msg = f"Python alias must be a valid Python identifier. Provided: {val}"
             raise ValueError(_msg)
+        self._pyalias = val
+
+    @property
+    def pyalias(self) -> Optional[str]:
+        """*pyalias* Get the Python variable synonym.
+
+        Returns:
+            Optional[str]: Python variable name. e.g.: `\\rho_{1}` -> `rho_1`.
+        """
+        return self._pyalias
+
+    @pyalias.setter
+    def pyalias(self, val: str) -> None:
+        """*pyalias* Set the Python variable synonym.
+
+        Args:
+            val (str): Python variable name. e.g.: `\\rho_{1}` -> `rho_1`.
+
+        Raises:
+            ValueError: If variable name is empty.
+        """
+        if val is not None and not val.strip():
+            raise ValueError("Python alias cannot be empty")
         self._pyalias = val
 
     def _validate_sym(self, val: str) -> None:

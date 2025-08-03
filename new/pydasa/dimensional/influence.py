@@ -24,6 +24,9 @@ from new.pydasa.analysis.scenario import DimSensitivity
 # Import utils
 from new.pydasa.utils.default import T
 from new.pydasa.utils.error import inspect_var
+from new.pydasa.utils.latex import latex_to_python
+# Import global configuration
+# Import the 'cfg' module to allow global variable editing
 from new.pydasa.utils import config as cfg
 
 
@@ -39,7 +42,8 @@ class SensitivityHandler(Validation, Generic[T]):
         description (str): Brief summary of the sensitivity handler.
         _idx (int): Index/precedence of the sensitivity handler.
         _sym (str): Symbol representation (LaTeX or alphanumeric).
-        _fwk (str): Framework context (PHYSICAL, COMPUTATION, DIGITAL, CUSTOM).
+        _pyalias (str): Python-compatible alias for use in code.
+        _fwk (str): Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
         _cat (str): Category of analysis (SYM, NUM, HYB).
 
         # Analysis Components
@@ -56,7 +60,7 @@ class SensitivityHandler(Validation, Generic[T]):
     # Category attribute
     # :attr: _cat
     _cat: str = "SYM"
-    """Category of sensitivity analysis (SYM, NUM, HYB)."""
+    """Category of sensitivity analysis (SYM, NUM)."""
 
     # Analysis components
     # :attr: _variables
@@ -96,6 +100,9 @@ class SensitivityHandler(Validation, Generic[T]):
         if not self._sym:
             self._sym = f"SENS HDL \\Pi_{{{self._idx}}}" if self._idx >= 0 else "SENS HDL"
 
+        if not self._pyalias:
+            self._pyalias = latex_to_python(self._sym)
+
         # Initialize component maps
         if self._variables:
             self._setup_variable_map()
@@ -108,14 +115,16 @@ class SensitivityHandler(Validation, Generic[T]):
         """
         self._variable_map.clear()
         for var in self._variables:
-            self._variable_map[var.sym] = var
+            # TODO check behavour from mym -> pyalias
+            self._variable_map[var.pyalias] = var
 
     def _setup_coefficient_map(self) -> None:
         """*_setup_coefficient_map()* Creates a map of coefficient symbols to coefficient objects.
         """
         self._coefficient_map.clear()
         for coef in self._coefficients:
-            self._coefficient_map[coef.sym] = coef
+            # TODO check behavour from mym -> pyalias
+            self._coefficient_map[coef.pyalias] = coef
 
     def _validate_list(self, lt: List, exp_type: tuple) -> bool:
         """*_validate_list()* Validates a list with expected element types.
@@ -201,7 +210,7 @@ class SensitivityHandler(Validation, Generic[T]):
                 return var.avg if var.avg is not None else -1.0
             # Return standardized average if it exists
             return var.std_avg
-            
+
         # CASE 2: Return minimum value
         elif val_type == "min":
             # First check if standardized minimum exists
@@ -211,7 +220,7 @@ class SensitivityHandler(Validation, Generic[T]):
                 return var.min if var.min is not None else -0.1
             # Return standardized minimum if it exists
             return var.std_min
-            
+
         # CASE 3: Return maximum value
         elif val_type == "max":
             # First check if standardized maximum exists
@@ -221,7 +230,7 @@ class SensitivityHandler(Validation, Generic[T]):
                 return var.max if var.max is not None else -10.0
             # Return standardized maximum if it exists
             return var.std_max
-            
+
         # CASE 4: Invalid value type
         else:
             # Build error message

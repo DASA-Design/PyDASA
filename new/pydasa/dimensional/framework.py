@@ -110,7 +110,7 @@ class DimFramework(Validation, Generic[T]):
         """*_setup_fdus()* Initializes FDUs based on the selected framework.
 
         Creates and adds standard FDUs for the selected framework (PHYSICAL,
-        COMPUTATION, DIGITAL) or validates custom FDUs.
+        COMPUTATION, SOFTWARE) or validates custom FDUs.
 
         Raises:
             ValueError: If the framework is invalid or custom FDUs are not properly defined.

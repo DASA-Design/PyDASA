@@ -22,6 +22,7 @@ from new.pydasa.utils.error import handle_error as error
 from new.pydasa.utils.default import T
 
 # import global variables
+# Don't need to import global variables here, they are imported in the Validation class
 # from new.pydasa.utils.config import FDU_FWK_DT, LATEX_RE
 
 # checking custom modules
@@ -42,7 +43,8 @@ class Dimension(Validation, Generic[T]):
     Attributes:
         _idx (int): The Index of the Fundamental Dimension (precedence in the Dimensional Matrix).
         _sym (str): The symbol of the Fundamental Dimension (LaTeX or alphanumeric).
-        _fwk (str): The framework of the Fundamental Dimension (PHYSICAL, COMPUTATION, DIGITAL, CUSTOM).
+        _pyalias (str): The Python-compatible alias for the Fundamental Dimension, used in executable code.
+        _fwk (str): The framework of the Fundamental Dimension (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
         _unit (str): The basic unit of the Fundamental Dimension, useful for unit of meassure convertion (e.g.: km -> m or GB -> bit).
         name (str): User-friendly name of the Fundamental Dimension.
         description (str): Brief summary of the Fundamental Dimension.
@@ -98,6 +100,42 @@ class Dimension(Validation, Generic[T]):
             _msg = f"Unit must be a non-empty string. Provided: {val}"
             raise ValueError(_msg)
 
+    def to_dict(self) -> dict:
+        """*to_dict* Convert the Dimension to a dictionary representation.
+
+        Returns:
+            dict: Dictionary representation of the Dimension.
+        """
+        return {
+            "idx": self._idx,
+            "sym": self._sym,
+            "pyalias": self._pyalias,
+            "fwk": self._fwk,
+            "unit": self._unit,
+            "name": self.name,
+            "description": self.description
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> Dimension:
+        """*from_dict* Create a Dimension instance from a dictionary.
+
+        Args:
+            data (dict): Dictionary containing Dimension attributes.
+
+        Returns:
+            Dimension: Instance of Dimension created from the dictionary.
+        """
+        return cls(
+            _idx=data.get("idx", -1),
+            _sym=data.get("sym", ""),
+            _pyalias=data.get("pyalias", ""),
+            _fwk=data.get("fwk", "PHYSICAL"),
+            _unit=data.get("unit", ""),
+            name=data.get("name", ""),
+            description=data.get("description", "")
+        )
+
     def __eq__(self, other: object) -> bool:
         """*__eq__()* Check equality of two Dimension objects.
 
@@ -109,4 +147,9 @@ class Dimension(Validation, Generic[T]):
         """
         if not isinstance(other, Dimension):
             return NotImplemented
-        return (self._sym == other._sym and self._fwk == other._fwk)
+        eq_sym = self._sym == other._sym
+        eq_fwk = self._fwk == other._fwk
+        eq_alias = self._pyalias == other._pyalias
+        eq_unit = self._unit == other._unit
+        return eq_sym and eq_fwk and eq_alias and eq_unit
+        # return (self._sym == other._sym and self._fwk == other._fwk)

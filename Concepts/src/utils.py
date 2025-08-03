@@ -6,7 +6,7 @@ from typing import TypeVar
 T = TypeVar("T")    # T can be any type
 
 # Fundamental Dimensional Units (FDU)
-# PHYSICAL + DIGITAL
+# PHYSICAL + SOFTWARE
 # mass [M], length [L], time [T],
 # temperature [θ], electric current [I],
 # amount of substance [N], luminous intensity [J],

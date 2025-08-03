@@ -229,6 +229,7 @@ Purpose:
 # TODO clean the regex when test are finished
 # Allow valid LaTeX strings starting with a backslash or alphanumeric strings
 # :attr: LATEX_RE
+# LATEX_RE: str = r"([a-zA-Z]+)(?:_\{\d+\})?"
 LATEX_RE: str = r"(\\?[a-zA-Z]+)(?:_\{\d+\})?"
 """
 LaTeX regex pattern to match LaTeX symbols (e.g., '\alpha', '\beta_{1}') in *PyDASA*.

@@ -381,7 +381,7 @@ print("=== Sensitivity: ===")
 print(sen, "\n")
 td = DAModel.coefficients[0].var_dims
 td["d"] = 5.05
-td["y_2"] = 5.05
+td["y_{2}"] = 3.05
 print(td, "\n")
 r = sen.analyze_symbolically(td)
 print(rm, "\n")

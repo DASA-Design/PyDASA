@@ -82,7 +82,7 @@ I need an object oriented design option to include the following requirements in
       2. default.py contains all the default stuff needed for custom datastructures + other functionalities, usefull in the future!!! ✅
       3. errors.py: contains the generic error_handler() function for all components. ✅
       4. helpers.py: contains any other funcion useful for the process, include MAD for hashtable, check if is prime, and other stuff. ✅
-      5. queues.py: library that implement the queue theory for simulations and stuff 🔶👨‍💻
+      5. queues.py: library that implement the queue theory for simulations and stuff ✅ ->  ⚠️ TODO: test and check
       6. io.py: contains all the input/ouput functions for saving data of the analyisis, also exports to be use in other platforms (MATPLOTLIB and files!!) NOT NOW❌
 
       ---

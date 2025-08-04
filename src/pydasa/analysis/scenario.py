@@ -39,6 +39,7 @@ from src.pydasa.utils import config as cfg
 
 @dataclass
 class DimSensitivity(Validation, Generic[T]):
+    # TODO clean code, some vars are unnecesary!!!
     """**DimSensitivity** class for analyzing variable impacts in *PyDASA*. Performs sensitivity analysis on dimensionless coefficients to determine which variables have the most significant impact on the system behavior.
 
     Attributes:

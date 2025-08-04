@@ -407,13 +407,11 @@ sena = SensitivityHandler(_idx=0,
 # print(sena)
 
 sena.analyze_symbolic(val_type="avg")
-sena.analyze_numeric(num_samples=1000)
+sena.analyze_numeric(n_samples=1000)
 
 for res in sena.results:
     print(res)
-    
-    
-print(sena)
+# print(sena)
 
 # for key, val in sena.results.items():
 #     txt = f"{key}: {val}"

@@ -36,7 +36,7 @@ I need an object oriented design option to include the following requirements in
 
       1. conversion.py unit conversion handler for the solver, OUT OF SCOPE for now!!!❌
       2. scenario.py:  contains the Sensitivity class for understanding variance in the coefficients. ✅
-      3. simulation.py: monte carlo slmulator for one coefficient🔶👨‍💻
+      3. simulation.py: monte carlo slmulator for one coefficient🔶👨‍💻 ⚠️WORKING HERE!!!⚠️
 
       ---
    2. **buckingham**
@@ -70,7 +70,7 @@ I need an object oriented design option to include the following requirements in
 
       1. domain.py unit conversion handler/manager for the the matrix UnitsManager, OUT OF SCOPE for now!!!❌
       2. framework.py: contaons de DimFramework class to manage and control the DimMatrix in the solving process. ✅
-      3. **influence.py: contains the SensitivityReport class for understanding variance in the coefficients. ✅ -> ⚠️ FIXING errors**
+      3. influence.py: contains the SensitivityHandler class for understanding variance in the coefficients. ✅
       4. model.py: contains de DimMatrix class to solve de dimensional matrix. ✅
       5. phenomena.py: has the main Solver() class of the project 🔶👨‍💻
       6. practical.py contains the SimulationManager class to control all the montecartlo simulations of all data 🔶👨‍💻

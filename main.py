@@ -391,22 +391,24 @@ r = sen.analyze_numerically(list(td.keys()),
 print(r, "\n")
 print(sen, "\n")
 
-# print("\n=== Multiple Sensitivity Analysis: === \n")
-# # print(sena)
-# sena = SensitivityHandler(_idx=0,
-#                            _sym="SA_{0}",
-#                            _fwk="CUSTOM",
-#                            name="Sensitivity Analysis",
-#                            description="Sensitivity Analysis",
-#                            _variables=vars_lt,
-#                            _coefficients=DAModel.coefficients,)
-# sena.analyze_symbolic(val_type="avg")
-# # sena.analyze_numeric(num_samples=10000)
+print("\n=== Multiple Sensitivity Analysis: === \n")
+sena = SensitivityHandler(_idx=0,
+                          _sym="SA_{0}",
+                          _fwk="CUSTOM",
+                          name="Sensitivity Analysis",
+                          description="Sensitivity Analysis",
+                          _variables=vars_lt,
+                          _coefficients=DAModel.coefficients,)
+print(sena)
+
+sena.analyze_symbolic(val_type="avg")
+# sena.analyze_numeric(num_samples=10000)
 
 # for key, val in sena.results.items():
 #     txt = f"{key}: {val}"
 #     print(txt)
-# # print(sena.results, "\n")
-# # print(sena._coefficient_map.keys(), "\n")
-# # print(sena._coefficient_map.get_entry("\\Pi_{0}"))
-# # montecarlo
+
+# print(sena.results, "\n")
+# print(sena._coefficient_map.keys(), "\n")
+# print(sena._coefficient_map.get_entry("\\Pi_{0}"))
+# montecarlo

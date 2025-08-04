@@ -244,6 +244,12 @@ class SensitivityHandler(Validation, Generic[T]):
 
         Analyzes each coefficient using symbolic differentiation at specified values.
 
+        # TODO aki voy!!!
+        1. iterate over each analysis
+        2. get variable values for each analysis
+        3. perform analysis
+        4. store results by coefficient symbol
+
         Args:
             val_type (str, optional): Type of value to use (avg, min, max). Defaults to "avg".
 
@@ -258,9 +264,12 @@ class SensitivityHandler(Validation, Generic[T]):
         self._results.clear()
 
         # Process each analysis
+        # print("\n== self._analyses ==:", self._analyses)
+        # FIXME this iteration is not working, fix it!!!
         for analysis in self._analyses:
             # Get variable values
             values = {}
+            print("analysis!!!!", analysis)
             for var_sym in analysis.variables:
                 values[var_sym] = self._get_variable_value(var_sym, val_type)
 

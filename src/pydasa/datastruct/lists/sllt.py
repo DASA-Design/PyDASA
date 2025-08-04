@@ -18,13 +18,13 @@ import inspect
 
 # custom modules
 # node class for the linked list
-from new.pydasa.datastruct.lists.ndlt import SLNode
+from src.pydasa.datastruct.lists.ndlt import SLNode
 # generic error handling and type checking
-from new.pydasa.utils.error import handle_error as error
-from new.pydasa.utils.default import dflt_cmp_func_lt
-from new.pydasa.utils.default import T
-from new.pydasa.utils.default import DFLT_DICT_KEY
-from new.pydasa.utils.default import VLD_IODATA_LT
+from src.pydasa.utils.error import handle_error as error
+from src.pydasa.utils.default import dflt_cmp_func_lt
+from src.pydasa.utils.default import T
+from src.pydasa.utils.default import DFLT_DICT_KEY
+from src.pydasa.utils.default import VLD_IODATA_LT
 
 # checking custom modules
 assert error

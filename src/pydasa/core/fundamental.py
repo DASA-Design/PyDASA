@@ -15,11 +15,11 @@ from typing import Generic
 # import re
 
 # custom modules
-from new.pydasa.core.basic import Validation
+from src.pydasa.core.basic import Validation
 
 # generic error handling and type checking
-from new.pydasa.utils.error import handle_error as error
-from new.pydasa.utils.default import T
+from src.pydasa.utils.error import handle_error as error
+from src.pydasa.utils.default import T
 
 # import global variables
 # Don't need to import global variables here, they are imported in the Validation class

@@ -19,15 +19,15 @@ from typing import Optional, List, Dict, Any, Generic
 import numpy as np
 
 # Import validation base classes
-from new.pydasa.core.basic import Validation
+from src.pydasa.core.basic import Validation
 
 # Import utils
-from new.pydasa.utils.default import T
-from new.pydasa.utils.error import inspect_var
-from new.pydasa.utils.latex import latex_to_python
+from src.pydasa.utils.default import T
+from src.pydasa.utils.error import inspect_var
+from src.pydasa.utils.latex import latex_to_python
 # Import global configuration
 # import the 'cfg' module to allow global variable edition
-from new.pydasa.utils import config as cfg
+from src.pydasa.utils import config as cfg
 
 
 @dataclass

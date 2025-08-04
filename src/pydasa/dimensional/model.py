@@ -20,18 +20,18 @@ import numpy as np
 import sympy as sp
 
 # Import validation base classes
-from new.pydasa.core.basic import Validation
+from src.pydasa.core.basic import Validation
 
 # Import related classes
-from new.pydasa.core.parameter import Variable
-from new.pydasa.dimensional.framework import DimFramework
-from new.pydasa.buckingham.vashchy import Coefficient
+from src.pydasa.core.parameter import Variable
+from src.pydasa.dimensional.framework import DimFramework
+from src.pydasa.buckingham.vashchy import Coefficient
 
 # Import utils
-from new.pydasa.utils.default import T
+from src.pydasa.utils.default import T
 # import global configuration
 # import the 'cfg' module to allow global variable edition
-from new.pydasa.utils import config as cfg
+from src.pydasa.utils import config as cfg
 
 # global variables
 MAX_OUT: int = 1

@@ -14,20 +14,20 @@ from typing import List, Dict, Any, Generic
 # import re
 
 # Import validation base classes
-from new.pydasa.core.basic import Validation
+from src.pydasa.core.basic import Validation
 
 # Import related classes
-from new.pydasa.core.parameter import Variable
-from new.pydasa.buckingham.vashchy import Coefficient
-from new.pydasa.analysis.scenario import DimSensitivity
+from src.pydasa.core.parameter import Variable
+from src.pydasa.buckingham.vashchy import Coefficient
+from src.pydasa.analysis.scenario import DimSensitivity
 
 # Import utils
-from new.pydasa.utils.default import T
-from new.pydasa.utils.error import inspect_var
-from new.pydasa.utils.latex import latex_to_python
+from src.pydasa.utils.default import T
+from src.pydasa.utils.error import inspect_var
+from src.pydasa.utils.latex import latex_to_python
 # Import global configuration
 # Import the 'cfg' module to allow global variable editing
-from new.pydasa.utils import config as cfg
+from src.pydasa.utils import config as cfg
 
 
 @dataclass

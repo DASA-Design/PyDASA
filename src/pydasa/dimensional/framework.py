@@ -13,16 +13,16 @@ from typing import List, Dict, Optional, Generic
 from dataclasses import dataclass, field
 
 # Import validation base classes
-from new.pydasa.core.basic import Validation
+from src.pydasa.core.basic import Validation
 
 # Import Dimension class
-from new.pydasa.core.fundamental import Dimension
+from src.pydasa.core.fundamental import Dimension
 
 # Import generic type
-from new.pydasa.utils.default import T
+from src.pydasa.utils.default import T
 
 # Import global variables
-from new.pydasa.utils.config import (
+from src.pydasa.utils.config import (
     FDU_FWK_DT,
     PHY_FDU_PREC_DT,
     COMPU_FDU_PREC_DT,
@@ -31,7 +31,7 @@ from new.pydasa.utils.config import (
 )
 
 # Import the 'cfg' module to allow global variable editing
-from new.pydasa.utils import config as cfg
+from src.pydasa.utils import config as cfg
 
 
 @dataclass

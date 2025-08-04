@@ -3,35 +3,35 @@
 # PyDASA modules
 # data structures modules
 # lists modules
-from new.pydasa.datastruct.lists.arlt import ArrayList
-from new.pydasa.datastruct.lists.sllt import SingleLinkedList
-from new.pydasa.datastruct.lists.ndlt import Node, SLNode, DLNode
+from src.pydasa.datastruct.lists.arlt import ArrayList
+from src.pydasa.datastruct.lists.sllt import SingleLinkedList
+from src.pydasa.datastruct.lists.ndlt import Node, SLNode, DLNode
 # hash tables modules
-from new.pydasa.datastruct.tables.htme import MapEntry
-from new.pydasa.datastruct.tables.scht import SCHashTable
-from new.pydasa.datastruct.tables.scht import Bucket
+from src.pydasa.datastruct.tables.htme import MapEntry
+from src.pydasa.datastruct.tables.scht import SCHashTable
+from src.pydasa.datastruct.tables.scht import Bucket
 
 
 # dimensional analysis modules
 # config module
-from new.pydasa.utils import config
+from src.pydasa.utils import config
 
 # FDU modules
-from new.pydasa.core.fundamental import Dimension
+from src.pydasa.core.fundamental import Dimension
 
 # FDU regex management
-from new.pydasa.dimensional.framework import DimFramework
+from src.pydasa.dimensional.framework import DimFramework
 
 # Variable and Variable modules
-from new.pydasa.core.parameter import Variable
+from src.pydasa.core.parameter import Variable
 
 # Dimensional Matrix Modelling module
-from new.pydasa.dimensional.model import DimMatrix
+from src.pydasa.dimensional.model import DimMatrix
 
-from new.pydasa.analysis.scenario import DimSensitivity
+from src.pydasa.analysis.scenario import DimSensitivity
 
 # TODO need to know where to put the new
-from new.pydasa.dimensional.influence import SensitivityHandler
+from src.pydasa.dimensional.influence import SensitivityHandler
 
 # for FDU regex management
 # for Dimensional Analysis modules

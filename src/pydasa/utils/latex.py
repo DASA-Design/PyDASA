@@ -19,7 +19,7 @@ from sympy.parsing.latex import parse_latex
 from sympy import symbols
 
 # import global variables
-from new.pydasa.utils.config import LATEX_RE
+from src.pydasa.utils.config import LATEX_RE
 
 # Global vars for special characters
 IGNORE_EXPR = {

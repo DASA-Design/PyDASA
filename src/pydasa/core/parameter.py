@@ -13,14 +13,14 @@ import re
 import numpy as np
 
 # Import validation base classes
-from new.pydasa.core.basic import Validation
+from src.pydasa.core.basic import Validation
 
 # Import utility functions
-from new.pydasa.utils.latex import latex_to_python
+from src.pydasa.utils.latex import latex_to_python
 
 # Import configuration
 # import the 'cfg' module to allow global variable edition
-from new.pydasa.utils import config as cfg
+from src.pydasa.utils import config as cfg
 
 
 @dataclass

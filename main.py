@@ -385,7 +385,9 @@ td["y_{2}"] = 3.05
 print(td, "\n")
 r = sen.analyze_symbolically(td)
 print(rm, "\n")
-r = sen.analyze_numerically([[0.1, 10.0]] * len(sen.variables))
+print([[0.1, 10.0]] * len(sen.variables))
+r = sen.analyze_numerically(list(td.keys()),
+                            [[0.1, 10.0]] * len(sen.variables))
 print(r, "\n")
 print(sen, "\n")
 

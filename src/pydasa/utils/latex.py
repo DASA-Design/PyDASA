@@ -74,10 +74,10 @@ def extract_latex_vars(expr: str) -> tuple[dict]:
     py_to_latex = {}
 
     for m in matches:
-        # Convert to Python style for internal use
-        py_var = m.lstrip("\\").replace("_{", "_").replace("}", "")
         # Keep original LaTeX notation for external reference
         latex_var = m
+        # Convert to Python style for internal use
+        py_var = m.lstrip("\\").replace("_{", "_").replace("}", "")
 
         latex_to_py[latex_var] = py_var
         py_to_latex[py_var] = latex_var
@@ -126,7 +126,7 @@ def create_latex_mapping(expr: str) -> tuple[dict]:
                 # Create symbol for this variable
                 sym = symbols(py_var)
                 # Store mappings
-                symbol_map[latex_sym] = sym  # For substitution
+                symbol_map[latex_var] = sym  # For substitution
                 py_symbol_map[py_var] = sym  # For lambdify args
                 latex_symbol_map[latex_var] = sym  # For original notation
                 break

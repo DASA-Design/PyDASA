@@ -368,20 +368,25 @@ for pi in DAModel.coefficients:
 
 
 print("=== Sensitivity Analysis: ===")
-print(f"Coefficients: {DAModel.coefficients[0]}\n")
+print(f"Coefficients: {DAModel.coefficients[1]}\n")
 
 sen = DimSensitivity(_idx=0,
                      _sym="S_{0}",
                      _fwk="CUSTOM",
                      name="Sensitivity",
                      description="Sensitivity Analysis",
-                     _pi_expr=DAModel.coefficients[0].pi_expr,
-                     _variables=list(DAModel.coefficients[0].var_dims.keys()))
+                     _pi_expr=DAModel.coefficients[1].pi_expr,
+                     _variables=list(DAModel.coefficients[1].var_dims.keys()))
 print("=== Sensitivity: ===")
 print(sen, "\n")
-td = DAModel.coefficients[0].var_dims
-td["d"] = 5.05
-td["y_{2}"] = 3.05
+td = DAModel.coefficients[1].var_dims
+# td["d"] = 5.05
+# td["y_{2}"] = 3.05
+td["U"] = 10.05
+td["\\miu"] = 0.05
+# td["P"] = 50000.05
+# sen.set_coefficient(DAModel.coefficients[1])
+
 print(td, "\n")
 r = sen.analyze_symbolically(td)
 print(rm, "\n")
@@ -399,10 +404,16 @@ sena = SensitivityHandler(_idx=0,
                           description="Sensitivity Analysis",
                           _variables=vars_lt,
                           _coefficients=DAModel.coefficients,)
-print(sena)
+# print(sena)
 
 sena.analyze_symbolic(val_type="avg")
-# sena.analyze_numeric(num_samples=10000)
+sena.analyze_numeric(num_samples=1000)
+
+for res in sena.results:
+    print(res)
+    
+    
+print(sena)
 
 # for key, val in sena.results.items():
 #     txt = f"{key}: {val}"

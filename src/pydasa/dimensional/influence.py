@@ -25,6 +25,7 @@ from src.pydasa.analysis.scenario import DimSensitivity
 from src.pydasa.utils.default import T
 from src.pydasa.utils.error import inspect_var
 from src.pydasa.utils.latex import latex_to_python
+
 # Import global configuration
 # Import the 'cfg' module to allow global variable editing
 from src.pydasa.utils import config as cfg
@@ -115,16 +116,14 @@ class SensitivityHandler(Validation, Generic[T]):
         """
         self._variable_map.clear()
         for var in self._variables:
-            # TODO check behavour from mym -> pyalias
-            self._variable_map[var.pyalias] = var
+            self._variable_map[var.sym] = var
 
     def _setup_coefficient_map(self) -> None:
         """*_setup_coefficient_map()* Creates a map of coefficient symbols to coefficient objects.
         """
         self._coefficient_map.clear()
         for coef in self._coefficients:
-            # TODO check behavour from mym -> pyalias
-            self._coefficient_map[coef.pyalias] = coef
+            self._coefficient_map[coef.sym] = coef
 
     def _validate_list(self, lt: List, exp_type: tuple) -> bool:
         """*_validate_list()* Validates a list with expected element types.
@@ -167,8 +166,8 @@ class SensitivityHandler(Validation, Generic[T]):
                 _sym=f"SEN_{{{coef.sym}}}",
                 _fwk=self._fwk,
                 _cat=self._cat,
-                name=f"Sensitivity of {coef.name}",
-                description=f"Sensitivity analysis for coefficient {coef.sym}"
+                name=f"Sensitivity for {coef.name}",
+                description=f"Sensitivity analysis for {coef.sym}"
             )
 
             # Configure with coefficient
@@ -264,13 +263,12 @@ class SensitivityHandler(Validation, Generic[T]):
         self._results.clear()
 
         # Process each analysis
-        # print("\n== self._analyses ==:", self._analyses)
-        # FIXME this iteration is not working, fix it!!!
         for analysis in self._analyses:
             # Get variable values
             values = {}
-            print("analysis!!!!", analysis)
-            for var_sym in analysis.variables:
+            for var_sym in analysis.symbols.keys():
+                # Ensure symbol is a string
+                var_sym = str(var_sym)
                 values[var_sym] = self._get_variable_value(var_sym, val_type)
 
             # Perform analysis
@@ -279,17 +277,17 @@ class SensitivityHandler(Validation, Generic[T]):
             # Store results
             coef_sym = analysis.pi_expr
             self._results[coef_sym] = result
-
+        # TODO fix the result format
         return self._results
 
     def analyze_numeric(self,
-                        num_samples: int = 1000) -> Dict[str, Dict[str, Any]]:
+                        n_samples: int = 1000) -> Dict[str, Dict[str, Any]]:
         """*analyze_numeric()* Performs numerical sensitivity analysis.
 
         Analyzes each coefficient using Fourier Amplitude Sensitivity Test (FAST).
 
         Args:
-            num_samples (int, optional): Number of samples to use. Defaults to 1000.
+            n_samples (int, optional): Number of samples to use. Defaults to 1000.
 
         Returns:
             Dict[str, Dict[str, Any]]: Sensitivity results by coefficient.
@@ -304,15 +302,17 @@ class SensitivityHandler(Validation, Generic[T]):
         # Process each analysis
         for analysis in self._analyses:
             # Get variable bounds
+            vals = []
             bounds = []
-            for var_sym in analysis.variables:
+            for var_sym in analysis.symbols.keys():
                 var = self._variable_map[var_sym]
-                min_val = var.std_min if var.std_min is not None else (var.min if var.min is not None else 0.1)
-                max_val = var.std_max if var.std_max is not None else (var.max if var.max is not None else 10.0)
+                min_val = var.std_min if var.std_min is not None else (var.min if var.min is not None else -0.1)
+                max_val = var.std_max if var.std_max is not None else (var.max if var.max is not None else -10.0)
                 bounds.append([min_val, max_val])
+                vals.append(var.sym)
 
             # Perform analysis
-            result = analysis.analyze_numerically(bounds, num_samples)
+            result = analysis.analyze_numerically(vals, bounds, n_samples)
 
             # Store results
             coef_sym = analysis.pi_expr
@@ -322,7 +322,7 @@ class SensitivityHandler(Validation, Generic[T]):
                 'names': analysis.variables,
                 'raw': result
             }
-
+        # TODO fix the result format
         return self._results
 
     def get_ranked_variables(self,

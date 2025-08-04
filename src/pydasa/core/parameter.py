@@ -216,7 +216,6 @@ class Variable(Validation):
         Returns:
             str: Sorted dimensional expression. e.g.: [L^(-1)*T^(2)].
         """
-        # TODO maybe add a custom sort?
         # TODO move '*' as global operator to cfg module?
         # Split by multiplication operator
         _dims_lt = dims.split("*")

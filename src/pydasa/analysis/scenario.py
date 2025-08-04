@@ -99,6 +99,14 @@ class DimSensitivity(Validation, Generic[T]):
     _aliases: Dict[str: Any] = field(default_factory=dict)
     """Variable aliases for use in code."""
 
+    # :attr: _latex_to_py
+    _latex_to_py: Dict[str, str] = field(default_factory=dict)
+    """Mapping from LaTeX symbols to Python-compatible names."""
+
+    # :attr: _py_to_latex
+    _py_to_latex: Dict[str, str] = field(default_factory=dict)
+    """Mapping from Python-compatible names to LaTeX symbols."""
+
     # Analysis configuration
     # :attr: var_bounds
     var_bounds: List[List[float]] = field(default_factory=list)
@@ -140,9 +148,13 @@ class DimSensitivity(Validation, Generic[T]):
 
         # Set name and description if not already set
         if not self.name:
-            self.name = f"{self._sym} Sensitivity Analysis"
+            self.name = f"{self._sym} Sensitivity"
         if not self.description:
-            self.description = f"Sensitivity analysis for coeffcient {self._sym}"
+            self.description = f"Sensitivity analysis for {self._sym}"
+
+        if self._pi_expr:
+            # Parse the expression
+            self._parse_expression(self._pi_expr)
 
     def _validate_analysis_ready(self) -> None:
         """*_validate_analysis_ready()* Checks if the analysis can be performed.
@@ -158,7 +170,6 @@ class DimSensitivity(Validation, Generic[T]):
             raise ValueError("No expression has been defined for analysis.")
 
     def set_coefficient(self, coef: Coefficient) -> None:
-        # FIXME OLD CODE, TO DESTROY LATER!!!
         """*set_coefficient()* Configure analysis from a coefficient.
 
         Args:
@@ -172,10 +183,9 @@ class DimSensitivity(Validation, Generic[T]):
 
         # Set expression
         self._pi_expr = coef.pi_expr
-
-        # Copy over the Python alias if available
-        if coef.pyalias:
-            self._pyalias = coef.pyalias
+        # parse coefficient expresion
+        if coef._pi_expr:
+            self._parse_expression(self._pi_expr)
 
     def _parse_expression(self, expr: str) -> None:
         """*_parse_expression()* Parse the LaTeX expression into a sympy function.
@@ -193,7 +203,10 @@ class DimSensitivity(Validation, Generic[T]):
 
             # Create symbol mapping
             maps = create_latex_mapping(self._pi_expr)
-            self._symbols, self._aliases, latex_to_py, py_to_latex = maps
+            self._symbols = maps[0]
+            self._aliases = maps[1]
+            self._latex_to_py = maps[2]
+            self._py_to_latex = maps[3]
 
             # Substitute LaTeX symbols with Python symbols
             for latex_sym, py_sym in self._symbols.items():
@@ -203,8 +216,6 @@ class DimSensitivity(Validation, Generic[T]):
             self._variables = [str(s) for s in self._sym_func.free_symbols]
             self._variables = sorted(self._variables)
 
-            # return aliases-symbols maps
-            return latex_to_py, py_to_latex
             # """
             # # OLD code, first version, keep for reference!!!
             # self.results = {
@@ -228,8 +239,8 @@ class DimSensitivity(Validation, Generic[T]):
         Returns:
             Dict[str, float]: Sensitivity results for each variable.
         """
-        # parse the coefficient expression
-        latex_to_py, py_to_latex = self._parse_expression(self._pi_expr)
+        # # parse the coefficient expression
+        # self._parse_expression(self._pi_expr)
 
         # Check that all required variables are provided
         var_lt = [str(v) for v in self._symbols]
@@ -251,6 +262,7 @@ class DimSensitivity(Validation, Generic[T]):
                     self._exe_func = lambdify(aliases, expr, "numpy")
 
                     # Convert back to LaTeX variables for result keys
+                    py_to_latex = self._py_to_latex
                     val_args = [vals[py_to_latex[v]] for v in self._variables]
                     res = self._exe_func(*val_args)
                     results[py_to_latex[var]] = res
@@ -276,8 +288,8 @@ class DimSensitivity(Validation, Generic[T]):
         Returns:
             Dict[str, Any]: Detailed sensitivity analysis results.
         """
-        # parse the coefficient expression
-        latex_to_py, py_to_latex = self._parse_expression(self._pi_expr)
+        # # parse the coefficient expression
+        # self._parse_expression(self._pi_expr)
 
         # Validate analysis readiness
         self._validate_analysis_ready()
@@ -307,7 +319,8 @@ class DimSensitivity(Validation, Generic[T]):
 
                 # Generate samples (domain)
                 self.var_domains = sample(problem, n_samples)
-                self.var_domains = self.var_domains.reshape(-1, len(self._variables))
+                _len = len(self._variables)
+                self.var_domains = self.var_domains.reshape(-1, _len)
 
                 # Create lambdify function using Python symbols
                 aliases = [self._aliases[v] for v in self._variables]
@@ -323,6 +336,7 @@ class DimSensitivity(Validation, Generic[T]):
 
                 # Convert back to LaTeX variables for result keys
                 if results.get("names"):
+                    py_to_latex = self._py_to_latex
                     results["names"] = [py_to_latex.get(v, v) for v in results["names"]]
 
             self.results = results

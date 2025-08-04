@@ -263,13 +263,13 @@ class DimMatrix(Validation, Generic[T]):
     def _find_output_variable(self) -> None:
         """*_find_output_variable()* Identifies the output variable. Sets the output variable for the analysis.
         """
-        # TODO alt version
+        # TODO alt version, keep it? erase it?
         # output_vars = [v for v in self._relevant_lt if v.cat == "OUT"]
         # if output_vars:
         #     self._output = output_vars[0]
         # get output variable in relevant list, none if not found
-        # TODO check behaviour!!!!
-        self._output = next((p for p in self._variables if p.cat == "OUT"), None)
+        ans = next((p for p in self._variables if p.cat == "OUT"), None)
+        self._output = ans
 
     def _extract_fdus(self) -> List[str]:
         """*_extract_fdus()* Extracts FDUs from relevant variables.

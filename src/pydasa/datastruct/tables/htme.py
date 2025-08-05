@@ -1,6 +1,12 @@
 # -*- coding: utf-8 -*-
 """
+Module htme.py
+===========================================
+
 Module to represent the **MapEntry** data structure for the **Hash Table** in *PyDASA*.
+
+classes:
+    **MapEntry**: Represents a key-value pair in a hash table with type validation and error handling.
 
 *IMPORTANT:* based on the implementations proposed by the following authors/books:
 

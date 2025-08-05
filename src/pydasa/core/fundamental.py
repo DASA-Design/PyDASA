@@ -1,6 +1,12 @@
 ﻿# -*- coding: utf-8 -*-
 """
+Module fundamental.py
+===========================================
+
 Module for representing the **FDU** or **Fundamental Dimensional Unit** for Dimensional Analysis in *PyDASA*.
+
+Classes:
+    **Dimension**: Represents a Fundamental Dimensional Unit (FDU) with validation and conversion capabilities.
 
 *IMPORTANT:* Based on the theory from:
 

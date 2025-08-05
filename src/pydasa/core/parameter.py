@@ -1,8 +1,15 @@
 ﻿# -*- coding: utf-8 -*-
 """
+Module parameter.py
+===========================================
+
 Module for representing **Variable** entities in Dimensional Analysis for *PyDASA*.
 
+Classes:
+    **Variable**: Represents a Variable with dimensional properties, value ranges, and validation.
+
 *IMPORTANT:* Based on the theory from:
+
     # H.Gorter, *Dimensionalanalyse: Eine Theoririe der physikalischen Dimensionen mit Anwendungen*
 """
 

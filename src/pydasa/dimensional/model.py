@@ -1,8 +1,14 @@
 ﻿# -*- coding: utf-8 -*-
 """
+Module model.py
+============================================
+
 Module for **DimMatrix** to perform Dimensional Analysis in *PyDASA*.
 
 This module provides the DimMatrix class which implements matrix-based dimensional analysis following the Buckingham Pi theorem methodology.
+
+Classes:
+    **DimMatrix**: Represents a dimensional matrix for performing dimensional analysis, including methods for matrix creation, solving, and coefficient generation.
 
 *IMPORTANT:* Based on the theory from:
     # H.Gorter, *Dimensionalanalyse: Eine Theoririe der physikalischen Dimensionen mit Anwendungen*

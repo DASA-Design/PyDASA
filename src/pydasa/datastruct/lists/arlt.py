@@ -1,6 +1,12 @@
 # -*- coding: utf-8 -*-
 """
+Module arlt.py
+===========================================
+
 Module to represent the **ArrayList** data structure in *PyDASA*. Fundamental for the rest of the Dimensional Analysis and Data Science Library.
+
+classes:
+    **ArrayList**: Implements a dynamic array data structure with customizable comparison and key functions.
 
 *IMPORTANT:* based on the implementations proposed by the following authors/books:
 

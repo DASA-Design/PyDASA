@@ -1,5 +1,8 @@
 ﻿# -*- coding: utf-8 -*-
 """
+Module helpers.py
+===========================================
+
 Module with utility functions for handling memory allocation in the Data Structures of *PyDASA*.
 
 Module with utility functions for handling data in the maps of *PyDASA*. Specifically for Separate Chaining and Linear Probing Hash Tables.
@@ -40,14 +43,6 @@ def slot_dataclass(cls) -> dataclasses.dataclass:
     # allocate slots for the class
     cls.__slots__ = [f.name for f in dataclasses.fields(cls)]
     return dataclasses.dataclass(cls)
-
-
-# python native modules
-# math module handles mathematical functions
-
-# custom modules
-# dflt module handles the default global variables and comparison functions for use by all *PyDASA* and its Data Structs.
-# import global variables
 
 
 def is_prime(n: int) -> bool:

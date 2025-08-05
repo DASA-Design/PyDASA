@@ -1,11 +1,18 @@
 ﻿# -*- coding: utf-8 -*-
 """
+Module vashchy.py
+===========================================
+
 Module for representing Dimensionless Coefficients in Dimensional Analysis for *PyDASA*.
 
-This module provides the Coefficient class which models dimensionless numbers
-used in Vaschy-Buckingham's π-theorem for dimensional analysis.
+This module provides the Coefficient class which models dimensionless numbers used in Vaschy-Buckingham's π-theorem for dimensional analysis.
+
+Classes:
+
+    **Coefficient**: Represents a dimensionless coefficient with properties, validation, and symbolic expression.
 
 *IMPORTANT:* Based on the theory from:
+
     # H.Gorter, *Dimensionalanalyse: Eine Theoririe der physikalischen Dimensionen mit Anwendungen*
 """
 

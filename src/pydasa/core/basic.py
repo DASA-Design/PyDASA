@@ -1,9 +1,9 @@
-﻿"""
-Module fundamental.py
+﻿# -*- coding: utf-8 -*-
+"""
+Module basic.py
 ===========================================
 
-This module provides base classes with common validation logic used across
-FDU, Parameter, and Variable classes to eliminate code duplication.
+This module provides base classes with common validation logic used across FDU, Parameter, and Variable classes to eliminate code duplication.
 
 Classes:
     **Validation**: enforces common validation logic.

@@ -1,5 +1,8 @@
 ﻿# -*- coding: utf-8 -*-
 """
+Module error.py
+===========================================
+
 General error handling module/function for the PyDASA Data Structures and Algorithms in PyDASA package.
 """
 # native python modules

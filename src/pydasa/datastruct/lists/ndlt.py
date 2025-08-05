@@ -1,6 +1,15 @@
 ﻿# -*- coding: utf-8 -*-
 """
+Module ndlt.py
+===========================================
+
 Module to represent the **Node** data structure for the **Linked List** and **Doubly Linked List** in *PyDASA*.
+
+Classes:
+    **Node**: Base class for creating Single Linked List Node or **SLNode** and Double Linked List Node or **DLNode**.
+    **SLNode**: Implements a single linked list node with data and next node reference.
+    **DLNode**: Implements a double linked list node with data, next node, and previous node references.
+
 
 *IMPORTANT:* based on the implementations proposed by the following authors/books:
 

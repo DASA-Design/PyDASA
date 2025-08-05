@@ -243,6 +243,9 @@ class DimSensitivity(Validation, Generic[T]):
         # # parse the coefficient expression
         # self._parse_expression(self._pi_expr)
 
+        # save variable values for the analysis
+        self.var_values = vals
+
         # Check that all required variables are provided
         var_lt = [str(v) for v in self._symbols]
         missing_vars = set(var_lt) - set(list(vals.keys()))

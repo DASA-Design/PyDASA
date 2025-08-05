@@ -1,6 +1,13 @@
 # -*- coding: utf-8 -*-
 """
+Module scht.py
+===========================================
+
 Module to represent the **SCHashTable** data structure for the **Hash Table** in *PyDASA*.
+
+Classes:
+    **Bucket**: Represents a bucket in the hash table using a single linked list.
+    **SCHashTable**: Implements a hash table with separate chaining for collision resolution, supporting dynamic resizing and customizable comparison functions.
 
 *IMPORTANT:* based on the implementations proposed by the following authors/books:
 

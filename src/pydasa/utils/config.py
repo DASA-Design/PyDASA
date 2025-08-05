@@ -1,5 +1,8 @@
 ﻿# -*- coding: utf-8 -*-
 """
+Module config.py
+===========================================
+
 Configuration module for Fundamental Dimensional Units (FDUs), Parameters, and Variables in *PyDASA*.
 
 Key Features:

@@ -1,10 +1,17 @@
 ﻿# -*- coding: utf-8 -*-
 """
+Module influence.py
+===========================================
+
 Module for **SensitivityHandler** to manage sensitivity analysis in *PyDASA*
 
 This module provides the SensitivityHandler class for coordinating multiple sensitivity analyses and generating reports on which variables have the most significant impact on dimensionless coefficients.
 
+Classes:
+    **SensitivityHandler**: Manages sensitivity analyses for multiple coefficients, processes results, and generates reports on variable impacts.
+
 *IMPORTANT:* Based on the theory from:
+
     # H.Gorter, *Dimensionalanalyse: Eine Theoririe der physikalischen Dimensionen mit Anwendungen*
 """
 

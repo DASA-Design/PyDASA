@@ -1,14 +1,10 @@
 ﻿# -*- coding: utf-8 -*-
 """
+Module latex.py
+===========================================
+
 Module for default global variables and comparison functions for use by all *PyDASA* and its Data Structs.
-
-*IMPORTANT:* based on the implementations proposed by the following authors/books:
-
-    #. Algorithms, 4th Edition, Robert Sedgewick and Kevin Wayne.
-    #. Data Structure and Algorithms in Python, M.T. Goodrich, R. Tamassia, M.H. Goldwasser.
 """
-
-
 # python native modules
 # from dataclasses import dataclass
 # from typing import TypeVar

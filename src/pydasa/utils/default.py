@@ -1,6 +1,9 @@
 ﻿# -*- coding: utf-8 -*-
 # FIXME old code, remove when tests are finished
 """
+Module default.py
+===========================================
+
 Module for default global variables and comparison functions for use by all *PyDASA* and its Data Structs.
 
 *IMPORTANT:* based on the implementations proposed by the following authors/books:

@@ -1,6 +1,12 @@
 ﻿# -*- coding: utf-8 -*-
 """
+Module sllt.py
+===========================================
+
 Module for the custom **SingleLinkedList** data structure in *PyDASA*. Essential for Dimensional Analysis and Data Science operations.
+
+Classes:
+    **SingleLinkedList**: Implements a single linked list with methods for insertion, deletion, and traversal.
 
 *IMPORTANT:* based on the implementations proposed by the following authors/books:
 

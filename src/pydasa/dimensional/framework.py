@@ -1,10 +1,17 @@
 ﻿# -*- coding: utf-8 -*-
 """
+Module framework.py
+===========================================
+
 Module for **DimFramework** to manage Fundamental Dimensional Units (FDUs) for Dimensional Analysis in *PyDASA*.
 
 This module provides the DimFramework class which manages dimensional frameworks, FDU precedence, and regex patterns for dimensional expression validation.
 
+Classes:
+    **DimFramework**: Manages dimensional frameworks and FDUs, providing methods for validation,
+
 *IMPORTANT:* Based on the theory from:
+
     # H.Gorter, *Dimensionalanalyse: Eine Theoririe der physikalischen Dimensionen mit Anwendungen*
 """
 

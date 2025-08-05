@@ -186,15 +186,22 @@ class MonteCarloSim(Validation, Generic[T]):
             raise ValueError(_msg)
 
     def set_coefficient(self, coef: Coefficient) -> None:
-        """*set_coefficient()* Configure simulation from a coefficient."""
+        """*set_coefficient()* Configure analysis from a coefficient.
+
+        Args:
+            coef (Coefficient): Dimensionless coefficient to analyze.
+
+        Raises:
+            ValueError: If the coefficient doesn't have a valid expression.
+        """
         if not coef.pi_expr:
             raise ValueError("Coefficient does not have a valid expression.")
 
         # Set expression
         self._pi_expr = coef.pi_expr
-
-        # Parse coefficient expression
-        self._parse_expression(self._pi_expr)
+        # parse coefficient expresion
+        if coef._pi_expr:
+            self._parse_expression(self._pi_expr)
 
         # Set name and description if not already set
         if not self.name:
@@ -203,41 +210,49 @@ class MonteCarloSim(Validation, Generic[T]):
             self.description = f"Monte Carlo simulation for {coef.name}"
 
     def _parse_expression(self, expr: str) -> None:
-        """*_parse_expression()* Parse the LaTeX expression into a sympy function."""
+        """*_parse_expression()* Parse the LaTeX expression into a sympy function.
+
+        Args:
+            expr (str): LaTeX expression to parse.
+
+        Raises:
+            ValueError: If the expression cannot be parsed.
+        """
         try:
             # Parse the expression
             self._sym_func = parse_latex(expr)
 
             # Create symbol mapping
             maps = create_latex_mapping(expr)
-            symbols_map, aliases_map, self._latex_to_py, self._py_to_latex = maps
+            self._symbols = maps[0]
+            self._aliases = maps[1]
+            self._latex_to_py = maps[2]
+            self._py_to_latex = maps[3]
 
             # Substitute LaTeX symbols with Python symbols
-            for latex_sym, py_sym in symbols_map.items():
+            for latex_sym, py_sym in self._symbols.items():
                 self._sym_func = self._sym_func.subs(latex_sym, py_sym)
 
             # Get Python variable names
-            self._variables = sorted([str(s) for s in self._sym_func.free_symbols])
+            self._variables = [str(s) for s in self._sym_func.free_symbols]
+            self._variables = sorted(self._variables)
 
-            # Create executable function
-            self._exe_func = lambdify([aliases_map[v] for v in self._variables], 
-                                      self._sym_func, "numpy")
-            
         except Exception as e:
             _msg = f"Failed to parse expression: {str(e)}"
             raise ValueError(_msg)
 
-    def set_distribution(self, variable: str, distribution: Callable, 
+    def set_distribution(self, variable: str, distribution: Callable,
                          bounds: Tuple[float, float] = None) -> None:
         """*set_distribution()* Set the sampling distribution for a variable."""
         # Handle both LaTeX and Python variable names
+        # TODO aki voy!!!
         var_py = self._latex_to_py.get(variable, variable)
-        
+
         if var_py not in self._variables:
             _msg = f"Variable '{variable}' not found in expression. "
             _msg += f"Available variables: {[self._py_to_latex.get(v, v) for v in self._variables]}"
             raise ValueError(_msg)
-            
+
         if not callable(distribution):
             raise ValueError(f"Distribution must be callable. Got: {type(distribution)}")
             

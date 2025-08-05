@@ -198,12 +198,11 @@ class DimSensitivity(Validation, Generic[T]):
             ValueError: If the expression cannot be parsed.
         """
         try:
-            pass
             # Parse the expression
-            self._sym_func = parse_latex(self._pi_expr)
+            self._sym_func = parse_latex(expr)
 
             # Create symbol mapping
-            maps = create_latex_mapping(self._pi_expr)
+            maps = create_latex_mapping(expr)
             self._symbols = maps[0]
             self._aliases = maps[1]
             self._latex_to_py = maps[2]
@@ -339,7 +338,7 @@ class DimSensitivity(Validation, Generic[T]):
                 results = analyze(problem, Y)
 
                 # Convert back to LaTeX variables for result keys
-                if results.get("names"):
+                if "names" in results:
                     py_to_latex = self._py_to_latex
                     results["names"] = [py_to_latex.get(v, v) for v in results["names"]]
 

@@ -406,12 +406,21 @@ sena = SensitivityHandler(_idx=0,
                           _coefficients=DAModel.coefficients,)
 # print(sena)
 
+print("=== Sym Analysis: ===")
 sena.analyze_symbolic(val_type="avg")
+
+for k, v in sena.results.items():
+    print(f"{k}: {v}")
+# print(sena.results, "\n")
+
+print("\n=== Num Analysis: ===")
 sena.analyze_numeric(n_samples=1000)
 
-for res in sena.results:
-    print(res)
-# print(sena)
+for k, v in sena.results.items():
+    print(f"{k}: {v}")
+    for a, b in v.items():
+        print(f"\t{a}: {b}")
+# print(sena.results, "\n")
 
 # for key, val in sena.results.items():
 #     txt = f"{key}: {val}"

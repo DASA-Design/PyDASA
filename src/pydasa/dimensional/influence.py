@@ -212,7 +212,7 @@ class SensitivityHandler(Validation, Generic[T]):
             # First check if standardized average exists
             if var.std_avg is None:
                 # If no standardized average, try regular average
-                # If that's also None, use default value -1.0
+                # If thats also None, use default value -1.0
                 return var.avg if var.avg is not None else -1.0
             # Return standardized average if it exists
             return var.std_avg
@@ -222,7 +222,7 @@ class SensitivityHandler(Validation, Generic[T]):
             # First check if standardized minimum exists
             if var.std_min is None:
                 # If no standardized minimum, try regular minimum
-                # If that's also None, use default value -0.1
+                # If thats also None, use default value -0.1
                 return var.min if var.min is not None else -0.1
             # Return standardized minimum if it exists
             return var.std_min
@@ -232,7 +232,7 @@ class SensitivityHandler(Validation, Generic[T]):
             # First check if standardized maximum exists
             if var.std_max is None:
                 # If no standardized maximum, try regular maximum
-                # If that's also None, use default value -10.0
+                # If thats also None, use default value -10.0
                 return var.max if var.max is not None else -10.0
             # Return standardized maximum if it exists
             return var.std_max
@@ -279,8 +279,7 @@ class SensitivityHandler(Validation, Generic[T]):
             result = analysis.analyze_symbolically(values)
 
             # Store results
-            coef_sym = analysis.pi_expr
-            self._results[coef_sym] = result
+            self._results[analysis.sym] = result
         # TODO fix the result format
         return self._results
 
@@ -319,14 +318,7 @@ class SensitivityHandler(Validation, Generic[T]):
             result = analysis.analyze_numerically(vals, bounds, n_samples)
 
             # Store results
-            coef_sym = analysis.pi_expr
-            self._results[coef_sym] = {
-                'S1': dict(zip(analysis.variables, result['S1'])),
-                'ST': dict(zip(analysis.variables, result['ST'])),
-                'names': analysis.variables,
-                'raw': result
-            }
-        # TODO fix the result format
+            self._results[analysis.sym] = result
         return self._results
 
     def get_ranked_variables(self,
@@ -348,17 +340,17 @@ class SensitivityHandler(Validation, Generic[T]):
         rankings = {}
 
         for coef_sym, result in self._results.items():
-            if metric not in result and 'raw' not in result:
+            if metric not in result and "raw" not in result:
                 # Try symbolic results
                 var_ranks = [(var, abs(sens)) for var, sens in result.items()]
                 var_ranks.sort(key=lambda x: x[1], reverse=True)
                 rankings[coef_sym] = var_ranks
-            elif 'raw' in result:
+            elif "raw" in result:
                 # Numeric results
-                if metric not in ['S1', 'ST']:
+                if metric not in ["S1", "ST"]:
                     raise ValueError(f"Invalid metric: {metric}. Must be one of: S1, ST.")
 
-                var_ranks = [(var, result[metric][var]) for var in result['names']]
+                var_ranks = [(var, result[metric][var]) for var in result["names"]]
                 var_ranks.sort(key=lambda x: x[1], reverse=True)
                 rankings[coef_sym] = var_ranks
         return rankings

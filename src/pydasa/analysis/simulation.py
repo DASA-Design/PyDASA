@@ -44,7 +44,7 @@ class MonteCarloSim(Validation, Generic[T]):
         _sym (str): Symbol representation (LaTeX or alphanumeric).
         _pyalias (str): Python-compatible alias for use in code.
         _fwk (str): Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
-        
+
         # Expression Management
         _pi_expr (str): LaTeX expression to analyze.
         _sym_func (Callable): Sympy function of the simulation.
@@ -52,15 +52,15 @@ class MonteCarloSim(Validation, Generic[T]):
         _variables (List[str]): Variable symbols in the expression.
         _latex_to_py (Dict[str, str]): Mapping from LaTeX to Python variable names.
         _py_to_latex (Dict[str, str]): Mapping from Python to LaTeX variable names.
-        
+
         # Simulation Configuration
         _iterations (int): Number of simulation runs.
         _distributions (Dict[str, Callable]): Variable sampling distributions.
         _bounds (Dict[str, Tuple[float, float]]): Min/max bounds for each variable.
-        
+
         # Results
         _results (List[float]): Raw simulation results.
-        
+
         # Statistics
         _mean (float): Mean value of simulation results.
         _median (float): Median value of simulation results.
@@ -95,50 +95,49 @@ class MonteCarloSim(Validation, Generic[T]):
     # :attr: _py_to_latex
     _py_to_latex: Dict[str, str] = field(default_factory=dict)
     """Mapping from Python-compatible names to LaTeX symbols."""
-    
+
     # Simulation configuration
     # :attr: _iterations
     _iterations: int = 1000
     """Number of simulation runs."""
-    
     # :attr: _distributions
     _distributions: Dict[str, Callable] = field(default_factory=dict)
     """Variable sampling distributions."""
-    
+
     # :attr: _bounds
     _bounds: Dict[str, Tuple[float, float]] = field(default_factory=dict)
     """Min/max bounds for each variable."""
-    
+
     # Results
     # :attr: _results
     _results: List[float] = field(default_factory=list)
     """Raw simulation results."""
-    
+
     # Individual statistics attributes
     # :attr: _mean
     _mean: float = 0.0
     """Mean value of simulation results."""
-    
+
     # :attr: _median
     _median: float = 0.0
     """Median value of simulation results."""
-    
+
     # :attr: _std_dev
     _std_dev: float = 0.0
     """Standard deviation of simulation results."""
-    
+
     # :attr: _variance
     _variance: float = 0.0
     """Variance of simulation results."""
-    
+
     # :attr: _min
     _min: float = 0.0
     """Minimum value in simulation results."""
-    
+
     # :attr: _max
     _max: float = 0.0
     """Maximum value in simulation results."""
-    
+
     # :attr: _count
     _count: int = 0
     """Number of valid simulation results."""
@@ -151,7 +150,7 @@ class MonteCarloSim(Validation, Generic[T]):
         # Set default symbol if not specified
         if not self._sym:
             self._sym = f"MC_\\Pi_{{{self._idx}}}" if self._idx >= 0 else "MC_\\Pi_{}"
-        
+
         # Set default Python alias if not specified
         if not self._pyalias:
             from src.pydasa.utils.latex import latex_to_python
@@ -168,17 +167,23 @@ class MonteCarloSim(Validation, Generic[T]):
             self._parse_expression(self._pi_expr)
 
     def _validate_simulation_ready(self) -> None:
-        """*_validate_simulation_ready()* Checks if the simulation can be performed."""
+        """*_validate_simulation_ready() * Checks if the simulation can be performed.
+
+        Raises:
+            ValueError: If the simulation is not ready due to missing variables, executable function, distributions, or invalid number of iterations.
+        """
         if not self._variables:
             raise ValueError("No variables found in the expression.")
         if not self._exe_func:
-            raise ValueError("No executable function has been defined for simulation.")
+            raise ValueError("No executable function defined for simulation.")
         if not self._distributions:
             missing = [v for v in self._variables if v not in self._distributions]
             if missing:
-                raise ValueError(f"Missing distributions for variables: {missing}")
-        if self._iterations <= 0:
-            raise ValueError(f"Invalid number of iterations: {self._iterations}")
+                _msg = f"Missing distributions for variables: {missing}"
+                raise ValueError(_msg)
+        if self._iterations < -1:
+            _msg = f"Invalid number of iterations: {self._iterations}"
+            raise ValueError(_msg)
 
     def set_coefficient(self, coef: Coefficient) -> None:
         """*set_coefficient()* Configure simulation from a coefficient."""
@@ -187,10 +192,10 @@ class MonteCarloSim(Validation, Generic[T]):
 
         # Set expression
         self._pi_expr = coef.pi_expr
-        
+
         # Parse coefficient expression
         self._parse_expression(self._pi_expr)
-        
+
         # Set name and description if not already set
         if not self.name:
             self.name = f"{coef.name} Monte Carlo"

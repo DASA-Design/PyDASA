@@ -431,7 +431,9 @@ for k, v in sena.results.items():
     print(f"{k}: {v}")
     for a, b in v.items():
         print(f"\t{a}: {b}")
-# print(sena.results, "\n")
+
+print("Sensitivity Analysis Results:")
+print(sena.analyses, "\n")
 
 # for key, val in sena.results.items():
 #     txt = f"{key}: {val}"
@@ -447,8 +449,18 @@ monte = MonteCarloSim(_idx=0,
                       _fwk="CUSTOM",
                       name="Monte Carlo Simulation",
                       description="Monte Carlo Simulation~~~~~!!!",
-                      _model_function=DAModel,
-                      _input_distributions=[dist1, dist1],
-                      _iterations=1000,
-                      _variables=vars_lt,
-                      _coefficients=DAModel.coefficients,)
+                      _pi_expr=DAModel.coefficients[1].pi_expr,
+                      _variables=list(DAModel.coefficients[1].var_dims.keys()),
+                      _distributions={
+                          "U": dist1,
+                          "\\miu": dist2,
+                      },
+                      _iterations=5000)
+print(monte, "\n")
+monte.run()
+print("Monte Carlo Simulation Results:")
+for k, v in monte.results.items():
+    print(f"{k}: {v}")
+print("Mean:", monte.mean())
+print("Variance:", monte.variance())
+print("Summary:", monte.summary())

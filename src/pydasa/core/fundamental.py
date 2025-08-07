@@ -63,7 +63,8 @@ class Dimension(Validation, Generic[T]):
     """Basic unit of the Fundamental Dimension (e.g.: m, s, bit)."""
 
     def __post_init__(self) -> None:
-        """Post-initialization processing with validation."""
+        """*__post_init__()* Post-initialization processing with symbol and framework validation.
+        """
         # Call the parent class's post-init
         super().__post_init__()
 

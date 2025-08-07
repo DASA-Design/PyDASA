@@ -246,12 +246,12 @@ class MonteCarloSim(Validation, Generic[T]):
     def set_distribution(self,
                          var: str,
                          dist: Callable,
-                         bounds: Tuple[float, float] = None) -> None:
+                         specs: Tuple = None) -> None:
         """*set_distribution()* Set the sampling distribucion for a variable in the coeffcient.
         Args:
             var (str): Variable name to set the distribution.
             dist (Callable): Callable function that samples from the distribution.
-            bounds (Tuple[float, float], optional): Min/max bounds for the variable. Defaults to None.
+            specs (Tuple, optional): a touple containing the distribution specifications and name.
 
         Raises:
             ValueError: If the variable is not found in the expression or if the distribution is not callable.
@@ -271,11 +271,11 @@ class MonteCarloSim(Validation, Generic[T]):
 
         self._distributions[var_py] = dist
 
-        if bounds:
-            if not isinstance(bounds, tuple) or len(bounds) != 2:
-                _msg = f"Bounds must be a tuple (min, max). Got: {bounds}"
+        if specs:
+            if not isinstance(specs, tuple):
+                _msg = f"Bounds must be a tuple (min, max). Got: {specs}"
                 raise ValueError(_msg)
-            self._bounds[var_py] = bounds
+            self._bounds[var_py] = specs
 
     # def set_uniform_distribution(self, var: str, min_val: float, max_val: float) -> None:
     #     """*set_uniform_distribution()* Set a uniform distribution for a variable."""
@@ -521,7 +521,7 @@ class MonteCarloSim(Validation, Generic[T]):
 
         Args:
             val (int): Number of iterations to run the simulation.
-    
+
         Raises:
             ValueError: If the number of iterations is not positive.
         """
@@ -529,6 +529,32 @@ class MonteCarloSim(Validation, Generic[T]):
             _msg = f"Number of iterations must be positive. Got: {val}"
             raise ValueError(_msg)
         self._iterations = val
+
+    @property
+    def properties(self) -> Dict[str, Callable]:
+        """*properties* Get the variable distributions.
+
+        Returns:
+            Dict[str, Callable]: Current variable distributions.
+        """
+        return self._distributions.copy()
+
+    @properties.setter
+    def properties(self, val: Dict[str, Callable]) -> None:
+        """*properties* Set the variable distributions.
+
+        Args:
+            val (Dict[str, Callable]): New variable distributions.
+
+        Raises:
+            ValueError: If the distributions are invalid.
+        """
+        if not all(callable(v) for v in val.values()):
+            _msg = "All distributions must be callable."
+            inv = [k for k, v in val.items() if not callable(v)]
+            _msg += f" Invalid entries: {inv}"
+            raise ValueError(_msg)
+        self._distributions = val
 
     # Additional properties for statistics
 

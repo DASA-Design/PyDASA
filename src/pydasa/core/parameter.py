@@ -60,13 +60,15 @@ class Variable(Validation):
         # Value Ranges (Original Units)
         _min (float): Minimum value in original units.
         _max (float): Maximum value in original units.
-        _avg (float): Average value in original units.
+        _mean (float): Mean value in original units.
+        _dev (float): Standard deviation in original units.
 
         # Value Ranges (Standardized Units)
         _std_units (str): Standardized units of measure.
         _std_min (float): Minimum value in standard units.
         _std_max (float): Maximum value in standard units.
-        _std_avg (float): Average value in standard units.
+        _std_mean (float): Mean value in standard units.
+        _std_dev (float): Standard deviation in standard units.
         _step (float): Step size for simulations.
         _std_range (np.ndarray): Range array for analysis.
     """
@@ -108,9 +110,13 @@ class Variable(Validation):
     _max: Optional[float] = None
     """Maximum value in original units."""
 
-    # :attr: _avg
-    _avg: Optional[float] = None
-    """Average value in original units."""
+    # :attr: _mean
+    _mean: Optional[float] = None
+    """Mean value in original units."""
+
+    # :attr: _dev
+    _dev: Optional[float] = None
+    """Standard deviation in original units."""
 
     # Value ranges (standardized units)
     # :attr: _std_units
@@ -125,9 +131,13 @@ class Variable(Validation):
     _std_max: Optional[float] = None
     """Maximum value in standard units."""
 
-    # :attr: _std_avg
-    _std_avg: Optional[float] = None
-    """Average value in standard units."""
+    # :attr: _std_mean
+    _std_mean: Optional[float] = None
+    """Mean value in standard units."""
+
+    # :attr: _std_dev
+    _std_dev: Optional[float] = None
+    """Standard deviation in standard units."""
 
     # :attr: _step
     _step: float = 1e-3
@@ -320,7 +330,8 @@ class Variable(Validation):
             val (str): Dimensions. e.g.: [T^2*L^-1]
 
         Raises:
-            ValueError: If expression is empty or invalid.
+            ValueError: If expression is empty
+            ValueError: If dimensions are invalid according to the precedence.
         """
         _working_lt = cfg.WKNG_FDU_PREC_LT
         if val is not None and not val.strip():
@@ -398,10 +409,10 @@ class Variable(Validation):
             val (List[int]): Dimensional exponents. i.e..: [2, -1]
 
         Raises:
-            ValueError: if the val is not a list of integers.
+            ValueError: if the dimensional column is not a list of integers.
         """
         if val is not None and not isinstance(val, list):
-            raise ValueError("Exponents list must be a list of integers.")
+            raise ValueError("Dimensional column must be a list of integers.")
         self._dim_col = val
 
     # Standardized Dimensional Properties
@@ -426,7 +437,7 @@ class Variable(Validation):
             ValueError: If the standardized dimensional expression is empty.
         """
         if val is not None and not val.strip():
-            raise ValueError("Standardized dimensional expression cannot be empty.")
+            raise ValueError("Standardized dimensions cannot be empty.")
         self._std_dims = val
 
     # Value Ranges (Original Units)
@@ -448,7 +459,8 @@ class Variable(Validation):
             val (Optional[float]): Minimum range value.
 
         Raises:
-            ValueError: If value is invalid or greater than max.
+            ValueError: If value not a valid number.
+            ValueError: If value is greater than max.
         """
         if val is not None and not isinstance(val, (int, float)):
             raise ValueError("Minimum range must be a number.")
@@ -475,7 +487,8 @@ class Variable(Validation):
             val (Optional[float]): Maximum range value.
 
         Raises:
-            ValueError: If value is invalid or less than min.
+            ValueError: If value is not a valid number.
+            ValueError: If value is less than min.
         """
         if val is not None and not isinstance(val, (int, float)):
             raise ValueError("Maximum val must be a number.")
@@ -486,34 +499,35 @@ class Variable(Validation):
         self._max = val
 
     @property
-    def avg(self) -> Optional[float]:
-        """*avg* Get the Variable average value.
+    def mean(self) -> Optional[float]:
+        """*mean* Get the Variable average value.
 
         Returns:
             Optional[float]: Variable average value.
         """
-        return self._avg
+        return self._mean
 
-    @avg.setter
-    def avg(self, val: Optional[float]) -> None:
-        """*avg* Sets the Variable average value.
+    @mean.setter
+    def mean(self, val: Optional[float]) -> None:
+        """*mean* Sets the Variable mean value.
 
         Args:
-            val (Optional[float]): Variable average value.
+            val (Optional[float]): Variable mean value.
 
         Raises:
-            ValueError: If value is invalid or outside min-max range.
+            ValueError: If value not a valid number.
+            ValueError: If value is outside min-max range.
         """
         if val is not None and not isinstance(val, (int, float)):
-            raise ValueError("Average value must be a number.")
+            raise ValueError("Mean value must be a number.")
 
         low = (self._min is not None and val < self._min)
         high = (self._max is not None and val > self._max)
         if low or high:
-            _msg = f"Average {val}. "
+            _msg = f"Mean {val}. "
             _msg += f"must be between {self._min} and {self._max}."
             raise ValueError(_msg)
-        self._avg = val
+        self._mean = val
 
     # Value Ranges (Standardized Units)
 
@@ -558,7 +572,8 @@ class Variable(Validation):
             val (Optional[float]): standardized minimum range value.
 
         Raises:
-            ValueError: If value is invalid or greater than std_max.
+            ValueError: If value not a valid number.
+            ValueError: If value is greater than std_max.
         """
         if val is not None and not isinstance(val, (int, float)):
             raise ValueError("Standardized minimum must be a number")
@@ -591,7 +606,8 @@ class Variable(Validation):
         """*std_max* Sets the standardized maximum range value.
 
         Raises:
-            ValueError: If value is invalid or less than std_min.
+            ValueError: If value is not a valid number.
+            ValueError: If value is less than std_min.
         """
         if val is not None and not isinstance(val, (int, float)):
             raise ValueError("Standardized maximum must be a number")
@@ -610,35 +626,68 @@ class Variable(Validation):
         self._std_max = val
 
     @property
-    def std_avg(self) -> Optional[float]:
-        """*std_avg* Get standardized average value.
+    def std_mean(self) -> Optional[float]:
+        """*std_mean* Get standardized mean value.
 
         Returns:
-            Optional[float]: standardized average.
+            Optional[float]: standardized mean.
         """
-        return self._std_avg
+        return self._std_mean
 
-    @std_avg.setter
-    def std_avg(self, val: Optional[float]) -> None:
-        """*std_avg* Sets the standardized average value.
+    @std_mean.setter
+    def std_mean(self, val: Optional[float]) -> None:
+        """*std_mean* Sets the standardized mean value.
 
         Args:
-            val (Optional[float]): standardized average value.
+            val (Optional[float]): standardized mean value.
 
         Raises:
-            ValueError: If value is invalid or outside std_min-std_max range.
+            ValueError: If value is not a valid number.
+            ValueError: If value is outside std_min-std_max range.
         """
         if val is not None and not isinstance(val, (int, float)):
-            raise ValueError("Standardized average must be a number")
+            raise ValueError("Standardized mean must be a number")
 
         low = (self._std_min is not None and val < self._std_min)
         high = (self._std_max is not None and val > self._std_max)
 
         if low or high:
-            _msg = f"Invalid standard average value {val}. "
+            _msg = f"Invalid standard mean value {val}. "
             _msg += f"Must be between {self._std_min} and {self._std_max}."
             raise ValueError(_msg)
-        self._std_avg = val
+        self._std_mean = val
+
+    @property
+    def std_dev(self) -> Optional[float]:
+        """*std_dev* Get standardized standard deviation.
+
+        Returns:
+            Optional[float]: Standardized standard deviation.
+        """
+        return self._std_dev
+
+    @std_dev.setter
+    def std_dev(self, val: Optional[float]) -> None:
+        """*std_dev* Sets the standardized standard deviation.
+
+        Args:
+            val (Optional[float]): Standardized standard deviation.
+
+        Raises:
+            ValueError: If value is not a valid number.
+            ValueError: If value is outside std_min-std_max range.
+        """
+        if val is not None and not isinstance(val, (int, float)):
+            raise ValueError("Standardized standard deviation must be a number")
+
+        low = (self._std_min is not None and val < self._std_min)
+        high = (self._std_max is not None and val > self._std_max)
+
+        if low or high:
+            _msg = f"Invalid standard deviation value {val}. "
+            _msg += f"Must be between {self._std_min} and {self._std_max}."
+            raise ValueError(_msg)
+        self._std_dev = val
 
     @property
     def step(self) -> Optional[float]:
@@ -657,8 +706,9 @@ class Variable(Validation):
             val (Optional[float]): Step size (always standardized).
 
         Raises:
-            ValueError: If step is invalid, zero, or too large.
-
+            ValueError: If step is not a valid number
+            ValueError: If step is zero.
+            ValueError: If step is greater than range.
         """
         if val is not None and not isinstance(val, (int, float)):
             raise ValueError("Step must be a number.")
@@ -709,6 +759,7 @@ class Variable(Validation):
                                             self._std_max,
                                             self._step)
 
+        # TODO check this latter, might be a hindrance
         elif not isinstance(val, np.ndarray):
             _msg = f"Range must be a numpy array, got {type(val)}"
             raise ValueError(_msg)
@@ -732,17 +783,16 @@ class Variable(Validation):
         self._cat = "IN"
         self._dims = ""
         self._units = ""
-        self._varsym = None
         self._std_dims = None
         self._sym_exp = None
         self._dim_col = []
         self._min = None
         self._max = None
-        self._avg = None
+        self._mean = None
         self._std_units = ""
         self._std_min = None
         self._std_max = None
-        self._std_avg = None
+        self._std_mean = None
         self._step = 1e-3
         self._std_range = np.array([])
         self.relevant = False
@@ -763,14 +813,13 @@ class Variable(Validation):
             "cat": self._cat,
             "dims": self._dims,
             "units": self._units,
-            "varsym": self._varsym,
             "min": self._min,
             "max": self._max,
-            "avg": self._avg,
+            "mean": self._mean,
             "std_units": self._std_units,
             "std_min": self._std_min,
             "std_max": self._std_max,
-            "std_avg": self._std_avg,
+            "std_mean": self._std_mean,
             "step": self._step,
             "relevant": self.relevant
         }

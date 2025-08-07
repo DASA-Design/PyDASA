@@ -36,7 +36,7 @@ class SymValidation(ABC):
 
     Attributes:
         _sym (str): Symbol representation.
-        _pyalias (str): Python-compatible alias for use in code.
+        _alias (str): Python-compatible alias for use in code.
         _fwk (str): Framework context.
     """
 
@@ -44,8 +44,8 @@ class SymValidation(ABC):
     _sym: str = ""
     """Symbol representation (LaTeX or alphanumeric)."""
 
-    # :attr: _pyalias
-    _pyalias: str = ""
+    # :attr: _alias
+    _alias: str = ""
     """Python-compatible alias for symbol, used in executable code. e.g.: `\\rho_{1}` -> `rho_1`."""
 
     # :attr: _fwk
@@ -53,15 +53,16 @@ class SymValidation(ABC):
     """Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM)."""
 
     def __post_init__(self) -> None:
-        """Post-initialization processing with symbol and framework validation."""
+        """*__post_init__()* Post-initialization processing with symbol and framework validation.
+        """
         # super().__post_init__()
         # Validate the symbol and framework
         if not self._sym:
             self._sym = self._sym.strip()
         if not self._fwk:
             self._fwk = self._fwk.strip()
-        if not self._pyalias:
-            self._pyalias = self._pyalias.strip()
+        if not self._alias:
+            self._alias = self._alias.strip()
 
     @property
     def sym(self) -> str:
@@ -108,41 +109,17 @@ class SymValidation(ABC):
         self._fwk = val
 
     @property
-    def pyalias(self) -> str:
-        """*pyalias* Get the Python alias for the variable symbol.
-
-        Returns:
-            str: Python-compatible alias for use in executable code.
-        """
-        return self._pyalias
-
-    @pyalias.setter
-    def pyalias(self, val: str) -> None:
-        """*pyalias* Set the Python alias with validation.
-
-        Args:
-            val (str): Python alias value.
-
-        Raises:
-            ValueError: If Python alias is not a valid Python identifier.
-        """
-        if not val.isidentifier():
-            _msg = f"Python alias must be a valid Python identifier. Provided: {val}"
-            raise ValueError(_msg)
-        self._pyalias = val
-
-    @property
-    def pyalias(self) -> Optional[str]:
-        """*pyalias* Get the Python variable synonym.
+    def alias(self) -> Optional[str]:
+        """*alias* Get the Python variable synonym.
 
         Returns:
             Optional[str]: Python variable name. e.g.: `\\rho_{1}` -> `rho_1`.
         """
-        return self._pyalias
+        return self._alias
 
-    @pyalias.setter
-    def pyalias(self, val: str) -> None:
-        """*pyalias* Set the Python variable synonym.
+    @alias.setter
+    def alias(self, val: str) -> None:
+        """*alias* Set the Python variable synonym.
 
         Args:
             val (str): Python variable name. e.g.: `\\rho_{1}` -> `rho_1`.
@@ -151,8 +128,9 @@ class SymValidation(ABC):
             ValueError: If variable name is empty.
         """
         if val is not None and not val.strip():
-            raise ValueError("Python alias cannot be empty")
-        self._pyalias = val
+            _msg = f"Symbol must be a non-empty string. Provided: {val}"
+            raise ValueError(_msg)
+        self._alias = val
 
     def _validate_sym(self, val: str) -> None:
         """*_validate_sym()* Validate symbol format.
@@ -162,6 +140,7 @@ class SymValidation(ABC):
 
         Raises:
             ValueError: If symbol format is invalid.
+            ValueError: If symbol characters are invalid.
         """
         if not isinstance(val, str) or not val.strip():
             _msg = f"Symbol must be a non-empty string. Provided: {val}"
@@ -174,11 +153,9 @@ class SymValidation(ABC):
         # Optionally restrict length for non-LaTeX symbols
         # TODO check this, might be wrong!!!
         if not (is_alnum or is_latex):
-            msg = (
-                "Symbol must be alphanumeric or a valid LaTeX string. "
-                f"Provided: '{val}'. "
-                "Examples: 'V', 'd', '\\Pi_{0}', '\\rho'."
-            )
+            msg = "Symbol must be alphanumeric or a valid LaTeX string."
+            msg += f" Provided: '{val}'. "
+            msg += "Examples: 'V', 'd', '\\Pi_{0}', '\\rho'. "
             raise ValueError(msg)
 
     # Add this to your Validation or SymValidation class
@@ -212,7 +189,8 @@ class IdxValidation(SymValidation):
     """Unique identifier/index for ordering in dimensional matrix."""
 
     def __post_init__(self) -> None:
-        """Post-initialization processing with index validation."""
+        """*__post_init__()* Post-initialization processing with symbol and framework validation.
+        """
         super().__post_init__()
         if self._idx != -1:
             self.idx = self._idx
@@ -274,7 +252,8 @@ class Validation(IdxValidation):
     """Brief summary or description of the entity."""
 
     def __post_init__(self) -> None:
-        """Post-initialization processing with description capitalization."""
+        """*__post_init__()* Post-initialization processing with description capitalization.
+        """
         if self.description:
             self.description = self.description.capitalize()
 

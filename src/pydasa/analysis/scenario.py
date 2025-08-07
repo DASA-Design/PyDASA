@@ -256,20 +256,24 @@ class DimSensitivity(Validation, Generic[T]):
 
         # trying symbolic coefficient sensitivity analysis
         try:
+            py_to_latex = self._py_to_latex
             results = dict()
+            functions = dict()
             if self._variables:
                 for var in self._variables:
                     # Create lambdify function using Python symbols
                     expr = diff(self._sym_func, var)
                     aliases = [self._aliases[v] for v in self._variables]
-                    self._exe_func = lambdify(aliases, expr, "numpy")
+                    # self._exe_func = lambdify(aliases, expr, "numpy")
+                    func = lambdify(aliases, expr, "numpy")
+                    functions[py_to_latex[var]] = func
 
                     # Convert back to LaTeX variables for result keys
-                    py_to_latex = self._py_to_latex
                     val_args = [vals[py_to_latex[v]] for v in self._variables]
-                    res = self._exe_func(*val_args)
+                    res = functions[py_to_latex[var]](*val_args)
                     results[py_to_latex[var]] = res
 
+            self._exe_func = functions
             self.results = results
             return self.results
 

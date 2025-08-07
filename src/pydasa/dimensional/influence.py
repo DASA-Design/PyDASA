@@ -77,15 +77,6 @@ class SensitivityHandler(Validation, Generic[T]):
     _coefficients: Dict[str, Coefficient] = field(default_factory=dict)
     """Dictionary of all coefficients in the model (*Coefficient*)."""
 
-    # TODO deprecated attributes, erase after changing the code
-    # # :attr: _variables
-    # _variables: Dict[str, Variable] = field(default_factory=dict)
-    # """Map of variable symbols to objects."""
-
-    # # :attr: _coefficient_map
-    # _coefficient_map: Dict[str, Coefficient] = field(default_factory=dict)
-    # """Map of coefficient symbols to objects."""
-
     # Analysis results
     # :attr: _analyses
     _analyses: Dict[str, DimSensitivity] = field(default_factory=dict)
@@ -465,8 +456,6 @@ class SensitivityHandler(Validation, Generic[T]):
         self._cat = "SYM"
         self._variables = {}
         self._coefficients = {}
-        # self._variables = {}
-        # self._coefficient_map = {}
         self._analyses = {}
         self._results = {}
 

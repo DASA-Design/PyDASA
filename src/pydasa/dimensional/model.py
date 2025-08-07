@@ -379,7 +379,7 @@ class DimMatrix(Validation, Generic[T]):
         self._coefficients.clear()
 
         # Extract variable symbols
-        var_symbols = [var._sym for var in self._relevant_lt.values()]
+        var_symbols = [var for var in self._relevant_lt.keys()]
 
         # Create coefficient for each nullspace vector
         for i, vector in enumerate(nullspace_vectors):

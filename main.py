@@ -218,10 +218,12 @@ vars_lt = {
                       _min=0.0,
                       _max=15.0,
                       _mean=7.50,
+                      _dev=0.75,
                       _std_units="m/s",
                       _std_min=0.0,
                       _std_max=15.0,
                       _std_mean=7.50,
+                      _std_dev=0.75,
                       _step=0.1,),
     "y_{2}": Variable(_sym="y_{2}",
                       _alias="y_2",
@@ -236,10 +238,12 @@ vars_lt = {
                       _min=0.0,
                       _max=10.0,
                       _mean=5.0,
+                      _dev=0.50,
                       _std_units="m",
                       _std_min=0.0,
                       _std_max=10.0,
                       _std_mean=5.0,
+                      _std_dev=0.50,
                       _step=0.1),
     "d": Variable(_sym="d",
                   _alias="d",
@@ -254,10 +258,12 @@ vars_lt = {
                   _min=0.0,
                   _max=5.0,
                   _mean=2.5,
+                  _dev=0.25,
                   _std_units="m",
                   _std_min=0.0,
                   _std_max=5.0,
                   _std_mean=2.5,
+                  _std_dev=0.25,
                   _step=0.1),
     "U": Variable(_sym="U",
                   _alias="U",
@@ -272,10 +278,12 @@ vars_lt = {
                   _min=0.0,
                   _max=15.0,
                   _mean=7.50,
+                  _dev=0.75,
                   _std_units="m/s",
                   _std_min=0.0,
                   _std_max=15.0,
                   _std_mean=7.50,
+                  _std_dev=0.75,
                   _step=0.1),
     "P": Variable(_sym="P",
                   _alias="P",
@@ -290,10 +298,12 @@ vars_lt = {
                   _min=0.0,
                   _max=100000.0,
                   _mean=50000.0,
+                  _dev=5000.0,
                   _std_units="Pa",
                   _std_min=0.0,
                   _std_max=100000.0,
                   _std_mean=50000.0,
+                  _std_dev=5000.0,
                   _step=100.0),
     "v": Variable(_sym="v",
                   _alias="v",
@@ -308,10 +318,12 @@ vars_lt = {
                   _min=0.0,
                   _max=1.0,
                   _mean=0.5,
+                  _dev=0.05,
                   _std_units="m^2/s",
                   _std_min=0.0,
                   _std_max=1.0,
                   _std_mean=0.5,
+                  _std_dev=0.05,
                   _step=0.01),
     "g": Variable(_sym="g",
                   _alias="g",
@@ -445,18 +457,38 @@ for key, val in sena.results.items():
 # print(sena._coefficient_map.keys(), "\n")
 # print(sena._coefficient_map.get_entry("\\Pi_{0}"))
 # montecarlo
+print("\n=== Coefficient details: ===\n")
+for pi, coef in DAModel.coefficients.items():
+    print(f"Coefficient {pi}:=> {coef}\n")
+
 print("\n=== Monte Carlo Simulation: === \n")
+
+U = DAModel.variables["U"]
+miu = DAModel.variables["\\miu"]
+
+mc_dist = {
+    "U": lambda: dist1(U.std_min, U.std_max),
+    "\\miu": lambda: dist2(miu.std_mean, miu.std_dev),
+}
+
+i = 0
+while i < 10:
+    t1 = mc_dist["U"]()
+    t2 = mc_dist["\\miu"]()
+    print(f"Iteration {i}: U = {t1}, \\miu = {t2}")
+    i += 1
+keys = list(DAModel.coefficients["\\Pi_{1}"].var_dims.keys())
+print("Vardims:", keys)
+print(keys.index("\\miu"))
+
 monte = MonteCarloSim(_idx=0,
                       _sym="MC_{0}",
                       _fwk="CUSTOM",
                       name="Monte Carlo Simulation",
                       description="Monte Carlo Simulation~~~~~!!!",
                       _pi_expr=DAModel.coefficients["\\Pi_{1}"].pi_expr,
-                      _variables=list(DAModel.coefficients["\\Pi_{1}"].var_dims.keys()),
-                      _distributions={
-                          "U": dist1,
-                          "\\miu": dist2,
-                      },
+                      _variables=keys,
+                      _distributions=mc_dist,
                       _iterations=10)
 monte.set_coefficient(DAModel.coefficients["\\Pi_{1}"])
 print(monte, "\n")

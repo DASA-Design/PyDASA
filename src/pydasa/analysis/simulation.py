@@ -190,7 +190,8 @@ class MonteCarloSim(Validation, Generic[T]):
         # if not self._exe_func:
         #     raise ValueError("No executable function defined for simulation.")
         if not self._distributions:
-            missing = [v for v in self._variables if v not in self._distributions]
+            _vars = self._variables
+            missing = [v for v in _vars if v not in self._distributions]
             if missing:
                 _msg = f"Missing distributions for variables: {missing}"
                 raise ValueError(_msg)
@@ -339,8 +340,10 @@ class MonteCarloSim(Validation, Generic[T]):
                 # Sample values from distributions
                 samples = {}
                 for var in self._variables:
+                    print(var, "var u variables!!!!")
                     if var in self._distributions:
                         samples[var] = self._distributions[var]()
+                        print(var, "sampled value:", samples[var])
                     else:
                         _msg = f"Missing distribution for variable: {var}"
                         raise ValueError(_msg)

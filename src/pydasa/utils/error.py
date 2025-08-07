@@ -13,7 +13,7 @@ from typing import Any
 
 
 def handle_error(ctx: str, func: str, exc: Exception) -> None:
-    """*handle_error()* process errors by formatting a detailed error message and traceback.
+    """*handle_error()* generic function to handle errors iacross the whole PyDASA library.
 
     Args:
         ctx (str): The context (e.g., package/class) where the error occurred.
@@ -21,7 +21,10 @@ def handle_error(ctx: str, func: str, exc: Exception) -> None:
         exc (Exception): The exception that was raised.
 
     Raises:
-        Exception: A new exception with a detailed error message and traceback.
+        TypeError: If the context is not a string.
+        TypeError: If the function name is not a string.
+        TypeError: If the exception is not an instance of Exception.
+        type: If the error message is not a string.
     """
     # Validate the context
     if not isinstance(ctx, str):
@@ -74,9 +77,3 @@ def inspect_var(var: Any) -> str:
     # for name, value in frame.f_locals.items():
     #     if value is var:
     #         return name
-
-
-#  Example usage
-# lt = [1, 2, 3]
-# variable_name = inspect_var(lt)
-# print(f"The name of the variable is: {variable_name}")

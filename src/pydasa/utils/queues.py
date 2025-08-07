@@ -2,7 +2,11 @@
 """
 Configuration module for...
 
+# FIXME: adjust documentation to match the actual implementation.
 # TODO: Add description of the module.
+# TODO: check Q-Model formula and consistency with the theory.
+# TODO: rename some of the models properly (e.g., M/M/c, M/M/c/K, etc.)
+# TODO check for better and shorter names in the classes, methods and variables
 
 *IMPORTANT:* Based on the theory from:
 

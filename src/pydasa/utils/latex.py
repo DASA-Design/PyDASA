@@ -17,7 +17,7 @@ from sympy import symbols
 # import global variables
 from src.pydasa.utils.config import LATEX_RE
 
-# Global vars for special characters
+# Global vars for special Latex symbos and functions to ignore
 IGNORE_EXPR = {
     "\\frac",
     "\\sqrt",
@@ -28,6 +28,8 @@ IGNORE_EXPR = {
     "\\exp"
 }
 
+
+# Latex Parsing Functions
 
 def latex_to_python(expr: str) -> str:
     """*latex_to_python()* Convert a LaTeX expression to a Python-compatible string.

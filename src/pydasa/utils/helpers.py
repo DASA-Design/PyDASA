@@ -23,6 +23,8 @@ import dataclasses
 # import global variables
 
 
+# Memory Helpers
+
 def slot_dataclass(cls) -> dataclasses.dataclass:
     """slot_dataclass is a decorator that converts a class into a dataclass with slots.
 
@@ -44,6 +46,8 @@ def slot_dataclass(cls) -> dataclasses.dataclass:
     cls.__slots__ = [f.name for f in dataclasses.fields(cls)]
     return dataclasses.dataclass(cls)
 
+
+# Hash Table Helpers
 
 def is_prime(n: int) -> bool:
     """*is_prime()* checks if a number is prime or not. Original code from Sanjit_Prasad.

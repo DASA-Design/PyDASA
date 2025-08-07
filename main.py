@@ -204,134 +204,134 @@ print("\tWKNG_FDU_SYM_RE:", config.WKNG_FDU_SYM_RE)
 # P: pressure drop across the channel
 # v: kinematic viscosity of the fluid
 
-vars_lt = [
-    Variable(_sym="\\miu",
-             _alias="miu",
-             _fwk="CUSTOM",
-             name="Fluid Velocity",
-             description="Fluid velocity in the channel",
-             relevant=True,
-             _idx=0,
-             _cat="OUT",
-             _units="m/s",
-             _dims="L*T^-1",
-             _min=0.0,
-             _max=15.0,
-             _mean=7.50,
-             _std_units="m/s",
-             _std_min=0.0,
-             _std_max=15.0,
-             _std_mean=7.50,
-             _step=0.1,),
-    Variable(_sym="y_{2}",
-             _alias="y_2",
-             _fwk="CUSTOM",
-             name="Distance from the wall",
-             description="Distance from the wall to the center of the channel",
-             relevant=True,
-             _idx=1,
-             _cat="IN",
-             _units="m",
-             _dims="L",
-             _min=0.0,
-             _max=10.0,
-             _mean=5.0,
-             _std_units="m",
-             _std_min=0.0,
-             _std_max=10.0,
-             _std_mean=5.0,
-             _step=0.1),
-    Variable(_sym="d",
-             _alias="d",
-             _fwk="CUSTOM",
-             name="Channel diameter",
-             relevant=True,
-             description="Diameter of the channel",
-             _idx=2,
-             _cat="IN",
-             _units="m",
-             _dims="L",
-             _min=0.0,
-             _max=5.0,
-             _mean=2.5,
-             _std_units="m",
-             _std_min=0.0,
-             _std_max=5.0,
-             _std_mean=2.5,
-             _step=0.1),
-    Variable(_sym="U",
-             _alias="U",
-             _fwk="CUSTOM",
-             name="Velocity of the wall",
-             relevant=True,
-             description="Velocity of the fluid wall",
-             _idx=3,
-             _cat="IN",
-             _units="m/s",
-             _dims="L*T^-1",
-             _min=0.0,
-             _max=15.0,
-             _mean=7.50,
-             _std_units="m/s",
-             _std_min=0.0,
-             _std_max=15.0,
-             _std_mean=7.50,
-             _step=0.1),
-    Variable(_sym="P",
-             _alias="P",
-             _fwk="CUSTOM",
-             name="Channel Pressure Drop",
-             relevant=True,
-             description="Pressure drop across the channel",
-             _idx=4,
-             _cat="CTRL",
-             _units="Pa",
-             _dims="T^-2*L^1",
-             _min=0.0,
-             _max=100000.0,
-             _mean=50000.0,
-             _std_units="Pa",
-             _std_min=0.0,
-             _std_max=100000.0,
-             _std_mean=50000.0,
-             _step=100.0),
-    Variable(_sym="v",
-             _alias="v",
-             _fwk="CUSTOM",
-             name="Fluid Viscosity",
-             relevant=True,
-             description="Kinematic viscosity of the fluid",
-             _idx=5,
-             _cat="CTRL",
-             _units="m^2/s",
-             _dims="L^2*T^-1",
-             _min=0.0,
-             _max=1.0,
-             _mean=0.5,
-             _std_units="m^2/s",
-             _std_min=0.0,
-             _std_max=1.0,
-             _std_mean=0.5,
-             _step=0.01),
-    Variable(_sym="g",
-             _alias="g",
-             _fwk="CUSTOM",
-             name="Gravity",
-             description="Acceleration due to gravity",
-             _idx=6,
-             _cat="CTRL",
-             _units="m/s^2",
-             _dims="L*T^-2",),
-    Variable(_sym="f",
-             _alias="f",
-             _fwk="CUSTOM",
-             name="Fluid Frequency",
-             description="Fluid frequency",
-             _idx=7,
-             _cat="CTRL",
-             _units="Hz",
-             _dims="T^-1",),
-]
+vars_lt = {
+    "\\miu": Variable(_sym="\\miu",
+                      _alias="miu",
+                      _fwk="CUSTOM",
+                      name="Fluid Velocity",
+                      description="Fluid velocity in the channel",
+                      relevant=True,
+                      _idx=0,
+                      _cat="OUT",
+                      _units="m/s",
+                      _dims="L*T^-1",
+                      _min=0.0,
+                      _max=15.0,
+                      _mean=7.50,
+                      _std_units="m/s",
+                      _std_min=0.0,
+                      _std_max=15.0,
+                      _std_mean=7.50,
+                      _step=0.1,),
+    "y_{2}": Variable(_sym="y_{2}",
+                      _alias="y_2",
+                      _fwk="CUSTOM",
+                      name="Distance from the wall",
+                      description="Distance from the wall to the center of the channel",
+                      relevant=True,
+                      _idx=1,
+                      _cat="IN",
+                      _units="m",
+                      _dims="L",
+                      _min=0.0,
+                      _max=10.0,
+                      _mean=5.0,
+                      _std_units="m",
+                      _std_min=0.0,
+                      _std_max=10.0,
+                      _std_mean=5.0,
+                      _step=0.1),
+    "d": Variable(_sym="d",
+                  _alias="d",
+                  _fwk="CUSTOM",
+                  name="Channel diameter",
+                  relevant=True,
+                  description="Diameter of the channel",
+                  _idx=2,
+                  _cat="IN",
+                  _units="m",
+                  _dims="L",
+                  _min=0.0,
+                  _max=5.0,
+                  _mean=2.5,
+                  _std_units="m",
+                  _std_min=0.0,
+                  _std_max=5.0,
+                  _std_mean=2.5,
+                  _step=0.1),
+    "U": Variable(_sym="U",
+                  _alias="U",
+                  _fwk="CUSTOM",
+                  name="Velocity of the wall",
+                  relevant=True,
+                  description="Velocity of the fluid wall",
+                  _idx=3,
+                  _cat="IN",
+                  _units="m/s",
+                  _dims="L*T^-1",
+                  _min=0.0,
+                  _max=15.0,
+                  _mean=7.50,
+                  _std_units="m/s",
+                  _std_min=0.0,
+                  _std_max=15.0,
+                  _std_mean=7.50,
+                  _step=0.1),
+    "P": Variable(_sym="P",
+                  _alias="P",
+                  _fwk="CUSTOM",
+                  name="Channel Pressure Drop",
+                  relevant=True,
+                  description="Pressure drop across the channel",
+                  _idx=4,
+                  _cat="CTRL",
+                  _units="Pa",
+                  _dims="T^-2*L^1",
+                  _min=0.0,
+                  _max=100000.0,
+                  _mean=50000.0,
+                  _std_units="Pa",
+                  _std_min=0.0,
+                  _std_max=100000.0,
+                  _std_mean=50000.0,
+                  _step=100.0),
+    "v": Variable(_sym="v",
+                  _alias="v",
+                  _fwk="CUSTOM",
+                  name="Fluid Viscosity",
+                  relevant=True,
+                  description="Kinematic viscosity of the fluid",
+                  _idx=5,
+                  _cat="CTRL",
+                  _units="m^2/s",
+                  _dims="L^2*T^-1",
+                  _min=0.0,
+                  _max=1.0,
+                  _mean=0.5,
+                  _std_units="m^2/s",
+                  _std_min=0.0,
+                  _std_max=1.0,
+                  _std_mean=0.5,
+                  _step=0.01),
+    "g": Variable(_sym="g",
+                  _alias="g",
+                  _fwk="CUSTOM",
+                  name="Gravity",
+                  description="Acceleration due to gravity",
+                  _idx=6,
+                  _cat="CTRL",
+                  _units="m/s^2",
+                  _dims="L*T^-2",),
+    "f": Variable(_sym="f",
+                  _alias="f",
+                  _fwk="CUSTOM",
+                  name="Fluid Frequency",
+                  description="Fluid frequency",
+                  _idx=7,
+                  _cat="CTRL",
+                  _units="Hz",
+                  _dims="T^-1",),
+}
 
 print(type(vars_lt))
 print("Dimensional relevance of the parameters:")
@@ -360,8 +360,8 @@ print(len(DAModel.relevant_lt), "\n")
 print(DAModel, "\n")
 print(DAModel.working_fdus, "\n")
 
-for relv in DAModel.relevant_lt:
-    print("blaaaaa", relv.idx, relv.cat, relv.sym, relv.name)
+for k, relv in DAModel.relevant_lt.items():
+    print("blaaaaa", k, "->", relv.idx, relv.cat, relv.sym, relv.name)
 print(DAModel.output, "\n")
 
 DAModel.create_matrix()
@@ -374,23 +374,25 @@ for k, v in vars(DAModel).items():
     print(f"{k}: {v}")
 print("\n")
 
-for pi in DAModel.coefficients:
-    print(pi.sym, "=", pi.pi_expr, "\n")
+for k, v in DAModel.coefficients.items():
+    pi = v
+    print("key:", k, " --- ", pi.sym, "=", pi.pi_expr, "\n")
 
 
 print("=== Sensitivity Analysis: ===")
-print(f"Coefficients: {DAModel.coefficients[1]}\n")
+temp = DAModel.coefficients["\\Pi_{1}"]
+print(f"Coefficients: {temp}\n")
 
 sen = DimSensitivity(_idx=0,
                      _sym="S_{0}",
                      _fwk="CUSTOM",
                      name="Sensitivity",
                      description="Sensitivity Analysis",
-                     _pi_expr=DAModel.coefficients[1].pi_expr,
-                     _variables=list(DAModel.coefficients[1].var_dims.keys()))
+                     _pi_expr=DAModel.coefficients["\\Pi_{1}"].pi_expr,
+                     _variables=list(DAModel.coefficients["\\Pi_{1}"].var_dims.keys()))
 print("=== Sensitivity: ===")
 print(sen, "\n")
-td = DAModel.coefficients[1].var_dims
+td = temp.var_dims
 # td["d"] = 5.05
 # td["y_{2}"] = 3.05
 td["U"] = 10.05
@@ -435,9 +437,9 @@ for k, v in sena.results.items():
 print("Sensitivity Analysis Results:")
 print(sena.analyses, "\n")
 
-# for key, val in sena.results.items():
-#     txt = f"{key}: {val}"
-#     print(txt)
+for key, val in sena.results.items():
+    txt = f"{key}: {val}"
+    print(txt)
 
 # print(sena.results, "\n")
 # print(sena._coefficient_map.keys(), "\n")
@@ -449,14 +451,14 @@ monte = MonteCarloSim(_idx=0,
                       _fwk="CUSTOM",
                       name="Monte Carlo Simulation",
                       description="Monte Carlo Simulation~~~~~!!!",
-                      _pi_expr=DAModel.coefficients[1].pi_expr,
-                      _variables=list(DAModel.coefficients[1].var_dims.keys()),
+                      _pi_expr=DAModel.coefficients["\\Pi_{1}"].pi_expr,
+                      _variables=list(DAModel.coefficients["\\Pi_{1}"].var_dims.keys()),
                       _distributions={
                           "U": dist1,
                           "\\miu": dist2,
                       },
                       _iterations=10)
-monte.set_coefficient(DAModel.coefficients[1])
+monte.set_coefficient(DAModel.coefficients["\\Pi_{1}"])
 print(monte, "\n")
 
 monte.run()

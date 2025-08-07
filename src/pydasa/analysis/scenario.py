@@ -25,6 +25,7 @@ from src.pydasa.core.basic import Validation
 
 # Import related classes
 from src.pydasa.buckingham.vashchy import Coefficient
+# from src.pydasa.core.parameter import Variable
 
 # Import utils
 from src.pydasa.utils.default import T
@@ -56,7 +57,7 @@ class DimSensitivity(Validation, Generic[T]):
         _pi_expr (str): LaTeX expression to analyze.
         _sym_func (Callable): Sympy function of the sensitivity.
         _exe_func (Callable): Executable function for numerical evaluation.
-        _variables (Dict[str]): Variable symbols in the expression.
+        _variables (Dict[str, Variable]): Variable symbols in the expression.
         _symbols (Dict[str, Any]): Python symbols for the variables.
         _aliases (Dict[str, Any]): Variable aliases for use in code.
 

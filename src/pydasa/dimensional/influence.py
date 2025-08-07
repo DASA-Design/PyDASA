@@ -55,13 +55,11 @@ class SensitivityHandler(Validation, Generic[T]):
         _cat (str): Category of analysis (SYM, NUM, HYB).
 
         # Analysis Components
-        _variables (List[Variable]): List of variables used in analysis.
-        _coefficients (List[Coefficient]): List of coefficients to analyze.
-        _variable_map (Dict[str, Variable]): Map of variable symbols to objects.
-        _coefficient_map (Dict[str, Coefficient]): Map of coefficient symbols to objects.
+        _variables (Dict[str, Variable]): Dictionary of all parameters/variables in the model (*Variable*).
+        _coefficients (Dict[str, Coefficient]): Dictionary of all coefficients in the model (*Coefficient*).
 
         # Analysis Results
-        _analyses (List[DimSensitivity]): List of sensitivity analyses performed.
+        _analyses (Dict[str, DimSensitivity]): Dictionary of sensitivity analyses performed.
         _results (Dict[str, Dict[str, Any]]): Consolidated results of analyses.
     """
 
@@ -70,27 +68,28 @@ class SensitivityHandler(Validation, Generic[T]):
     _cat: str = "SYM"
     """Category of sensitivity analysis (SYM, NUM)."""
 
-    # Analysis components
+    # Variable management
     # :attr: _variables
-    _variables: List[Variable] = field(default_factory=list)
-    """List of variables used in analysis."""
+    _variables: Dict[str, Variable] = field(default_factory=dict)
+    """Dictionary of all parameters/variables in the model (*Variable*)."""
 
     # :attr: _coefficients
-    _coefficients: List[Coefficient] = field(default_factory=list)
-    """List of coefficients to analyze."""
+    _coefficients: Dict[str, Coefficient] = field(default_factory=dict)
+    """Dictionary of all coefficients in the model (*Coefficient*)."""
 
-    # :attr: _variable_map
-    _variable_map: Dict[str, Variable] = field(default_factory=dict)
-    """Map of variable symbols to objects."""
+    # TODO deprecated attributes, erase after changing the code
+    # # :attr: _variables
+    # _variables: Dict[str, Variable] = field(default_factory=dict)
+    # """Map of variable symbols to objects."""
 
-    # :attr: _coefficient_map
-    _coefficient_map: Dict[str, Coefficient] = field(default_factory=dict)
-    """Map of coefficient symbols to objects."""
+    # # :attr: _coefficient_map
+    # _coefficient_map: Dict[str, Coefficient] = field(default_factory=dict)
+    # """Map of coefficient symbols to objects."""
 
     # Analysis results
     # :attr: _analyses
-    _analyses: List[DimSensitivity] = field(default_factory=list)
-    """List of sensitivity analyses performed."""
+    _analyses: Dict[str, DimSensitivity] = field(default_factory=dict)
+    """Dictionary of sensitivity analyses performed."""
 
     # :attr: _results
     _results: Dict[str, Dict[str, Any]] = field(default_factory=dict)
@@ -111,53 +110,32 @@ class SensitivityHandler(Validation, Generic[T]):
         if not self._alias:
             self._alias = latex_to_python(self._sym)
 
-        # Initialize component maps
-        if self._variables:
-            self._setup_variable_map()
-
-        if self._coefficients:
-            self._setup_coefficient_map()
-
-    def _setup_variable_map(self) -> None:
-        """*_setup_variable_map()* Creates a map of variable symbols to variable objects.
-        """
-        self._variable_map.clear()
-        for var in self._variables:
-            self._variable_map[var.sym] = var
-
-    def _setup_coefficient_map(self) -> None:
-        """*_setup_coefficient_map()* Creates a map of coefficient symbols to coefficient objects.
-        """
-        self._coefficient_map.clear()
-        for coef in self._coefficients:
-            self._coefficient_map[coef.sym] = coef
-
-    def _validate_list(self, lt: List, exp_type: tuple) -> bool:
-        """*_validate_list()* Validates a list with expected element types.
+    def _validate_dict(self, dt: dict, exp_type: List[type]) -> bool:
+        """*_validate_dict()* Validates a dictionary with expected value types.
 
         Args:
-            lt (List): List to validate.
-            exp_type (tuple): Expected types for list elements.
+            dt (dict): Dictionary to validate.
+            exp_type (List[type]): Expected types for dictionary values.
 
         Raises:
-            ValueError: If the object is not a list.
-            ValueError: If the list is empty.
-            ValueError: If the list contains elements of unexpected types.
+            ValueError: If the object is not a dictionary.
+            ValueError: If the dictionary is empty.
+            ValueError: If the dictionary contains values of unexpected types.
 
         Returns:
-            bool: True if the list is valid.
+            bool: True if the dictionary is valid.
         """
-        if not isinstance(lt, list):
-            _msg = f"{inspect_var(lt)} must be a list. "
-            _msg += f"Provided: {type(lt)}"
+        if not isinstance(dt, dict):
+            _msg = f"{inspect_var(dt)} must be a dictionary. "
+            _msg += f"Provided: {type(dt)}"
             raise ValueError(_msg)
-        if len(lt) == 0:
-            _msg = f"{inspect_var(lt)} cannot be empty. "
-            _msg += f"Provided: {lt}"
+        if len(dt) == 0:
+            _msg = f"{inspect_var(dt)} cannot be empty. "
+            _msg += f"Provided: {dt}"
             raise ValueError(_msg)
-        if not all(isinstance(x, exp_type) for x in lt):
-            _msg = f"{inspect_var(lt)} must contain {exp_type} elements."
-            _msg += f" Provided: {[type(x).__name__ for x in lt]}"
+        if not all(isinstance(v, exp_type) for v in dt.values()):
+            _msg = f"{inspect_var(dt)} must contain {exp_type} values."
+            _msg += f" Provided: {[type(v).__name__ for v in dt.values()]}"
             raise ValueError(_msg)
         return True
 
@@ -168,7 +146,7 @@ class SensitivityHandler(Validation, Generic[T]):
         """
         self._analyses.clear()
 
-        for i, coef in enumerate(self._coefficients):
+        for i, (pi, coef) in enumerate(self._coefficients.items()):
             # Create sensitivity analysis
             analysis = DimSensitivity(
                 _idx=i,
@@ -183,7 +161,7 @@ class SensitivityHandler(Validation, Generic[T]):
             analysis.set_coefficient(coef)
 
             # Add to list
-            self._analyses.append(analysis)
+            self._analyses[pi] = analysis
 
     def _get_variable_value(self,
                             var_sym: str,
@@ -202,13 +180,13 @@ class SensitivityHandler(Validation, Generic[T]):
             ValueError: If the value type is invalid.
         """
         # Check if the variable symbol exists in our variable map
-        if var_sym not in self._variable_map:
-            _msg = f"Variable '{var_sym}' not found in variable map."
-            _msg += f" Available variables: {list(self._variable_map.keys())}"
+        if var_sym not in self._variables:
+            _msg = f"Variable '{var_sym}' not found in variables."
+            _msg += f" Available variables: {list(self._variables.keys())}"
             raise ValueError(_msg)
 
         # Get the Variable object from the map
-        var = self._variable_map[var_sym]
+        var = self._variables[var_sym]
 
         # CASE 1: Return average value
         if val_type == "mean":
@@ -270,7 +248,7 @@ class SensitivityHandler(Validation, Generic[T]):
         self._results.clear()
 
         # Process each analysis
-        for analysis in self._analyses:
+        for analysis in self._analyses.values():
             # Get variable values
             values = {}
             for var_sym in analysis.symbols.keys():
@@ -306,12 +284,12 @@ class SensitivityHandler(Validation, Generic[T]):
         self._results.clear()
 
         # Process each analysis
-        for analysis in self._analyses:
+        for analysis in self._analyses.values():
             # Get variable bounds
             vals = []
             bounds = []
             for var_sym in analysis.symbols.keys():
-                var = self._variable_map[var_sym]
+                var = self._variables[var_sym]
                 min_val = var.std_min if var.std_min is not None else (var.min if var.min is not None else -0.1)
                 max_val = var.std_max if var.std_max is not None else (var.max if var.max is not None else -10.0)
                 bounds.append([min_val, max_val])
@@ -422,9 +400,11 @@ class SensitivityHandler(Validation, Generic[T]):
         Raises:
             ValueError: If list is invalid.
         """
-        if self._validate_list(val, (Variable,)):
+        if self._validate_dict(val, (Variable,)):
             self._variables = val
-            self._setup_variable_map()
+
+            # Clear existing analyses
+            self._analyses.clear()
 
     @property
     def coefficients(self) -> List[Coefficient]:
@@ -445,9 +425,9 @@ class SensitivityHandler(Validation, Generic[T]):
         Raises:
             ValueError: If list is invalid.
         """
-        if self._validate_list(val, (Coefficient,)):
+        if self._validate_dict(val, (Coefficient,)):
             self._coefficients = val
-            self._setup_coefficient_map()
+
             # Clear existing analyses
             self._analyses.clear()
 
@@ -476,18 +456,18 @@ class SensitivityHandler(Validation, Generic[T]):
         """
         # Reset base class attributes
         self._idx = -1
-        self._sym = "SENS HDL"
+        self._sym = "SENS_Pi_{-1}"
         self._fwk = "PHYSICAL"
         self.name = ""
         self.description = ""
 
         # Reset handler-specific attributes
         self._cat = "SYM"
-        self._variables = []
-        self._coefficients = []
-        self._variable_map = {}
-        self._coefficient_map = {}
-        self._analyses = []
+        self._variables = {}
+        self._coefficients = {}
+        # self._variables = {}
+        # self._coefficient_map = {}
+        self._analyses = {}
         self._results = {}
 
     def to_dict(self) -> Dict[str, Any]:

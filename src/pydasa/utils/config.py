@@ -181,19 +181,19 @@ Purpose:
     - Defines the dimensional frameworks supported in *PyDASA*.
 """
 
-# Supported Parameter and Variable categories
+# Supported Variables categories
 # :data: PARAMS_CAT_DT
 PARAMS_CAT_DT: dict = {
-    "IN": "Parameters that influence the system (e.g., known inputs).",
-    "OUT": "Parameters that represent the results of the analysis.",
-    "CTRL": "Parameters used to CTRL or constrain the system (e.g., constants).",
+    "IN": "Variables that influence the system (e.g., known inputs).",
+    "OUT": "Variables that represent the results of the analysis.",
+    "CTRL": "Variables used to control or constrain the system (e.g., constants).",
 }
 """
-Supported Parameter and Variable categories in *PyDASA*.
+Supported Variables categories in *PyDASA*.
 
 Purpose:
-    - Defines the parameter categories supported in *PyDASA*.
-    - Used to classify parameters in the dimensional matrix.
+    - Defines the variable categories supported in *PyDASA*.
+    - Used to classify variables in the dimensional matrix.
 """
 
 # Supported Dimensionless Coefficients (DC) categories

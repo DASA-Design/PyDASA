@@ -18,7 +18,7 @@ Classes:
 # forward references + postpone eval type hints
 from __future__ import annotations
 from dataclasses import dataclass
-# TODO do I need the Generic, T stuf???
+# TODO do I need the Generic, T stuff???
 from typing import Optional
 # from new.pydasa.utils.default import T
 

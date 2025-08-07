@@ -69,8 +69,7 @@ def inspect_var(var: Any) -> str:
     for name, value in frame.f_locals.items():
         if id(value) == id(var):
             return name
-    raise ValueError("Variable name not found in the current scope.")
-    # return "Variable name not found"
+    raise ValueError("Parameter name not found in current scope.")
 
     # FIXME old code, keep until we know the new version works
     # frame = inspect.currentframe().f_back

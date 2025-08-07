@@ -27,6 +27,7 @@ import numpy as np
 
 # Import validation base classes
 from src.pydasa.core.basic import Validation
+from src.pydasa.core.parameter import Variable
 
 # Import utils
 from src.pydasa.utils.default import T
@@ -189,6 +190,35 @@ class Coefficient(Validation, Generic[T]):
 
         return True
 
+    # def _validate_dict(self, dt: dict, exp_type: List[type]) -> bool:
+    #     """*_validate_dict()* Validates a dictionary with expected value types.
+
+    #     Args:
+    #         dt (dict): Dictionary to validate.
+    #         exp_type (List[type]): Expected types for dictionary values.
+
+    #     Raises:
+    #         ValueError: If the object is not a dictionary.
+    #         ValueError: If the dictionary is empty.
+    #         ValueError: If the dictionary contains values of unexpected types.
+
+    #     Returns:
+    #         bool: True if the dictionary is valid.
+    #     """
+    #     if not isinstance(dt, dict):
+    #         _msg = f"{inspect_var(dt)} must be a dictionary. "
+    #         _msg += f"Provided: {type(dt)}"
+    #         raise ValueError(_msg)
+    #     if len(dt) == 0:
+    #         _msg = f"{inspect_var(dt)} cannot be empty. "
+    #         _msg += f"Provided: {dt}"
+    #         raise ValueError(_msg)
+    #     if not all(isinstance(v, exp_type) for v in dt.values()):
+    #         _msg = f"{inspect_var(dt)} must contain {exp_type} values."
+    #         _msg += f" Provided: {[type(v).__name__ for v in dt.values()]}"
+    #         raise ValueError(_msg)
+    #     return True
+
     def _build_expression(self,
                           var_lt: List[str],
                           dim_col: List[int]) -> tuple[str, dict]:
@@ -278,11 +308,11 @@ class Coefficient(Validation, Generic[T]):
         return self._variables
 
     @variables.setter
-    def variables(self, val: List[str]) -> None:
+    def variables(self, val: Dict[str, Variable]) -> None:
         """*variables* Set the variable symbols list.
 
         Args:
-            val (List[str]): Variables symbols list.
+            val (Dict[str, Variable]): Variables symbols list.
 
         Raises:
             ValueError: If variables list is invalid.

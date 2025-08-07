@@ -41,6 +41,7 @@ from src.pydasa.utils import config as cfg
 
 # global variables
 MAX_OUT: int = 1
+# TODO check this, MAX_IN is need it?
 MAX_IN: int = 10
 
 
@@ -61,8 +62,8 @@ class DimMatrix(Validation, Generic[T]):
         _framework (DimFramework): Dimensional framework managing FDUs.
 
         # Variable and Parameter Management
-        _variables (List[Variable]): List of all variables in the model.
-        _relevant_lt (List[Variable]): List of relevant variables for analysis.
+        _variables (Dict[str, Variable]): Dictionary of all variables in the model.
+        _relevant_lt (Dict[str, Variable]): Dictionary of relevant variables for analysis.
 
         # Matrix Representation
         _dim_mtx (Optional[np.ndarray]): Dimensional matrix.
@@ -72,7 +73,7 @@ class DimMatrix(Validation, Generic[T]):
         _pivot_cols (List[int]): Pivot columns in the RREF matrix.
 
         # Analysis Results
-        _coefficients (List[Coefficient]): List of dimensionless coefficients.
+        _coefficients (Dict[str, Coefficient]): Dictionary of dimensionless coefficients.
 
         # Model Statistics
         _n_var (int): Total number of variables.
@@ -100,12 +101,15 @@ class DimMatrix(Validation, Generic[T]):
 
     # Variable management
     # :attr: _variables
-    _variables: List[Variable] = field(default_factory=list)
-    """List of all parameters/variables (*Variable*) in the model."""
+    _variables: Dict[str, Variable] = field(default_factory=dict)
+    """Dictionary of all parameters/variables in the model (*Variable*)."""
 
     # :attr: _relevant_lt
-    _relevant_lt: List[Variable] = field(default_factory=list)
-    """List of relevant parameters/variables (*Variable*) for analysis."""
+    _relevant_lt: Dict[str, Variable] = field(default_factory=dict)
+    """Dictionary of relevant parameters/variables for analysis (*Variable*).
+
+    NOTE: called 'relevant list' by convention.
+    """
 
     # Matrix representation
     # :attr: _dim_mtx
@@ -130,8 +134,8 @@ class DimMatrix(Validation, Generic[T]):
 
     # Analysis results
     # :attr: _coefficients
-    _coefficients: List[Coefficient] = field(default_factory=list)
-    """List of dimensionless coefficients( *Coefficient*)."""
+    _coefficients: Dict[str, Coefficient] = field(default_factory=dict)
+    """Dictionary of dimensionless coefficients (*Coefficient*)."""
 
     # Model statistics
     # :attr: _n_var
@@ -182,7 +186,9 @@ class DimMatrix(Validation, Generic[T]):
         self._update_variable_stats()
 
         # Identify relevant variables
-        self._relevant_lt = [v for v in self._variables if v.relevant]
+        # self._relevant_lt = [v for v in self._variables if v.relevant]
+        _vars = self._variables
+        self._relevant_lt = {k: v for k, v in _vars.items() if v.relevant}
 
         # Sort relevant variables by category
         self._relevant_lt = self._sort_by_category(self._relevant_lt)
@@ -213,7 +219,7 @@ class DimMatrix(Validation, Generic[T]):
             ValueError: If the model has invalid variable counts.
         """
         # Count variables by category
-        _vars = self._variables
+        _vars = self._variables.values()
         self._n_var = len(_vars)
         self._n_relevant = len([v for v in _vars if v.relevant])
         self._n_in = len([v for v in _vars if v.cat == "IN" and v.relevant])
@@ -243,28 +249,40 @@ class DimMatrix(Validation, Generic[T]):
             _msg += "At least one input variable is required."
             raise ValueError(_msg)
 
-    def _sort_by_category(self, vars_lt: List[Variable]) -> List[Variable]:
+    def _sort_by_category(self,
+                          vars_lt: Dict[str, Variable]) -> Dict[str, Variable]:
         """*_sort_by_category()* Sorts variables by category.
 
         Args:
-            vars_lt (List[Variable]): List of variables to sort.
+            vars_lt (Dict[str, Variable]): Dictionary of variables to sort.
 
         Returns:
-            List[Variable]: Sorted list of variables (OUT, IN, CTRL).
+            Dict[str, Variable]: Sorted list of variables (OUT, IN, CTRL).
         """
         # Define category precedence
         # category_order = ["OUT", "IN", "CTRL"]
         _cat_ord = list(cfg.PARAMS_CAT_DT.keys())
 
-        # Sort variables by category
-        sorted_vars = sorted(vars_lt, key=lambda v: _cat_ord.index(v.cat))
+        # Sort variables by category using dict items() and tuple idx
+        sorted_vars = sorted(vars_lt.items(),
+                             key=lambda v: _cat_ord.index(v[1].cat))
         # FIXME IA weird lambda function, check later!!!
         # sorted_vars = sorted(vars_lt,
         #                      key=lambda v: _cat_ord.index(v.cat) if v.cat in _cat_ord else len(_cat_ord))
-        # Update indices
-        for i, var in enumerate(sorted_vars):
-            var._idx = i
-        return sorted_vars
+
+        # Update indices in Variables
+        ans = dict()
+        for i, (k, v) in enumerate(sorted_vars):
+            v._idx = i
+            ans[k] = v
+
+        # print(sorted_vars)
+        # for i, (k, var) in enumerate(sorted_vars):
+        #     sorted_vars[k].var._idx = i
+        #     print("ajaaa!!!")
+        #     print(i, k, var)
+        #     # var._idx = i
+        return ans
 
     def _find_output_variable(self) -> None:
         """*_find_output_variable()* Identifies the output variable. Sets the output variable for the analysis.
@@ -274,7 +292,8 @@ class DimMatrix(Validation, Generic[T]):
         # if output_vars:
         #     self._output = output_vars[0]
         # get output variable in relevant list, none if not found
-        ans = next((p for p in self._variables if p.cat == "OUT"), None)
+        vals = self._variables.values()
+        ans = next((p for p in vals if p.cat == "OUT"), None)
         self._output = ans
 
     def _extract_fdus(self) -> List[str]:
@@ -299,7 +318,7 @@ class DimMatrix(Validation, Generic[T]):
         # return ans
 
         # the same but with regex
-        match = [p.std_dims for p in self._relevant_lt]
+        match = [p.std_dims for p in self._relevant_lt.values()]
         fdus = [d for d in re.findall(cfg.WKNG_FDU_SYM_RE, str(match))]
         fdus = list({fdus[i] for i in range(len(fdus))})
         # return list({m for p in relevant_lt for m in re.findall(cfg.WKNG_FDU_SYM_RE, p.std_dims)})
@@ -316,7 +335,7 @@ class DimMatrix(Validation, Generic[T]):
         self._dim_mtx = np.zeros((n_fdu, n_var), dtype=float)
 
         # Fill matrix with dimension columns
-        for var in self._relevant_lt:
+        for var in self._relevant_lt.values():
             # Ensure dimension column has correct length
             dim_col = var._dim_col
             if len(dim_col) < n_fdu:
@@ -360,7 +379,7 @@ class DimMatrix(Validation, Generic[T]):
         self._coefficients.clear()
 
         # Extract variable symbols
-        var_symbols = [var._sym for var in self._relevant_lt]
+        var_symbols = [var._sym for var in self._relevant_lt.values()]
 
         # Create coefficient for each nullspace vector
         for i, vector in enumerate(nullspace_vectors):
@@ -385,7 +404,9 @@ class DimMatrix(Validation, Generic[T]):
                 name=f"Pi-{i}",
                 description=f"Dimensionless coefficient {i} from nullspace"
             )
-            self._coefficients.append(coef)
+            td = {f"\\Pi_{{{i}}}": coef}
+            # self._coefficients.append(coef)
+            self._coefficients.update(td)
 
     def analyze(self) -> None:
         """*analyze()* Performs complete dimensional analysis. Creates the dimensional matrix and solves it to generate dimensionless coefficients.
@@ -426,28 +447,29 @@ class DimMatrix(Validation, Generic[T]):
     # Property getters and setters
 
     @property
-    def variables(self) -> List[Variable]:
-        """*variables* Get the list of variables.
+    def variables(self) -> Dict[str, Variable]:
+        """*variables* Get the dictionary of variables.
 
         Returns:
-            List[Variable]: List of all variables.
+            Dict[str, Variable]: Dictionary of all variables.
         """
         return self._variables.copy()
 
     @variables.setter
-    def variables(self, val: List[Variable]) -> None:
-        """*variables* Set the list of variables.
+    def variables(self, val: Dict[str, Variable]) -> None:
+        """*variables* Set the dictionary of variables.
 
         Args:
-            val (List[Variable]): List of variables.
+            val (Dict[str, Variable]): Dictionary of variables.
 
         Raises:
-            ValueError: If the variable list is invalid.
+            ValueError: If the dictionary is null or not a dictionary.
+            ValueError: If any of the dictionary variables are invalid.
         """
-        if not val:
-            raise ValueError("Variable list cannot be empty")
+        if not val or not isinstance(val, dict):
+            raise ValueError("Variables must be in non-empty dictionary.")
 
-        if not all(isinstance(v, Variable) for v in val):
+        if not all(isinstance(v, Variable) for v in val.values()):
             raise ValueError("All elements must be Variable instances")
 
         # Set variables and update framework
@@ -496,23 +518,27 @@ class DimMatrix(Validation, Generic[T]):
         return self._relevant_lt.copy()
 
     @relevant_lt.setter
-    def relevant_lt(self, val: List[Variable]) -> None:
-        """*relevant_lt* Set the list of relevant variables.
+    def relevant_lt(self, val: Dict[str, Variable]) -> None:
+        """*relevant_lt* Set the dictionary of relevant variables, otherwise known as 'relevance list'.
 
         Args:
-            val (List[Variable]): List of relevant variables.
+            val (Dict[str, Variable]): Dictionary of relevant variables.
 
         Raises:
-            ValueError: If the relevant variable list is invalid.
+            ValueError: If the relevant variable dictionary is invalid.
+            ValueError: If any of the dictionary variables are invalid.
         """
-        if not val:
-            raise ValueError("Relevant variable list cannot be empty")
+        if not val or not isinstance(val, dict):
+            raise ValueError("Variables must be in non-empty dictionary.")
 
-        if not all(isinstance(v, Variable) for v in val):
+        if not all(isinstance(v, Variable) for v in val.values()):
             raise ValueError("All elements must be Variable instances")
 
         # Set relevant variables and prepare for analysis
-        self._relevant_lt = [p for p in val if p.relevant]
+        # self._relevant_lt = [p for p in val if p.relevant]
+        _vars = self._variables
+        self._relevant_lt = {k: v for k, v in _vars.items() if v.relevant}
+
         self._prepare_analysis()
 
     @property

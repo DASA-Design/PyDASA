@@ -1,4 +1,6 @@
-﻿
+﻿# native modules
+import random
+
 # Custom modules
 # PyDASA modules
 # data structures modules
@@ -28,14 +30,14 @@ from src.pydasa.core.parameter import Variable
 # Dimensional Matrix Modelling module
 from src.pydasa.dimensional.model import DimMatrix
 
+# sensitivity analysis modules
 from src.pydasa.analysis.scenario import DimSensitivity
-
-# TODO need to know where to put the new
 from src.pydasa.dimensional.influence import SensitivityHandler
 
-# for FDU regex management
-# for Dimensional Analysis modules
-# complete module with the FDU's regex
+# Monte Carlo Simulation modules
+from src.pydasa.analysis.simulation import MonteCarloSim
+
+# from src.pydasa.dimensional.practical import MonteCarloHandler
 
 
 def test_cmp(a, b) -> int:
@@ -51,6 +53,15 @@ def test_cmp(a, b) -> int:
         return 1
     else:
         raise TypeError(f"Invalid comparison between {type(a)} and {type(b)}")
+
+
+# Define input distributions
+def dist1(a, b):
+    return random.uniform(a, b)
+
+
+def dist2(mean, std):
+    return random.gauss(mean, std)
 
 
 a = ArrayList(iodata=[1, 2, 3],
@@ -430,3 +441,14 @@ for k, v in sena.results.items():
 # print(sena._coefficient_map.keys(), "\n")
 # print(sena._coefficient_map.get_entry("\\Pi_{0}"))
 # montecarlo
+print("\n=== Monte Carlo Simulation: === \n")
+monte = MonteCarloSim(_idx=0,
+                      _sym="MC_{0}",
+                      _fwk="CUSTOM",
+                      name="Monte Carlo Simulation",
+                      description="Monte Carlo Simulation~~~~~!!!",
+                      _model_function=DAModel,
+                      _input_distributions=[dist1, dist1],
+                      _iterations=1000,
+                      _variables=vars_lt,
+                      _coefficients=DAModel.coefficients,)

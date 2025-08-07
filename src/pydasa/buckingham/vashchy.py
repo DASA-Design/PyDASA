@@ -167,7 +167,9 @@ class Coefficient(Validation, Generic[T]):
             exp_type (tuple): Expected types for list elements.
 
         Raises:
-            ValueError: If list is empty or contains invalid types.
+            ValueError: If the object is not a list.
+            ValueError: If the list is empty.
+            ValueError: If the list contains elements of unexpected types.
 
         Returns:
             bool: True if the list is valid.
@@ -176,14 +178,15 @@ class Coefficient(Validation, Generic[T]):
             _msg = f"{inspect_var(lt)} must be a list. "
             _msg += f"Provided: {type(lt)}"
             raise ValueError(_msg)
-        if not all(isinstance(x, exp_type) for x in lt):
-            _msg = f"{inspect_var(lt)} must contain {exp_type} elements."
-            _msg += f" Provided: {[type(x).__name__ for x in lt]}"
-            raise ValueError(_msg)
         if len(lt) == 0:
             _msg = f"{inspect_var(lt)} cannot be empty. "
             _msg += f"Provided: {lt}"
             raise ValueError(_msg)
+        if not all(isinstance(x, exp_type) for x in lt):
+            _msg = f"{inspect_var(lt)} must contain {exp_type} elements."
+            _msg += f" Provided: {[type(x).__name__ for x in lt]}"
+            raise ValueError(_msg)
+
         return True
 
     def _build_expression(self,
@@ -257,13 +260,12 @@ class Coefficient(Validation, Generic[T]):
             val (str): Category value.
 
         Raises:
-            ValueError: If category is invalid.
+            ValueError: If category is not supported.
         """
         if val.upper() not in cfg.DC_CAT_DT:
-            raise ValueError(
-                f"Invalid category: {val}. "
-                f"Must be one of: {', '.join(cfg.DC_CAT_DT.keys())}"
-            )
+            _msg = f"Category {val} is invalid. "
+            _msg += f"Must be one of: {', '.join(cfg.DC_CAT_DT.keys())}"
+            raise ValueError(_msg)
         self._cat = val.upper()
 
     @property
@@ -283,7 +285,7 @@ class Coefficient(Validation, Generic[T]):
             val (List[str]): Variables symbols list.
 
         Raises:
-            ValueError: If list is invalid.
+            ValueError: If variables list is invalid.
         """
         if self._validate_list(val, (str,)):
             self._variables = val
@@ -308,10 +310,10 @@ class Coefficient(Validation, Generic[T]):
             val (List[int]): Dimensional column.
 
         Raises:
-            ValueError: If list is invalid.
+            ValueError: If dimensional column is invalid.
         """
         if self._validate_list(val, (int, float)):
-            self._dim_col = [int(x) for x in val]  # Convert all to int
+            self._dim_col = [int(x) for x in val]   # Ensure integers
             # # Update expression if variable list is available
             # if self._variables:
             #     self._pi_expr, self.var_dims = self._build_expression(self._variables, self._dim_col)
@@ -333,7 +335,7 @@ class Coefficient(Validation, Generic[T]):
             val (List[int]): Pivot indices list.
 
         Raises:
-            ValueError: If list is invalid.
+            ValueError: If pivot list is invalid.
         """
         if val is None:
             self._pivot_lt = None
@@ -357,10 +359,11 @@ class Coefficient(Validation, Generic[T]):
             val (str): Coefficient expression.
 
         Raises:
-            ValueError: If expression is invalid.
+            ValueError: If the coefficient expression is not a string.
         """
         if not isinstance(val, str):
-            raise ValueError(f"Expression must be a string, got {type(val).__name__}")
+            _msg = f"Expression must be a string, got {type(val).__name__}."
+            raise ValueError(_msg)
         self._pi_expr = val
 
     # Value range properties
@@ -382,7 +385,8 @@ class Coefficient(Validation, Generic[T]):
             val (Optional[float]): Minimum range value.
 
         Raises:
-            ValueError: If value is invalid or greater than max.
+            ValueError: If value is not a number.
+            ValueError: If value is greater than max.
         """
         if val is not None and not isinstance(val, (int, float)):
             raise ValueError("Minimum range must be a number.")
@@ -409,7 +413,8 @@ class Coefficient(Validation, Generic[T]):
             val (Optional[float]): Maximum range value.
 
         Raises:
-            ValueError: If value is invalid or less than min.
+            ValueError: If value is not a number.
+            ValueError: If value is less than min.
         """
         if val is not None and not isinstance(val, (int, float)):
             raise ValueError("Maximum val must be a number.")
@@ -436,7 +441,8 @@ class Coefficient(Validation, Generic[T]):
             val (Optional[float]): average value.
 
         Raises:
-            ValueError: If value is invalid or outside min-max range.
+            ValueError: If value is not a number.
+            ValueError: If value is outside min-max range.
         """
         if val is not None and not isinstance(val, (int, float)):
             raise ValueError("Average value must be a number.")
@@ -466,8 +472,9 @@ class Coefficient(Validation, Generic[T]):
             val (Optional[float]): Step size (always standardized).
 
         Raises:
-            ValueError: If step is invalid, zero, or too large.
-
+            ValueError: If step is not a valid number
+            ValueError: If step is zero.
+            ValueError: If step is greater than range.
         """
         if val is not None and not isinstance(val, (int, float)):
             raise ValueError("Step must be a number.")
@@ -518,7 +525,8 @@ class Coefficient(Validation, Generic[T]):
                                        self._max,
                                        self._step)
         elif not isinstance(val, np.ndarray):
-            raise ValueError(f"Data must be a numpy array, got {type(val).__name__}")
+            _msg = f"Data must be a numpy array, got {type(val).__name__}"
+            raise ValueError(_msg)
         else:
             self._data = val
 

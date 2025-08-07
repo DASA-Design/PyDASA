@@ -455,12 +455,14 @@ monte = MonteCarloSim(_idx=0,
                           "U": dist1,
                           "\\miu": dist2,
                       },
-                      _iterations=5000)
+                      _iterations=10)
+monte.set_coefficient(DAModel.coefficients[1])
 print(monte, "\n")
+
 monte.run()
-print("Monte Carlo Simulation Results:")
-for k, v in monte.results.items():
-    print(f"{k}: {v}")
-print("Mean:", monte.mean())
-print("Variance:", monte.variance())
-print("Summary:", monte.summary())
+# print("Monte Carlo Simulation Results:")
+# for k, v in monte.results.items():
+#     print(f"{k}: {v}")
+# print("Mean:", monte.mean())
+# print("Variance:", monte.variance())
+# print("Summary:", monte.summary())

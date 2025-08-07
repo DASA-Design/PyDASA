@@ -36,7 +36,8 @@ from src.pydasa.utils.latex import parse_latex, create_latex_mapping
 class MonteCarloSim(Validation, Generic[T]):
     """**MonteCarloSim** class for stochastic analysis in *PyDASA*.
 
-    Performs Monte Carlo simulations on dimensionless coefficients to analyze the coefficient's distribution and sensitivity to input variable variations.
+    Performs Monte Carlo simulations on dimensionless coefficients to analyze the coefficient's distribution and sensitivity to input parameter
+    variations.
 
     Attributes:
         # Identification and Classification
@@ -87,8 +88,16 @@ class MonteCarloSim(Validation, Generic[T]):
     """Executable function for numerical evaluation."""
 
     # :attr: _variables
-    _variables: List[str] = field(default_factory=list)
+    _variables: Dict[str: Any] = field(default_factory=dict)
     """Variable symbols in the expression."""
+
+    # :attr: _symbols
+    _symbols: Dict[str: Any] = field(default_factory=dict)
+    """Python symbols for the variables."""
+
+    # :attr: _aliases
+    _aliases: Dict[str: Any] = field(default_factory=dict)
+    """Variable aliases for use in code."""
 
     # :attr: _latex_to_py
     _latex_to_py: Dict[str, str] = field(default_factory=dict)
@@ -107,7 +116,7 @@ class MonteCarloSim(Validation, Generic[T]):
     """Variable sampling distributions."""
 
     # :attr: _bounds
-    _bounds: Dict[str, Tuple[float, float]] = field(default_factory=dict)
+    _bounds: Dict[str, Tuple[float]] = field(default_factory=dict)
     """Min/max bounds for each variable."""
 
     # Results
@@ -176,8 +185,10 @@ class MonteCarloSim(Validation, Generic[T]):
         """
         if not self._variables:
             raise ValueError("No variables found in the expression.")
-        if not self._exe_func:
-            raise ValueError("No executable function defined for simulation.")
+        if not self._sym_func:
+            raise ValueError("No expression has been defined for analysis.")
+        # if not self._exe_func:
+        #     raise ValueError("No executable function defined for simulation.")
         if not self._distributions:
             missing = [v for v in self._variables if v not in self._distributions]
             if missing:
@@ -347,7 +358,8 @@ class MonteCarloSim(Validation, Generic[T]):
                 _msg = f"Error during simulation run {i}: {str(e)}"
                 # TODO add logger later
                 print(_msg)
-                continue
+                # continue
+            i += 1
 
         # Calculate statistics
         if self._results:
@@ -731,7 +743,7 @@ class MonteCarloSim(Validation, Generic[T]):
         if "statistics" in data:
             stats = data["statistics"]
             instance._mean = stats.get("mean", 0.0)
-            instance._median = stats.get("median", 0.0) 
+            instance._median = stats.get("median", 0.0)
             instance._std_dev = stats.get("std_dev", 0.0)
             instance._variance = stats.get("variance", 0.0)
             instance._min = stats.get("min", 0.0)

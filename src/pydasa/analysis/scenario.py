@@ -161,7 +161,9 @@ class DimSensitivity(Validation, Generic[T]):
         """*_validate_analysis_ready()* Checks if the analysis can be performed.
 
         Raises:
-            ValueError: If required components are missing.
+            ValueError: If the variables are missing.
+            ValueError: If the python-compatible variables are missing.
+            ValueError: If the symbolic expression is missing.
         """
         if not self._variables:
             raise ValueError("No variables found in the expression.")

@@ -65,7 +65,7 @@ class Coefficient(Validation, Generic[T]):
         # Value Ranges
         _min (float): Minimum value of the coefficient.
         _max (float): Maximum value of the coefficient.
-        _avg (float): Average value of the coefficient.
+        _mean (float): Average value of the coefficient.
         _step (float): Step size for simulations.
         _data (np.ndarray): Array of coefficient values for analysis.
     """
@@ -105,8 +105,8 @@ class Coefficient(Validation, Generic[T]):
     _max: Optional[float] = None
     """Maximum value of coefficient."""
 
-    # :attr: _avg
-    _avg: Optional[float] = None
+    # :attr: _mean
+    _mean: Optional[float] = None
     """Average value of coefficient."""
 
     # :attr: _step
@@ -425,17 +425,17 @@ class Coefficient(Validation, Generic[T]):
         self._max = val
 
     @property
-    def avg(self) -> Optional[float]:
-        """*avg* Get the average value.
+    def mean(self) -> Optional[float]:
+        """*mean* Get the average value.
 
         Returns:
             Optional[float]: average value.
         """
-        return self._avg
+        return self._mean
 
-    @avg.setter
-    def avg(self, val: Optional[float]) -> None:
-        """*avg* Sets the average value.
+    @mean.setter
+    def mean(self, val: Optional[float]) -> None:
+        """*mean* Sets the average value.
 
         Args:
             val (Optional[float]): average value.
@@ -453,7 +453,7 @@ class Coefficient(Validation, Generic[T]):
             _msg = f"Average {val}. "
             _msg += f"must be between {self._min} and {self._max}."
             raise ValueError(_msg)
-        self._avg = val
+        self._mean = val
 
     @property
     def step(self) -> Optional[float]:
@@ -552,7 +552,7 @@ class Coefficient(Validation, Generic[T]):
         self.var_dims = None
         self._min = None
         self._max = None
-        self._avg = None
+        self._mean = None
         self._step = 1e-3
         self._data = np.array([])
         self.relevance = True
@@ -578,7 +578,7 @@ class Coefficient(Validation, Generic[T]):
             "var_dims": self.var_dims,
             "min": self._min,
             "max": self._max,
-            "avg": self._avg,
+            "mean": self._mean,
             "step": self._step,
             "relevance": self.relevance
         }

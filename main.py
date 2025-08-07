@@ -418,7 +418,7 @@ sena = SensitivityHandler(_idx=0,
 # print(sena)
 
 print("=== Sym Analysis: ===")
-sena.analyze_symbolic(val_type="avg")
+sena.analyze_symbolic(val_type="mean")
 
 for k, v in sena.results.items():
     print(f"{k}: {v}")

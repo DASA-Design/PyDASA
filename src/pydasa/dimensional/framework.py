@@ -120,7 +120,7 @@ class DimFramework(Validation, Generic[T]):
         COMPUTATION, SOFTWARE) or validates custom FDUs.
 
         Raises:
-            ValueError: If the framework is invalid or custom FDUs are not properly defined.
+            ValueError: If the FDU framework is not properly defined.
         """
         # if the framework is supported, configure the default
         if self.fwk in FDU_FWK_DT and self.fwk != "CUSTOM":
@@ -167,9 +167,6 @@ class DimFramework(Validation, Generic[T]):
     def _setup_fdu_framework(self) -> List[Dimension]:
         """*_setup_fdu_framework()* Returns the default FDU precedence list for the specified framework.
 
-        Raises:
-            ValueError: error if the framework is invalid.
-
         Returns:
             List[str]: Default FDUs precedence list based on the framework map.
         """
@@ -200,7 +197,7 @@ class DimFramework(Validation, Generic[T]):
         """*_validate_fdu_precedence()* Ensures FDUs have valid and unique precedence values.
 
         Raises:
-            ValueError: If FDU precedence values are invalid or duplicated.
+            ValueError: If FDU precedence values are duplicated.
         """
         # trick to do nothing if FDU set is null
         if not self._fdus:
@@ -329,7 +326,7 @@ class DimFramework(Validation, Generic[T]):
             val (str): FDUs regex pattern.
 
         Raises:
-            ValueError: If the FDUs regex pattern is empty or invalid.
+            ValueError: If the FDUs regex pattern is empty or not a string.
         """
         if not val or not isinstance(val, str):
             _msg = "FDUs regex pattern must be a non-empty string. "
@@ -348,17 +345,17 @@ class DimFramework(Validation, Generic[T]):
 
     @fdu_pow_regex.setter
     def fdu_pow_regex(self, val: str) -> None:
-        """*fdu_pow_regex* Set the FDUs powered regex pattern.
+        """*fdu_pow_regex* Set the FDUs pow-regex pattern.
 
         Args:
-            val (str): FDUs powered regex pattern for matching dimensions with exponent.
+            val (str): FDUs pow-regex pattern for matching dimensions with exponent.
 
         Raises:
-            ValueError: If the FDUs powered regex pattern is empty or invalid.
+            ValueError: If the FDUs pow-regex pattern is empty or not a string.
         """
         if not val or not isinstance(val, str):
-            _msg = "FDUs powered regex pattern for dimensions with exponent must be a non-empty string. "
-            _msg += f"Provided: {val}"
+            _msg = f"Invalid FDU pow-regex pattern: {val}. "
+            _msg += "must be a non-empty string."
             raise ValueError(_msg)
         self._fdu_pow_regex = val
 
@@ -373,17 +370,17 @@ class DimFramework(Validation, Generic[T]):
 
     @fdu_no_pow_regex.setter
     def fdu_no_pow_regex(self, val: str) -> None:
-        """*fdu_no_pow_regex* Set the FDUs no-power regex pattern.
+        """*fdu_no_pow_regex* Set the FDUs no-pow-regex pattern.
 
         Args:
-            val (str): FDUs no-power regex pattern for matching dimensions without exponent.
+            val (str): FDUs no-pow-regex pattern for matching dimensions without exponent.
 
         Raises:
-            ValueError: If the FDUs no-power regex pattern is empty or invalid.
+            ValueError: If the FDUs no-pow-regex pattern is empty or not a string.
         """
         if not val or not isinstance(val, str):
-            _msg = "FDUs no-power regex pattern for dimensions without exponent must be a non-empty string. "
-            _msg += f"Provided: {val}"
+            _msg = f"Invalid FDU no-pow-regex pattern: {val}. "
+            _msg += "must be a non-empty string."
             raise ValueError(_msg)
         self._fdu_no_pow_regex = val
 
@@ -398,17 +395,17 @@ class DimFramework(Validation, Generic[T]):
 
     @fdu_sym_regex.setter
     def fdu_sym_regex(self, val: str) -> None:
-        """*fdu_sym_regex* Set the FDUs symbol regex pattern.
+        """*fdu_sym_regex* Set the FDUs sym-regex pattern.
 
         Args:
-            val (str): FDUs symbol regex pattern for matching dimensions in symbolic expressions.
+            val (str): FDUs sym-regex pattern for matching dimensions in symbolic expressions.
 
         Raises:
-            ValueError: If the FDUs symbol regex pattern is empty or invalid.
+            ValueError: If the FDUs sym-regex pattern is empty or not a string.
         """
         if not val or not isinstance(val, str):
-            _msg = "FDUs symbol regex pattern for matching dimensions in symbolic expressions must be a non-empty string. "
-            _msg += f"Provided: {val}"
+            _msg = f"Invalid FDUs sym-regex pattern: {val}. "
+            _msg += "must be a non-empty string."
             raise ValueError(_msg)
         self._fdu_sym_regex = val
 
@@ -442,6 +439,7 @@ class DimFramework(Validation, Generic[T]):
 
         Raises:
             ValueError: If an FDU with the same symbol already exists.
+            ValueError: If the FDU framework does not match the current framework.
         """
         if self.has_fdu(fdu.sym):
             raise ValueError(f"FDU with symbol '{fdu.sym}' already exists.")
@@ -450,6 +448,7 @@ class DimFramework(Validation, Generic[T]):
         if fdu.fwk != self._fwk:
             _msg = "FDU framework mismatch: "
             _msg += f"Expected '{self._fwk}', got '{fdu.fwk}'"
+            raise ValueError(_msg)
 
         # Add FDU
         self._fdus.append(fdu)
@@ -473,7 +472,6 @@ class DimFramework(Validation, Generic[T]):
         """
         if not self.has_fdu(sym):
             raise ValueError(f"FDU with symbol '{sym}' does not exist.")
-            # return False
 
         # Remove FDU
         # find index with the symbol
@@ -493,17 +491,18 @@ class DimFramework(Validation, Generic[T]):
 
         return True
 
-    def clear_fdus(self) -> None:
-        """*clear_fdus()* Remove all FDUs from the framework."""
+    def reset(self) -> None:
+
         self._fdus.clear()
         self._fdu_map.clear()
-
-        # Reset regex patterns
+        self._fdu_symbols.clear()
         self._fdu_regex = ""
+        self._fdu_pow_regex = DFLT_POW_RE
         self._fdu_no_pow_regex = ""
         self._fdu_sym_regex = ""
 
     # def validate_dimensional_expression(self, expression: str) -> bool:
+    # TODO old code, to be removed in the future
     #     """*validate_dimensional_expression()* Check if a dimensional expression is valid.
 
     #     Args:

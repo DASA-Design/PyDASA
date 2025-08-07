@@ -3,6 +3,7 @@
 Module config.py
 ===========================================
 
+# FIXME this should be a JSON file, not a Python module!!! fix it later!!!
 Configuration module for Fundamental Dimensional Units (FDUs), Parameters, and Variables in *PyDASA*.
 
 Key Features:

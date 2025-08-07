@@ -140,7 +140,9 @@ class SensitivityHandler(Validation, Generic[T]):
             exp_type (tuple): Expected types for list elements.
 
         Raises:
-            ValueError: If list is empty or contains invalid types.
+            ValueError: If the object is not a list.
+            ValueError: If the list is empty.
+            ValueError: If the list contains elements of unexpected types.
 
         Returns:
             bool: True if the list is valid.
@@ -149,13 +151,13 @@ class SensitivityHandler(Validation, Generic[T]):
             _msg = f"{inspect_var(lt)} must be a list. "
             _msg += f"Provided: {type(lt)}"
             raise ValueError(_msg)
-        if not all(isinstance(x, exp_type) for x in lt):
-            _msg = f"{inspect_var(lt)} must contain {exp_type} elements."
-            _msg += f" Provided: {[type(x).__name__ for x in lt]}"
-            raise ValueError(_msg)
         if len(lt) == 0:
             _msg = f"{inspect_var(lt)} cannot be empty. "
             _msg += f"Provided: {lt}"
+            raise ValueError(_msg)
+        if not all(isinstance(x, exp_type) for x in lt):
+            _msg = f"{inspect_var(lt)} must contain {exp_type} elements."
+            _msg += f" Provided: {[type(x).__name__ for x in lt]}"
             raise ValueError(_msg)
         return True
 
@@ -185,18 +187,19 @@ class SensitivityHandler(Validation, Generic[T]):
 
     def _get_variable_value(self,
                             var_sym: str,
-                            val_type: str = "avg") -> float:
+                            val_type: str = "mean") -> float:
         """*_get_variable_value()* Gets a value for a variable based on value type.
 
         Args:
             var_sym (str): Symbol of the variable.
-            val_type (str, optional): Type of value to return (avg, min, max). Defaults to "avg".
+            val_type (str, optional): Type of value to return (mean, min, max). Defaults to "mean".
 
         Returns:
             float: Variable value.
 
         Raises:
-            ValueError: If the variable or value type is invalid.
+            ValueError: If the variable is not found.
+            ValueError: If the value type is invalid.
         """
         # Check if the variable symbol exists in our variable map
         if var_sym not in self._variable_map:
@@ -208,12 +211,12 @@ class SensitivityHandler(Validation, Generic[T]):
         var = self._variable_map[var_sym]
 
         # CASE 1: Return average value
-        if val_type == "avg":
+        if val_type == "mean":
             # First check if standardized average exists
             if var.std_mean is None:
                 # If no standardized average, try regular average
                 # If thats also None, use default value -1.0
-                return var.avg if var.avg is not None else -1.0
+                return var.mean if var.mean is not None else -1.0
             # Return standardized average if it exists
             return var.std_mean
 
@@ -241,11 +244,11 @@ class SensitivityHandler(Validation, Generic[T]):
         else:
             # Build error message
             _msg = f"Invalid value type: {val_type}. "
-            _msg += "Must be one of: avg, min, max."
+            _msg += "Must be one of: mean, min, max."
             raise ValueError(_msg)
 
     def analyze_symbolic(self,
-                         val_type: str = "avg") -> Dict[str, Dict[str, float]]:
+                         val_type: str = "mean") -> Dict[str, Dict[str, float]]:
         """*analyze_symbolic()* Performs symbolic sensitivity analysis.
 
         Analyzes each coefficient using symbolic differentiation at specified values.
@@ -254,7 +257,7 @@ class SensitivityHandler(Validation, Generic[T]):
         5. return results in a structured format
 
         Args:
-            val_type (str, optional): Type of value to use (avg, min, max). Defaults to "avg".
+            val_type (str, optional): Type of value to use (mean, min, max). Defaults to "mean".
 
         Returns:
             Dict[str, Dict[str, float]]: Sensitivity results by coefficient and variable.

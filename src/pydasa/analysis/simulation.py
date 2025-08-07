@@ -419,7 +419,7 @@ class MonteCarloSim(Validation, Generic[T]):
 
         Returns:
             Dict[str, float]: Dictionary containing statistical properties:
-                - "mean": Mean value of results
+                - "mean"": Mean value of results
                 - "median": Median value of results
                 - "std_dev": Standard deviation of results
                 - "variance": Variance of results

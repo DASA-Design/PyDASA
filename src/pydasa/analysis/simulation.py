@@ -13,8 +13,10 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Optional, List, Dict, Any, Generic, Callable, Tuple
 import numpy as np
-import matplotlib.pyplot as plt
-from sympy import lambdify
+from scipy import stats
+
+# import matplotlib.pyplot as plt
+# from sympy import lambdify
 
 # Import validation base classes
 from src.pydasa.core.basic import Validation
@@ -27,7 +29,7 @@ from src.pydasa.utils.default import T
 from src.pydasa.utils.latex import parse_latex, create_latex_mapping
 
 # Import configuration
-from src.pydasa.utils import config as cfg
+# from src.pydasa.utils import config as cfg
 
 
 @dataclass
@@ -115,31 +117,31 @@ class MonteCarloSim(Validation, Generic[T]):
 
     # Individual statistics attributes
     # :attr: _mean
-    _mean: float = 0.0
+    _mean: float = -1.0
     """Mean value of simulation results."""
 
     # :attr: _median
-    _median: float = 0.0
+    _median: float = -1.0
     """Median value of simulation results."""
 
     # :attr: _std_dev
-    _std_dev: float = 0.0
+    _std_dev: float = -1.0
     """Standard deviation of simulation results."""
 
     # :attr: _variance
-    _variance: float = 0.0
+    _variance: float = -1.0
     """Variance of simulation results."""
 
     # :attr: _min
-    _min: float = 0.0
+    _min: float = -1.0
     """Minimum value in simulation results."""
 
     # :attr: _max
-    _max: float = 0.0
+    _max: float = -1.0
     """Maximum value in simulation results."""
 
     # :attr: _count
-    _count: int = 0
+    _count: int = -1
     """Number of valid simulation results."""
 
     def __post_init__(self) -> None:
@@ -241,75 +243,87 @@ class MonteCarloSim(Validation, Generic[T]):
             _msg = f"Failed to parse expression: {str(e)}"
             raise ValueError(_msg)
 
-    def set_distribution(self, variable: str, distribution: Callable,
+    def set_distribution(self,
+                         var: str,
+                         dist: Callable,
                          bounds: Tuple[float, float] = None) -> None:
-        """*set_distribution()* Set the sampling distribution for a variable."""
-        # Handle both LaTeX and Python variable names
-        # TODO aki voy!!!
-        var_py = self._latex_to_py.get(variable, variable)
+        """*set_distribution()* Set the sampling distribucion for a variable in the coeffcient.
+        Args:
+            var (str): Variable name to set the distribution.
+            dist (Callable): Callable function that samples from the distribution.
+            bounds (Tuple[float, float], optional): Min/max bounds for the variable. Defaults to None.
+
+        Raises:
+            ValueError: If the variable is not found in the expression or if the distribution is not callable.
+            ValueError: If bounds are provided but not a tuple of two values.
+        """
+        # Handle both LaTeX and Python var names
+        var_py = self._latex_to_py.get(var, var)
 
         if var_py not in self._variables:
-            _msg = f"Variable '{variable}' not found in expression. "
+            _msg = f"Variable '{var}' not found in expression. "
             _msg += f"Available variables: {[self._py_to_latex.get(v, v) for v in self._variables]}"
             raise ValueError(_msg)
 
-        if not callable(distribution):
-            raise ValueError(f"Distribution must be callable. Got: {type(distribution)}")
-            
-        self._distributions[var_py] = distribution
-        
+        if not callable(dist):
+            _msg = f"Distribution must be callable. Got: {type(dist)}"
+            raise ValueError(_msg)
+
+        self._distributions[var_py] = dist
+
         if bounds:
             if not isinstance(bounds, tuple) or len(bounds) != 2:
-                raise ValueError(f"Bounds must be a tuple of (min, max). Got: {bounds}")
+                _msg = f"Bounds must be a tuple (min, max). Got: {bounds}"
+                raise ValueError(_msg)
             self._bounds[var_py] = bounds
 
-    def set_uniform_distribution(self, variable: str, min_val: float, max_val: float) -> None:
-        """*set_uniform_distribution()* Set a uniform distribution for a variable."""
-        if min_val >= max_val:
-            raise ValueError(f"Minimum value {min_val} must be less than maximum value {max_val}")
-            
-        def uniform_sampler():
-            return np.random.uniform(min_val, max_val)
-            
-        self.set_distribution(variable, uniform_sampler, (min_val, max_val))
-        
-    def set_normal_distribution(self, variable: str, mean: float, std_dev: float, 
-                               bounds: Tuple[float, float] = None) -> None:
-        """*set_normal_distribution()* Set a normal distribution for a variable."""
-        if std_dev <= 0:
-            raise ValueError(f"Standard deviation must be positive. Got: {std_dev}")
-            
-        if bounds:
-            min_val, max_val = bounds
-            def normal_sampler():
-                # Truncated normal distribution
-                while True:
-                    val = np.random.normal(mean, std_dev)
-                    if min_val <= val <= max_val:
-                        return val
-        else:
-            def normal_sampler():
-                return np.random.normal(mean, std_dev)
-                
-        self.set_distribution(variable, normal_sampler, bounds)
-        
-    def set_iterations(self, iterations: int) -> None:
-        """*set_iterations()* Set the number of simulation runs."""
-        if iterations <= 0:
-            raise ValueError(f"Number of iterations must be positive. Got: {iterations}")
-        self._iterations = iterations
-        
+    # def set_uniform_distribution(self, var: str, min_val: float, max_val: float) -> None:
+    #     """*set_uniform_distribution()* Set a uniform distribution for a variable."""
+    #     if min_val >= max_val:
+    #         raise ValueError(f"Minimum value {min_val} must be less than maximum value {max_val}")
+
+    #     def uniform_sampler():
+    #         return np.random.uniform(min_val, max_val)
+
+    #     self.set_distribution(variable, uniform_sampler, (min_val, max_val))
+
+    # def set_normal_distribution(self, variable: str, mean: float, std_dev: float,
+    #                            bounds: Tuple[float, float] = None) -> None:
+    #     """*set_normal_distribution()* Set a normal distribution for a variable."""
+    #     if std_dev <= 0:
+    #         raise ValueError(f"Standard deviation must be positive. Got: {std_dev}")
+
+    #     if bounds:
+    #         min_val, max_val = bounds
+    #         def normal_sampler():
+    #             # Truncated normal distribution
+    #             while True:
+    #                 val = np.random.normal(mean, std_dev)
+    #                 if min_val <= val <= max_val:
+    #                     return val
+    #     else:
+    #         def normal_sampler():
+    #             return np.random.normal(mean, std_dev)
+
+    #     self.set_distribution(variable, normal_sampler, bounds)
+
     def run(self) -> None:
-        """*run()* Execute the Monte Carlo simulation."""
+        """*run()* Perform the Monte Carlo simulation.
+
+        Raises:
+            ValueError: If the simulation is not ready due to missing variables, executable function, distributions, or invalid number of iterations.
+            ValueError: If there are numerical errors during simulation runs (e.g., division by zero).
+        """
         # Validate simulation readiness
         self._validate_simulation_ready()
-        
+
         # Clear previous results
         self._results.clear()
         self._reset_statistics()
-        
+
         # Run simulation
-        for _ in range(self._iterations):
+        i = 0
+        while i < self._iterations:
             try:
                 # Sample values from distributions
                 samples = {}
@@ -317,39 +331,44 @@ class MonteCarloSim(Validation, Generic[T]):
                     if var in self._distributions:
                         samples[var] = self._distributions[var]()
                     else:
-                        raise ValueError(f"Missing distribution for variable: {var}")
-                
+                        _msg = f"Missing distribution for variable: {var}"
+                        raise ValueError(_msg)
+
+                # TODO check this part later
                 # Prepare ordered values for function evaluation
                 ordered_values = [samples[var] for var in self._variables]
-                
+
                 # Evaluate the coefficient
                 result = float(self._exe_func(*ordered_values))
                 self._results.append(result)
-                
+
             except Exception as e:
                 # Handle numerical errors (e.g., division by zero)
+                _msg = f"Error during simulation run {i}: {str(e)}"
+                # TODO add logger later
+                print(_msg)
                 continue
-        
+
         # Calculate statistics
         if self._results:
             self._calculate_statistics()
         else:
-            raise ValueError("No valid results were generated. Check your distributions.")
-    
+            raise ValueError("Invalid results, check yout distributions!")
+
     def _reset_statistics(self) -> None:
         """*_reset_statistics()* Reset all statistical attributes to default values."""
-        self._mean = 0.0
-        self._median = 0.0
-        self._std_dev = 0.0
-        self._variance = 0.0
-        self._min = 0.0
-        self._max = 0.0
+        self._mean = -1.0
+        self._median = -1.0
+        self._std_dev = -1.0
+        self._variance = -1.0
+        self._min = -1.0
+        self._max = -1.0
         self._count = 0
-            
+
     def _calculate_statistics(self) -> None:
         """*_calculate_statistics()* Calculate statistical properties of simulation results."""
         results = np.array(self._results)
-        
+
         # Calculate and store each statistic separately
         self._mean = float(np.mean(results))
         self._median = float(np.median(results))
@@ -358,47 +377,62 @@ class MonteCarloSim(Validation, Generic[T]):
         self._min = float(np.min(results))
         self._max = float(np.max(results))
         self._count = len(results)
-        
-    def plot_histogram(self, bins: int = 30, figsize: Tuple[int, int] = (10, 6),
-                      title: str = None, save_path: str = None) -> None:
-        """*plot_histogram()* Plot a histogram of simulation results."""
-        if not self._results:
-            raise ValueError("No simulation results to plot. Run the simulation first.")
-            
-        plt.figure(figsize=figsize)
-        plt.hist(self._results, bins=bins, alpha=0.7, color='skyblue', edgecolor='black')
-        
-        # Add statistics to the plot
-        stats_text = (
-            f"Mean: {self._mean:.4f}\n"
-            f"Std Dev: {self._std_dev:.4f}\n"
-            f"Min: {self._min:.4f}\n"
-            f"Max: {self._max:.4f}\n"
-            f"Samples: {self._count}"
-        )
-        plt.annotate(stats_text, xy=(0.02, 0.95), xycoords='axes fraction',
-                    bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="gray", alpha=0.8),
-                    va='top', fontsize=10)
-        
-        # Add title and labels
-        plot_title = title if title else f"Monte Carlo Simulation: {self._pi_expr}"
-        plt.title(plot_title)
-        plt.xlabel("Coefficient Value")
-        plt.ylabel("Frequency")
-        plt.grid(True, alpha=0.3)
-        
-        if save_path:
-            plt.savefig(save_path, dpi=300, bbox_inches='tight')
-            
-        plt.show()
-        
+
+    # def plot_histogram(self, bins: int = 30, figsize: Tuple[int, int] = (10, 6),
+    #                   title: str = None, save_path: str = None) -> None:
+    #     """*plot_histogram()* Plot a histogram of simulation results."""
+    #     if not self._results:
+    #         raise ValueError("No simulation results to plot. Run the simulation first.")
+
+    #     plt.figure(figsize=figsize)
+    #     plt.hist(self._results, bins=bins, alpha=0.7, color='skyblue', edgecolor='black')
+
+    #     # Add statistics to the plot
+    #     stats_text = (
+    #         f"Mean: {self._mean:.4f}\n"
+    #         f"Std Dev: {self._std_dev:.4f}\n"
+    #         f"Min: {self._min:.4f}\n"
+    #         f"Max: {self._max:.4f}\n"
+    #         f"Samples: {self._count}"
+    #     )
+    #     plt.annotate(stats_text, xy=(0.02, 0.95), xycoords='axes fraction',
+    #                 bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="gray", alpha=0.8),
+    #                 va='top', fontsize=10)
+
+    #     # Add title and labels
+    #     plot_title = title if title else f"Monte Carlo Simulation: {self._pi_expr}"
+    #     plt.title(plot_title)
+    #     plt.xlabel("Coefficient Value")
+    #     plt.ylabel("Frequency")
+    #     plt.grid(True, alpha=0.3)
+
+    #     if save_path:
+    #         plt.savefig(save_path, dpi=300, bbox_inches='tight')
+
+    #     plt.show()
+
     def get_statistics(self) -> Dict[str, float]:
-        """*get_statistics()* Get the statistical analysis of simulation results."""
+        """*get_statistics()* Get the statistical analysis of simulation results.
+
+        Raises:
+            ValueError: If no results are available.
+
+        Returns:
+            Dict[str, float]: Dictionary containing statistical properties:
+                - "mean": Mean value of results
+                - "median": Median value of results
+                - "std_dev": Standard deviation of results
+                - "variance": Variance of results
+                - "min": Minimum value in results
+                - "max": Maximum value in results
+                - "count": Number of valid results
+        """
         if not self._results:
-            raise ValueError("No statistics available. Run the simulation first.")
-            
+            _msg = "No statistics available. Run the simulation first."
+            raise ValueError(_msg)
+
         # Build statistics dictionary from individual attributes
-        return {
+        statistics = {
             "mean": self._mean,
             "median": self._median,
             "std_dev": self._std_dev,
@@ -407,27 +441,202 @@ class MonteCarloSim(Validation, Generic[T]):
             "max": self._max,
             "count": self._count
         }
-    
-    def get_results(self) -> List[float]:
-        """*get_results()* Get the raw simulation results."""
+        return statistics
+
+    def get_confidence_interval(self,
+                                conf: float = 0.95) -> Tuple[float, float]:
+        """*get_confidence_interval()* Calculate the confidence interval for the simulation results.
+
+        Args:
+            conf (float, optional): Confidence level for the interval. Defaults to 0.95.
+
+        Raises:
+            ValueError: If no results are available or if the confidence level is not between 0 and 1.
+
+        Returns:
+            Tuple[float, float]: Lower and upper bounds of the confidence interval.
+        """
+        if not self._results:
+            _msg = "No results available. Run the simulation first."
+            raise ValueError(_msg)
+
+        if not 0 < conf < 1:
+            _msg = f"Confidence must be between 0 and 1. Got: {conf}"
+            raise ValueError(_msg)
+
+        # Calculate the margin of error using the t-distribution
+        alpha = stats.t.ppf((1 + conf) / 2, self._count - 1)
+        margin = alpha * self._std_dev / np.sqrt(self._count)
+        ans = (self._mean - margin, self._mean + margin)
+        return ans
+
+    # def get_results(self) -> List[float]:
+    #     """*get_results()* Get the raw simulation results."""
+    #     if not self._results:
+    #         raise ValueError("No results available. Run the simulation first.")
+    #     return self._results.copy()
+
+    # def set_iterations(self, iterations: int) -> None:
+    #     """*set_iterations()* Set the number of simulation runs.
+
+    #     Args:
+    #         iterations (int): Number of iterations to run the simulation.
+
+    #     Raises:
+    #         ValueError: If the number of iterations is not positive.
+    #     """
+    #     if iterations <= 0:
+    #         _msg = f"Number of iterations must be positive. Got: {iterations}"
+    #         raise ValueError(_msg)
+    #     self._iterations = iterations
+
+    # Properties for accessing results and statistics
+
+    @property
+    def results(self) -> List[float]:
+        """*results* Raw simulation results.
+
+        Returns:
+            List[float]: Copy of the simulation results.
+
+        Raises:
+            ValueError: If no results are available.
+        """
         if not self._results:
             raise ValueError("No results available. Run the simulation first.")
         return self._results.copy()
+
+    @property
+    def iterations(self) -> int:
+        """*iterations* Number of simulation iterations.
+
+        Returns:
+            int: Current number of iterations.
+        """
+        return self._iterations
+
+    @iterations.setter
+    def iterations(self, val: int) -> None:
+        """*iterations* Set the number of simulation runs.
+
+        Args:
+            val (int): Number of iterations to run the simulation.
     
-    def get_confidence_interval(self, confidence: float = 0.95) -> Tuple[float, float]:
-        """*get_confidence_interval()* Calculate confidence interval for the mean."""
+        Raises:
+            ValueError: If the number of iterations is not positive.
+        """
+        if val <= 0:
+            _msg = f"Number of iterations must be positive. Got: {val}"
+            raise ValueError(_msg)
+        self._iterations = val
+
+    # Additional properties for statistics
+
+    @property
+    def mean(self) -> float:
+        """*mean* Mean value of simulation results.
+
+        Returns:
+            float: Mean value.
+
+        Raises:
+            ValueError: If no results are available.
+        """
         if not self._results:
-            raise ValueError("No results available. Run the simulation first.")
-            
-        if not 0 < confidence < 1:
-            raise ValueError(f"Confidence level must be between 0 and 1. Got: {confidence}")
-        
-        # Calculate the margin of error using the t-distribution
-        from scipy import stats
-        margin = stats.t.ppf((1 + confidence) / 2, self._count - 1) * self._std_dev / np.sqrt(self._count)
-        
-        return (self._mean - margin, self._mean + margin)
-        
+            _msg = "No statistics available. Run the simulation first."
+            raise ValueError(_msg)
+        return self._mean
+
+    @property
+    def median(self) -> float:
+        """*median* Median value of simulation results.
+
+        Returns:
+            float: Median value.
+
+        Raises:
+            ValueError: If no results are available.
+        """
+        if not self._results:
+            _msg = "No statistics available. Run the simulation first."
+            raise ValueError(_msg)
+        return self._median
+
+    @property
+    def std_dev(self) -> float:
+        """*std_dev* Standard deviation of simulation results.
+
+        Returns:
+            float: Standard deviation.
+
+        Raises:
+            ValueError: If no results are available.
+        """
+        if not self._results:
+            _msg = "No statistics available. Run the simulation first."
+            raise ValueError(_msg)
+        return self._std_dev
+
+    @property
+    def variance(self) -> float:
+        """*variance* Variance of simulation results.
+
+        Returns:
+            float: Variance value.
+
+        Raises:
+            ValueError: If no results are available.
+        """
+        if not self._results:
+            _msg = "No statistics available. Run the simulation first."
+            raise ValueError(_msg)
+        return self._variance
+
+    @property
+    def min_value(self) -> float:
+        """*min_value* Minimum value in simulation results.
+
+        Returns:
+            float: Minimum value.
+
+        Raises:
+            ValueError: If no results are available.
+        """
+        if not self._results:
+            _msg = "No statistics available. Run the simulation first."
+            raise ValueError(_msg)
+        return self._min
+
+    @property
+    def max_value(self) -> float:
+        """*max_value* Maximum value in simulation results.
+
+        Returns:
+            float: Maximum value.
+
+        Raises:
+            ValueError: If no results are available.
+        """
+        if not self._results:
+            _msg = "No statistics available. Run the simulation first."
+            raise ValueError(_msg)
+        return self._max
+
+    @property
+    def count(self) -> int:
+        """*count* Number of valid simulation results.
+
+        Returns:
+            int: Result count.
+
+        Raises:
+            ValueError: If no results are available.
+        """
+        if not self._results:
+            _msg = "No statistics available. Run the simulation first."
+            raise ValueError(_msg)
+        return self._count
+
     def clear(self) -> None:
         """*clear()* Reset all attributes to default values."""
         # Reset base class attributes
@@ -437,7 +646,7 @@ class MonteCarloSim(Validation, Generic[T]):
         self._fwk = "PHYSICAL"
         self.name = ""
         self.description = ""
-        
+
         # Reset simulation attributes
         self._pi_expr = None
         self._sym_func = None
@@ -449,10 +658,10 @@ class MonteCarloSim(Validation, Generic[T]):
         self._distributions = {}
         self._bounds = {}
         self._results = []
-        
+
         # Reset statistics
         self._reset_statistics()
-        
+
     def to_dict(self) -> Dict[str, Any]:
         """*to_dict()* Convert simulation to dictionary representation."""
         return {
@@ -476,7 +685,7 @@ class MonteCarloSim(Validation, Generic[T]):
                 "count": self._count
             }
         }
-        
+
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> MonteCarloSim:
         """*from_dict()* Create simulation from dictionary representation."""
@@ -491,7 +700,7 @@ class MonteCarloSim(Validation, Generic[T]):
             _pi_expr=data.get("pi_expr", None),
             _iterations=data.get("iterations", 1000)
         )
-        
+
         # Optionally set statistics if available
         if "statistics" in data:
             stats = data["statistics"]
@@ -502,5 +711,5 @@ class MonteCarloSim(Validation, Generic[T]):
             instance._min = stats.get("min", 0.0)
             instance._max = stats.get("max", 0.0)
             instance._count = stats.get("count", 0)
-            
+
         return instance

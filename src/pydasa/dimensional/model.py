@@ -54,7 +54,7 @@ class DimMatrix(Validation, Generic[T]):
         description (str): Brief summary of the dimensional model.
         _idx (int): Index/precedence of the dimensional model.
         _sym (str): Symbol representation (LaTeX or alphanumeric).
-        _pyalias (str): Python-compatible alias for use in code.
+        _alias (str): Python-compatible alias for use in code.
         _fwk (str): Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
 
         # Framework Management

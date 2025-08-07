@@ -50,7 +50,7 @@ class Coefficient(Validation, Generic[T]):
         description (str): Brief summary of the coefficient.
         _idx (int): Index/precedence in the dimensional matrix.
         _sym (str): Symbol representation (LaTeX or alphanumeric).
-        _pyalias (str): Python-compatible alias for use in code.
+        _alias (str): Python-compatible alias for use in code.
         _fwk (str): Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
         _cat (str): Category (COMPUTED, DERIVED).
         relevance (bool): Flag indicating if coefficient is relevant for analysis.
@@ -141,8 +141,8 @@ class Coefficient(Validation, Generic[T]):
             else:
                 self._sym = "\\Pi_{}"
         # Set the Python alias if not specified
-        if not self._pyalias:
-            self._pyalias = latex_to_python(self._sym)
+        if not self._alias:
+            self._alias = latex_to_python(self._sym)
 
         self.cat = self._cat
         self.variables = self._variables
@@ -538,7 +538,7 @@ class Coefficient(Validation, Generic[T]):
         # Reset base class attributes
         self._idx = -1
         self._sym = ""
-        self._pyalias = ""
+        self._alias = ""
         self._fwk = "PHYSICAL"
         self.name = ""
         self.description = ""
@@ -568,7 +568,7 @@ class Coefficient(Validation, Generic[T]):
             "description": self.description,
             "idx": self._idx,
             "sym": self._sym,
-            "pyalias": self._pyalias,
+            "alias": self._alias,
             "fwk": self._fwk,
             "cat": self._cat,
             "variables": self._variables,

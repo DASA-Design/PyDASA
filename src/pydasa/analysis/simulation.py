@@ -44,7 +44,7 @@ class MonteCarloSim(Validation, Generic[T]):
         description (str): Brief summary of the simulation.
         _idx (int): Index/precedence of the simulation.
         _sym (str): Symbol representation (LaTeX or alphanumeric).
-        _pyalias (str): Python-compatible alias for use in code.
+        _alias (str): Python-compatible alias for use in code.
         _fwk (str): Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
 
         # Expression Management
@@ -154,9 +154,9 @@ class MonteCarloSim(Validation, Generic[T]):
             self._sym = f"MC_\\Pi_{{{self._idx}}}" if self._idx >= 0 else "MC_\\Pi_{}"
 
         # Set default Python alias if not specified
-        if not self._pyalias:
+        if not self._alias:
             from src.pydasa.utils.latex import latex_to_python
-            self._pyalias = latex_to_python(self._sym)
+            self._alias = latex_to_python(self._sym)
 
         # Set name and description if not already set
         if not self.name:
@@ -668,7 +668,7 @@ class MonteCarloSim(Validation, Generic[T]):
         # Reset base class attributes
         self._idx = -1
         self._sym = "MC_\\Pi_{}"
-        self._pyalias = ""
+        self._alias = ""
         self._fwk = "PHYSICAL"
         self.name = ""
         self.description = ""
@@ -695,7 +695,7 @@ class MonteCarloSim(Validation, Generic[T]):
             "description": self.description,
             "idx": self._idx,
             "sym": self._sym,
-            "pyalias": self._pyalias,
+            "alias": self._alias,
             "fwk": self._fwk,
             "pi_expr": self._pi_expr,
             "variables": self._variables,
@@ -722,7 +722,7 @@ class MonteCarloSim(Validation, Generic[T]):
             _idx=data.get("idx", -1),
             _sym=data.get("sym", ""),
             _fwk=data.get("fwk", "PHYSICAL"),
-            _pyalias=data.get("pyalias", ""),
+            _alias=data.get("alias", ""),
             _pi_expr=data.get("pi_expr", None),
             _iterations=data.get("iterations", 1000)
         )

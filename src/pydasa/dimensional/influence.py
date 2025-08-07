@@ -50,7 +50,7 @@ class SensitivityHandler(Validation, Generic[T]):
         description (str): Brief summary of the sensitivity handler.
         _idx (int): Index/precedence of the sensitivity handler.
         _sym (str): Symbol representation (LaTeX or alphanumeric).
-        _pyalias (str): Python-compatible alias for use in code.
+        _alias (str): Python-compatible alias for use in code.
         _fwk (str): Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
         _cat (str): Category of analysis (SYM, NUM, HYB).
 
@@ -108,8 +108,8 @@ class SensitivityHandler(Validation, Generic[T]):
         if not self._sym:
             self._sym = f"SENS HDL \\Pi_{{{self._idx}}}" if self._idx >= 0 else "SENS HDL"
 
-        if not self._pyalias:
-            self._pyalias = latex_to_python(self._sym)
+        if not self._alias:
+            self._alias = latex_to_python(self._sym)
 
         # Initialize component maps
         if self._variables:
@@ -210,12 +210,12 @@ class SensitivityHandler(Validation, Generic[T]):
         # CASE 1: Return average value
         if val_type == "avg":
             # First check if standardized average exists
-            if var.std_avg is None:
+            if var.std_mean is None:
                 # If no standardized average, try regular average
                 # If thats also None, use default value -1.0
                 return var.avg if var.avg is not None else -1.0
             # Return standardized average if it exists
-            return var.std_avg
+            return var.std_mean
 
         # CASE 2: Return minimum value
         elif val_type == "min":

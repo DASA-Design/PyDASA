@@ -48,7 +48,7 @@ class DimSensitivity(Validation, Generic[T]):
         description (str): Brief summary of the sensitivity analysis.
         _idx (int): Index/precedence of the sensitivity analysis.
         _sym (str): Symbol representation (LaTeX or alphanumeric).
-        _pyalias (str): Python-compatible alias for use in code.
+        _alias (str): Python-compatible alias for use in code.
         _fwk (str): Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
         _cat (str): Category of analysis (SYM, NUM).
 
@@ -144,8 +144,8 @@ class DimSensitivity(Validation, Generic[T]):
         if not self._sym:
             self._sym = f"SANSYS_\\Pi_{{{self._idx}}}" if self._idx >= 0 else "SANSYS_\\Pi_{}"
         # Set default Python alias if not specified
-        if not self._pyalias:
-            self._pyalias = latex_to_python(self._sym)
+        if not self._alias:
+            self._alias = latex_to_python(self._sym)
 
         # Set name and description if not already set
         if not self.name:
@@ -479,7 +479,7 @@ class DimSensitivity(Validation, Generic[T]):
         # Reset base class attributes
         self._idx = -1
         self._sym = "SANSYS_\\Pi_{}"
-        self._pyalias = ""
+        self._alias = ""
         self._fwk = "PHYSICAL"
         self.name = ""
         self.description = ""
@@ -510,7 +510,7 @@ class DimSensitivity(Validation, Generic[T]):
             "description": self.description,
             "idx": self._idx,
             "sym": self._sym,
-            "pyalias": self._pyalias,
+            "alias": self._alias,
             "fwk": self._fwk,
             "cat": self._cat,
             "pi_expr": self._pi_expr,
@@ -543,7 +543,7 @@ class DimSensitivity(Validation, Generic[T]):
             _sym=data.get("sym", ""),
             _cat=data.get("cat", "SYM"),
             _fwk=data.get("fwk", "PHYSICAL"),
-            _pyalias=data.get("pyalias", ""),
+            _alias=data.get("alias", ""),
             _pi_expr=data.get("pi_expr", None),
             _variables=data.get("variables", {}),
             _symbols=data.get("symbols", {}),

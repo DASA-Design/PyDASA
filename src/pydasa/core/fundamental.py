@@ -49,7 +49,7 @@ class Dimension(Validation, Generic[T]):
     Attributes:
         _idx (int): The Index of the Fundamental Dimension (precedence in the Dimensional Matrix).
         _sym (str): The symbol of the Fundamental Dimension (LaTeX or alphanumeric).
-        _pyalias (str): The Python-compatible alias for the Fundamental Dimension, used in executable code.
+        _alias (str): The Python-compatible alias for the Fundamental Dimension, used in executable code.
         _fwk (str): The framework of the Fundamental Dimension (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
         _unit (str): The basic unit of the Fundamental Dimension, useful for unit of meassure convertion (e.g.: km -> m or GB -> bit).
         name (str): User-friendly name of the Fundamental Dimension.
@@ -116,7 +116,7 @@ class Dimension(Validation, Generic[T]):
         return {
             "idx": self._idx,
             "sym": self._sym,
-            "pyalias": self._pyalias,
+            "alias": self._alias,
             "fwk": self._fwk,
             "unit": self._unit,
             "name": self.name,
@@ -136,7 +136,7 @@ class Dimension(Validation, Generic[T]):
         return cls(
             _idx=data.get("idx", -1),
             _sym=data.get("sym", ""),
-            _pyalias=data.get("pyalias", ""),
+            _alias=data.get("alias", ""),
             _fwk=data.get("fwk", "PHYSICAL"),
             _unit=data.get("unit", ""),
             name=data.get("name", ""),
@@ -156,7 +156,7 @@ class Dimension(Validation, Generic[T]):
             return NotImplemented
         eq_sym = self._sym == other._sym
         eq_fwk = self._fwk == other._fwk
-        eq_alias = self._pyalias == other._pyalias
+        eq_alias = self._alias == other._alias
         eq_unit = self._unit == other._unit
         return eq_sym and eq_fwk and eq_alias and eq_unit
         # return (self._sym == other._sym and self._fwk == other._fwk)

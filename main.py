@@ -447,7 +447,7 @@ for k, v in sena.results.items():
         print(f"\t{a}: {b}")
 
 print("Sensitivity Analysis Results:")
-print(sena.analyses, "\n")
+# print(sena.analyses, "\n")
 
 for key, val in sena.results.items():
     txt = f"{key}: {val}"
@@ -459,7 +459,7 @@ for key, val in sena.results.items():
 # montecarlo
 print("\n=== Coefficient details: ===\n")
 for pi, coef in DAModel.coefficients.items():
-    print(f"Coefficient {pi}:=> {coef}\n")
+    print(f"Coefficient {pi} :=> {coef}\n")
 
 print("\n=== Monte Carlo Simulation: === \n")
 
@@ -477,9 +477,12 @@ while i < 10:
     t2 = mc_dist["\\miu"]()
     print(f"Iteration {i}: U = {t1}, \\miu = {t2}")
     i += 1
-keys = list(DAModel.coefficients["\\Pi_{1}"].var_dims.keys())
-print("Vardims:", keys)
-print(keys.index("\\miu"))
+_vars = list(DAModel.coefficients["\\Pi_{1}"].var_dims.keys())
+print("Vardims:", _vars)
+print(_vars.index("\\miu"))
+
+monte = MonteCarloSim()
+print(monte, "\n")
 
 monte = MonteCarloSim(_idx=0,
                       _sym="MC_{0}",
@@ -487,16 +490,16 @@ monte = MonteCarloSim(_idx=0,
                       name="Monte Carlo Simulation",
                       description="Monte Carlo Simulation~~~~~!!!",
                       _pi_expr=DAModel.coefficients["\\Pi_{1}"].pi_expr,
-                      _variables=keys,
+                      _variables=DAModel.variables,
                       _distributions=mc_dist,
-                      _iterations=10)
+                      n_samples=5000)
 monte.set_coefficient(DAModel.coefficients["\\Pi_{1}"])
 print(monte, "\n")
 
 monte.run()
-# print("Monte Carlo Simulation Results:")
-# for k, v in monte.results.items():
-#     print(f"{k}: {v}")
-# print("Mean:", monte.mean())
-# print("Variance:", monte.variance())
-# print("Summary:", monte.summary())
+print("Monte Carlo Simulation Results:")
+for k, v in monte.get_statistics().items():
+    print(f"{k}: {v}")
+print("Mean:", monte.mean)
+print("Variance:", monte.variance)
+print("Summary:", monte.summary)

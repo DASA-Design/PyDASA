@@ -504,3 +504,38 @@ print("Mean:", monte.mean)
 print("Variance:", monte.variance)
 print("Summary:", monte.summary)
 print("Confidence report:", monte.get_confidence_interval(0.95))
+
+'''
+
+# Example usage
+from src.pydasa.buckingham.vashchy import Coefficient
+from src.pydasa.dimensional.practical import MonteCarloHandler
+
+# Create a handler
+handler = MonteCarloHandler()
+
+# Create a simulation for a coefficient
+coef = Coefficient(name="Reynolds Number", pi_expr="\\frac{\\rho V L}{\\mu}")
+handler.create_simulation("Reynolds", coef, iterations=5000)
+
+# Set distributions for variables
+handler.set_uniform_distribution("Reynolds", "\\rho", 900, 1100)  # Density
+handler.set_normal_distribution("Reynolds", "V", 10, 1, (5, 15))  # Velocity
+handler.set_uniform_distribution("Reynolds", "L", 0.1, 0.3)       # Length
+handler.set_triangular_distribution("Reynolds", "\\mu", 0.01, 0.02, 0.05)  # Viscosity
+
+# Run the simulation
+results = handler.run_simulation()
+print(f"Mean Reynolds Number: {results['mean']}")
+
+# Perform sensitivity analysis
+sensitivity = handler.perform_sensitivity_analysis(samples=2000)
+
+# Visualize results
+handler.plot_simulation_histogram(bins=40)
+handler.plot_sensitivity_results()
+
+# Export comprehensive results
+export_data = handler.export_results()
+
+'''

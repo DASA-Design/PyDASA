@@ -1,8 +1,15 @@
 ﻿# -*- coding: utf-8 -*-
 """
-Module for **DimSensitivity** analysis in *PyDASA*.
+Module scenario.py
+===========================================
+
+Module for sensitivity analysis in *PyDASA*.
 
 This module provides the DimSensitivity class for performing sensitivity analysis on dimensional coefficients derived from dimensional analysis.
+
+Classes:
+
+    **DimSensitivity**: Performs sensitivity analysis on dimensional coefficients in *PyDASA*.
 
 *IMPORTANT:* Based on the theory from:
     # H.Gorter, *Dimensionalanalyse: Eine Theoririe der physikalischen Dimensionen mit Anwendungen*

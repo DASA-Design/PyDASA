@@ -1,8 +1,15 @@
 ﻿# -*- coding: utf-8 -*-
 """
-Module for **MonteCarloSim** analysis in *PyDASA*.
+Module simulation.py
+===========================================
+
+Module for Monte Carlo Simulation execution and analysis in *PyDASA*.
 
 This module provides the MonteCarloSim class for performing Monte Carlo simulations on dimensionless coefficients derived from dimensional analysis.
+
+Classes:
+
+    **MonteCarloSim**: Performs Monte Carlo simulations on dimensionless coefficients.
 
 *IMPORTANT:* Based on the theory from:
 
@@ -48,6 +55,7 @@ class MonteCarloSim(Validation, Generic[T]):
         _sym (str): Symbol representation (LaTeX or alphanumeric).
         _alias (str): Python-compatible alias for use in code.
         _fwk (str): Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
+        _cat (str): Category of analysis (SYM, NUM, HYB).
 
         # Expression Management
         _pi_expr (str): LaTeX expression to analyze.
@@ -58,7 +66,7 @@ class MonteCarloSim(Validation, Generic[T]):
         _py_to_latex (Dict[str, str]): Mapping from Python to LaTeX variable names.
 
         # Simulation Configuration
-        _iterations (int): Number of simulation to run.
+        _iterations (int): Number of simulation to run. Default is 1000.
         _distributions (Dict[str, Callable]): Variable sampling distributions.
         _specs (Dict[str, Tuple[float, float]]): Min/max bounds for each variable.
 
@@ -76,6 +84,11 @@ class MonteCarloSim(Validation, Generic[T]):
         _max (float): Maximum value in simulation results.
         _count (int): Number of valid simulation results.
     """
+
+    # Category attribute
+    # :attr: _cat
+    _cat: str = "NUM"
+    """Category of sensitivity analysis (SYM, NUM)."""
 
     # Expression properties
     # :attr: _pi_expr
@@ -125,7 +138,7 @@ class MonteCarloSim(Validation, Generic[T]):
 
     # :attr: _specs
     specs: Dict[str, Tuple[float]] = field(default_factory=dict)
-    """Min/max bounds for each variable."""
+    """Distribution specifications (probability function x) for each variable."""
 
     # Results
     # :attr: inputs
@@ -489,7 +502,7 @@ class MonteCarloSim(Validation, Generic[T]):
         Raises:
             ValueError: If the number of iterations is not positive.
         """
-        if val <= 0:
+        if val < 0:
             _msg = f"Number of iterations must be positive. Got: {val}"
             raise ValueError(_msg)
         self._iterations = val

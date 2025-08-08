@@ -55,12 +55,12 @@ class SensitivityHandler(Validation, Generic[T]):
         _cat (str): Category of analysis (SYM, NUM, HYB).
 
         # Analysis Components
-        _variables (Dict[str, Variable]): Dictionary of all parameters/variables in the model (*Variable*).
-        _coefficients (Dict[str, Coefficient]): Dictionary of all coefficients in the model (*Coefficient*).
+        _variables (Dict[str, Variable]): all available parameters/variables in the model (*Variable*).
+        _coefficients (Dict[str, Coefficient]): all available coefficients in the model (*Coefficient*).
 
         # Analysis Results
-        _analyses (Dict[str, DimSensitivity]): Dictionary of sensitivity analyses performed.
-        _results (Dict[str, Dict[str, Any]]): Consolidated results of analyses.
+        _analyses (Dict[str, DimSensitivity]): all sensitivity analyses performed.
+        _results (Dict[str, Dict[str, Any]]): all consolidated results of analyses.
     """
 
     # Category attribute
@@ -96,10 +96,17 @@ class SensitivityHandler(Validation, Generic[T]):
 
         # Set default symbol if not specified
         if not self._sym:
-            self._sym = f"SENS HDL \\Pi_{{{self._idx}}}" if self._idx >= 0 else "SENS HDL"
+            self._sym = f"SH_{{\\Pi_{{{self._idx}}}}}" if self._idx >= 0 else "SH_\\Pi_{-1}"
 
         if not self._alias:
             self._alias = latex_to_python(self._sym)
+
+        # Set name and description if not already set
+        if not self.name:
+            self.name = f"sensitivity Analysis Handler {self._idx}"
+
+        if not self.description:
+            self.description = f"Manages sensitivity analyses for [{self._coefficients.keys()}] coefficients."
 
     def _validate_dict(self, dt: dict, exp_type: List[type]) -> bool:
         """*_validate_dict()* Validates a dictionary with expected value types.
@@ -295,6 +302,7 @@ class SensitivityHandler(Validation, Generic[T]):
 
     def get_ranked_variables(self,
                              metric: str = "S1") -> Dict[str, List[tuple]]:
+        # TODO do i need this??? check later
         """*get_ranked_variables()* Gets variables ranked by sensitivity.
 
         Args:
@@ -329,6 +337,7 @@ class SensitivityHandler(Validation, Generic[T]):
 
     def get_most_influential_variables(self,
                                        top_n: int = 3) -> Dict[str, List[str]]:
+        # TODO do i need this??? check later
         """*get_most_influential_variables()* Gets most influential variables for each coefficient.
         Args:
             top_n (int, optional): Number of top variables to return. Defaults to 3.

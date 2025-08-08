@@ -192,11 +192,12 @@ class MonteCarloSim(Validation, Generic[T]):
         if self._pi_expr:
             # Parse the expression
             self._parse_expression(self._pi_expr)
-
+            
+        # TODO post init exectution to allocate memory is not working, fix it!
         # Preallocate full array space
         n_vars = len(self._variables)
         self.inputs = np.zeros((self._iterations, n_vars))
-        self._results = np.zeros(self._iterations)  # 1D array for results
+        self._results = np.zeros((self._iterations, 1))
 
     def _validate_simulation_ready(self) -> None:
         """*_validate_simulation_ready() * Checks if the simulation can be performed.
@@ -327,7 +328,7 @@ class MonteCarloSim(Validation, Generic[T]):
         # Preallocate full array space
         n_vars = len(self._variables)
         self.inputs = np.zeros((self._iterations, n_vars))
-        self._results = np.zeros(self._iterations)  # 1D array for results
+        self._results = np.zeros((self._iterations, 1))  # 2D array for results
 
         # Run simulation
         i = 0

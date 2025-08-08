@@ -492,7 +492,7 @@ monte = MonteCarloSim(_idx=0,
                       _pi_expr=DAModel.coefficients["\\Pi_{1}"].pi_expr,
                       _variables=DAModel.variables,
                       _distributions=mc_dist,
-                      n_samples=5000)
+                      _iterations=15000)
 monte.set_coefficient(DAModel.coefficients["\\Pi_{1}"])
 print(monte, "\n")
 
@@ -503,3 +503,4 @@ for k, v in monte.get_statistics().items():
 print("Mean:", monte.mean)
 print("Variance:", monte.variance)
 print("Summary:", monte.summary)
+print("Confidence report:", monte.get_confidence_interval(0.95))

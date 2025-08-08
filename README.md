@@ -70,13 +70,17 @@ I need an object oriented design option to include the following requirements in
 
       1. domain.py unit conversion handler/manager for the the matrix UnitsManager, OUT OF SCOPE for now!!!❌
       2. framework.py: contaons de DimFramework class to manage and control the DimMatrix in the solving process. ✅
-      3. influence.py: contains the SensitivityHandler class for understanding variance in the coefficients. ✅
-      4. model.py: contains de DimMatrix class to solve de dimensional matrix. ✅
-      5. phenomena.py: has the main Solver() class of the project 🔶👨‍💻
-      6. practical.py contains the SimulationManager class to control all the montecartlo simulations of all data 🔶👨‍💻⚠️ WORKING HERE⚠️
+      3. model.py: contains de DimMatrix class to solve de dimensional matrix. ✅
 
       ---
-   6. **utils**
+   6. **handler**
+
+      1. influence.py: contains the SensitivityHandler class for understanding variance in the coefficients. ✅
+      2. phenomena.py: has the main Solver() class of the project 🔶👨‍💻
+      3. practical.py contains the SimulationManager class to control all the montecartlo simulations of all data 🔶👨‍💻⚠️ WORKING HERE⚠️
+
+      ---
+   7. **utils**
 
       1. config.py: contains all global and shared variables for the analysis. ✅
       2. default.py contains all the default stuff needed for custom datastructures + other functionalities, usefull in the future!!! ✅
@@ -86,10 +90,10 @@ I need an object oriented design option to include the following requirements in
       6. io.py: contains all the input/ouput functions for saving data of the analyisis, also exports to be use in other platforms (MATPLOTLIB and files!!) NOT NOW❌
 
       ---
-   7. math ⚠️⚠️⚠️ TODO ⚠️⚠️⚠️ do i need them????
+   8. math ⚠️⚠️⚠️ TODO ⚠️⚠️⚠️ do i need them????
 
       1. numbers.py
       2. queues.py
 
       ---
-   8. ~~**visualization:** dont NEED it, USE MATPLOTLIB OR OTHER STUFF!!!!, but y need to create plots and charts from vars + coefficients ❌~~
+   9. ~~**visualization:** dont NEED it, USE MATPLOTLIB OR OTHER STUFF!!!!, but y need to create plots and charts from vars + coefficients ❌~~

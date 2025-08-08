@@ -32,10 +32,11 @@ from src.pydasa.dimensional.model import DimMatrix
 
 # sensitivity analysis modules
 from src.pydasa.analysis.scenario import DimSensitivity
-from src.pydasa.dimensional.influence import SensitivityHandler
+from src.pydasa.handlers.influence import SensitivityHandler
 
 # Monte Carlo Simulation modules
 from src.pydasa.analysis.simulation import MonteCarloSim
+from src.pydasa.handlers.practical import MonteCarloHandler
 
 # from src.pydasa.dimensional.practical import MonteCarloHandler
 

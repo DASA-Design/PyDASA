@@ -229,9 +229,6 @@ class SensitivityHandler(Validation, Generic[T]):
 
         Analyzes each coefficient using symbolic differentiation at specified values.
 
-        # TODO aki voy!!!
-        5. return results in a structured format
-
         Args:
             val_type (str, optional): Type of value to use (mean, min, max). Defaults to "mean".
 
@@ -259,7 +256,7 @@ class SensitivityHandler(Validation, Generic[T]):
 
             # Store results
             self._results[analysis.sym] = result
-        # TODO fix the result format
+
         return self._results
 
     def analyze_numeric(self,

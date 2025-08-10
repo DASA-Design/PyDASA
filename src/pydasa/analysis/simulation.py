@@ -67,8 +67,7 @@ class MonteCarloSim(Validation, Generic[T]):
 
         # Simulation Configuration
         _iterations (int): Number of simulation to run. Default is 1000.
-        _distributions (Dict[str, Callable]): Variable sampling distributions.
-        _specs (Dict[str, Tuple[float, float]]): Min/max bounds for each variable.
+        _distributions (Dict[str, Any]): Variable sampling distributions and specifications (specific name, parameters, and function).
 
         # Results
         inputs (np.ndarray): variable simulated inputs.
@@ -133,12 +132,12 @@ class MonteCarloSim(Validation, Generic[T]):
     """Number of simulation to run."""
 
     # :attr: _distributions
-    _distributions: Dict[str, Callable] = field(default_factory=dict)
-    """Variable sampling distributions."""
-
-    # :attr: _specs
-    specs: Dict[str, Tuple[float]] = field(default_factory=dict)
-    """Distribution specifications (probability function x) for each variable."""
+    _distributions: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    """Variable sampling distributions and specifications that includes:
+        - 'dtype': Name of the variable.
+        - 'params': Distribution parameters (mean, std_dev, etc.).
+        - 'func':  function for sampling, ussually in Lambda format.
+    """
 
     # Results
     # :attr: inputs
@@ -205,7 +204,7 @@ class MonteCarloSim(Validation, Generic[T]):
         if self._pi_expr:
             # Parse the expression
             self._parse_expression(self._pi_expr)
-            
+
         # TODO post init exectution to allocate memory is not working, fix it!
         # Preallocate full array space
         n_vars = len(self._variables)
@@ -294,13 +293,11 @@ class MonteCarloSim(Validation, Generic[T]):
                          var: str,
                          dist: Callable,
                          specs: Dict = None) -> None:
-        """*set_distribution()* Set the sampling distribucion for a variable in the coeffcient.
+        # TODO old code, probably dont need it, delete later!
+        """*set_distribution()* Set the sampling distribution for a variable in the coefficient.
         Args:
             var (str): Variable name to set the distribution.
             dist (Callable): Callable function that samples from the distribution.
-            specs (Dict, optional): a dictionary containing the specifications of the distribution:
-                - dist: distribution name. e.g.: 'normal', 'weibull', or 'uniform'
-                - params: distribution parameters. e.g.: {'mean': 0, 'std': 1} for normal and {'shape': 1, 'scale': 2} for weibull.
 
         Raises:
             ValueError: If the variable is not found in the expression or if the distribution is not callable.
@@ -319,12 +316,12 @@ class MonteCarloSim(Validation, Generic[T]):
         self._distributions[var] = dist
 
         if specs:
-            if not isinstance(specs, tuple):
-                _msg = f"Bounds must be a tuple (min, max). Got: {specs}"
+            if not isinstance(specs, dict):
+                _msg = f"Specs must be a dictionary. Got: {type(specs)}"
                 raise ValueError(_msg)
             self.specs[var] = specs
 
-    def run(self) -> None:
+    def run(self, iters: int = None) -> None:
         """*run()* Perform the Monte Carlo simulation.
 
         Raises:
@@ -333,6 +330,10 @@ class MonteCarloSim(Validation, Generic[T]):
         """
         # Validate simulation readiness
         self._validate_simulation_ready()
+
+        # Set iterations if necesary
+        if iters is not None:
+            self._iterations = iters
 
         # Clear previous results
         self._results = np.zeros((0,))
@@ -351,7 +352,8 @@ class MonteCarloSim(Validation, Generic[T]):
                 samples = {}
                 for var in self._symbols.keys():
                     if var in self._distributions:
-                        samples[var] = self._distributions[var]()
+                        # accessing the distribution in the distribution specs
+                        samples[var] = self._distributions[var]["func"]()
                     else:
                         _msg = f"Missing distribution for variable: {var}"
                         raise ValueError(_msg)
@@ -397,48 +399,16 @@ class MonteCarloSim(Validation, Generic[T]):
 
     def _calculate_statistics(self) -> None:
         """*_calculate_statistics()* Calculate statistical properties of simulation results."""
-        results = np.array(self._results)
+        # results = np.array(self._results)
 
         # Calculate and store each statistic separately
-        self._mean = float(np.mean(results))
-        self._median = float(np.median(results))
-        self._std_dev = float(np.std(results))
-        self._variance = float(np.var(results))
-        self._min = float(np.min(results))
-        self._max = float(np.max(results))
-        self._count = len(results)
-
-    def get_statistics(self) -> Dict[str, float]:
-        """*get_statistics()* Get the statistical analysis of simulation results.
-
-        Raises:
-            ValueError: If no results are available.
-
-        Returns:
-            Dict[str, float]: Dictionary containing statistical properties:
-                - "mean"": Mean value of results
-                - "median": Median value of results
-                - "std_dev": Standard deviation of results
-                - "variance": Variance of results
-                - "min": Minimum value in results
-                - "max": Maximum value in results
-                - "count": Number of valid results
-        """
-        if self._results is None:
-            _msg = "No statistics available. Run the simulation first."
-            raise ValueError(_msg)
-
-        # Build statistics dictionary from individual attributes
-        statistics = {
-            "mean": self._mean,
-            "median": self._median,
-            "std_dev": self._std_dev,
-            "variance": self._variance,
-            "min": self._min,
-            "max": self._max,
-            "count": self._count
-        }
-        return statistics
+        self._mean = float(np.mean(self._results))
+        self._median = float(np.median(self._results))
+        self._std_dev = float(np.std(self._results))
+        self._variance = float(np.var(self._results))
+        self._min = float(np.min(self._results))
+        self._max = float(np.max(self._results))
+        self._count = len(self._results)
 
     def get_confidence_interval(self,
                                 conf: float = 0.95) -> Tuple[float, float]:
@@ -484,6 +454,38 @@ class MonteCarloSim(Validation, Generic[T]):
         return self._results.copy()
 
     @property
+    def statistics(self) -> Dict[str, float]:
+        """*statistics* Get the statistical analysis of simulation results.
+        Raises:
+            ValueError: If no results are available.
+
+        Returns:
+            Dict[str, float]: Dictionary containing statistical properties:
+                - "mean"": Mean value of results
+                - "median": Median value of results
+                - "std_dev": Standard deviation of results
+                - "variance": Variance of results
+                - "min": Minimum value in results
+                - "max": Maximum value in results
+                - "count": Number of valid results
+        """
+        if self._results is None:
+            _msg = "No statistics available. Run the simulation first."
+            raise ValueError(_msg)
+
+        # Build statistics dictionary from individual attributes
+        self._statistics = {
+            "mean": self._mean,
+            "median": self._median,
+            "std_dev": self._std_dev,
+            "variance": self._variance,
+            "min": self._min,
+            "max": self._max,
+            "count": self._count
+        }
+        return self._statistics
+
+    @property
     def iterations(self) -> int:
         """*iterations* Number of simulation iterations.
 
@@ -508,27 +510,27 @@ class MonteCarloSim(Validation, Generic[T]):
         self._iterations = val
 
     @property
-    def properties(self) -> Dict[str, Callable]:
-        """*properties* Get the variable distributions.
+    def distributions(self) -> Dict[str, Any]:
+        """*distributions* Get the variable distributions.
 
         Returns:
-            Dict[str, Callable]: Current variable distributions.
+            Dict[str, Any]: Current variable distributions.
         """
         return self._distributions.copy()
 
-    @properties.setter
-    def properties(self, val: Dict[str, Callable]) -> None:
-        """*properties* Set the variable distributions.
+    @distributions.setter
+    def distributions(self, val: Dict[str, Any]) -> None:
+        """*distributions* Set the variable distributions.
 
         Args:
-            val (Dict[str, Callable]): New variable distributions.
+            val (Dict[str, Any]): New variable distributions.
 
         Raises:
             ValueError: If the distributions are invalid.
         """
-        if not all(callable(v) for v in val.values()):
-            _msg = "All distributions must be callable."
-            inv = [k for k, v in val.items() if not callable(v)]
+        if not all(callable(v["func"]) for v in val.values()):
+            _msg = "All distributions must have callable 'func' functions."
+            inv = [k for k, v in val.items() if not callable(v["func"])]
             _msg += f" Invalid entries: {inv}"
             raise ValueError(_msg)
         self._distributions = val
@@ -696,7 +698,6 @@ class MonteCarloSim(Validation, Generic[T]):
         self._py_to_latex = {}
         self._iterations = 1000
         self._distributions = {}
-        self.specs = {}
         self.inputs = np.zeros((0,))
         self._results = np.zeros((0,))
 
@@ -720,7 +721,6 @@ class MonteCarloSim(Validation, Generic[T]):
             "variables": self._variables,
             "iterations": self._iterations,
             # "distributions": {k: str(v) for k, v in self._distributions.items()},
-            "specs": self.specs,
             # Results
             "mean": self._mean,
             "median": self._median,
@@ -746,7 +746,6 @@ class MonteCarloSim(Validation, Generic[T]):
             _alias=data.get("alias", ""),
             _pi_expr=data.get("pi_expr", None),
             _iterations=data.get("iterations", 1000),
-            _specs=data.get("specs", {})
         )
 
         # Optionally set statistics if available

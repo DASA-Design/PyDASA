@@ -30,7 +30,7 @@ from src.pydasa.core.basic import Validation
 
 # Import related classes
 from src.pydasa.core.parameter import Variable
-from src.pydasa.dimensional.framework import DimFramework
+from src.pydasa.dimensional.framework import DimScheme
 from src.pydasa.buckingham.vashchy import Coefficient
 
 # Import utils
@@ -59,7 +59,7 @@ class DimMatrix(Validation, Generic[T]):
         _fwk (str): Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
 
         # Framework Management
-        _framework (DimFramework): Dimensional framework managing FDUs.
+        _framework (DimScheme): Dimensional framework managing FDUs.
 
         # Variable and Parameter Management
         _variables (Dict[str, Variable]): Dictionary of all variables in the model.
@@ -96,7 +96,7 @@ class DimMatrix(Validation, Generic[T]):
 
     # Framework management
     # :attr: _framework
-    _framework: DimFramework = field(default_factory=DimFramework)
+    _framework: DimScheme = field(default_factory=DimScheme)
     """Dimensional framework managing FDUs."""
 
     # Variable management
@@ -479,26 +479,26 @@ class DimMatrix(Validation, Generic[T]):
         self._prepare_analysis()
 
     @property
-    def framework(self) -> DimFramework:
+    def framework(self) -> DimScheme:
         """*framework* Get the dimensional framework.
 
         Returns:
-            DimFramework: Dimensional framework.
+            DimScheme: Dimensional framework.
         """
         return self._framework
 
     @framework.setter
-    def framework(self, val: DimFramework) -> None:
+    def framework(self, val: DimScheme) -> None:
         """*framework* Set the dimensional framework.
 
         Args:
-            val (DimFramework): Dimensional framework.
+            val (DimScheme): Dimensional framework.
 
         Raises:
             ValueError: If the framework is invalid.
         """
-        if not isinstance(val, DimFramework):
-            raise ValueError("Framework must be a DimFramework instance")
+        if not isinstance(val, DimScheme):
+            raise ValueError("Framework must be a DimScheme instance")
 
         # Update framework and global configuration
         self._framework = val

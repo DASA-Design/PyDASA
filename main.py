@@ -22,7 +22,7 @@ from src.pydasa.utils import config
 from src.pydasa.core.fundamental import Dimension
 
 # FDU regex management
-from src.pydasa.dimensional.framework import DimFramework
+from src.pydasa.dimensional.framework import DimScheme
 
 # Variable and Variable modules
 from src.pydasa.core.parameter import Variable
@@ -158,7 +158,7 @@ p1 = Variable(name="U_1",
               _dims="M*T^-2*L^-1",)
 print(p1, "\n")
 
-rm = DimFramework(_fwk="SOFTWARE",)
+rm = DimScheme(_fwk="SOFTWARE",)
 print(rm, "\n")
 
 
@@ -171,7 +171,7 @@ fdu_lt = [
     {"_idx": 2, "_sym": "T", "_fwk": "CUSTOM", "description": "Time~~~~~~~~~~~~~", "_unit": "s", "name": "Time"},
 ]
 
-rm = DimFramework(_fdus=fdu_lt, _fwk="CUSTOM")
+rm = DimScheme(_fdus=fdu_lt, _fwk="CUSTOM")
 
 rm.update_global_config()
 print(rm, "\n")
@@ -225,7 +225,10 @@ vars_lt = {
                       _std_max=15.0,
                       _std_mean=7.50,
                       _std_dev=0.75,
-                      _step=0.1,),
+                      _step=0.1,
+                      _dist_type="uniform",
+                      _dist_params={"min": 0.0, "max": 15.0},
+                      _dist_func=lambda: dist1(0.0, 15.0)),
     "y_{2}": Variable(_sym="y_{2}",
                       _alias="y_2",
                       _fwk="CUSTOM",
@@ -245,7 +248,10 @@ vars_lt = {
                       _std_max=10.0,
                       _std_mean=5.0,
                       _std_dev=0.50,
-                      _step=0.1),
+                      _step=0.1,
+                      _dist_type="uniform",
+                      _dist_params={"min": 0.0, "max": 10.0},
+                      _dist_func=lambda: dist1(0.0, 10.0)),
     "d": Variable(_sym="d",
                   _alias="d",
                   _fwk="CUSTOM",
@@ -265,7 +271,10 @@ vars_lt = {
                   _std_max=5.0,
                   _std_mean=2.5,
                   _std_dev=0.25,
-                  _step=0.1),
+                  _step=0.1,
+                  _dist_type="uniform",
+                  _dist_params={"min": 0.0, "max": 5.0},
+                  _dist_func=lambda: dist1(0.0, 5.0)),
     "U": Variable(_sym="U",
                   _alias="U",
                   _fwk="CUSTOM",
@@ -285,7 +294,10 @@ vars_lt = {
                   _std_max=15.0,
                   _std_mean=7.50,
                   _std_dev=0.75,
-                  _step=0.1),
+                  _step=0.1,
+                  _dist_type="uniform",
+                  _dist_params={"min": 0.0, "max": 15.0},
+                  _dist_func=lambda: dist1(0.0, 15.0)),
     "P": Variable(_sym="P",
                   _alias="P",
                   _fwk="CUSTOM",
@@ -305,7 +317,10 @@ vars_lt = {
                   _std_max=100000.0,
                   _std_mean=50000.0,
                   _std_dev=5000.0,
-                  _step=100.0),
+                  _step=100.0,
+                  _dist_type="uniform",
+                  _dist_params={"min": 0.0, "max": 100000.0},
+                  _dist_func=lambda: dist1(0.0, 100000.0)),
     "v": Variable(_sym="v",
                   _alias="v",
                   _fwk="CUSTOM",
@@ -325,7 +340,10 @@ vars_lt = {
                   _std_max=1.0,
                   _std_mean=0.5,
                   _std_dev=0.05,
-                  _step=0.01),
+                  _step=0.01,
+                  _dist_type="uniform",
+                  _dist_params={"min": 0.0, "max": 1.0},
+                  _dist_func=lambda: dist1(0.0, 1.0)),
     "g": Variable(_sym="g",
                   _alias="g",
                   _fwk="CUSTOM",
@@ -472,6 +490,19 @@ mc_dist = {
     "\\miu": lambda: dist2(miu.std_mean, miu.std_dev),
 }
 
+dist_specs = {
+    "U": {
+        "dtype": U.dist_type,        # uniform
+        "params": U.dist_params,
+        "func": U.dist_func
+    },
+    "\\miu": {
+        "dtype": miu.dist_type,        # uniform
+        "params": miu.dist_params,
+        "func": miu.dist_func
+    }
+}
+
 i = 0
 while i < 10:
     t1 = mc_dist["U"]()
@@ -492,19 +523,44 @@ monte = MonteCarloSim(_idx=0,
                       description="Monte Carlo Simulation~~~~~!!!",
                       _pi_expr=DAModel.coefficients["\\Pi_{1}"].pi_expr,
                       _variables=DAModel.variables,
-                      _distributions=mc_dist,
-                      _iterations=15000)
+                      _distributions=dist_specs,
+                      _iterations=1000,)
 monte.set_coefficient(DAModel.coefficients["\\Pi_{1}"])
 print(monte, "\n")
 
 monte.run()
 print("Monte Carlo Simulation Results:")
-for k, v in monte.get_statistics().items():
+for k, v in monte.statistics.items():
     print(f"{k}: {v}")
 print("Mean:", monte.mean)
 print("Variance:", monte.variance)
 print("Summary:", monte.summary)
 print("Confidence report:", monte.get_confidence_interval(0.95))
+
+print("\n=== monte carlo handler ===")
+# Create a handler
+mchandler = MonteCarloHandler(_sym="MCH_{0}",
+                              _fwk="CUSTOM",
+                              name="Monte Carlo Handler",
+                              description="Monte Carlo Handler for simulations",
+                              _variables=DAModel.relevant_lt,
+                              _coefficients=DAModel.coefficients)
+print(mchandler, "\n")
+mchandler._create_distributions()
+print(mchandler._distributions)
+mchandler._create_simulations()
+print(mchandler._simulations.keys())
+for k, v in mchandler._simulations.items():
+    print(f"Simulation dist = {k}:\n\t{v._distributions}")
+mchandler.simulate(n_samples=100000)
+
+for pi, results in mchandler._results.items():
+    for k, v in results.items():
+        if k == "statistics":
+            print(f"Coefficient: {pi}")
+            print(f"Result for {k}: {v}")
+        else:
+            print(f"Other result for {k}: {v.shape}")
 
 '''
 

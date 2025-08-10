@@ -297,59 +297,6 @@ class SensitivityHandler(Validation, Generic[T]):
             self._results[analysis.sym] = result
         return self._results
 
-    def get_ranked_variables(self,
-                             metric: str = "S1") -> Dict[str, List[tuple]]:
-        # TODO do i need this??? check later
-        """*get_ranked_variables()* Gets variables ranked by sensitivity.
-
-        Args:
-            metric (str, optional): Metric to use for ranking (S1, ST). Defaults to "S1".
-
-        Returns:
-            Dict[str, List[tuple]]: Variables ranked by sensitivity for each coefficient.
-
-        Raises:
-            ValueError: If results are not available or metric is invalid.
-        """
-        if not self._results:
-            raise ValueError("No analysis results available. Run analyze_symbolic() or analyze_numeric() first.")
-
-        rankings = {}
-
-        for coef_sym, result in self._results.items():
-            if metric not in result and "raw" not in result:
-                # Try symbolic results
-                var_ranks = [(var, abs(sens)) for var, sens in result.items()]
-                var_ranks.sort(key=lambda x: x[1], reverse=True)
-                rankings[coef_sym] = var_ranks
-            elif "raw" in result:
-                # Numeric results
-                if metric not in ["S1", "ST"]:
-                    raise ValueError(f"Invalid metric: {metric}. Must be one of: S1, ST.")
-
-                var_ranks = [(var, result[metric][var]) for var in result["names"]]
-                var_ranks.sort(key=lambda x: x[1], reverse=True)
-                rankings[coef_sym] = var_ranks
-        return rankings
-
-    def get_most_influential_variables(self,
-                                       top_n: int = 3) -> Dict[str, List[str]]:
-        # TODO do i need this??? check later
-        """*get_most_influential_variables()* Gets most influential variables for each coefficient.
-        Args:
-            top_n (int, optional): Number of top variables to return. Defaults to 3.
-
-        Returns:
-            Dict[str, List[str]]: Top influential variables for each coefficient.
-        """
-        rankings = self.get_ranked_variables()
-
-        top_vars = {}
-        for coef_sym, ranked_vars in rankings.items():
-            top_vars[coef_sym] = [var for var, _ in ranked_vars[:min(top_n, len(ranked_vars))]]
-
-        return top_vars
-
     # Property getters and setters
 
     @property
@@ -379,23 +326,23 @@ class SensitivityHandler(Validation, Generic[T]):
         self._cat = val.upper()
 
     @property
-    def variables(self) -> List[Variable]:
-        """*variables* Get the list of variables.
+    def variables(self) -> Dict[str, Variable]:
+        """*variables* Get the dictionary of variables.
 
         Returns:
-            List[Variable]: List of variables.
+            Dict[str, Variable]: Dictionary of variables.
         """
         return self._variables.copy()
 
     @variables.setter
-    def variables(self, val: List[Variable]) -> None:
-        """*variables* Set the list of variables.
+    def variables(self, val: Dict[str, Variable]) -> None:
+        """*variables* Set the dictionary of variables.
 
         Args:
-            val (List[Variable]): List of variables.
+            val (Dict[str, Variable]): Dictionary of variables.
 
         Raises:
-            ValueError: If list is invalid.
+            ValueError: If dictionary is invalid.
         """
         if self._validate_dict(val, (Variable,)):
             self._variables = val
@@ -404,23 +351,23 @@ class SensitivityHandler(Validation, Generic[T]):
             self._analyses.clear()
 
     @property
-    def coefficients(self) -> List[Coefficient]:
-        """*coefficients* Get the list of coefficients.
+    def coefficients(self) -> Dict[str, Coefficient]:
+        """*coefficients* Get the dictionary of coefficients.
 
         Returns:
-            List[Coefficient]: List of coefficients.
+            Dict[str, Coefficient]: Dictionary of coefficients.
         """
         return self._coefficients.copy()
 
     @coefficients.setter
-    def coefficients(self, val: List[Coefficient]) -> None:
-        """*coefficients* Set the list of coefficients.
+    def coefficients(self, val: Dict[str, Coefficient]) -> None:
+        """*coefficients* Set the dictionary of coefficients.
 
         Args:
-            val (List[Coefficient]): List of coefficients.
+            val (Dict[str, Coefficient]): Dictionary of coefficients.
 
         Raises:
-            ValueError: If list is invalid.
+            ValueError: If dictionary is invalid.
         """
         if self._validate_dict(val, (Coefficient,)):
             self._coefficients = val
@@ -429,11 +376,11 @@ class SensitivityHandler(Validation, Generic[T]):
             self._analyses.clear()
 
     @property
-    def analyses(self) -> List[DimSensitivity]:
-        """*analyses* Get the list of sensitivity analyses.
+    def analyses(self) -> Dict[str, DimSensitivity]:
+        """*analyses* Get the dictionary of sensitivity analyses.
 
         Returns:
-            List[DimSensitivity]: List of sensitivity analyses.
+            Dict[str, DimSensitivity]: Dictionary of sensitivity analyses.
         """
         return self._analyses.copy()
 

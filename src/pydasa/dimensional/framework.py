@@ -3,12 +3,12 @@
 Module framework.py
 ===========================================
 
-Module for **DimFramework** to manage Fundamental Dimensional Units (FDUs) for Dimensional Analysis in *PyDASA*.
+Module for **DimScheme** to manage Fundamental Dimensional Units (FDUs) for Dimensional Analysis in *PyDASA*.
 
-This module provides the DimFramework class which manages dimensional frameworks, FDU precedence, and regex patterns for dimensional expression validation.
+This module provides the DimScheme class which manages dimensional frameworks, FDU precedence, and regex patterns for dimensional expression validation.
 
 Classes:
-    **DimFramework**: Manages dimensional frameworks and FDUs, providing methods for validation,
+    **DimScheme**: Manages dimensional frameworks and FDUs, providing methods for validation,
 
 *IMPORTANT:* Based on the theory from:
 
@@ -42,8 +42,8 @@ from src.pydasa.utils import config as cfg
 
 
 @dataclass
-class DimFramework(Validation, Generic[T]):
-    """**DimFramework** Manages dimensional frameworks and FDUs for *PyDASA*.
+class DimScheme(Validation, Generic[T]):
+    """**DimScheme** Manages dimensional frameworks and FDUs for *PyDASA*.
 
     Maintains a collection of Dimensions with their precedence, provides regex patterns
     for dimensional expressions, and manages the dimensional framework context.

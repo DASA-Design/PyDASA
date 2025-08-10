@@ -17,7 +17,7 @@ Classes:
 
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Generic, Optional, Dict, List, Callable, Any, Tuple
+from typing import Generic, Optional, Dict, List, Callable, Any
 import random
 # import re
 
@@ -54,13 +54,12 @@ class MonteCarloHandler(Validation, Generic[T]):
         _sym (str): Symbol representation (LaTeX or alphanumeric).
         _alias (str): Python-compatible alias for use in code.
         _fwk (str): Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
-        _cat (str): Category of analysis (SYM, NUM, HYB).
+        _cat (str): Category of analysis (SYM, NUM).
 
         # Simulation Components
         _variables (Dict[str, Variable]): all available parameters/variables in the model (*Variable*).
         _coefficients (Dict[str, Coefficient]): all available coefficients in the model (*Coefficient*).
         _distributions (Dict[str, Callable]): all distribution functions used in the simulations.
-        specs (Dict[str, Tuple[float]]): Distribution specifications (probability function x) for all the variables.
         _lead_distribution (Callable): main distribution function for simulations. Uniform distribution by default.
         _iterations (int): Number of simulation to run. Default is 1000.
 
@@ -85,15 +84,11 @@ class MonteCarloHandler(Validation, Generic[T]):
 
     # Simulation configuration
     # :attr: _distributions
-    _distributions: Dict[str, Callable] = field(default_factory=dict)
-    """Variable sampling distributions."""
-
-    # :attr: _specs
-    specs: Dict[str, Tuple[float]] = field(default_factory=dict)
-    """Distribution specifications (probability function x) for each variable."""
+    _distributions: Dict[str, Dict[str, Any]] = field(default_factory=dict)
+    """Variable sampling distributions and specifications for simulations (specific name, parameters, and function)."""
 
     # :attr: _lead_distribution
-    _lead_distribution: Callable = random.uniform
+    _lead_distribution: Optional[Callable] = random.uniform
     """Main distribution function for simulations. By default, the native python uniform distribution is used."""
 
     # :attr: _iterations
@@ -128,6 +123,17 @@ class MonteCarloHandler(Validation, Generic[T]):
         if not self.description:
             self.description = f"Manages Monte Carlo simulations for [{self._coefficients.keys()}] coefficients."
 
+        # if len(self._distributions) == 0:
+        #     self._create_distributions()
+        # if len(self._simulations) == 0:
+        #     self._create_simulations()
+
+    def config_simulations(self) -> None:
+        if len(self._distributions) == 0:
+            self._create_distributions()
+        if len(self._simulations) == 0:
+            self._create_simulations()
+
     def _validate_dict(self, dt: dict, exp_type: List[type]) -> bool:
         """*_validate_dict()* Validates a dictionary with expected value types.
 
@@ -157,26 +163,364 @@ class MonteCarloHandler(Validation, Generic[T]):
             raise ValueError(_msg)
         return True
 
+    # def _create_distribution(self, sym: str) -> Dict[str, Dict[str, Any]]:
+    # TODO old code, delete aftwerwards
+    #     """*_create_distribution()* Creates the distributions for a given variable.
+
+    #     Args:
+    #         sym (str): Name of the variable.
+
+    #     Returns:
+    #         Dict[str, Any]: Distribution specifications for the variable.
+    #     """
+    #     # Check if the variable is defined
+    #     if sym not in self._variables:
+    #         _msg = f"Variable '{sym}' not found in variables."
+    #         _msg += f" Available variables: {list(self._variables.keys())}"
+    #         raise ValueError(_msg)
+
+    #     # Get the variable object
+    #     var = self._variables[sym]
+    #     dist = {
+    #         "dtype": var.dist_type,
+    #         "params": var.dist_params,
+    #         "func": var.dist_func
+    #     }
+    #     # Get the distribution specifications
+    #     return dist
+
+    def _create_distributions(self) -> None:
+        """*_create_distributions()* Creates the Monte Carlo distributions for each variable.
+
+        Raises:
+            ValueError: If the distribution specifications are invalid.
+        """
+        # Clear existing distributions
+        self._distributions.clear()
+
+        for var in self._variables.values():
+            sym = var.sym
+            if sym not in self._distributions:
+                specs = [var.dist_type, var.dist_params, var.dist_func]
+                if not any(specs):
+                    _msg = f"Invalid distribution for variable '{sym}'. "
+                    _msg += f"Incomplete specifications provided: {specs}"
+                    raise ValueError(_msg)
+                self._distributions[sym] = {
+                    "dtype": var.dist_type,
+                    "params": var.dist_params,
+                    "func": var.dist_func
+                }
+
+    def _get_distributions(self, keys: List[str]) -> Dict[str, Any]:
+        """*_get_distributions()* Retrieves the distribution specifications for a list of variable keys.
+
+        Args:
+            keys (List[str]): List of variable keys.
+
+        Returns:
+            Dict[str, Dict[str, Any]]: Dictionary of distribution specifications.
+        """
+        return {k: v for k, v in self._distributions.items() if k in keys}
+
     def _create_simulations(self) -> None:
         """*_create_simulations()* Creates Monte Carlo simulations for each coefficient.
 
         Sets up Monte Carlo simulation objects for each coefficient to be analyzed.
         """
+        # clear existing simulations
         self._simulations.clear()
 
+        # Create simulations for each coefficient
         for i, (pi, coef) in enumerate(self._coefficients.items()):
             # Create Monte Carlo simulation
-            simulation = MonteCarloSim(
+            keys = list(coef.var_dims.keys())
+            simul = MonteCarloSim(
                 _idx=i,
                 _sym=f"MCS_{{{coef.sym}}}",
                 _fwk=self._fwk,
                 _cat=self._cat,
+                _distributions=self._get_distributions(keys),
                 name=f"Monte Carlo Simulation for {coef.name}",
                 description=f"Monte Carlo simulation for {coef.sym}"
             )
 
             # Configure with coefficient
-            simulation.set_coefficient(coef)
+            simul.set_coefficient(coef)
 
             # Add to list
-            self._simulations[pi] = simulation
+            self._simulations[pi] = simul
+
+    def _get_distribution_value(self, sym: str) -> float:
+        # TODO remove, possible dont need it!!!
+        """*_get_distribution_value()* Retrieves a sample value from the distribution of a variable.
+
+        Args:
+            sym (str): Name of the variable.
+
+        Returns:
+            float: Sample value from the variable's distribution.
+        """
+        # check if distribution is configured
+        if sym not in self._distributions:
+            _msg = f"Variable '{sym}' not found in distributions."
+            dists = list(self._distributions.keys())
+            _msg += f" Available distributions: {dists}"
+            raise ValueError(_msg)
+
+        # Get the distribution object
+        dist = self._distributions[sym]
+
+        # Sample from the distribution
+        return dist["func"]()
+
+    def simulate(self,
+                 n_samples: int = 1000) -> Dict[str, Dict[str, Any]]:
+        """*_simulate()* Runs the Monte Carlo simulations.
+
+        Args:
+            n_samples (int, optional): Number of samples to generate. Defaults to 1000.
+
+        Returns:
+            Dict[str, Dict[str, Any]]: Simulation results.
+        """
+        results = {}
+
+        for sym in self._coefficients:
+            # Get the simulation object
+            sim = self._simulations.get(sym)
+            if not sim:
+                _msg = f"Simulation for coefficient '{sym}' not found."
+                raise ValueError(_msg)
+
+            # Run the simulation
+            sim.run(n_samples)
+            res = {
+                "inputs": sim.inputs,
+                "results": sim.results,
+                "statistics": sim.statistics,
+            }
+
+            # Store results
+            results[sym] = res
+        self._results = results
+
+    def get_simulation(self, name: str) -> MonteCarloSim:
+        """*get_simulation()* Get a simulation by name.
+
+        Args:
+            name (str): Name of the simulation.
+
+        Returns:
+            MonteCarloSim: The requested simulation.
+
+        Raises:
+            ValueError: If the simulation doesn't exist.
+        """
+        if name not in self._simulations:
+            raise ValueError(f"Simulation '{name}' does not exist.")
+
+        return self._simulations[name]
+
+    def get_distribution(self, name: str) -> Dict[str, Any]:
+        """*get_distribution()* Get the distribution by name.
+
+        Args:
+            name (str): Name of the distribution.
+
+        Returns:
+            Dict[str, Any]: The requested distribution.
+
+        Raises:
+            ValueError: If the distribution doesn't exist.
+        """
+        if name not in self._distributions:
+            raise ValueError(f"Distribution '{name}' does not exist.")
+
+        return self._distributions[name]
+
+    def get_results(self, name: str) -> Dict[str, Any]:
+        """*get_results()* Get the results of a simulation by name.
+
+        Args:
+            name (str): Name of the simulation.
+
+        Returns:
+            Dict[str, Any]: The results of the requested simulation.
+
+        Raises:
+            ValueError: If the results for the simulation don't exist.
+        """
+        if name not in self._results:
+            raise ValueError(f"Results for simulation '{name}' do not exist.")
+
+        return self._results[name]
+
+    # Property getters and setters
+
+    @property
+    def cat(self) -> str:
+        """*cat* Get the analysis category.
+
+        Returns:
+            str: Category (SYM, NUM, HYB).
+        """
+        return self._cat
+
+    @cat.setter
+    def cat(self, val: str) -> None:
+        """*cat* Set the analysis category.
+
+        Args:
+            val (str): Category value.
+
+        Raises:
+            ValueError: If category is invalid.
+        """
+        if val.upper() not in cfg.SENS_ANSYS_DT:
+            raise ValueError(
+                f"Invalid category: {val}. "
+                f"Must be one of: {', '.join(cfg.SENS_ANSYS_DT.keys())}"
+            )
+        self._cat = val.upper()
+
+    @property
+    def variables(self) -> List[Variable]:
+        """*variables* Get the list of variables.
+
+        Returns:
+            List[Variable]: List of variables.
+        """
+        return self._variables.copy()
+
+    @variables.setter
+    def variables(self, val: List[Variable]) -> None:
+        """*variables* Set the list of variables.
+
+        Args:
+            val (List[Variable]): List of variables.
+
+        Raises:
+            ValueError: If list is invalid.
+        """
+        if self._validate_dict(val, (Variable,)):
+            self._variables = val
+
+            # Clear existing analyses
+            self._simulations.clear()
+
+    @property
+    def coefficients(self) -> Dict[str, Coefficient]:
+        """*coefficients* Get the dictionary of coefficients.
+
+        Returns:
+            Dict[str, Coefficient]: Dictionary of coefficients.
+        """
+        return self._coefficients.copy()
+
+    @coefficients.setter
+    def coefficients(self, val: Dict[str, Coefficient]) -> None:
+        """*coefficients* Set the dictionary of coefficients.
+
+        Args:
+            val (Dict[str, Coefficient]): Dictionary of coefficients.
+
+        Raises:
+            ValueError: If dictionary is invalid.
+        """
+        if self._validate_dict(val, (Coefficient,)):
+            self._coefficients = val
+
+            # Clear existing analyses
+            self._simulations.clear()
+
+    @property
+    def simulations(self) -> Dict[str, MonteCarloSim]:
+        """*simulations* Get the dictionary of Monte Carlo simulations.
+
+        Returns:
+            Dict[str, MonteCarloSim]: Dictionary of Monte Carlo simulations.
+        """
+        return self._simulations.copy()
+
+    @property
+    def results(self) -> Dict[str, Dict[str, Any]]:
+        """*results* Get the Monte Carlo results.
+
+        Returns:
+            Dict[str, Dict[str, Any]]: Monte Carlo results.
+        """
+        return self._results.copy()
+
+    def clear(self) -> None:
+        """*clear()* Reset all attributes to default values.
+
+        Resets all handler properties to their initial state.
+        """
+        # Reset base class attributes
+        super().clear()
+
+        # Reset specific attributes
+        self._lead_distribution = None
+        self._simulations.clear()
+        self._distributions.clear()
+        self._results.clear()
+
+    def to_dict(self) -> Dict[str, Any]:
+        """*to_dict()* Convert the handler's state to a dictionary.
+
+        Returns:
+            Dict[str, Any]: Dictionary representation of the handler's state.
+        """
+        return {
+            "name": self.name,
+            "description": self.description,
+            "idx": self._idx,
+            "sym": self._sym,
+            "fwk": self._fwk,
+            "cat": self._cat,
+            "variables": [var.to_dict() for var in self._variables],
+            "coefficients": [coef.to_dict() for coef in self._coefficients],
+            "simulations": [sim.to_dict() for sim in self._simulations],
+            "results": self._results
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> MonteCarloHandler:
+        """*from_dict()* Create a MonteCarloHandler instance from a dictionary.
+
+        Args:
+            data (Dict[str, Any]): Dictionary containing the handler's state.
+
+        Returns:
+            MonteCarloHandler: New instance of MonteCarloHandler.
+        """
+        # Create instance with basic attributes
+        instance = cls(
+            name=data.get("name", ""),
+            description=data.get("description", ""),
+            _idx=data.get("idx", -1),
+            _sym=data.get("sym", ""),
+            _fwk=data.get("fwk", "CUSTOM"),
+            _cat=data.get("cat", "NUM")
+        )
+
+        # Set variables
+        vars_data = data.get("variables", {})
+        vars_dict = {var_data["sym"]: Variable.from_dict(var_data) for var_data in vars_data}
+        instance.variables = vars_dict
+
+        # Set coefficients
+        coefs_data = data.get("coefficients", {})
+        coefs_dict = {coef_data["sym"]: Coefficient.from_dict(coef_data) for coef_data in coefs_data}
+        instance.coefficients = coefs_dict
+
+        # Configure simulations
+        instance.config_simulations()
+
+        # Set results if available
+        results_data = data.get("results", {})
+        if results_data:
+            instance._results = results_data
+
+        return instance

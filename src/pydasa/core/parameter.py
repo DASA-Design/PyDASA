@@ -15,9 +15,10 @@ Classes:
 
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Callable
 import re
 import numpy as np
+# import random
 
 # Import validation base classes
 from src.pydasa.core.basic import Validation
@@ -146,6 +147,19 @@ class Variable(Validation):
     # :attr: _std_range
     _std_range: np.ndarray = field(default_factory=lambda: np.array([]))
     """Range array for analysis."""
+
+    # distribution specifications
+    # :attr: _dist_type
+    _dist_type: str = "uniform"
+    """Type of distribution (e.g., 'uniform', 'normal'). By default is 'uniform'."""
+
+    # :attr: _dist_params
+    _dist_params: Optional[Dict[str, Any]] = field(default_factory=dict)
+    """Parameters for the distribution (e.g., {'min': 0, 'max': 1} for uniform)."""
+
+    # :attr: _dist_func
+    _dist_func: Optional[Callable] = None
+    """Callable representing the distribution function defined externally by the user."""
 
     # Flags
     # :attr: relevant
@@ -766,6 +780,108 @@ class Variable(Validation):
         else:
             self._std_range = val
 
+    @property
+    def dist_type(self) -> str:
+        """*dist_type* Get the distribution type.
+
+        Returns:
+            str: Distribution type (e.g., 'uniform', 'normal').
+        """
+        return self._dist_type
+
+    @dist_type.setter
+    def dist_type(self, val: str) -> None:
+        """*dist_type* Set the distribution type.
+
+        Args:
+            val (str): Distribution type.
+
+        Raises:
+            ValueError: If distribution type is not supported.
+        """
+        # TODO improve this for later
+        supported_types = [
+            "uniform",
+            "normal",
+            "triangular",
+            "exponential",
+            "lognormal",
+            "custom",
+        ]
+        if val not in supported_types:
+            _msg = f"Unsupported distribution type: {val}. "
+            _msg += f"Supported types: {', '.join(supported_types)}"
+            raise ValueError(_msg)
+        self._dist_type = val
+
+    @property
+    def dist_params(self) -> Dict[str, Any]:
+        """*dist_params* Get the distribution parameters.
+
+        Returns:
+            Dict[str, Any]: Distribution parameters.
+        """
+        return self._dist_params
+
+    @dist_params.setter
+    def dist_params(self, val: Dict[str, Any]) -> None:
+        """*dist_params* Set the distribution parameters.
+
+        Args:
+            val (Dict[str, Any]): Distribution parameters.
+
+        Raises:
+            ValueError: If parameters are invalid for the distribution type.
+        """
+        # Validate parameters based on distribution type
+        if self._dist_type == "uniform":
+            if "min" not in val or "max" not in val:
+                _msg = f"Invalid keys for: {self._dist_type}: {val}"
+                _msg += f" {self._dist_type} needs 'min' and 'max' parameters."
+                _msg += f" Provided keys are: {list(val.keys())}."
+                raise ValueError(_msg)
+            if val["min"] >= val["max"]:
+                _msg = f"Invalid range for {self._dist_type}: {val}"
+                _msg += f" {self._dist_type} needs 'min' to be less than 'max'."
+                _msg += f" Provided: min={val['min']}, max={val['max']}."
+                raise ValueError(_msg)
+        elif self._dist_type == "normal":
+            if "mean" not in val or "std" not in val:
+                _msg = f"Invalid keys for: {self._dist_type}: {val}"
+                _msg += f" {self._dist_type} needs 'mean' and 'std' parameters."
+                _msg += f" Provided keys are: {list(val.keys())}."
+                raise ValueError(_msg)
+            if val["std"] < 0:
+                _msg = f"Invalid value for: {self._dist_type}: {val}"
+                _msg += f" {self._dist_type} requires 'std' to be positive."
+                _msg += f" Provided: std={val['std']}."
+                raise ValueError(_msg)
+        self._dist_params = val
+
+    @property
+    def dist_func(self) -> Optional[Callable]:
+        """*dist_func* Get the distribution function.
+
+        Returns:
+            Optional[Callable]: Distribution function.
+        """
+        return self._dist_func
+
+    @dist_func.setter
+    def dist_func(self, val: Optional[Callable]) -> None:
+        """*dist_func* Set the distribution function.
+
+        Args:
+            val (Optional[Callable]): Distribution function.
+
+        Raises:
+            TypeError: If value is not callable when provided.
+        """
+        if val is not None and not callable(val):
+            _msg = f"Distribution function must be callable, got {type(val)}"
+            raise TypeError(_msg)
+        self._dist_func = val
+
     def clear(self) -> None:
         """*clear()* Reset all attributes to default values.
 
@@ -795,6 +911,9 @@ class Variable(Validation):
         self._std_mean = None
         self._step = 1e-3
         self._std_range = np.array([])
+        self._dist_type = "uniform"
+        self._dist_params = {}
+        self._dist_func = None
         self.relevant = False
 
     def to_dict(self) -> Dict[str, Any]:
@@ -821,6 +940,8 @@ class Variable(Validation):
             "std_max": self._std_max,
             "std_mean": self._std_mean,
             "step": self._step,
+            "dist_type": self._dist_type,
+            "dist_params": self._dist_params,
             "relevant": self.relevant
         }
 

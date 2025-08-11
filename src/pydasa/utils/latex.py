@@ -62,7 +62,7 @@ def extract_latex_vars(expr: str) -> tuple[dict]:
                 - The second dictionary maps Python variable names to their LaTeX equivalents.
     """
     # Extract latex variable names with regex
-    matches = re.findall(LATEX_RE, str(expr))
+    matches = re.findall(LATEX_RE, expr)
 
     # Filter out ignored LaTeX commands
     matches = [m for m in matches if m not in IGNORE_EXPR]
@@ -75,7 +75,9 @@ def extract_latex_vars(expr: str) -> tuple[dict]:
         # Keep original LaTeX notation for external reference
         latex_var = m
         # Convert to Python style for internal use
-        py_var = m.lstrip("\\").replace("_{", "_").replace("}", "")
+        py_var = m.lstrip("\\")
+        py_var = py_var.replace("_{", "_")
+        py_var = py_var.replace("}", "")
 
         latex_to_py[latex_var] = py_var
         py_to_latex[py_var] = latex_var
@@ -100,23 +102,18 @@ def create_latex_mapping(expr: str) -> tuple[dict]:
     latex_to_py, py_to_latex = extract_latex_vars(expr)
 
     # Parse to get LaTeX symbols
-    matches = parse_latex(expr)
-    latex_symbols = matches.free_symbols
+    expr = parse_latex(expr)
 
     # Create mapping for sympy substitution
     symbol_map = {}         # For internal substitution
     py_symbol_map = {}      # For lambdify
-    latex_symbol_map = {}   # For result keys
 
-    for latex_sym in latex_symbols:
+    for latex_sym in expr.free_symbols:
         latex_name = str(latex_sym)
 
         # Find corresponding Python name
         for latex_var, py_var in latex_to_py.items():
             # Check for various forms of equivalence
-            # con1: exact match with LaTeX
-            # con2: exact match with Python variable
-            # con3: match with LaTeX subscript style
             con1 = (latex_name == latex_var)
             con2 = (latex_name == py_var)
             con3 = (latex_name.replace("_{", "_").replace("}", "") == py_var)
@@ -124,9 +121,8 @@ def create_latex_mapping(expr: str) -> tuple[dict]:
                 # Create symbol for this variable
                 sym = symbols(py_var)
                 # Store mappings
-                symbol_map[latex_var] = sym  # For substitution
+                symbol_map[latex_sym] = sym  # For substitution
                 py_symbol_map[py_var] = sym  # For lambdify args
-                latex_symbol_map[latex_var] = sym  # For original notation
                 break
 
     return symbol_map, py_symbol_map, latex_to_py, py_to_latex

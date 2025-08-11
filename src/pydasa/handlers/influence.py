@@ -152,7 +152,8 @@ class SensitivityHandler(Validation, Generic[T]):
                 _fwk=self._fwk,
                 _cat=self._cat,
                 name=f"Sensitivity for {coef.name}",
-                description=f"Sensitivity analysis for {coef.sym}"
+                description=f"Sensitivity analysis for {coef.sym}",
+                # _pi_expr=coef._pi_expr
             )
 
             # Configure with coefficient
@@ -246,11 +247,9 @@ class SensitivityHandler(Validation, Generic[T]):
         for analysis in self._analyses.values():
             # Get variable values
             values = {}
-            for var_sym in analysis.symbols.keys():
+            for var_sym in analysis._latex_to_py.keys():
                 # Ensure symbol is a string
-                var_sym = str(var_sym)
                 values[var_sym] = self._get_variable_value(var_sym, val_type)
-
             # Perform analysis
             result = analysis.analyze_symbolically(values)
 
@@ -283,7 +282,7 @@ class SensitivityHandler(Validation, Generic[T]):
             # Get variable bounds
             vals = []
             bounds = []
-            for var_sym in analysis.symbols.keys():
+            for var_sym in analysis._latex_to_py.keys():
                 var = self._variables[var_sym]
                 min_val = var.std_min if var.std_min is not None else (var.min if var.min is not None else -0.1)
                 max_val = var.std_max if var.std_max is not None else (var.max if var.max is not None else -10.0)

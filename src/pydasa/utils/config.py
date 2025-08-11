@@ -152,7 +152,7 @@ SOFT_FDU_PREC_DT: dict = {
         "description": "Measure of interconnections between components."
     },
     "A": {
-        "_unit": "task",
+        "_unit": "process",
         "name": "Capacity",
         "description": "Maximum amount of data that can be stored/processed."
     },

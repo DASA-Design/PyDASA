@@ -225,8 +225,9 @@ class DimSensitivity(Validation, Generic[T]):
                 self._sym_func = self._sym_func.subs(latex_sym, py_sym)
 
             # Get Python variable names
-            self._variables = [str(s) for s in self._sym_func.free_symbols]
-            self._variables = sorted(self._variables)
+            # self._variables = sorted(self._aliases.keys())
+            fsyms = self._sym_func.free_symbols
+            self._variables = sorted([str(s) for s in fsyms])
 
             # """
             # # OLD code, first version, keep for reference!!!
@@ -258,10 +259,11 @@ class DimSensitivity(Validation, Generic[T]):
         self.var_values = vals
 
         # Check that all required variables are provided
-        var_lt = [str(v) for v in self._symbols]
+        var_lt = [str(v) for v in self._latex_to_py]
         missing_vars = set(var_lt) - set(list(vals.keys()))
         if missing_vars:
-            raise ValueError(f"Missing values for variables: {missing_vars}")
+            _msg = f"Missing values for variables: {missing_vars}"
+            raise ValueError(_msg)
 
         # Validate analysis readiness
         self._validate_analysis_ready()

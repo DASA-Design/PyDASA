@@ -350,7 +350,7 @@ class MonteCarloSim(Validation, Generic[T]):
             try:
                 # Sample values from distributions
                 samples = {}
-                for var in self._symbols.keys():
+                for var in self._latex_to_py.keys():
                     if var in self._distributions:
                         # accessing the distribution in the distribution specs
                         samples[var] = self._distributions[var]["func"]()
@@ -359,7 +359,7 @@ class MonteCarloSim(Validation, Generic[T]):
                         raise ValueError(_msg)
 
                 # Prepare ordered values for function evaluation
-                ordered_values = [samples[var] for var in self._symbols.keys()]
+                ordered_values = [samples[var] for var in self._latex_to_py.keys()]
 
                 # Create lambdify function using Python symbols
                 aliases = [self._aliases[v] for v in self._variables]

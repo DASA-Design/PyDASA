@@ -206,29 +206,29 @@ print("\tWKNG_FDU_SYM_RE:", config.WKNG_FDU_SYM_RE)
 # v: kinematic viscosity of the fluid
 
 vars_lt = {
-    "\\miu": Variable(_sym="\\miu",
-                      _alias="miu",
-                      _fwk="CUSTOM",
-                      name="Fluid Velocity",
-                      description="Fluid velocity in the channel",
-                      relevant=True,
-                      _idx=0,
-                      _cat="OUT",
-                      _units="m/s",
-                      _dims="L*T^-1",
-                      _min=0.0,
-                      _max=15.0,
-                      _mean=7.50,
-                      _dev=0.75,
-                      _std_units="m/s",
-                      _std_min=0.0,
-                      _std_max=15.0,
-                      _std_mean=7.50,
-                      _std_dev=0.75,
-                      _step=0.1,
-                      _dist_type="uniform",
-                      _dist_params={"min": 0.0, "max": 15.0},
-                      _dist_func=lambda: dist1(0.0, 15.0)),
+    "\\miu_{1}": Variable(_sym="\\miu_{1}",
+                          _alias="miu_1",
+                          _fwk="CUSTOM",
+                          name="Fluid Velocity",
+                          description="Fluid velocity in the channel",
+                          relevant=True,
+                          _idx=0,
+                          _cat="OUT",
+                          _units="m/s",
+                          _dims="L*T^-1",
+                          _min=0.0,
+                          _max=15.0,
+                          _mean=7.50,
+                          _dev=0.75,
+                          _std_units="m/s",
+                          _std_min=0.0,
+                          _std_max=15.0,
+                          _std_mean=7.50,
+                          _std_dev=0.75,
+                          _step=0.1,
+                          _dist_type="uniform",
+                          _dist_params={"min": 0.0, "max": 15.0},
+                          _dist_func=lambda: dist1(0.0, 15.0)),
     "y_{2}": Variable(_sym="y_{2}",
                       _alias="y_2",
                       _fwk="CUSTOM",
@@ -427,7 +427,7 @@ td = temp.var_dims
 # td["d"] = 5.05
 # td["y_{2}"] = 3.05
 td["U"] = 10.05
-td["\\miu"] = 0.05
+td["\\miu_{1}"] = 0.05
 # td["P"] = 50000.05
 # sen.set_coefficient(DAModel.coefficients[1])
 
@@ -448,7 +448,7 @@ sena = SensitivityHandler(_idx=0,
                           description="Sensitivity Analysis",
                           _variables=vars_lt,
                           _coefficients=DAModel.coefficients,)
-# print(sena)
+print(sena)
 
 print("=== Sym Analysis: ===")
 sena.analyze_symbolic(val_type="mean")
@@ -483,11 +483,11 @@ for pi, coef in DAModel.coefficients.items():
 print("\n=== Monte Carlo Simulation: === \n")
 
 U = DAModel.variables["U"]
-miu = DAModel.variables["\\miu"]
+miu = DAModel.variables["\\miu_{1}"]
 
 mc_dist = {
     "U": lambda: dist1(U.std_min, U.std_max),
-    "\\miu": lambda: dist2(miu.std_mean, miu.std_dev),
+    "\\miu_{1}": lambda: dist2(miu.std_mean, miu.std_dev),
 }
 
 dist_specs = {
@@ -496,7 +496,7 @@ dist_specs = {
         "params": U.dist_params,
         "func": U.dist_func
     },
-    "\\miu": {
+    "\\miu_{1}": {
         "dtype": miu.dist_type,        # uniform
         "params": miu.dist_params,
         "func": miu.dist_func
@@ -506,12 +506,12 @@ dist_specs = {
 i = 0
 while i < 10:
     t1 = mc_dist["U"]()
-    t2 = mc_dist["\\miu"]()
-    print(f"Iteration {i}: U = {t1}, \\miu = {t2}")
+    t2 = mc_dist["\\miu_{1}"]()
+    print(f"Iteration {i}: U = {t1}, \\miu_{1} = {t2}")
     i += 1
 _vars = list(DAModel.coefficients["\\Pi_{1}"].var_dims.keys())
 print("Vardims:", _vars)
-print(_vars.index("\\miu"))
+print(_vars.index("\\miu_{1}"))
 
 monte = MonteCarloSim()
 print(monte, "\n")
@@ -552,7 +552,7 @@ mchandler._create_simulations()
 print(mchandler._simulations.keys())
 for k, v in mchandler._simulations.items():
     print(f"Simulation dist = {k}:\n\t{v._distributions}")
-mchandler.simulate(n_samples=100000)
+mchandler.simulate(n_samples=100)
 
 for pi, results in mchandler._results.items():
     for k, v in results.items():
@@ -561,38 +561,3 @@ for pi, results in mchandler._results.items():
             print(f"Result for {k}: {v}")
         else:
             print(f"Other result for {k}: {v.shape}")
-
-'''
-
-# Example usage
-from src.pydasa.buckingham.vashchy import Coefficient
-from src.pydasa.dimensional.practical import MonteCarloHandler
-
-# Create a handler
-handler = MonteCarloHandler()
-
-# Create a simulation for a coefficient
-coef = Coefficient(name="Reynolds Number", pi_expr="\\frac{\\rho V L}{\\mu}")
-handler.create_simulation("Reynolds", coef, iterations=5000)
-
-# Set distributions for variables
-handler.set_uniform_distribution("Reynolds", "\\rho", 900, 1100)  # Density
-handler.set_normal_distribution("Reynolds", "V", 10, 1, (5, 15))  # Velocity
-handler.set_uniform_distribution("Reynolds", "L", 0.1, 0.3)       # Length
-handler.set_triangular_distribution("Reynolds", "\\mu", 0.01, 0.02, 0.05)  # Viscosity
-
-# Run the simulation
-results = handler.run_simulation()
-print(f"Mean Reynolds Number: {results['mean']}")
-
-# Perform sensitivity analysis
-sensitivity = handler.perform_sensitivity_analysis(samples=2000)
-
-# Visualize results
-handler.plot_simulation_histogram(bins=40)
-handler.plot_sensitivity_results()
-
-# Export comprehensive results
-export_data = handler.export_results()
-
-'''

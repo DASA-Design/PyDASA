@@ -245,6 +245,9 @@ class MonteCarloSim(Validation, Generic[T]):
         if not coef.pi_expr:
             raise ValueError("Coefficient does not have a valid expression.")
 
+        # save coefficient
+        self._coefficient = coef
+
         # Set expression
         self._pi_expr = coef.pi_expr
         # parse coefficient expresion
@@ -436,6 +439,27 @@ class MonteCarloSim(Validation, Generic[T]):
         margin = alpha * self._std_dev / np.sqrt(self._count)
         ans = (self._mean - margin, self._mean + margin)
         return ans
+
+    def export_results(self) -> Dict[str, Any]:
+        """export_results _summary_
+
+        Returns:
+            Dict[str, Any]: _description_
+        """
+        export = {}
+
+        # Extract all values for each variable (column)
+        for i, var in enumerate(self._py_to_latex.values()):
+            # Get the entire column for this variable (all simulation runs)
+            column = self.inputs[:, i]
+
+            # Use a meaningful key that includes variable name and coefficient
+            key = f"{var}_{self._coefficient.sym}"
+            export[key] = column
+
+        # Add the coefficient results
+        export[self._coefficient.sym] = self._results.flatten()
+        return export
 
     # Properties for accessing results and statistics
 
@@ -667,8 +691,8 @@ class MonteCarloSim(Validation, Generic[T]):
 
         # Build summary dictionary from individual attributes
         self._summary = {
-            "inputs": self.inputs,
-            "results": self._results,
+            # "inputs": self.inputs,
+            # "results": self._results,
             "mean": self._mean,
             "median": self._median,
             "std_dev": self._std_dev,

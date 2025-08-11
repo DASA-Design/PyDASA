@@ -514,7 +514,7 @@ print("Vardims:", _vars)
 print(_vars.index("\\miu_{1}"))
 
 monte = MonteCarloSim()
-print(monte, "\n")
+# print(monte, "\n")
 
 monte = MonteCarloSim(_idx=0,
                       _sym="MC_{0}",
@@ -534,30 +534,33 @@ for k, v in monte.statistics.items():
     print(f"{k}: {v}")
 print("Mean:", monte.mean)
 print("Variance:", monte.variance)
-print("Summary:", monte.summary)
+# print("Summary:", monte.summary)
+# a = monte.export_results().keys()
+print("Confidence result keys:", monte.export_results().keys())
+
 print("Confidence report:", monte.get_confidence_interval(0.95))
 
-print("\n=== monte carlo handler ===")
-# Create a handler
-mchandler = MonteCarloHandler(_sym="MCH_{0}",
-                              _fwk="CUSTOM",
-                              name="Monte Carlo Handler",
-                              description="Monte Carlo Handler for simulations",
-                              _variables=DAModel.relevant_lt,
-                              _coefficients=DAModel.coefficients)
-print(mchandler, "\n")
-mchandler._create_distributions()
-print(mchandler._distributions)
-mchandler._create_simulations()
-print(mchandler._simulations.keys())
-for k, v in mchandler._simulations.items():
-    print(f"Simulation dist = {k}:\n\t{v._distributions}")
-mchandler.simulate(n_samples=100)
+# print("\n=== monte carlo handler ===")
+# # Create a handler
+# mchandler = MonteCarloHandler(_sym="MCH_{0}",
+#                               _fwk="CUSTOM",
+#                               name="Monte Carlo Handler",
+#                               description="Monte Carlo Handler for simulations",
+#                               _variables=DAModel.relevant_lt,
+#                               _coefficients=DAModel.coefficients)
+# print(mchandler, "\n")
+# mchandler._create_distributions()
+# # print(mchandler._distributions)
+# mchandler._create_simulations()
+# print(mchandler._simulations.keys())
+# for k, v in mchandler._simulations.items():
+#     print(f"Simulation dist = {k}:\n\t{v._distributions}")
+# mchandler.simulate(n_samples=100)
 
-for pi, results in mchandler._results.items():
-    for k, v in results.items():
-        if k == "statistics":
-            print(f"Coefficient: {pi}")
-            print(f"Result for {k}: {v}")
-        else:
-            print(f"Other result for {k}: {v.shape}")
+# for pi, results in mchandler._results.items():
+#     for k, v in results.items():
+#         if k == "statistics":
+#             print(f"Coefficient: {pi}")
+#             print(f"Result for {k}: {v}")
+#         else:
+#             print(f"Other result for {k}: {v.shape}")

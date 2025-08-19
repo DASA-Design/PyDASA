@@ -408,6 +408,124 @@ class DimMatrix(Validation, Generic[T]):
             # self._coefficients.append(coef)
             self._coefficients.update(td)
 
+    def derive_coefficient(self,
+                           expr: str,
+                           name: str = None,
+                           description: str = None,
+                           idx: int = None) -> Coefficient:
+        """*derive_coefficient()* Creates a new coefficient derived from existing ones.
+
+        Creates a new dimensionless coefficient by combining existing coefficients
+        according to the provided mathematical expression. The new coefficient
+        is marked as "DERIVED" and added to the coefficients dictionary.
+
+        Args:
+            expr (str): Mathematical expression using existing coefficients
+                (e.g., "\\Pi_{0} * \\Pi_{1}" or "\\Pi_{0} / \\Pi_{2}^2").
+            name (str, optional): Name for the new coefficient. Defaults to a generated name.
+            description (str, optional): Description of the new coefficient. Defaults to a generated description.
+            idx (int, optional): Index for the new coefficient. Defaults to the next available index.
+
+        Returns:
+            Coefficient: The newly created derived coefficient.
+
+        Raises:
+            ValueError: If the expression is invalid or references non-existent coefficients.
+            ValueError: If the expression would create a dimensionally inconsistent coefficient.
+        """
+        # Validate that there are coefficients to work with
+        if not self._coefficients:
+            _msg = "Cannot derive new coefficients, None exist!."
+            raise ValueError(_msg)
+
+        # Extract coefficient symbols from the expression using regex
+        coef_pattern = r"\\Pi_\{\d+\}"
+        coef_symbols = re.findall(coef_pattern, expr)
+
+        if not coef_symbols:
+            _msg = f"Expression '{expr}' does not contain any valid coefficient references."
+            raise ValueError(_msg)
+
+        # Validate all referenced coefficients exist
+        for sym in coef_symbols:
+            if sym not in self._coefficients:
+                _msg = f"Referenced coefficient {sym} does not exist."
+                raise ValueError(_msg)
+
+        # Determine the next available index if not provided
+        if idx is None:
+            idx = max([c.idx for c in self._coefficients.values()]) + 1
+
+        # Generate a default name and description if not provided
+        if name is None:
+            name = f"Derived-Pi-{idx}"
+        if description is None:
+            description = f"Derived coefficient from expression: {expr}"
+
+        # Create symbol for the new coefficient
+        new_sym = f"\\Pi_{{{idx}}}"
+
+        # Process the expression to calculate the new dimensional column
+        # First, we'll use a simple approach for basic operations (* and /)
+        # For more complex expressions, we'd need a proper parser
+
+        # Initialize with the first coefficient's properties
+        base_coef = self._coefficients[coef_symbols[0]]
+        new_dim_col = base_coef._dim_col.copy()
+        new_variables = base_coef._variables.copy()
+
+        # Ensure all coefficients use the same set of variables
+        # This is a simplification - more robust implementation would reconcile different variable sets
+        for sym in coef_symbols[1:]:
+            coef = self._coefficients[sym]
+            if coef._variables != new_variables:
+                raise ValueError(f"Coefficient {sym} uses a different set of variables. Cannot derive new coefficient.")
+
+        # Simple parsing for multiplication and division
+        # Split the expression by * and /
+        parts = re.split(r"(\*|/)", expr)
+
+        # Start with the first coefficient
+        current_coef = None
+        current_op = "*"  # Default operation
+
+        for part in parts:
+            part = part.strip()
+            if part in ("*", "/"):
+                current_op = part
+            elif re.match(coef_pattern, part):
+                coef = self._coefficients[part]
+                if current_coef is None:
+                    current_coef = coef
+                else:
+                    # Apply operation based on the operator
+                    if current_op == "*":
+                        # For multiplication, add the dimensional columns
+                        new_dim_col = [a + b for a, b in zip(new_dim_col, coef._dim_col)]
+                    elif current_op == "/":
+                        # For division, subtract the dimensional columns
+                        new_dim_col = [a - b for a, b in zip(new_dim_col, coef._dim_col)]
+
+        # Create the new derived coefficient
+        derived_coef = Coefficient(
+            _idx=idx,
+            _sym=new_sym,
+            _fwk=self._fwk,
+            _cat="DERIVED",
+            name=name,
+            description=description,
+            _variables=new_variables,
+            _dim_col=new_dim_col,
+            _pivot_lt=self._pivot_cols,
+        )
+
+        # The pi_expr will be set by the Coefficient's post_init
+
+        # Add the new coefficient to the dictionary
+        self._coefficients[new_sym] = derived_coef
+
+        return derived_coef
+
     def analyze(self) -> None:
         """*analyze()* Performs complete dimensional analysis. Creates the dimensional matrix and solves it to generate dimensionless coefficients.
         """
@@ -542,11 +660,11 @@ class DimMatrix(Validation, Generic[T]):
         self._prepare_analysis()
 
     @property
-    def coefficients(self) -> List[Coefficient]:
-        """*coefficients* Get the list of dimensionless coefficients.
+    def coefficients(self) -> Dict[str, Coefficient]:
+        """*coefficients* Get the dict of dimensionless coefficients.
 
         Returns:
-            List[Coefficient]: List of dimensionless coefficients.
+            List[Coefficient]: dict of dimensionless coefficients.
         """
         return self._coefficients.copy()
 

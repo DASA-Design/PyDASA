@@ -13,3 +13,11 @@ This module provides functions for reading and writing data to files, handling d
     #. Data Structure and Algorithms in Python, M.T. Goodrich, R. Tamassia, M.H. Goldwasser.
 """
 # TODO complete the I/O operations for PyDASA library
+
+
+def load(file_path: str) -> dict:
+    pass
+
+
+def save(data: dict, file_path: str) -> None:
+    pass

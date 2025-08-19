@@ -153,6 +153,7 @@ inheritance_node_attrs = dict(shape="ellipse", fontsize=14, height=0.75,
 # html_theme = "renku"
 # html_theme = "sphinx_rtd_theme"
 # html_theme = "sphinx_book_theme"
+# https://pydata-sphinx-theme.readthedocs.io/en/stable/user_guide/install.html#
 html_theme = "pydata_sphinx_theme"
 
 # theme options

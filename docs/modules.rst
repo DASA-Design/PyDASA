@@ -1,7 +1,12 @@
-src
-===
+pydasa
+======
 
 .. toctree::
    :maxdepth: 4
 
-   src
+   analysis
+   buckingham
+   core
+   datastruct
+   dimensional
+   handlers

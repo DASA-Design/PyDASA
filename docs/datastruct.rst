@@ -1,4 +1,4 @@
-src.PyDASA package
+datastruct package
 ==================
 
 Subpackages
@@ -7,16 +7,13 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   src.PyDASA.Analysis
-   src.PyDASA.Dims
-   src.PyDASA.Models
-   src.PyDASA.Structs
-   src.PyDASA.Utils
+   datastruct.lists
+   datastruct.tables
 
 Module contents
 ---------------
 
-.. automodule:: src.PyDASA
+.. automodule:: datastruct
    :members:
    :undoc-members:
    :show-inheritance:

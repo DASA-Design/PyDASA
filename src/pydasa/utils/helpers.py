@@ -16,8 +16,8 @@ Module with utility functions for handling data in the maps of *PyDASA*. Specifi
 """
 # python native modules
 # dataclases module handles the creation of classes with slots and fields
-from src.pydasa.utils.default import VLD_IODATA_LT
-from src.pydasa.utils.default import T
+from pydasa.utils.default import VLD_IODATA_LT
+from pydasa.utils.default import T
 import math
 import dataclasses
 # import global variables

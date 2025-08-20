@@ -24,11 +24,11 @@ import inspect
 
 # custom modules
 # generic error handling and type checking
-from src.pydasa.utils.error import handle_error as error
-from src.pydasa.utils.default import dflt_cmp_func_lt
-from src.pydasa.utils.default import T
-from src.pydasa.utils.default import DFLT_DICT_KEY
-from src.pydasa.utils.default import VLD_IODATA_LT
+from pydasa.utils.error import handle_error as error
+from pydasa.utils.default import dflt_cmp_func_lt
+from pydasa.utils.default import T
+from pydasa.utils.default import DFLT_DICT_KEY
+from pydasa.utils.default import VLD_IODATA_LT
 
 # checking custom modules
 assert error

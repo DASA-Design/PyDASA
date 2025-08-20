@@ -27,8 +27,8 @@ import inspect
 
 # custom modules
 # generic error handling and type checking
-from src.pydasa.utils.error import handle_error as error
-from src.pydasa.utils.default import T
+from pydasa.utils.error import handle_error as error
+from pydasa.utils.default import T
 # import global variables
 
 # checking custom modules

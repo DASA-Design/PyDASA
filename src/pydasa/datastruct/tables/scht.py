@@ -27,23 +27,23 @@ import random
 
 # custom modules
 # generic error handling and type checking
-from src.pydasa.datastruct.tables.htme import MapEntry
-from src.pydasa.datastruct.lists.arlt import ArrayList
-from src.pydasa.datastruct.lists.sllt import SingleLinkedList
+from pydasa.datastruct.tables.htme import MapEntry
+from pydasa.datastruct.lists.arlt import ArrayList
+from pydasa.datastruct.lists.sllt import SingleLinkedList
 # util functions for the hash table
-from src.pydasa.utils.helpers import next_prime, previous_prime
-from src.pydasa.utils.helpers import mad_hash
-from src.pydasa.utils.error import handle_error as error
+from pydasa.utils.helpers import next_prime, previous_prime
+from pydasa.utils.helpers import mad_hash
+from pydasa.utils.error import handle_error as error
 
 
 # default cmp function for the hash table
-from src.pydasa.utils.default import dflt_cmp_func_ht
+from pydasa.utils.default import dflt_cmp_func_ht
 # default data type for the hash table
-from src.pydasa.utils.default import T
-from src.pydasa.utils.default import VLD_DTYPE_LT
-from src.pydasa.utils.default import DFLT_DICT_KEY
-from src.pydasa.utils.default import VLD_IODATA_LT
-from src.pydasa.utils.default import DFLT_PRIME
+from pydasa.utils.default import T
+from pydasa.utils.default import VLD_DTYPE_LT
+from pydasa.utils.default import DFLT_DICT_KEY
+from pydasa.utils.default import VLD_IODATA_LT
+from pydasa.utils.default import DFLT_PRIME
 
 # checking custom modules
 assert MapEntry

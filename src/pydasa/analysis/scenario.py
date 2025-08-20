@@ -28,21 +28,21 @@ from SALib.sample.fast_sampler import sample
 from SALib.analyze.fast import analyze
 
 # Import validation base classes
-from src.pydasa.core.basic import Validation
+from pydasa.core.basic import Validation
 
 # Import related classes
-from src.pydasa.buckingham.vashchy import Coefficient
-# from src.pydasa.core.parameter import Variable
+from pydasa.buckingham.vashchy import Coefficient
+# from pydasa.core.parameter import Variable
 
 # Import utils
-from src.pydasa.utils.default import T
-from src.pydasa.utils.latex import parse_latex
-from src.pydasa.utils.latex import create_latex_mapping
-from src.pydasa.utils.latex import latex_to_python
+from pydasa.utils.default import T
+from pydasa.utils.latex import parse_latex
+from pydasa.utils.latex import create_latex_mapping
+from pydasa.utils.latex import latex_to_python
 
 # Import configuration
 # Import the 'cfg' module to allow global variable editing
-from src.pydasa.utils import config as cfg
+from pydasa.utils import config as cfg
 
 
 @dataclass

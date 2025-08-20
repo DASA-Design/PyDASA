@@ -26,16 +26,16 @@ from typing import Optional, List, Dict, Any, Generic
 import numpy as np
 
 # Import validation base classes
-from src.pydasa.core.basic import Validation
-from src.pydasa.core.parameter import Variable
+from pydasa.core.basic import Validation
+from pydasa.core.parameter import Variable
 
 # Import utils
-from src.pydasa.utils.default import T
-from src.pydasa.utils.error import inspect_var
-from src.pydasa.utils.latex import latex_to_python
+from pydasa.utils.default import T
+from pydasa.utils.error import inspect_var
+from pydasa.utils.latex import latex_to_python
 # Import global configuration
 # import the 'cfg' module to allow global variable edition
-from src.pydasa.utils import config as cfg
+from pydasa.utils import config as cfg
 
 
 @dataclass

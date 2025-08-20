@@ -21,14 +21,14 @@ import numpy as np
 # import random
 
 # Import validation base classes
-from src.pydasa.core.basic import Validation
+from pydasa.core.basic import Validation
 
 # Import utility functions
-from src.pydasa.utils.latex import latex_to_python
+from pydasa.utils.latex import latex_to_python
 
 # Import configuration
 # import the 'cfg' module to allow global variable edition
-from src.pydasa.utils import config as cfg
+from pydasa.utils import config as cfg
 
 
 @dataclass

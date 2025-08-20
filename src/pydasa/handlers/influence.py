@@ -21,21 +21,21 @@ from typing import List, Dict, Any, Generic
 # import re
 
 # Import validation base classes
-from src.pydasa.core.basic import Validation
+from pydasa.core.basic import Validation
 
 # Import related classes
-from src.pydasa.core.parameter import Variable
-from src.pydasa.buckingham.vashchy import Coefficient
-from src.pydasa.analysis.scenario import DimSensitivity
+from pydasa.core.parameter import Variable
+from pydasa.buckingham.vashchy import Coefficient
+from pydasa.analysis.scenario import DimSensitivity
 
 # Import utils
-from src.pydasa.utils.default import T
-from src.pydasa.utils.error import inspect_var
-from src.pydasa.utils.latex import latex_to_python
+from pydasa.utils.default import T
+from pydasa.utils.error import inspect_var
+from pydasa.utils.latex import latex_to_python
 
 # Import global configuration
 # Import the 'cfg' module to allow global variable editing
-from src.pydasa.utils import config as cfg
+from pydasa.utils import config as cfg
 
 
 @dataclass

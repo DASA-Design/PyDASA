@@ -27,17 +27,18 @@ from scipy import stats
 # from sympy import lambdify
 
 # Import validation base classes
-from src.pydasa.core.basic import Validation
+from pydasa.core.basic import Validation
 
 # Import related classes
-from src.pydasa.buckingham.vashchy import Coefficient
+from pydasa.buckingham.vashchy import Coefficient
 
 # Import utils
-from src.pydasa.utils.default import T
-from src.pydasa.utils.latex import parse_latex, create_latex_mapping
+from pydasa.utils.default import T
+from pydasa.utils.latex import parse_latex, create_latex_mapping
 
 # Import configuration
-# from src.pydasa.utils import config as cfg
+from pydasa.utils.latex import latex_to_python
+# from pydasa.utils import config as cfg
 
 
 @dataclass
@@ -192,7 +193,6 @@ class MonteCarloSim(Validation, Generic[T]):
 
         # Set default Python alias if not specified
         if not self._alias:
-            from src.pydasa.utils.latex import latex_to_python
             self._alias = latex_to_python(self._sym)
 
         # Set name and description if not already set

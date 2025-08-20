@@ -24,7 +24,7 @@ from typing import TypeVar
 # from sympy import symbols
 
 # # import global variables
-# from src.pydasa.utils.config import LATEX_RE
+# from pydasa.utils.config import LATEX_RE
 
 # valid data types for the node
 # :data: VLD_DTYPE_LT

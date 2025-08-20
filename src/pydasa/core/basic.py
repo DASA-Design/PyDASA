@@ -27,7 +27,7 @@ from abc import ABC
 import re
 
 # import global variables
-from src.pydasa.utils.config import FDU_FWK_DT, LATEX_RE
+from pydasa.utils.config import FDU_FWK_DT, LATEX_RE
 
 
 @dataclass
@@ -168,7 +168,6 @@ class SymValidation(ABC):
         Raises:
             ValueError: If the framework identifier is invalid.
         """
-        # from src.pydasa.utils.config import FDU_FWK_DT
         if value not in FDU_FWK_DT:
             msg = f"Invalid framework: {value}. "
             msg += "Framework must be one of the following: "

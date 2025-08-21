@@ -1,15 +1,44 @@
-﻿from setuptools import setup, find_packages
+﻿import os
+import re
+from setuptools import setup, find_packages
 
-with open("README.md", "r", encoding="utf-8") as fh:
-    long_description = fh.read()
+
+def read_version() -> str:
+    """read the project version in a preset file.
+
+    Raises:
+        RuntimeError: if the version string is not found.
+
+    Returns:
+        str: project version.
+    """
+    version_file = os.path.join("src", "pydasa", "_version.py")
+    with open(version_file, "r", encoding="utf-8") as f:
+        content = f.read()
+    m = re.search(r'__version__\s*=\s*[\'"]([^\'"]+)[\'"]', content)
+    if not m:
+        raise RuntimeError("Unable to find version string.")
+    return m.group(1)
+
+
+def read_long_description() -> str:
+    """Read the long description from the README file.
+
+    Returns:
+        str: project long description.
+    """
+    with open("README.md", "r", encoding="utf-8") as fh:
+        long_description = fh.read()
+    return long_description
+
 
 setup(
     name="pydasa",
-    version="0.0.1",
+    version=read_version(),
     description="Python package for Dimensional Analysis for Scientific Applications and Software Architecture (PyDASA).",
     package_dir={"": "src"},
     packages=find_packages(where="src"),
-    long_description=long_description,
+    long_description=read_long_description(),
     long_description_content_type="text/markdown",
     url="https://github.com/DASA-Design/PyDASA",
     # TODO update author information, be aware of the email address!!!
@@ -18,7 +47,6 @@ setup(
     # TODO check classifiers!!!
     license="GPL-3.0",
     classifiers=[
-        "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.10",
         "Development Status :: 3 - Alpha",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
@@ -28,22 +56,19 @@ setup(
         "Topic :: Scientific/Engineering",
         "Topic :: Scientific/Engineering :: Physics",
     ],
-    # TODO check for min version in trhe requirements!!!
     install_requires=[
-        "numpy",
-        "scipy",
-        "sympy",
-        # "pandas",
-        # "matplotlib",
+        "numpy>=1.26.4",
+        "scipy>=1.13.0",
+        "sympy>=1.12",
     ],
     extras_require={
         "dev": [
-            "pytest",
-            "twine",
+            "pytest>=8.1.1",
+            "twine>=6.1.0",
         ],
         "docs": [
-            "sphinx",
-            "sphinx-rtd-theme",
+            "sphinx>=7.3.7",
+            "sphinx-rtd-theme>=1.3.0",
         ],
     },
     python_requires=">=3.10",

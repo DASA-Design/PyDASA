@@ -12,17 +12,76 @@ Configuration module for...
 
     # H.Gorter, *Dimensionalanalyse: Eine Theoririe der physikalischen Dimensionen mit Anwendungen*
 """
-# TODO add Queue class with all its variants
-
-from abc import ABC, abstractmethod
+# native python modules
+# forward references + postpone eval type hints
+from __future__ import annotations
+# dataclasses
 from dataclasses import dataclass, field
+
+# data types
 from typing import Any, Dict, Optional
+
+# indicate it is an abstract base class
+from abc import ABC, abstractmethod
 # import numpy as np
 import math
 
 
+def Queue(arrival_rate: float,
+          service_rate: float,
+          num_servers: int = 1,
+          max_capacity: Optional[int] = None) -> BasicQueue:
+    """Queue factory function to create different queue models.
+
+    Args:
+        arrival_rate (float): Arrival rate (λ) of the queue.
+        service_rate (float): Service rate (μ) of the queue.
+        num_servers (int, optional): Number of servers (s). Defaults to 1.
+        max_capacity (Optional[int], optional): Maximum capacity (K) of the queue. Defaults to None.
+
+    Raises:
+        NotImplementedError: If the queue configuration is not supported.
+
+    Returns:
+        BasicQueue: An instance of a specific queue model (based on the abstract basic model).
+    """
+    _queue = None
+    # Single server, infinite capacity
+    if num_servers == 1 and max_capacity is None:
+        _queue = QueueMM1(arrival_rate,
+                          service_rate)
+
+    # Multi-server, infinite capacity
+    elif num_servers > 1 and max_capacity is None:
+        _queue = QueueMMs(arrival_rate,
+                          service_rate,
+                          num_servers)
+
+    # Single server, finite capacity
+    elif num_servers == 1 and max_capacity is not None:
+        _queue = QueueMM1K(arrival_rate,
+                           service_rate,
+                           max_capacity)
+
+    # Multi-server, finite capacity
+    elif num_servers > 1 and max_capacity is not None:
+        _queue = QueueMMsK(arrival_rate,
+                           service_rate,
+                           num_servers,
+                           max_capacity)
+
+    # Add more conditions for other queue types. e.g., M/G/1, G/G/1, etc.
+    # TODO: Implement additional queue models
+    # otherwise, raise an error
+    else:
+        _msg = f"Unsupported queue configuration: {num_servers} "
+        _msg += f"servers, {max_capacity} max capacity"
+        raise NotImplementedError(_msg)
+    return _queue
+
+
 @dataclass
-class BaseQueueModel(ABC):
+class BasicQueue(ABC):
     """Abstract base class for queueing theory models"""
 
     # Arrival rate
@@ -51,10 +110,6 @@ class BaseQueueModel(ABC):
 
     # Average time a request spends waiting in queue
     avg_time_in_queue: float = field(default=0.0, init=False)
-
-    # Metrics storage
-    performance_metrics: Dict[int, float] = field(
-        default_factory=dict, init=False)
 
     def __post_init__(self):
         """Initial validation and metric calculation"""
@@ -115,7 +170,7 @@ class BaseQueueModel(ABC):
 
 
 @dataclass
-class MM1(BaseQueueModel):
+class QueueMM1(BasicQueue):
     """M/M/1 queue system (1 server, infinite capacity)"""
 
     def _validate_parameters(self) -> None:
@@ -157,7 +212,7 @@ class MM1(BaseQueueModel):
 
 
 @dataclass
-class MMC(BaseQueueModel):
+class QueueMMs(BasicQueue):
     """M/M/c queue system (c servers, infinite capacity)"""
 
     def validate_parameters(self) -> None:
@@ -210,7 +265,7 @@ class MMC(BaseQueueModel):
 
 
 @dataclass
-class MM1L(BaseQueueModel):
+class QueueMM1K(BasicQueue):
     """M/M/1/L queueing system: 1 server, finite capacity L"""
 
     def validate_parameters(self) -> None:
@@ -258,8 +313,8 @@ class MM1L(BaseQueueModel):
 
 
 @dataclass
-class MMCL(BaseQueueModel):
-    """M/M/c/L queueing system: c servers, finite capacity L"""
+class QueueMMsK(BasicQueue):
+    """M/M/c/K queueing system: c servers, finite capacity K"""
 
     def validate_parameters(self) -> None:
         """Validations specific to M/M/c/L"""

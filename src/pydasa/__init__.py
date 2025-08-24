@@ -32,7 +32,8 @@ from .handlers.practical import MonteCarloHandler
 # exposing utility packages
 # most utils are private
 from .utils.io import load, save
-from .utils.queues import MM1, MM1L, MMC, MMCL
+# importing queue factory function
+from .utils.queues import Queue
 
 # asserting all imports
 # assert UnitConverter
@@ -50,10 +51,7 @@ assert SensitivityHandler
 assert MonteCarloHandler
 assert load
 assert save
-assert MM1
-assert MM1L
-assert MMC
-assert MMCL
+assert Queue
 
 # Optionally, define __all__ for wildcard imports
 __all__ = [

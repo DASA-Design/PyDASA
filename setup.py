@@ -41,7 +41,7 @@ setup(
     long_description=read_long_description(),
     long_description_content_type="text/markdown",
     url="https://github.com/DASA-Design/PyDASA",
-    # TODO update author information, be aware of the email address!!!
+    # TODO update author information, beware of the email address!!!
     author="@SFAM",
     author_email="your_email@example.com",
     # TODO check classifiers!!!
@@ -54,7 +54,7 @@ setup(
         "Intended Audience :: Science/Research",
         "Intended Audience :: Developers",
         "Topic :: Scientific/Engineering",
-        "Topic :: Scientific/Engineering :: Physics",
+        # "Topic :: Scientific/Engineering :: Physics",
     ],
     install_requires=[
         "numpy>=1.26.4",

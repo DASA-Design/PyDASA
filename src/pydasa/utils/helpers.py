@@ -188,13 +188,13 @@ def gamma_fact(x: Union[int, float],
         Union[int, float]: The factorial of x. Returns an integer for integer inputs ≥ 0, and a float for float inputs or integers < 0.
 
     Examples:
-        >>> factorial(5)
+        >>> gamma_fact(5)
         120
-        >>> factorial(0)
+        >>> gamma_fact(0)
         1
-        >>> factorial(0.5)  # Equivalent to Γ(1.5) = 0.5 * Γ(0.5) = 0.5 * √π
+        >>> gamma_fact(0.5)  # Equivalent to Γ(1.5) = 0.5 * Γ(0.5) = 0.5 * √π
         0.8862269254527579
-        >>> factorial(-0.5)  # Equivalent to Γ(0.5) = √π
+        >>> gamma_fact(-0.5)  # Equivalent to Γ(0.5) = √π
         1.7724538509055159
     """
     if isinstance(x, int) and x >= 0:

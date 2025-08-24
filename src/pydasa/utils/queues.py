@@ -87,7 +87,22 @@ def Queue(_lambda: float,
 
 @dataclass
 class BasicQueue(ABC):
-    """Abstract base class for queueing theory models"""
+    """**BasicQueue** is an abstract base class for queueing theory models.
+
+    Attributes:
+        Input parameters:
+        _lambda (float): Arrival rate (λ: lambda).
+        miu (float): Service rate (μ: miu).
+        n_servers (int): Number of servers (s: servers).
+        kapacity (Optional[int]): Maximum capacity (K: capacity).
+
+        # Output parameters:
+        rho (float): Server utilization (ρ: rho).
+        avg_len (float): L, or mean number of requests in the system.
+        avg_len_q (float): Lq, or mean number of requests in queue.
+        avg_wait (float): W, or mean time a request spends in the system.
+        avg_wait_q (float): Wq, or mean waiting time in queue.
+    """
 
     # :attr: _lambda
     _lambda: float
@@ -136,17 +151,17 @@ class BasicQueue(ABC):
         """*_validate_basic_params()* Validates basic parameters common to all queueing models.
 
         Raises:
-            ValueError: If arrival rate is non-positive
-            ValueError: If service rate is non-positive
-            ValueError: If number of servers is non-positive
+            ValueError: If arrival rate is non-positive.
+            ValueError: If service rate is non-positive.
+            ValueError: If number of servers is non-positive.
         """
 
         if self._lambda <= 0:
-            raise ValueError("Arrival rate must be positive")
+            raise ValueError("Arrival rate must be positive.")
         if self.miu <= 0:
-            raise ValueError("Service rate must be positive")
+            raise ValueError("Service rate must be positive.")
         if self.n_servers < 1:
-            raise ValueError("Number of servers must be positive")
+            raise ValueError("Number of servers must be positive.")
 
     @abstractmethod
     def _validate_params(self) -> None:
@@ -186,11 +201,11 @@ class BasicQueue(ABC):
 
         Returns:
             Dict[str, Any]: A dictionary containing the calculated metrics with the following keys:
-                - 'L': Average number in system
-                - 'Lq': Average number in queue
-                - 'W': Average time in system
-                - 'Wq': Average time in queue
-                - 'rho': Server utilization
+                - 'L': Average number requests inside the system.
+                - 'Lq': Average number requests in queue.
+                - 'W': Average request time in the system.
+                - 'Wq': Average request time in queue.
+                - 'rho': Server utilization.
         """
         return {
             "L": self.avg_len,
@@ -244,11 +259,20 @@ class BasicQueue(ABC):
 
 @dataclass
 class QueueMM1(BasicQueue):
-    # TODO aki voy!!!!
-    """M/M/1 queue system (1 server, infinite capacity)"""
+    """**QueueMM1** represents an M/M/1 queue system (1 server, infinite capacity).
+
+    Args:
+        BasicQueue (ABC, dataclass): Abstract base class for queueing theory models.
+    """
 
     def _validate_params(self) -> None:
-        """Validations specific to M/M/1"""
+        """*_validate_params()* Validates the parameters for the M/M/1 queue.
+
+        Raises:
+            ValueError: If the number of servers is not 1.
+            ValueError: If the capacity is not infinite.
+            ValueError: If the system is unstable (λ ≥ μ).
+        """
 
         if self.n_servers != 1:
             raise ValueError("M/M/1 must have exactly 1 server")
@@ -258,21 +282,50 @@ class QueueMM1(BasicQueue):
             raise ValueError("System is unstable (λ ≥ μ")
 
     def is_stable(self) -> bool:
-        """Checks if the system is stable"""
+        """*is_stable()* Checks if the queueing system is stable.
+
+        Returns:
+            bool: True if the system is stable, False otherwise.
+        """
 
         return self._lambda < self.miu
 
     def calculate_metrics(self) -> None:
-        """Calculates analytical metrics for M/M/1"""
+        """*calculate_metrics()* Calculates the performance metrics for the M/M/1 queue.
 
+        The model metrics are:
+            - ρ (rho): Server utilization.
+            - L: Average number of requests in the system.
+            - Lq: Average number of requests in the queue.
+            - W: Average time a request spends in the system.
+            - Wq: Average time a request spends in the queue.
+        """
         self.rho = self._lambda / self.miu
         self.avg_len = self.rho / (1 - self.rho)
         self.avg_len_q = self.rho ** 2 / (1 - self.rho)
         self.avg_wait = self.avg_len / self._lambda
         self.avg_wait_q = self.avg_len_q / self._lambda
 
-    def calculate_prob_n(self, n: int) -> float:
-        """Calculates P(n) - probability of having n requests in the system for M/M/1"""
+    def _get_prob_zero(self) -> float:
+        """*_get_prob_zero()* Calculates P(0) or the probability of having 0 requests in the system for M/M/c model.
+
+        Returns:
+            float: The probability of having 0 requests in the system.
+        """
+        return 1 - self.rho
+
+    def _get_prob_n(self, n: int) -> float:
+        """*_get_prob_n()* calculates P(n), or the probability of having n requests in the system for M/M/1 (one server, infinite capacity)
+
+        Args:
+            n (int): The number of requests in the system.
+
+        Raises:
+            ValueError: If the system is unstable.
+
+        Returns:
+            float: The probability of having n requests in the system.
+        """
 
         if not self.is_stable():
             _msg = f"Unstable System!, {type(self).__name__}. "
@@ -282,76 +335,119 @@ class QueueMM1(BasicQueue):
         if n < 0:
             return 0.0
 
-        _p_0 = 1 - self.rho
-        return (self.rho ** n) * _p_0
+        return (self.rho ** n) * (1 - self.rho)
 
 
 @dataclass
 class QueueMMs(BasicQueue):
-    """M/M/c queue system (c servers, infinite capacity)"""
+    """**QueueMMs** represents an M/M/s queue system (Multi-server, infinite capacity).
 
+    Args:
+        BasicQueue (ABC, dataclass): Abstract base class for queueing theory models.
+    """
     def validate_parameters(self) -> None:
-        """Validations specific to M/M/C"""
+        """*validate_parameters()* Validates the parameters for the M/M/s model.
+
+        Raises:
+            ValueError: If the number of servers is less than 1.
+            ValueError: If the capacity is not infinite.
+            ValueError: If the system is unstable (λ ≥ c x μ).
+        """
         if self.n_servers < 1:
-            raise ValueError("M/M/c requires at least one server")
+            raise ValueError("M/M/c requires at least one server.")
         if self.kapacity is not None:
-            raise ValueError("M/M/c assumes infinite capacity")
+            raise ValueError("M/M/c assumes infinite capacity.")
         if not self.is_stable():
-            raise ValueError("System is unstable (λ ≥ c x μ)")
+            raise ValueError("System is unstable (λ ≥ c x μ).")
 
     def is_stable(self) -> bool:
-        """Checks if the system is stable"""
+        """*is_stable()* Checks if the queueing system is stable.
 
-        return self._lambda < self.n_servers * self.miu
+        Returns:
+            bool: True if the system is stable, False otherwise.
+        """
+
+        return self._lambda < (self.n_servers * self.miu)
 
     def calculate_metrics(self) -> None:
-        """Calculates analytical metrics for M/M/C"""
-        self.rho = self._lambda / \
-            (self.n_servers * self.miu)
-        _a = self._lambda / self.miu
-        p_0 = self._calculate_p0()
-        self.avg_len_q = (p_0 * (_a ** self.n_servers) * self.rho) / (
+        """*calculate_metrics()* Calculates the performance metrics for the M/M/s queue.
+
+        The model metrics are:
+            - ρ (rho): Server utilization.
+            - L: Average number of requests in the system.
+            - Lq: Average number of requests in the queue.
+            - W: Average time a request spends in the system.
+            - Wq: Average time a request spends in the queue.
+        """
+        self.rho = self._lambda / (self.n_servers * self.miu)
+        rho = self._lambda / self.miu
+        _p_zero = self._get_prob_zero()
+        self.avg_len_q = (_p_zero * (rho ** self.n_servers) * self.rho) / (
             gamma_fact(self.n_servers) * ((1 - self.rho) ** 2))
-        self.avg_len = self.avg_len_q + _a
+        self.avg_len = self.avg_len_q + rho
         self.avg_wait_q = self.avg_len_q / self._lambda
         self.avg_wait = self.avg_wait_q + 1 / self.miu
 
-    def calculate_p0(self) -> float:
-        """Calculates P(0) for M/M/c"""
-        _a = self._lambda / self.miu
-        _sum1 = sum((_a ** i) / gamma_fact(i)
-                    for i in range(self.n_servers))
-        _sum2 = (_a ** self.n_servers) / \
-            (gamma_fact(self.n_servers) * (1 - self.rho))
+    def _get_prob_zero(self) -> float:
+        """*_get_prob_zero()* Calculates P(0) or the probability of having 0 requests in the system for M/M/c model.
+
+        Returns:
+            float: The probability of having 0 requests in the system.
+        """
+
+        rho = self._lambda / self.miu
+        _sum1 = sum((rho ** i) / gamma_fact(i) for i in range(self.n_servers))
+        numerator = (rho ** self.n_servers)
+        denominator = gamma_fact(self.n_servers) * (1 - self.rho)
+        _sum2 = numerator / denominator
         return 1 / (_sum1 + _sum2)
 
-    def calculate_prob_n(self, n: int) -> float:
+    def _get_prob_n(self, n: int) -> float:
         """Calculates P(n) - probability of having n requests in the system"""
         if n < 0:
             return 0.0
 
-        _a = self._lambda / self.miu
-        _p_0 = self._calculate_p0()
+        rho = self._lambda / self.miu
+        _p_zero = self._get_prob_zero()
 
         if n < self.n_servers:
-            return ((_a ** n) / gamma_fact(n)) * _p_0
+            numerator = (rho ** n)
+            denominator = gamma_fact(n)
+            return (numerator / denominator) * _p_zero
         else:
-            return ((_a ** n) / (gamma_fact(self.n_servers) * (self.n_servers ** (n - self.n_servers)))) * _p_0
+            numerator = (rho ** n)
+            power = (self.n_servers ** (n - self.n_servers))
+            denominator = (gamma_fact(self.n_servers) * power)
+            return (numerator / denominator) * _p_zero
 
 
 @dataclass
 class QueueMM1K(BasicQueue):
-    """M/M/1/L queueing system: 1 server, finite capacity L"""
+    """**QueueMM1K** Represents an M/M/1/K queue system with finite capacity K and one server.
 
+    Args:
+        BasicQueue (ABC, dataclass): Abstract base class for queueing theory models.
+    """
+
+    # TODO aqui voy!!! revisar las equaciones
     def validate_parameters(self) -> None:
-        """Validations specific to M/M/1/L"""
+        """*validate_parameters()* Validates the parameters for the M/M/1/K model.
+
+        Raises:
+            ValueError: If the number of servers is not 1.
+            ValueError: If the capacity is not positive.
+        """
         if self.n_servers != 1:
-            raise ValueError("M/M/1/L requires exactly 1 server")
+            raise ValueError("M/M/1/K requires exactly 1 server.")
         if self.kapacity is None or self.kapacity < 1:
-            raise ValueError("M/M/1/L requires a positive finite capacity L")
+            raise ValueError("M/M/1/K requires a positive finite capacity K.")
 
     def is_stable(self) -> bool:
-        """Checks if the system is stable - M/M/1/L is always stable due to finite capacity"""
+        """*is_stable()* Checks if the queueing system is stable.
+
+        Returns:
+            bool: True if the system is stable, False otherwise.
+        """
         return self._lambda > 0 and self.miu > 0
 
     def calculate_prob_n(self, n: int) -> float:
@@ -364,8 +460,8 @@ class QueueMM1K(BasicQueue):
         if _rho == 1:
             return 1 / (self.kapacity + 1)
         else:
-            _p_0 = (1 - _rho) / (1 - _rho**(self.kapacity + 1))
-            return (_rho**n) * _p_0
+            _p_zero = (1 - _rho) / (1 - _rho**(self.kapacity + 1))
+            return (_rho**n) * _p_zero
 
     def calculate_metrics(self) -> None:
         """Calculates analytical metrics for M/M/1/L"""
@@ -423,12 +519,12 @@ class QueueMMsK(BasicQueue):
             return 0.0
 
         _rho = self._lambda / self.miu
-        _p_0 = self._calculate_p0()
+        _p_zero = self._get_prob_zero()
 
         if n < self.n_servers:
-            return ((_rho**n) / gamma_fact(n)) * _p_0
+            return ((_rho**n) / gamma_fact(n)) * _p_zero
         else:
-            return ((_rho**n) / (gamma_fact(self.n_servers) * (self.n_servers**(n - self.n_servers)))) * _p_0
+            return ((_rho**n) / (gamma_fact(self.n_servers) * (self.n_servers**(n - self.n_servers)))) * _p_zero
 
     def calculate_metrics(self) -> None:
         """Calculates analytical metrics for M/M/c/L"""

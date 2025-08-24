@@ -15,12 +15,15 @@ Module with utility functions for handling data in the maps of *PyDASA*. Specifi
 *NOTE:* code contributed by Sanjit_Prasad in https://www.geeksforgeeks.org/prime-numbers/
 """
 # python native modules
+import math
+from typing import Union, Optional
+
 # dataclases module handles the creation of classes with slots and fields
+import dataclasses
+
+# import global variables
 from pydasa.utils.default import VLD_IODATA_LT
 from pydasa.utils.default import T
-import math
-import dataclasses
-# import global variables
 
 
 # Memory Helpers
@@ -165,3 +168,47 @@ def mad_hash(key: T,
     # calculating the index with the MAD compression function
     idx = int((abs(scale * hkey + shift) % prime) % mcap)
     return idx
+
+
+def factorial(x: Union[int, float],
+              prec: Optional[int] = None) -> Union[int, float]:
+    """*factorial()* calculates the factorial of a number, including support for floats less than 1.0.
+
+        - For integers n ≥ 0: Returns n! (n factorial).
+        - For floats x: Returns Γ(x+1) (gamma function).
+
+    Args:
+        x (Union[int, float]): The number to compute the factorial for.
+        prec (Optional[int], optional): precision, or the number of decimal places to round the result to. Defaults to None.
+
+    Raises:
+        ValueError: If x is a negative integer.
+
+    Returns:
+        Union[int, float]: The factorial of x. Returns an integer for integer inputs ≥ 0, and a float for float inputs or integers < 0.
+
+    Examples:
+        >>> factorial(5)
+        120
+        >>> factorial(0)
+        1
+        >>> factorial(0.5)  # Equivalent to Γ(1.5) = 0.5 * Γ(0.5) = 0.5 * √π
+        0.8862269254527579
+        >>> factorial(-0.5)  # Equivalent to Γ(0.5) = √π
+        1.7724538509055159
+    """
+    if isinstance(x, int) and x >= 0:
+        # Standard factorial for non-negative integers
+        result = math.factorial(x)
+    elif isinstance(x, int) and x < 0:
+        # Factorial is not defined for negative integers
+        raise ValueError("Factorial is not defined for negative integers")
+    else:
+        # For floats, use the gamma function: Γ(x+1)
+        result = math.gamma(x + 1)
+
+    # Apply precision if specified
+    if prec is not None:
+        result = round(result, prec)
+
+    return result

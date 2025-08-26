@@ -6,17 +6,21 @@ https://www.codingwiththomas.com/blog/my-sphinx-best-practice-for-a-multiversion
 
 https://www.youtube.com/watch?v=Nz8zutA55fI
 
-sphinx-quickstart
+https://youtu.be/5KEObONUkik
 
-make html
+========================= sphinx commands =========================
 
-make gettext
+    sphinx-quickstart
 
-sphinx-build -b gettext . _build/gettext
+    make html
 
-sphinx-intl update -p _build/gettext -l es
+    make gettext
 
-sphinx-build -b html -D language='es' . _build/html/es
+    sphinx-build -b gettext . _build/gettext
+
+    sphinx-intl update -p _build/gettext -l es
+
+    sphinx-build -b html -D language='es' . _build/html/es
 
 
 ========================= DIST file =========================

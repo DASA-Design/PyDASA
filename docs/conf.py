@@ -170,3 +170,9 @@ html_context = {
 }
 
 html_static_path = ["_static"]
+
+# viewcode specific config
+viewcode_follow_imported_members = False
+
+# viewcode_import = True
+# viewcode_enable_epub = False

@@ -15,7 +15,16 @@ from .core.fundamental import Dimension
 # from .pydasa.core.measurement import Unit
 from .core.parameter import Variable
 
-# DONT expose datastructures, its for internal use only
+# expose datastructures, its for internal use only but docs need it
+# lists
+from .datastructs.lists.arlt import ArrayList
+from .datastructs.lists.sllt import SingleLinkedList
+from .datastructs.lists.dllt import Node, SLNode, DLNode
+# from .datastructs.lists.ndlt import DoubleLinkedList
+
+# tables
+from .datastructs.tables.htme import MapEntry
+from .datastructs.tables.scht import Bucket, SCHashTable
 
 # exposing dimensional packages
 # TODO domain still in development
@@ -43,12 +52,24 @@ assert Coefficient
 assert Dimension
 # assert Unit
 assert Variable
+
+assert ArrayList
+assert SingleLinkedList
+assert Node
+assert SLNode
+assert DLNode
+assert MapEntry
+assert Bucket
+assert SCHashTable
+
 # assert MeasurementSys
 assert DimScheme
 assert DimMatrix
+
 assert SensitivityHandler
 # assert DimSolver
 assert MonteCarloHandler
+
 assert load
 assert save
 assert Queue

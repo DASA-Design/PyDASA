@@ -158,5 +158,5 @@ class Dimension(Validation, Generic[T]):
         eq_fwk = self._fwk == other._fwk
         eq_alias = self._alias == other._alias
         eq_unit = self._unit == other._unit
-        return eq_sym and eq_fwk and eq_alias and eq_unit
         # return (self._sym == other._sym and self._fwk == other._fwk)
+        return eq_sym and eq_fwk and eq_alias and eq_unit

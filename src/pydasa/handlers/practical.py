@@ -385,23 +385,23 @@ class MonteCarloHandler(Validation, Generic[T]):
         self._cat = val.upper()
 
     @property
-    def variables(self) -> List[Variable]:
+    def variables(self) -> Dict[str, Variable]:
         """*variables* Get the list of variables.
 
         Returns:
-            List[Variable]: List of variables.
+            Dict[str, Variable]: Dictionary of variables.
         """
         return self._variables.copy()
 
     @variables.setter
-    def variables(self, val: List[Variable]) -> None:
+    def variables(self, val: Dict[str, Variable]) -> None:
         """*variables* Set the list of variables.
 
         Args:
-            val (List[Variable]): List of variables.
+            val (Dict[str, Variable]): Dictionary of variables.
 
         Raises:
-            ValueError: If list is invalid.
+            ValueError: If dictionary is invalid.
         """
         if self._validate_dict(val, (Variable,)):
             self._variables = val

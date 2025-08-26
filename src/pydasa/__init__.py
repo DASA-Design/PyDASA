@@ -17,14 +17,14 @@ from .core.parameter import Variable
 
 # expose datastructures, its for internal use only but docs need it
 # lists
-from .datastructs.lists.arlt import ArrayList
-from .datastructs.lists.sllt import SingleLinkedList
-from .datastructs.lists.dllt import Node, SLNode, DLNode
-# from .datastructs.lists.ndlt import DoubleLinkedList
+from .datastruct.lists.arlt import ArrayList
+from .datastruct.lists.sllt import SingleLinkedList
+from .datastruct.lists.ndlt import Node, SLNode, DLNode
+# from .datastruct.lists.dllt import DoubleLinkedList
 
 # tables
-from .datastructs.tables.htme import MapEntry
-from .datastructs.tables.scht import Bucket, SCHashTable
+from .datastruct.tables.htme import MapEntry
+from .datastruct.tables.scht import Bucket, SCHashTable
 
 # exposing dimensional packages
 # TODO domain still in development
@@ -43,6 +43,7 @@ from .handlers.practical import MonteCarloHandler
 from .utils.io import load, save
 # importing queue factory function
 from .utils.queues import Queue
+# from .utils.helpers import gfactorial
 
 # asserting all imports
 # assert UnitConverter
@@ -73,6 +74,7 @@ assert MonteCarloHandler
 assert load
 assert save
 assert Queue
+# assert gfactorial
 
 # Optionally, define __all__ for wildcard imports
 __all__ = [

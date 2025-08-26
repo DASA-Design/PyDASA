@@ -170,9 +170,9 @@ def mad_hash(key: T,
     return idx
 
 
-def gamma_fact(x: Union[int, float],
+def gfactorial(x: Union[int, float],
                prec: Optional[int] = None) -> Union[int, float]:
-    """*gamma_fact()* calculates the factorial of a number, including support for floats less than 1.0.
+    """*gfactorial()* calculates the factorial of a number, including support for floats less than 1.0.
 
         - For integers n ≥ 0: Returns n! (n factorial).
         - For floats x: Returns Γ(x+1) (gamma function).
@@ -188,13 +188,13 @@ def gamma_fact(x: Union[int, float],
         Union[int, float]: The factorial of x. Returns an integer for integer inputs ≥ 0, and a float for float inputs or integers < 0.
 
     Examples:
-        >>> gamma_fact(5)
+        >>> gfactorial(5)
         120
-        >>> gamma_fact(0)
+        >>> gfactorial(0)
         1
-        >>> gamma_fact(0.5)  # Equivalent to Γ(1.5) = 0.5 * Γ(0.5) = 0.5 * √π
+        >>> gfactorial(0.5)  # Equivalent to Γ(1.5) = 0.5 * Γ(0.5) = 0.5 * √π
         0.8862269254527579
-        >>> gamma_fact(-0.5)  # Equivalent to Γ(0.5) = √π
+        >>> gfactorial(-0.5)  # Equivalent to Γ(0.5) = √π
         1.7724538509055159
     """
     if isinstance(x, int) and x >= 0:

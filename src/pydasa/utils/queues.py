@@ -593,11 +593,9 @@ class QueueMM1K(BasicQueue):
 
         # Calculate average time spent in the system
         self.avg_wait = self.avg_len / _lambda_eff
-        print("==== self.avg_wait:", self.avg_wait)
 
         # Calculate average time spent in the queue
         self.avg_wait_q = self.avg_len_q / _lambda_eff
-        print("==== self.avg_wait_q:", self.avg_wait_q)
 
     def calculate_prob_zero(self) -> float:
         """*calculate_prob_zero()* Calculates P(0) or the probability of having 0 requests in the system for M/M/1/k model.

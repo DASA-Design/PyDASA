@@ -141,7 +141,7 @@ class Variable(Validation):
     """Standard deviation in standard units."""
 
     # :attr: _step
-    _step: float = 1e-3
+    _step: Optional[float] = None
     """Step size for simulations."""
 
     # :attr: _std_range
@@ -909,7 +909,7 @@ class Variable(Validation):
         self._std_min = None
         self._std_max = None
         self._std_mean = None
-        self._step = 1e-3
+        self._step = None
         self._std_range = np.array([])
         self._dist_type = "uniform"
         self._dist_params = {}

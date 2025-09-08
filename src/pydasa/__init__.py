@@ -42,7 +42,7 @@ from .handlers.practical import MonteCarloHandler
 # most utils are private
 from .utils.io import load, save
 # importing queue factory function
-from .utils.queues import Queue
+# from .utils.queues import Queue
 # from .utils.helpers import gfactorial
 
 # asserting all imports
@@ -73,7 +73,7 @@ assert MonteCarloHandler
 
 assert load
 assert save
-assert Queue
+# assert Queue
 # assert gfactorial
 
 # Optionally, define __all__ for wildcard imports

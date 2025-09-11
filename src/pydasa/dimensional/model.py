@@ -398,7 +398,7 @@ class DimMatrix(Validation, Generic[T]):
                 _sym=f"\\Pi_{{{i}}}",
                 _fwk=self._fwk,
                 _cat="COMPUTED",
-                _variables=var_symbols,
+                _variables=param_lt,
                 _dim_col=vector_np.tolist(),
                 _pivot_lt=self._pivot_cols,
                 name=f"Pi-{i}",
@@ -585,10 +585,14 @@ class DimMatrix(Validation, Generic[T]):
             ValueError: If any of the dictionary variables are invalid.
         """
         if not val or not isinstance(val, dict):
-            raise ValueError("Variables must be in non-empty dictionary.")
+            _msg = "Variables must be in non-empty dictionary. "
+            _msg += f"Provided input: {type(val)}"
+            raise ValueError(_msg)
 
         if not all(isinstance(v, Variable) for v in val.values()):
-            raise ValueError("All elements must be Variable instances")
+            _msg = "All elements must be Variable instances"
+            _msg += f", got: {[type(v) for v in val.values()]}"
+            raise ValueError(_msg)
 
         # Set variables and update framework
         self._variables = val

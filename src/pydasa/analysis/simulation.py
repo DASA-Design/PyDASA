@@ -350,37 +350,31 @@ class MonteCarloSim(Validation, Generic[T]):
         # Run simulation
         i = 0
         while i < self._iterations:
+            # print(f"Running simulation {i+1}/{self._iterations}")
             try:
                 # Sample values from distributions
                 samples = {}
                 for var in self._latex_to_py.keys():
-                    # if the distribution exists and there is no input data
-                    _con1 = var in self._distributions
-                    _con2 = self.inputs[i, :].sum() == 0
-                    # if the distribution exists and there is no input data
-                    if _con1 and _con2:
+                    # if the distribution exists
+                    if var in self._distributions:
                         # accessing the distribution in the distribution specs
                         samples[var] = self._distributions[var]["func"]()
-                    # if there is input data already present
-                    elif _con1 and not _con2:
-                        data = self._variables.index(var)
-                        samples[var] = self.inputs[i, :][data]
                     # otherwise, raise error
                     else:
                         _msg = f"Missing distribution for variable: {var}"
                         raise ValueError(_msg)
 
-                # Prepare ordered values for function evaluation
-                ordered_values = [samples[var] for var in self._latex_to_py.keys()]
+                # Prepare sorted/ordered values for function evaluation
+                sorted_vals = [samples[var] for var in self._latex_to_py.keys()]
 
                 # Create lambdify function using Python symbols
                 aliases = [self._aliases[v] for v in self._variables]
                 self._exe_func = lambdify(aliases, self._sym_func, "numpy")
 
                 # Evaluate the coefficient
-                result = float(self._exe_func(*ordered_values))
+                result = float(self._exe_func(*sorted_vals))
                 # save simulation inputs and results
-                self.inputs[i, :] = ordered_values
+                self.inputs[i, :] = sorted_vals
                 self._results[i] = result
                 # self._results.append(result)
 

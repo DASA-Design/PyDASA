@@ -354,9 +354,18 @@ class MonteCarloSim(Validation, Generic[T]):
                 # Sample values from distributions
                 samples = {}
                 for var in self._latex_to_py.keys():
-                    if var in self._distributions:
+                    # if the distribution exists and there is no input data
+                    _con1 = var in self._distributions
+                    _con2 = self.inputs[i, :].sum() == 0
+                    # if the distribution exists and there is no input data
+                    if _con1 and _con2:
                         # accessing the distribution in the distribution specs
                         samples[var] = self._distributions[var]["func"]()
+                    # if there is input data already present
+                    elif _con1 and not _con2:
+                        data = self._variables.index(var)
+                        samples[var] = self.inputs[i, :][data]
+                    # otherwise, raise error
                     else:
                         _msg = f"Missing distribution for variable: {var}"
                         raise ValueError(_msg)

@@ -443,11 +443,11 @@ class MonteCarloSim(Validation, Generic[T]):
         ans = (self._mean - margin, self._mean + margin)
         return ans
 
-    def export_results(self) -> Dict[str, Any]:
-        """export_results _summary_
+    def extract_results(self) -> Dict[str, Any]:
+        """*extract_results()* Extract simulation results.
 
         Returns:
-            Dict[str, Any]: _description_
+            Dict[str, Any]: Dictionary containing simulation results.
         """
         export = {}
 

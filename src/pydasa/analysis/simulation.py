@@ -457,7 +457,7 @@ class MonteCarloSim(Validation, Generic[T]):
             column = self.inputs[:, i]
 
             # Use a meaningful key that includes variable name and coefficient
-            key = f"{var}_{self._coefficient.sym}"
+            key = f"{var}@{self._coefficient.sym}"
             export[key] = column
 
         # Add the coefficient results

@@ -107,6 +107,10 @@ class MonteCarloSim(Validation, Generic[T]):
     _variables: Dict[str: Any] = field(default_factory=dict)
     """Variable symbols in the expression."""
 
+    # :attr: _dependencies
+    _dependencies: Dict[str, List[str]] = field(default_factory=dict)
+    """Dependencies between variables in the expression."""
+
     # :attr: _symbols
     _symbols: Dict[str: Any] = field(default_factory=dict)
     """Python symbols for the variables."""
@@ -139,6 +143,10 @@ class MonteCarloSim(Validation, Generic[T]):
         - 'params': Distribution parameters (mean, std_dev, etc.).
         - 'func':  function for sampling, ussually in Lambda format.
     """
+
+    # :attr: _inter_values
+    _inter_values: Dict[str, List[float]] = field(default_factory=dict)
+    """Intermediate sampled values during each simulation run."""
 
     # Results
     # :attr: inputs
@@ -205,14 +213,18 @@ class MonteCarloSim(Validation, Generic[T]):
             # Parse the expression
             self._parse_expression(self._pi_expr)
 
+        # Initialize intermediate values
+        # TODO check if this works as intended
+        self._inter_values = {var: [] for var in self._variables.keys()}
+
         # TODO post init exectution to allocate memory is not working, fix it!
         # Preallocate full array space
         n_vars = len(self._variables)
         self.inputs = np.zeros((self._iterations, n_vars))
         self._results = np.zeros((self._iterations, 1))
 
-    def _validate_simulation_ready(self) -> None:
-        """*_validate_simulation_ready() * Checks if the simulation can be performed.
+    def _validate_readiness(self) -> None:
+        """*_validate_readiness() * Checks if the simulation can be performed.
 
         Raises:
             ValueError: If the simulation is not ready due to missing variables, executable function, distributions, or invalid number of iterations.
@@ -324,7 +336,111 @@ class MonteCarloSim(Validation, Generic[T]):
                 raise ValueError(_msg)
             self.specs[var] = specs
 
+    def _generate_sample(self,
+                         var: str,
+                         iter_values: Dict[str, float]) -> float:
+        """*_generate_sample()* Generate a sample for a given variable.
+
+        Args:
+            var (str): The variable to generate a sample for.
+            iter_values (Dict[str, float]): The current iteration values.
+
+        Returns:
+            float: The generated sample.
+        """
+        sample = None
+        # check if the variable is dependent
+        if var in self._dependencies:
+            # get the dependent variables values for this iteration
+            dep_vals = [iter_values[d] for d in self._dependencies[var]]
+            # generate samples for the dependent variables
+            sample = self._distributions[var]["func"](*dep_vals)
+        # otherwise, independent variable
+        else:
+            # generate sample for the independent variable
+            sample = self._distributions[var]["func"]()
+        # return the generated sample
+        return sample
+
     def run(self, iters: int = None) -> None:
+
+        # Validate simulation readiness
+        self._validate_readiness()
+
+        # Set iterations if necesary
+        if iters is not None:
+            self._iterations = iters
+
+        # Clear previous results, inputs, and intermediate values.
+        self._reset_memory()
+
+        # Preallocate full array space
+        n_vars = len(self._variables)
+        self.inputs = np.zeros((self._iterations, n_vars))
+        self._results = np.zeros((self._iterations, 1))  # 2D array for results
+
+        # Run simulation
+        i = 0
+        while i < self._iterations:
+            # print(f"Running simulation {i+1}/{self._iterations}")
+            try:
+                # dict to store sample values for this iteration
+                _sample = {}
+                # sets to store/process variables respecting dependencies
+                _processed = set()
+                _to_process = list(self._distributions.keys())
+                # process variables until all are done
+                while len(_to_process) > 0:
+                    var = _to_process.pop()
+                    # use dict customable get() behavior to return empty list if no dependencies
+                    deps = self._dependencies.get(var, [])
+                    # check if all dependencies have been processed
+                    if all(d in _processed for d in deps):
+                        # generate sample for the variable
+                        sam = self._generate_sample(var, _sample)
+                        # store the sample in the iteration values
+                        _sample[var] = sam
+                        # store the sample in the intermediate values
+                        self._inter_values[var].append(sam)
+
+                        # mark variable as processed
+                        _processed.add(var)
+
+                    else:
+                        _msg = f"Missing distribution for variable: {var}"
+                        raise ValueError(_msg)
+
+                # OLD CODE beware!!!!
+                # Prepare sorted/ordered values for function evaluation
+                sorted_vals = [_sample[var] for var in self._latex_to_py.keys()]
+
+                # Create lambdify function using Python symbols
+                aliases = [self._aliases[v] for v in self._variables]
+                self._exe_func = lambdify(aliases, self._sym_func, "numpy")
+
+                # Evaluate the coefficient
+                result = float(self._exe_func(*sorted_vals))
+                # save simulation inputs and results
+                self.inputs[i, :] = sorted_vals
+                self._results[i] = result
+                # self._results.append(result)
+
+            except Exception as e:
+                # Handle numerical errors (e.g., division by zero)
+                _msg = f"Error during simulation run {i}: {str(e)}"
+                # TODO add logger later
+                # print(_msg)
+                raise ValueError(_msg)
+                # continue
+            i += 1
+
+        # Calculate statistics
+        if len(self._results) == self._iterations:
+            self._calculate_statistics()
+        else:
+            raise ValueError("Invalid results, check yout distributions!")
+
+    def run_OLD(self, iters: int = None) -> None:
         """*run()* Perform the Monte Carlo simulation.
 
         Raises:
@@ -332,7 +448,7 @@ class MonteCarloSim(Validation, Generic[T]):
             ValueError: If there are numerical errors during simulation runs (e.g., division by zero).
         """
         # Validate simulation readiness
-        self._validate_simulation_ready()
+        self._validate_readiness()
 
         # Set iterations if necesary
         if iters is not None:
@@ -392,6 +508,16 @@ class MonteCarloSim(Validation, Generic[T]):
             self._calculate_statistics()
         else:
             raise ValueError("Invalid results, check yout distributions!")
+
+    def _reset_memory(self) -> None:
+        """*_reset_memory()* Reset results and inputs arrays."""
+        self.inputs = np.zeros((0,))
+        self._results = np.zeros((0,))
+        self._reset_statistics()
+        for var in self._variables.keys():
+            self._inter_values[var].clear()
+        # alternative way to reset intermediate values
+        # self._inter_values = {var: [] for var in self._variables.keys()}
 
     def _reset_statistics(self) -> None:
         """*_reset_statistics()* Reset all statistical attributes to default values."""

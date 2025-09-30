@@ -161,6 +161,10 @@ class Variable(Validation):
     _dist_func: Optional[Callable] = None
     """Callable representing the distribution function defined externally by the user."""
 
+    # :attr: _depends
+    _depends: List[str] = field(default_factory=list)
+    """List of variable names that this variable depends on. (e.g., for calculated variables like F = m*a)."""
+
     # Flags
     # :attr: relevant
     relevant: bool = False
@@ -881,6 +885,34 @@ class Variable(Validation):
             _msg = f"Distribution function must be callable, got {type(val)}"
             raise TypeError(_msg)
         self._dist_func = val
+
+    @property
+    def depends(self) -> List[str]:
+        """*depends* Get the list of variable dependencies.
+
+        Returns:
+            List[str]: List of variable names that this variable depends on.
+        """
+        return self._depends
+
+    @depends.setter
+    def depends(self, val: List[str]) -> None:
+        """*depends* Set the list of variable dependencies.
+
+        Args:
+            val (List[str]): List of variable names that this variable depends on.
+        Raises:
+            ValueError: If value is not a list of strings.
+        """
+        if not isinstance(val, list):
+            _msg = f"{val} must be a list of strings."
+            _msg += f" type {type(val)} found instead."
+            raise ValueError(_msg)
+        if not all(isinstance(v, str) for v in val):
+            _msg = f"{val} must be a list of strings."
+            _msg += f" Found types: {[type(v) for v in val]}."
+            raise ValueError(_msg)
+        self._depends = val
 
     def clear(self) -> None:
         """*clear()* Reset all attributes to default values.

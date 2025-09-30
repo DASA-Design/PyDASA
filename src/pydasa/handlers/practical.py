@@ -124,15 +124,15 @@ class MonteCarloHandler(Validation, Generic[T]):
             self.description = f"Manages Monte Carlo simulations for [{self._coefficients.keys()}] coefficients."
 
         # if len(self._distributions) == 0:
-        #     self._create_distributions()
+        #     self._config_distributions()
         # if len(self._simulations) == 0:
-        #     self._create_simulations()
+        #     self._config_simulations()
 
     def config_simulations(self) -> None:
         if len(self._distributions) == 0:
-            self._create_distributions()
+            self._config_distributions()
         if len(self._simulations) == 0:
-            self._create_simulations()
+            self._config_simulations()
 
     def _validate_dict(self, dt: dict, exp_type: List[type]) -> bool:
         """*_validate_dict()* Validates a dictionary with expected value types.
@@ -163,34 +163,8 @@ class MonteCarloHandler(Validation, Generic[T]):
             raise ValueError(_msg)
         return True
 
-    # def _create_distribution(self, sym: str) -> Dict[str, Dict[str, Any]]:
-    # TODO old code, delete aftwerwards
-    #     """*_create_distribution()* Creates the distributions for a given variable.
-
-    #     Args:
-    #         sym (str): Name of the variable.
-
-    #     Returns:
-    #         Dict[str, Any]: Distribution specifications for the variable.
-    #     """
-    #     # Check if the variable is defined
-    #     if sym not in self._variables:
-    #         _msg = f"Variable '{sym}' not found in variables."
-    #         _msg += f" Available variables: {list(self._variables.keys())}"
-    #         raise ValueError(_msg)
-
-    #     # Get the variable object
-    #     var = self._variables[sym]
-    #     dist = {
-    #         "dtype": var.dist_type,
-    #         "params": var.dist_params,
-    #         "func": var.dist_func
-    #     }
-    #     # Get the distribution specifications
-    #     return dist
-
-    def _create_distributions(self) -> None:
-        """*_create_distributions()* Creates the Monte Carlo distributions for each variable.
+    def _config_distributions(self) -> None:
+        """*_config_distributions()* Creates the Monte Carlo distributions for each variable.
 
         Raises:
             ValueError: If the distribution specifications are invalid.
@@ -207,26 +181,31 @@ class MonteCarloHandler(Validation, Generic[T]):
                     _msg += f"Incomplete specifications provided: {specs}"
                     raise ValueError(_msg)
                 self._distributions[sym] = {
+                    "depends": var.depends,
                     "dtype": var.dist_type,
                     "params": var.dist_params,
                     "func": var.dist_func
                 }
 
-    def _get_distributions(self, keys: List[str]) -> Dict[str, Any]:
+    def _get_distributions(self, var_keys: List[str]) -> Dict[str, Any]:
         """*_get_distributions()* Retrieves the distribution specifications for a list of variable keys.
 
         Args:
-            keys (List[str]): List of variable keys.
+            var_keys (List[str]): List of variable keys.
 
         Returns:
             Dict[str, Dict[str, Any]]: Dictionary of distribution specifications.
         """
-        return {k: v for k, v in self._distributions.items() if k in keys}
+        dist = {k: v for k, v in self._distributions.items() if k in var_keys}
+        return dist
 
-    def _create_simulations(self) -> None:
-        """*_create_simulations()* Creates Monte Carlo simulations for each coefficient.
+    def _get_dependencies(self, var_keys: List[str]) -> Dict[str, Any]:
+        deps = {k: v.depends for k, v in self._variables.items()
+                if k in var_keys}
+        return deps
 
-        Sets up Monte Carlo simulation objects for each coefficient to be analyzed.
+    def _config_simulations(self) -> None:
+        """*_config_simulations()* Sets up Monte Carlo simulation objects for each coefficient to be analyzed, by specifing:
         """
         # clear existing simulations
         self._simulations.clear()
@@ -234,45 +213,31 @@ class MonteCarloHandler(Validation, Generic[T]):
         # Create simulations for each coefficient
         for i, (pi, coef) in enumerate(self._coefficients.items()):
             # Create Monte Carlo simulation
-            keys = list(coef.var_dims.keys())
-            simul = MonteCarloSim(
+            # get the key subset relevant to the coefficient
+            # create the Monte Carlo Simulation fo the coefficient
+            sim = MonteCarloSim(
                 _idx=i,
-                _sym=f"MCS_{{{coef.sym}}}",
+                _sym=f"MC_{{{coef.sym}}}",
                 _fwk=self._fwk,
                 _cat=self._cat,
-                _distributions=self._get_distributions(keys),
+                _pi_expr=coef.pi_expr,
+                _variables=self._variables,
+                # _distributions=self._get_distributions(keys),
                 name=f"Monte Carlo Simulation for {coef.name}",
                 description=f"Monte Carlo simulation for {coef.sym}"
             )
 
-            # Configure with coefficient
-            simul.set_coefficient(coef)
+            # Configure with coefficient, this is critical!!!
+            sim.set_coefficient(coef)
 
+            # Extract variables from the coefficient's expression
+            vars_in_coef = list(coef.var_dims.keys())
+
+            # Set the distributions and dependencies
+            sim._distributions = self._get_distributions(vars_in_coef)
+            sim._dependencies = self._get_dependencies(vars_in_coef)
             # Add to list
-            self._simulations[pi] = simul
-
-    def _get_distribution_value(self, sym: str) -> float:
-        # TODO remove, possible dont need it!!!
-        """*_get_distribution_value()* Retrieves a sample value from the distribution of a variable.
-
-        Args:
-            sym (str): Name of the variable.
-
-        Returns:
-            float: Sample value from the variable's distribution.
-        """
-        # check if distribution is configured
-        if sym not in self._distributions:
-            _msg = f"Variable '{sym}' not found in distributions."
-            dists = list(self._distributions.keys())
-            _msg += f" Available distributions: {dists}"
-            raise ValueError(_msg)
-
-        # Get the distribution object
-        dist = self._distributions[sym]
-
-        # Sample from the distribution
-        return dist["func"]()
+            self._simulations[pi] = sim
 
     def simulate(self,
                  n_samples: int = 1000) -> Dict[str, Dict[str, Any]]:

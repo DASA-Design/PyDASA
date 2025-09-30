@@ -68,7 +68,7 @@ class MonteCarloSim(Validation, Generic[T]):
 
         # Simulation Configuration
         _iterations (int): Number of simulation to run. Default is 1000.
-        _distributions (Dict[str, Any]): Variable sampling distributions and specifications (specific name, parameters, and function).
+        _distributions (Dict[str, Any]): Variable sampling distributions and specifications (specific name, parameters, dependencie, and function).
 
         # Results
         inputs (np.ndarray): variable simulated inputs.
@@ -141,12 +141,13 @@ class MonteCarloSim(Validation, Generic[T]):
     """Variable sampling distributions and specifications that includes:
         - 'dtype': Name of the variable.
         - 'params': Distribution parameters (mean, std_dev, etc.).
-        - 'func':  function for sampling, ussually in Lambda format.
+        - 'func':  Function for sampling, ussually in Lambda format.
+        - 'depends': List of variables this variable depends on.
     """
 
-    # :attr: _inter_values
-    _inter_values: Dict[str, List[float]] = field(default_factory=dict)
-    """Intermediate sampled values during each simulation run."""
+    # :attr: _iter_values
+    _iter_values: Dict[str, List[float]] = field(default_factory=dict)
+    """Working sampled values during each simulation iteration."""
 
     # Results
     # :attr: inputs
@@ -215,7 +216,7 @@ class MonteCarloSim(Validation, Generic[T]):
 
         # Initialize intermediate values
         # TODO check if this works as intended
-        self._inter_values = {var: [] for var in self._variables.keys()}
+        self._iter_values = {var: [] for var in self._variables.keys()}
 
         # TODO post init exectution to allocate memory is not working, fix it!
         # Preallocate full array space
@@ -297,8 +298,8 @@ class MonteCarloSim(Validation, Generic[T]):
                 self._sym_func = self._sym_func.subs(latex_sym, py_sym)
 
             # Get Python variable names
-            self._variables = [str(s) for s in self._sym_func.free_symbols]
-            self._variables = sorted(self._variables)
+            self._var_symbols = [str(s) for s in self._sym_func.free_symbols]
+            self._var_symbols = sorted(self._var_symbols)
 
         except Exception as e:
             _msg = f"Failed to parse expression: {str(e)}"
@@ -350,7 +351,8 @@ class MonteCarloSim(Validation, Generic[T]):
         """
         sample = None
         # check if the variable is dependent
-        if var in self._dependencies:
+        # TODO this conditional can be improved
+        if var in self._dependencies and len(self._dependencies.get(var)) > 0:
             # get the dependent variables values for this iteration
             dep_vals = [iter_values[d] for d in self._dependencies[var]]
             # generate samples for the dependent variables
@@ -375,52 +377,52 @@ class MonteCarloSim(Validation, Generic[T]):
         self._reset_memory()
 
         # Preallocate full array space
-        n_vars = len(self._variables)
-        self.inputs = np.zeros((self._iterations, n_vars))
+        self.inputs = np.zeros((self._iterations, len(self._var_symbols)))
         self._results = np.zeros((self._iterations, 1))  # 2D array for results
 
         # Run simulation
         i = 0
         while i < self._iterations:
-            # print(f"Running simulation {i+1}/{self._iterations}")
             try:
                 # dict to store sample values for this iteration
-                _sample = {}
+                iter_sample = {}
                 # sets to store/process variables respecting dependencies
                 _processed = set()
                 _to_process = list(self._distributions.keys())
+                # TODO need the double loop because I dont know when I process the vars, check if there is a better way
                 # process variables until all are done
                 while len(_to_process) > 0:
-                    var = _to_process.pop()
-                    # use dict customable get() behavior to return empty list if no dependencies
-                    deps = self._dependencies.get(var, [])
-                    # check if all dependencies have been processed
-                    if all(d in _processed for d in deps):
-                        # generate sample for the variable
-                        sam = self._generate_sample(var, _sample)
-                        # store the sample in the iteration values
-                        _sample[var] = sam
-                        # store the sample in the intermediate values
-                        self._inter_values[var].append(sam)
-
-                        # mark variable as processed
-                        _processed.add(var)
-
-                    else:
-                        _msg = f"Missing distribution for variable: {var}"
-                        raise ValueError(_msg)
-
-                # OLD CODE beware!!!!
+                    # find variables whose dependencies are all processed
+                    for var in list(_to_process):
+                        deps = self._dependencies.get(var, [])
+                        # check if all dependencies have been processedp
+                        if all(d in _processed for d in deps):
+                            # generate sample for the variable
+                            val = self._generate_sample(var, iter_sample)
+                            # store the sample in the iteration values
+                            iter_sample[var] = val
+                            # store the sample in the intermediate values
+                            self._iter_values[var].append(val)
+                            # mark variable as processed
+                            _processed.add(var)
+                            _to_process.remove(var)
+                # OLD CODE beware!!!!!
                 # Prepare sorted/ordered values for function evaluation
-                sorted_vals = [_sample[var] for var in self._latex_to_py.keys()]
+                sorted_vals = [iter_sample[var] for var in self._latex_to_py]
 
                 # Create lambdify function using Python symbols
-                aliases = [self._aliases[v] for v in self._variables]
+                # aliases = [self._aliases[v] for v in self._variables.keys()]
+                aliases = [self._aliases[v] for v in self._var_symbols]
                 self._exe_func = lambdify(aliases, self._sym_func, "numpy")
 
                 # Evaluate the coefficient
                 result = float(self._exe_func(*sorted_vals))
                 # save simulation inputs and results
+                print("-------")
+                print(self._iter_values)
+                print(self._latex_to_py.keys())
+                print(self._var_symbols)
+                print(sorted_vals, result)
                 self.inputs[i, :] = sorted_vals
                 self._results[i] = result
                 # self._results.append(result)
@@ -429,7 +431,6 @@ class MonteCarloSim(Validation, Generic[T]):
                 # Handle numerical errors (e.g., division by zero)
                 _msg = f"Error during simulation run {i}: {str(e)}"
                 # TODO add logger later
-                # print(_msg)
                 raise ValueError(_msg)
                 # continue
             i += 1
@@ -466,7 +467,6 @@ class MonteCarloSim(Validation, Generic[T]):
         # Run simulation
         i = 0
         while i < self._iterations:
-            # print(f"Running simulation {i+1}/{self._iterations}")
             try:
                 # Sample values from distributions
                 samples = {}
@@ -498,7 +498,6 @@ class MonteCarloSim(Validation, Generic[T]):
                 # Handle numerical errors (e.g., division by zero)
                 _msg = f"Error during simulation run {i}: {str(e)}"
                 # TODO add logger later
-                # print(_msg)
                 raise ValueError(_msg)
                 # continue
             i += 1
@@ -515,9 +514,9 @@ class MonteCarloSim(Validation, Generic[T]):
         self._results = np.zeros((0,))
         self._reset_statistics()
         for var in self._variables.keys():
-            self._inter_values[var].clear()
+            self._iter_values[var].clear()
         # alternative way to reset intermediate values
-        # self._inter_values = {var: [] for var in self._variables.keys()}
+        # self._iter_values = {var: [] for var in self._variables.keys()}
 
     def _reset_statistics(self) -> None:
         """*_reset_statistics()* Reset all statistical attributes to default values."""
@@ -847,7 +846,7 @@ class MonteCarloSim(Validation, Generic[T]):
         self._pi_expr = None
         self._sym_func = None
         self._exe_func = None
-        self._variables = []
+        self._variables = {}
         self._latex_to_py = {}
         self._py_to_latex = {}
         self._iterations = 1000
@@ -914,37 +913,3 @@ class MonteCarloSim(Validation, Generic[T]):
             instance._count = stats.get("count", -1)
 
         return instance
-
-    # def plot_histogram(self, bins: int = 30, figsize: Tuple[int, int] = (10, 6),
-    # FIXME old code, delete when ready!!!
-    #                   title: str = None, save_path: str = None) -> None:
-    #     """*plot_histogram()* Plot a histogram of simulation results."""
-    #     if not self._results:
-    #         raise ValueError("No simulation results to plot. Run the simulation first.")
-
-    #     plt.figure(figsize=figsize)
-    #     plt.hist(self._results, bins=bins, alpha=0.7, color='skyblue', edgecolor='black')
-
-    #     # Add statistics to the plot
-    #     stats_text = (
-    #         f"Mean: {self._mean:.4f}\n"
-    #         f"Std Dev: {self._std_dev:.4f}\n"
-    #         f"Min: {self._min:.4f}\n"
-    #         f"Max: {self._max:.4f}\n"
-    #         f"Samples: {self._count}"
-    #     )
-    #     plt.annotate(stats_text, xy=(0.02, 0.95), xycoords='axes fraction',
-    #                 bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="gray", alpha=0.8),
-    #                 va='top', fontsize=10)
-
-    #     # Add title and labels
-    #     plot_title = title if title else f"Monte Carlo Simulation: {self._pi_expr}"
-    #     plt.title(plot_title)
-    #     plt.xlabel("Coefficient Value")
-    #     plt.ylabel("Frequency")
-    #     plt.grid(True, alpha=0.3)
-
-    #     if save_path:
-    #         plt.savefig(save_path, dpi=300, bbox_inches='tight')
-
-    #     plt.show()

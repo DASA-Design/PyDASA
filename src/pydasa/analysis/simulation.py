@@ -418,11 +418,11 @@ class MonteCarloSim(Validation, Generic[T]):
                 # Evaluate the coefficient
                 result = float(self._exe_func(*sorted_vals))
                 # save simulation inputs and results
-                print("-------")
-                print(self._iter_values)
-                print(self._latex_to_py.keys())
-                print(self._var_symbols)
-                print(sorted_vals, result)
+                # print("-------")
+                # print(self._iter_values)
+                # print(self._latex_to_py.keys())
+                # print(self._var_symbols)
+                # print(sorted_vals, result)
                 self.inputs[i, :] = sorted_vals
                 self._results[i] = result
                 # self._results.append(result)

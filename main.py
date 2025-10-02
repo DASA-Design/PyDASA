@@ -274,7 +274,7 @@ if __name__ == "__main__":
                               _step=0.1,
                               _dist_type="uniform",
                               _dist_params={"min": 0.0, "max": 15.0},
-                              _dist_func=lambda U: U * dist2(0.0, 5.0),
+                              _dist_func=lambda U, a=0.0, b=0.75: float(U) + dist2(a, b),
                               _depends=["U"],),
         "y_{2}": Variable(_sym="y_{2}",
                           _alias="y_2",
@@ -621,3 +621,6 @@ if __name__ == "__main__":
         for k, v in res.items():
             v = [float(f'{x:.4f}') for x in v]
             print(f"\t{k}: {v}")
+
+print("===============================")
+print(mchandler, "\n")

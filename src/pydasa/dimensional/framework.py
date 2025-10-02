@@ -149,7 +149,7 @@ class DimScheme(Validation, Generic[T]):
         if self.fwk == "CUSTOM":
             # Create custom FDU set
             for idx, data in enumerate(fdu_lt):
-                print(idx, data, type(data))
+                # print(idx, data, type(data))
                 # data = dict(data)
                 fdu = Dimension(
                     _idx=idx,
@@ -159,7 +159,7 @@ class DimScheme(Validation, Generic[T]):
                     name=data.get("name", ""),
                     description=data.get("description", "")
                 )
-                print(fdu)
+                # print(fdu)
                 # self.add_fdu(fdu)
                 ans.append(fdu)
         return ans

@@ -327,6 +327,8 @@ class DimMatrix(Validation, Generic[T]):
     def create_matrix(self) -> None:
         """*create_matrix()* Builds the dimensional matrix. Creates the dimensional matrix by arranging variable dimensions as columns in the matrix.
         """
+        # TODO FILTER THE RELEVANT LIST BY THOSE WITH FDUs, EXCLUDE CONSTANTS
+        # _working_lt = [v for v in _relevant_lt if not v._dims == "n.a."]
         # Get number of FDUs and relevant variables
         n_fdu = len(self._framework.fdu_symbols)
         n_var = len(self._relevant_lt)

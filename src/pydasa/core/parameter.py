@@ -190,9 +190,9 @@ class Variable(Validation):
             self._alias = latex_to_python(self._sym)
 
         # Process dimensions if provided
-        if self._dims:
+        if len(self._dims) > 0 and self._dims != "n.a.":
             if not self._validate_exp(self._dims, cfg.WKNG_FDU_RE):
-                _msg = f"Invalid Variable dimensions '{self.name}': {self._dims}. "
+                _msg = f"Invalid dimensions '{self.name}': {self._dims}. "
                 _msg += f"Check FDUs according to precedence: {cfg.WKNG_FDU_PREC_LT}"
                 raise ValueError(_msg)
             self._prepare_dims()
@@ -210,8 +210,11 @@ class Variable(Validation):
             dims (str): Dimensions of the parameter. It is a string with the FDU formula of the parameter. e.g.: [T^2*L^-1]
 
         Returns:
-            bool: True if the dimensions are valid, False otherwise.
+            bool: True if the dimensions are valid, False otherwise, ignoring null or empty strings.
         """
+        # TODO improve this ignoring null or empty strings for constants
+        if exp in [None, ""]:
+            return True
         return bool(re.match(regex, exp))
 
     def _prepare_dims(self) -> None:

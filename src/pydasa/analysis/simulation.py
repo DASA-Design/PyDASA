@@ -28,9 +28,10 @@ from scipy import stats
 
 # Import validation base classes
 from pydasa.core.basic import Validation
-
+ 
 # Import related classes
 from pydasa.buckingham.vashchy import Coefficient
+from pydasa.core.parameter import Variable
 
 # Import utils
 from pydasa.utils.default import T
@@ -104,12 +105,8 @@ class MonteCarloSim(Validation, Generic[T]):
     """Executable function for numerical evaluation."""
 
     # :attr: _variables
-    _variables: Dict[str: Any] = field(default_factory=dict)
+    _variables: Dict[str: Variable] = field(default_factory=dict)
     """Variable symbols in the expression."""
-
-    # :attr: _dependencies
-    _dependencies: Dict[str, List[str]] = field(default_factory=dict)
-    """Dependencies between variables in the expression."""
 
     # :attr: _symbols
     _symbols: Dict[str: Any] = field(default_factory=dict)
@@ -338,34 +335,34 @@ class MonteCarloSim(Validation, Generic[T]):
             self.specs[var] = specs
 
     def _generate_sample(self,
-                         var: str,
-                         iter_values: Dict[str, float]) -> float:
+                         var: Variable,
+                         memory: Dict[str, float]) -> float:
         """*_generate_sample()* Generate a sample for a given variable.
 
         Args:
             var (str): The variable to generate a sample for.
-            iter_values (Dict[str, float]): The current iteration values.
+            memory (Dict[str, float]): The current iteration values.
 
         Returns:
             float: The generated sample.
         """
         sample = None
-        # check if the variable is dependent
-        # TODO this conditional can be improved
-        if var in self._dependencies and len(self._dependencies.get(var)) > 0:
-            # get the dependent variables values for this iteration
-            dep_vals = [iter_values[d] for d in self._dependencies[var]]
-            # generate samples for the dependent variables
-            sample = self._distributions[var]["func"](*dep_vals)
-        # otherwise, independent variable
-        else:
-            # generate sample for the independent variable
-            sample = self._distributions[var]["func"]()
+        # if the variable is independent
+        if len(var.depends) == 0:
+            sample = var._dist_func()
+            memory[var.sym] = sample
+        # else if the variable is dependent
+        elif len(var.depends) > 0:
+            deps = [memory[d] for d in var.depends if d in memory]
+            # print(f"Generating sample for dependent variable '{var.sym}' with dependencies {deps}")
+            # this conditional is necessary because the dependencies might not be ready yet
+            if None not in deps:
+                sample = var._dist_func(*deps)
+                memory[var.sym] = sample
         # return the generated sample
         return sample
 
     def run(self, iters: int = None) -> None:
-
         # Validate simulation readiness
         self._validate_readiness()
 
@@ -384,48 +381,33 @@ class MonteCarloSim(Validation, Generic[T]):
         i = 0
         while i < self._iterations:
             try:
-                # dict to store sample values for this iteration
-                iter_sample = {}
-                # sets to store/process variables respecting dependencies
-                _processed = set()
-                _to_process = list(self._distributions.keys())
-                # TODO need the double loop because I dont know when I process the vars, check if there is a better way
-                # process variables until all are done
-                while len(_to_process) > 0:
-                    # find variables whose dependencies are all processed
-                    for var in list(_to_process):
-                        deps = self._dependencies.get(var, [])
-                        # check if all dependencies have been processedp
-                        if all(d in _processed for d in deps):
-                            # generate sample for the variable
-                            val = self._generate_sample(var, iter_sample)
-                            # store the sample in the iteration values
-                            iter_sample[var] = val
-                            # store the sample in the intermediate values
-                            self._iter_values[var].append(val)
-                            # mark variable as processed
-                            _processed.add(var)
-                            _to_process.remove(var)
+                # dict to store sample memory for this iteration
+                memory = {}
+                # TODO calculate independent and dependenant values
+                for var in self._variables.values():
+                    # generate sample for the variable
+                    val = self._generate_sample(var, memory)
+                    # store the sample in the iteration values
+                    memory[var.sym] = val
+                    # store the sample in the intermediate values
+                    self._iter_values[var.sym].append(val)
+                    # print(f"Iteration {i}, variable '{var.sym}': {val}")
+                    # print(f"Memory state: {memory}")
+                    # print(f"Intermediate values: {self._iter_values}")
+
                 # OLD CODE beware!!!!!
-                # Prepare sorted/ordered values for function evaluation
-                sorted_vals = [iter_sample[var] for var in self._latex_to_py]
+                # Prepare sorted/ordered values from memory for evaluation
+                sorted_vals = [memory[var] for var in self._latex_to_py]
 
                 # Create lambdify function using Python symbols
-                # aliases = [self._aliases[v] for v in self._variables.keys()]
                 aliases = [self._aliases[v] for v in self._var_symbols]
                 self._exe_func = lambdify(aliases, self._sym_func, "numpy")
 
                 # Evaluate the coefficient
                 result = float(self._exe_func(*sorted_vals))
                 # save simulation inputs and results
-                # print("-------")
-                # print(self._iter_values)
-                # print(self._latex_to_py.keys())
-                # print(self._var_symbols)
-                # print(sorted_vals, result)
                 self.inputs[i, :] = sorted_vals
                 self._results[i] = result
-                # self._results.append(result)
 
             except Exception as e:
                 # Handle numerical errors (e.g., division by zero)
@@ -439,74 +421,7 @@ class MonteCarloSim(Validation, Generic[T]):
         if len(self._results) == self._iterations:
             self._calculate_statistics()
         else:
-            raise ValueError("Invalid results, check yout distributions!")
-
-    def run_OLD(self, iters: int = None) -> None:
-        """*run()* Perform the Monte Carlo simulation.
-
-        Raises:
-            ValueError: If the simulation is not ready due to missing variables, executable function, distributions, or invalid number of iterations.
-            ValueError: If there are numerical errors during simulation runs (e.g., division by zero).
-        """
-        # Validate simulation readiness
-        self._validate_readiness()
-
-        # Set iterations if necesary
-        if iters is not None:
-            self._iterations = iters
-
-        # Clear previous results
-        self._results = np.zeros((0,))
-        self._reset_statistics()
-
-        # Preallocate full array space
-        n_vars = len(self._variables)
-        self.inputs = np.zeros((self._iterations, n_vars))
-        self._results = np.zeros((self._iterations, 1))  # 2D array for results
-
-        # Run simulation
-        i = 0
-        while i < self._iterations:
-            try:
-                # Sample values from distributions
-                samples = {}
-                for var in self._latex_to_py.keys():
-                    # if the distribution exists
-                    if var in self._distributions:
-                        # accessing the distribution in the distribution specs
-                        samples[var] = self._distributions[var]["func"]()
-                    # otherwise, raise error
-                    else:
-                        _msg = f"Missing distribution for variable: {var}"
-                        raise ValueError(_msg)
-
-                # Prepare sorted/ordered values for function evaluation
-                sorted_vals = [samples[var] for var in self._latex_to_py.keys()]
-
-                # Create lambdify function using Python symbols
-                aliases = [self._aliases[v] for v in self._variables]
-                self._exe_func = lambdify(aliases, self._sym_func, "numpy")
-
-                # Evaluate the coefficient
-                result = float(self._exe_func(*sorted_vals))
-                # save simulation inputs and results
-                self.inputs[i, :] = sorted_vals
-                self._results[i] = result
-                # self._results.append(result)
-
-            except Exception as e:
-                # Handle numerical errors (e.g., division by zero)
-                _msg = f"Error during simulation run {i}: {str(e)}"
-                # TODO add logger later
-                raise ValueError(_msg)
-                # continue
-            i += 1
-
-        # Calculate statistics
-        if len(self._results) == self._iterations:
-            self._calculate_statistics()
-        else:
-            raise ValueError("Invalid results, check yout distributions!")
+            raise ValueError("Invalid results, check your distributions!")
 
     def _reset_memory(self) -> None:
         """*_reset_memory()* Reset results and inputs arrays."""

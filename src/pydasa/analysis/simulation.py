@@ -508,6 +508,24 @@ class MonteCarloSim(Validation, Generic[T]):
     # Properties for accessing results and statistics
 
     @property
+    def variables(self) -> Dict[str, Variable]:
+        """*variables* Get the variables involved in the simulation.
+
+        Returns:
+            Dict[str, Variable]: Dictionary of variable symbols and their corresponding Variable objects.
+        """
+        return self._variables.copy()
+
+    @property
+    def coefficient(self) -> Optional[Coefficient]:
+        """*coefficient* Get the coefficient associated with the simulation.
+
+        Returns:
+            Optional[Coefficient]: The associated Coefficient object, or None if not set.
+        """
+        return self._coefficient
+
+    @property
     def results(self) -> List[float]:
         """*results* Raw simulation results.
 

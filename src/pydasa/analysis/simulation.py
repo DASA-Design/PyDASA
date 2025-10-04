@@ -353,9 +353,21 @@ class MonteCarloSim(Validation, Generic[T]):
             memory[var.sym] = sample
         # else if the variable is dependent
         elif len(var.depends) > 0:
-            deps = [memory[d] for d in var.depends if d in memory]
-            # print(f"Generating sample for dependent variable '{var.sym}' with dependencies {deps}")
-            # this conditional is necessary because the dependencies might not be ready yet
+            # gather dependencies values from memory
+            deps = []
+            for d in var.depends:
+                # only add the dependency if it is already in memory
+                if d in memory:
+                    dep_val = memory[d]
+                    # if the dependency is a list, tuple or ndarray, take the last value
+                    # TODO hotfix improve later
+                    if isinstance(dep_val, (list, tuple, np.ndarray)):
+                        dep_val = dep_val[-1]
+                    deps.append(dep_val)
+
+            # TODO OLD code list comprehension, delete later!
+            # deps = [memory[d] for d in var.depends if d in memory]
+            # if all dependencies are available in memory
             if None not in deps:
                 sample = var._dist_func(*deps)
                 memory[var.sym] = sample
@@ -399,12 +411,25 @@ class MonteCarloSim(Validation, Generic[T]):
                 # Prepare sorted/ordered values from memory for evaluation
                 sorted_vals = [memory[var] for var in self._latex_to_py]
 
+                _type = (list, tuple, np.ndarray)
+                # TODO hotfix for dealing with adjusted vals, imprtove later
+                if any(isinstance(v, _type) for v in sorted_vals):
+                    sorted_vals = [v[-1] if isinstance(v, _type) else v for v in sorted_vals]
+
                 # Create lambdify function using Python symbols
                 aliases = [self._aliases[v] for v in self._var_symbols]
                 self._exe_func = lambdify(aliases, self._sym_func, "numpy")
 
                 # Evaluate the coefficient
                 result = float(self._exe_func(*sorted_vals))
+
+                # TODO hotfix for dealing with adjusted vals, imprtove later
+                if isinstance(result, _type):
+                    print("Warning: Result needs to be a scalar value.")
+                    print(result)
+                    result = result[-1]  # Take the first element
+                    sorted_vals = [v[-1] for v in result]
+
                 # save simulation inputs and results
                 self.inputs[i, :] = sorted_vals
                 self._results[i] = result

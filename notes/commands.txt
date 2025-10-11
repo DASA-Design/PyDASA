@@ -10,6 +10,8 @@ https://youtu.be/5KEObONUkik
 
 ========================= sphinx commands =========================
 
+TODO need to install the following packages for documentation:
+
     sphinx-quickstart
 
     make html
@@ -44,3 +46,4 @@ deactivate
 
 pip freeze > requirements.txt
 pip install -r requirements.txt
+python .\main.py

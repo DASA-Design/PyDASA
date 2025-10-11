@@ -252,30 +252,31 @@ if __name__ == "__main__":
                       _dist_params={"min": 0.0, "max": 15.0},
                       _dist_func=lambda: dist1(0.0, 15.0),
                       _depends=[],),
-        "\\miu_{1}": Variable(_sym="\\miu_{1}",
-                              _alias="miu_1",
-                              _fwk="CUSTOM",
-                              name="Fluid Velocity",
-                              description="Fluid velocity in the channel",
-                              relevant=True,
-                              _idx=0,
-                              _cat="OUT",
-                              _units="m/s",
-                              _dims="L*T^-1",
-                              _min=0.0,
-                              _max=15.0,
-                              _mean=7.50,
-                              _dev=0.75,
-                              _std_units="m/s",
-                              _std_min=0.0,
-                              _std_max=15.0,
-                              _std_mean=7.50,
-                              _std_dev=0.75,
-                              _step=0.1,
-                              _dist_type="uniform",
-                              _dist_params={"min": 0.0, "max": 15.0},
-                              _dist_func=lambda U, a=0.0, b=0.75: float(U) + dist2(a, b),
-                              _depends=["U"],),
+        "\\mu_{1}": Variable(_sym="\\mu_{1}",
+                             _alias="mu_1",
+                             _fwk="CUSTOM",
+                             name="Fluid viscosity",
+                             description="Fluid viscosity in the channel",
+                             relevant=True,
+                             _idx=0,
+                             _cat="OUT",
+                             _units="m/s",
+                             _dims="L*T^-1",
+                             _min=0.0,
+                             _max=15.0,
+                             _mean=7.50,
+                             _dev=0.75,
+                             _std_units="m/s",
+                             _std_min=0.0,
+                             _std_max=15.0,
+                             _std_mean=7.50,
+                             _std_dev=0.75,
+                             _step=0.1,
+                             _dist_type="uniform",
+                             _dist_params={"min": 0.0, "max": 15.0},
+                             _dist_func=lambda U, a=0.0, b=0.75: float(
+                                 U) + dist2(a, b),
+                             _depends=["U"],),
         "y_{2}": Variable(_sym="y_{2}",
                           _alias="y_2",
                           _fwk="CUSTOM",
@@ -465,7 +466,7 @@ if __name__ == "__main__":
     # td["d"] = 5.05
     # td["y_{2}"] = 3.05
     td["U"] = 10.05
-    td["\\miu_{1}"] = 0.05
+    td["\\mu_{1}"] = 0.05
     # td["P"] = 50000.05
     # sen.set_coefficient(DAModel.coefficients[1])
 
@@ -521,43 +522,28 @@ if __name__ == "__main__":
     print("\n=== Monte Carlo Simulation: === \n")
 
     U = DAModel.variables["U"]
-    miu = DAModel.variables["\\miu_{1}"]
+    miu = DAModel.variables["\\mu_{1}"]
 
-    mc_dist = {
-        "U": lambda: dist1(U.std_min, U.std_max),
-        "\\miu_{1}": lambda U: U * dist2(miu.std_mean, miu.std_dev),
-    }
+    # mc_dist = {
+    #     "U": lambda: dist1(U.std_min, U.std_max),
+    #     "\\mu_{1}": lambda U: U * dist2(miu.std_mean, miu.std_dev),
+    # }
 
     dist_specs = {
         "U": {
-            "depends": [],
+            "depends": U.depends,
             "dtype": U.dist_type,        # uniform
             "params": U.dist_params,
             "func": U.dist_func
         },
         # dependent variable example
-        "\\miu_{1}": {
-            "depends": ["U"],
+        "\\mu_{1}": {
+            "depends": miu.depends,
             "dtype": miu.dist_type,        # uniform
             "params": miu.dist_params,
             "func": miu.dist_func
         }
     }
-
-    deps = {
-        "U": [],
-        "\\miu_{1}": ["U"]
-    }
-
-    # i = 0
-    # while i < 10:
-    #     t1 = mc_dist["U"]()
-    #     t2 = mc_dist["\\miu_{1}"]()
-    #     print(f"Iteration {i}: U = {t1}, \\miu_{1} = {t2}")
-    #     i += 1
-    # _vars = list(DAModel.coefficients["\\Pi_{1}"].var_dims.keys())
-    # print("Vardims:", _vars)
-    # print(_vars.index("\\miu_{1}"))
 
     monte = MonteCarloSim()
     # print(monte, "\n")
@@ -570,24 +556,41 @@ if __name__ == "__main__":
                           _pi_expr=DAModel.coefficients["\\Pi_{1}"].pi_expr,
                           _variables=DAModel.variables,
                           _distributions=dist_specs,
-                          _dependencies=deps,
-                          _iterations=10,)
+                          _iterations=100,)
+    # Configure with coefficient, this is critical!!!
     monte.set_coefficient(DAModel.coefficients["\\Pi_{1}"])
+    # monte.config_simulations()
+
+    # Extract variables from the coefficient's expression
+    vars_in_coef = list(DAModel.coefficients["\\Pi_{1}"].var_dims.keys())
+
+    # Set the distributions and dependencies
+    # _get_distributions
+    monte._distributions = {k: v for k, v in dist_specs.items() if k in vars_in_coef}
+    monte._dependencies = {k: v.depends for k, v in DAModel.variables.items()
+                           if k in vars_in_coef}
+
+    print("=== Monte Carlo Simulation Details: ===")
     print(monte, "\n")
-
+    # print(f"pi_expr: {monte.pi_expr}")
+    # print(f"variables: {monte._variables}")
+    print("===========================")
     print(f"dependencies: {monte._dependencies}")
+    print(f"distributions: {monte._distributions}")
+    print("===========================")
 
-    monte.run()
-    print("Monte Carlo Simulation Results:")
-    for k, v in monte.statistics.items():
-        print(f"{k}: {v}")
-    print("Mean:", monte.mean)
-    print("Variance:", monte.variance)
-    # print("Summary:", monte.summary)
-    # a = monte.export_results().keys()
-    print("Confidence result keys:", monte.extract_results().keys())
+    # FIXME something weird in the individual invocation of the simulation
+    # monte.run()
+    # print("Monte Carlo Simulation Results:")
+    # for k, v in monte.statistics.items():
+    #     print(f"{k}: {v}")
+    # print("Mean:", monte.mean)
+    # print("Variance:", monte.variance)
+    # # print("Summary:", monte.summary)
+    # # a = monte.export_results().keys()
+    # print("Confidence result keys:", monte.extract_results().keys())
 
-    print("Confidence report:", monte.get_confidence_interval(0.95))
+    # print("Confidence report:", monte.get_confidence_interval(0.95))
 
     print("\n=== monte carlo handler ===")
     # Create a handler
@@ -605,7 +608,7 @@ if __name__ == "__main__":
     for k, v in mchandler._simulations.items():
         print(f"\tSimulation dist = {k}:\n\t{v._distributions}")
         print(f"\tDependencies dist = {k}:\n\t{v._dependencies}")
-    mchandler.simulate(n_samples=10)
+    mchandler.simulate(n_samples=100)
 
     for pi, results in mchandler._results.items():
         for k, v in results.items():

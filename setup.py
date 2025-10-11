@@ -57,9 +57,13 @@ setup(
         # "Topic :: Scientific/Engineering :: Physics",
     ],
     install_requires=[
+        "antlr4-python3-runtime==4.11",
         "numpy>=1.26.4",
         "scipy>=1.13.0",
         "sympy>=1.12",
+        "matplotlib>=3.8.0",
+        "pandas>=2.1.0",
+        "SALib>=1.4.5",
     ],
     extras_require={
         "dev": [

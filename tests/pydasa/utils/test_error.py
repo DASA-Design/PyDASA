@@ -213,6 +213,7 @@ class TestInspectVar:
         value = 100
         var1 = value
         var2 = value
+        value = var1 + var2
 
         # Should return one of the variable names
         result = inspect_var(value)
@@ -432,4 +433,5 @@ class TestEdgeCases:
 
         # Should return one of them
         result = inspect_var(x)
+        result = inspect_var(y)
         assert result in ["x", "y"]

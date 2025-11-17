@@ -160,7 +160,7 @@ class TestDimScheme(unittest.TestCase):
         with pytest.raises(ValueError):
             scheme.fdu_lt = []  # empty
         with pytest.raises(ValueError):
-            scheme.fdu_lt = ["not", "dimensions"]  # type error
+            scheme.fdu_lt = ["not", "dimensions"]  # type: ignore[assignment]
 
     def test_update_global_config(self) -> None:
         """update_global_config populates global regex and symbol config."""

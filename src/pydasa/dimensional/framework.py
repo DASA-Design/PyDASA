@@ -16,7 +16,7 @@ Classes:
 """
 
 from __future__ import annotations
-from typing import List, Dict, Optional, Generic
+from typing import List, Dict, Optional, Generic, Any, Sequence, Mapping, cast
 from dataclasses import dataclass, field
 
 # Import validation base classes
@@ -49,7 +49,7 @@ class DimScheme(Validation, Generic[T]):
     for dimensional expressions, and manages the dimensional framework context.
 
     Attributes:
-        _fdus (List[Dimension]): List of Fundamental Dimensional Units in precedence order.
+        _fdu_lt (List[Dimension]): List of Fundamental Dimensional Units in precedence order.
         _fdu_map (Dict[str, Dimension]): Dictionary mapping FDU symbols to Dimension objects.
         _fdu_regex (str): Regex pattern for matching dimensional expressions (e.g., 'M/L*T^-2' to 'M^1*L^-1*T^-2').
         _fdu_pow_regex (str): Regex pattern for matching dimensions with exponents. (e.g., 'M*L^-1*T^-2' to 'M^(1)*L^(-1)*T^(-2)').
@@ -59,8 +59,8 @@ class DimScheme(Validation, Generic[T]):
 
     # FDUs storage
     # FDU precedence list, linked to WKNG_FDU_PREC_LT.
-    # :attr: _fdus
-    _fdus: List[Dimension] = field(default_factory=list)
+    # :attr: _fdu_lt
+    _fdu_lt: List[Dimension] = field(default_factory=list)
     """List of Fundamental Dimensional Units in precedence order."""
 
     # FDU framework
@@ -124,22 +124,38 @@ class DimScheme(Validation, Generic[T]):
         """
         # if the framework is supported, configure the default
         if self.fwk in FDU_FWK_DT and self.fwk != "CUSTOM":
-            self.fdus = self._setup_fdu_framework()
+            self.fdu_lt = self._setup_fdu_framework()
+
         # if the framework is user-defined, use the provided list[dict]
-        elif self.fwk in FDU_FWK_DT and self.fwk == "CUSTOM" and self._fdus:
-            self.fdus = self._setup_custom_framework(self._fdus)
+        elif self.fwk == "CUSTOM":
+            if not self._fdu_lt:
+                raise ValueError("Custom framework requires '_fdu_lt' to define FDUs")
+
+            # Check if _fdu_lt contains Dimension objects (already created)
+            if all(isinstance(val, Dimension) for val in self._fdu_lt):
+                # Already Dimension objects, just assign them
+                self.fdu_lt = self._fdu_lt
+            # Check if _fdu_lt contains dicts (need to be converted)
+            elif all(isinstance(val, dict) for val in self._fdu_lt):
+                # Convert dicts to Dimension objects
+                raw = cast(Sequence[Mapping[str, Any]], self._fdu_lt)
+                self.fdu_lt = self._setup_custom_framework(raw)
+            else:
+                _msg = "'fdu_lt' elements must be type Dimension() or dict()"
+                raise ValueError(_msg)
+
         # otherwise, raise an error
         else:
             _msg = f"Invalid Framework: {self.fwk}. "
-            _msg += "Must be one of the following: "
-            _msg += f"{', '.join(FDU_FWK_DT.keys())}."
+            _msg += f"Valid options: {', '.join(FDU_FWK_DT.keys())}."
             raise ValueError(_msg)
 
-    def _setup_custom_framework(self, fdu_lt: List[Dict]) -> List[Dimension]:
+    def _setup_custom_framework(self,
+                                fdus: Sequence[Mapping[str, Any]]) -> List[Dimension]:
         """*_setup_custom_framework()* Initializes a custom framework with the provided FDUs.
 
         Args:
-            fdu_lt (List[Dict]): List of dictionaries representing custom FDUs.
+            fdus (List[Dict]): List of dictionaries representing custom FDUs.
 
         Returns:
             List[Dimension]: List of Dimension objects created from the provided FDUs.
@@ -148,19 +164,18 @@ class DimScheme(Validation, Generic[T]):
         ans = []
         if self.fwk == "CUSTOM":
             # Create custom FDU set
-            for idx, data in enumerate(fdu_lt):
+            for idx, data in enumerate(fdus):
                 # print(idx, data, type(data))
-                # data = dict(data)
+                data = dict(data)
                 fdu = Dimension(
                     _idx=idx,
-                    _sym=data.get("_sym"),
+                    _sym=data.get("_sym", ""),
                     _fwk=self._fwk,
-                    _unit=data.get("_unit"),
+                    _unit=data.get("_unit", ""),
                     name=data.get("name", ""),
-                    description=data.get("description", "")
-                )
+                    description=data.get("description", ""))
+
                 # print(fdu)
-                # self.add_fdu(fdu)
                 ans.append(fdu)
         return ans
 
@@ -187,8 +202,8 @@ class DimScheme(Validation, Generic[T]):
                     _fwk=self._fwk,
                     _unit=data.get("_unit", ""),
                     name=data.get("name", ""),
-                    description=data.get("description", "")
-                )
+                    description=data.get("description", ""))
+
                 ans.append(fdu)
             # _prec_lt = list(_frk_map[self.fwk].keys())
         return ans
@@ -200,27 +215,27 @@ class DimScheme(Validation, Generic[T]):
             ValueError: If FDU precedence values are duplicated.
         """
         # trick to do nothing if FDU set is null
-        if not self._fdus:
+        if not self._fdu_lt:
             return
 
         # Check for duplicate precedence values
-        indices = [fdu.idx for fdu in self._fdus]
+        indices = [fdu.idx for fdu in self._fdu_lt]
         if len(indices) != len(set(indices)):
             raise ValueError("Duplicate precedence values in FDUs.")
 
         # Sort FDUs by idx precedence
-        self._fdus.sort(key=lambda fdu: fdu.idx)
+        self._fdu_lt.sort(key=lambda fdu: fdu.idx)
 
     def _update_fdu_map(self) -> None:
         """*_update_fdu_map()* Updates the FDU symbol to object mapping.
         """
         self._fdu_map.clear()
-        for fdu in self._fdus:
+        for fdu in self._fdu_lt:
             self._fdu_map[fdu.sym] = fdu
 
     def _update_fdu_symbols(self) -> None:
         """*_update_fdu_symbols()* Updates the list of FDU symbols in precedence order."""
-        self._fdu_symbols = [fdu.sym for fdu in self._fdus]
+        self._fdu_symbols = [fdu.sym for fdu in self._fdu_lt]
 
     def _setup_regex(self) -> None:
         """*_setup_regex()* Sets up regex patterns for dimensional validation. Generates regex patterns for:
@@ -230,11 +245,11 @@ class DimScheme(Validation, Generic[T]):
             - handling symbolic expressions.
         """
         # trick to do nothing if FDU set is null
-        if not self._fdus:
+        if not self._fdu_lt:
             return None
 
         # Get FDU symbols in precedence order
-        # fdu_symbols = [fdu.sym for fdu in self._fdus]
+        # fdu_symbols = [fdu.sym for fdu in self._fdu_lt]
         _fdu_chars = ''.join(self.fdu_symbols)
 
         # Generate main regex for dimensional expressions
@@ -255,7 +270,7 @@ class DimScheme(Validation, Generic[T]):
         Makes the current framework's settings available globally for all PyDASA components.
         """
         # Get FDU symbols in precedence order
-        # fdu_symbols = [fdu.sym for fdu in self._fdus]
+        # fdu_symbols = [fdu.sym for fdu in self._fdu_lt]
 
         # Update global configuration
         cfg.WKNG_FDU_PREC_LT = self.fdu_symbols
@@ -267,17 +282,17 @@ class DimScheme(Validation, Generic[T]):
     # propierties getters and setters
 
     @property
-    def fdus(self) -> List[Dimension]:
-        """*fdus* Get the list of FDUs in precedence order.
+    def fdu_lt(self) -> List[Dimension]:
+        """*fdu_lt* Get the list of FDUs in precedence order.
 
         Returns:
             List[Dimension]: List of FDUs.
         """
-        return self._fdus.copy()
+        return self._fdu_lt.copy()
 
-    @fdus.setter
-    def fdus(self, val: List[Dimension]) -> None:
-        """*fdus* Set the FDUs in precedence order.
+    @fdu_lt.setter
+    def fdu_lt(self, val: List[Dimension]) -> None:
+        """*fdu_lt* Set the FDUs in precedence order.
 
         Args:
             val (List[Dimension]): List of FDUs.
@@ -289,7 +304,7 @@ class DimScheme(Validation, Generic[T]):
             _msg = "FDUs list must be a non-empty list of Dimensions. "
             _msg += f"Provided: {val}"
             raise ValueError(_msg)
-        self._fdus = val
+        self._fdu_lt = val
 
     @property
     def fdu_symbols(self) -> List[str]:
@@ -301,13 +316,13 @@ class DimScheme(Validation, Generic[T]):
         return self._fdu_symbols.copy()
 
     @property
-    def fdu_count(self) -> int:
-        """*fdu_count* Get the number of FDUs in the framework.
+    def size(self) -> int:
+        """*size* Get the number of FDUs in the framework.
 
         Returns:
             int: Number of FDUs.
         """
-        return len(self._fdus)
+        return len(self._fdu_lt)
 
     @property
     def fdu_regex(self) -> str:
@@ -451,7 +466,7 @@ class DimScheme(Validation, Generic[T]):
             raise ValueError(_msg)
 
         # Add FDU
-        self._fdus.append(fdu)
+        self._fdu_lt.append(fdu)
 
         # Update indices, map, and symbol precedence
         self._validate_fdu_precedence()
@@ -476,10 +491,10 @@ class DimScheme(Validation, Generic[T]):
         # Remove FDU
         # find index with the symbol
         rmv = Dimension(_sym=sym)
-        if rmv in self._fdus:
-            self._fdus.remove(rmv)
-        # _idx = self._fdus.
-        # self._fdus = [f for f in self._fdus if f.sym != symbol]
+        if rmv in self._fdu_lt:
+            self._fdu_lt.remove(rmv)
+        # _idx = self._fdu_lt.
+        # self._fdu_lt = [f for f in self._fdu_lt if f.sym != symbol]
 
         # Update indices, map, and symbol precedence
         self._validate_fdu_precedence()
@@ -493,7 +508,7 @@ class DimScheme(Validation, Generic[T]):
 
     def reset(self) -> None:
 
-        self._fdus.clear()
+        self._fdu_lt.clear()
         self._fdu_map.clear()
         self._fdu_symbols.clear()
         self._fdu_regex = ""
@@ -534,7 +549,7 @@ class DimScheme(Validation, Generic[T]):
     #         raise ValueError(f"Invalid dimensional expression: {expression}")
 
     #     # Initialize result with zeros for all FDUs
-    #     result = {fdu.sym: 0 for fdu in self._fdus}
+    #     result = {fdu.sym: 0 for fdu in self._fdu_lt}
 
     #     # Split by multiplication operator
     #     terms = expression.split('*')
@@ -567,7 +582,7 @@ class DimScheme(Validation, Generic[T]):
     #     terms = []
 
     #     # Process dimensions in precedence order
-    #     for fdu in self._fdus:
+    #     for fdu in self._fdu_lt:
     #         exponent = dimensions.get(fdu.sym, 0)
     #         if exponent != 0:
     #             if exponent == 1:

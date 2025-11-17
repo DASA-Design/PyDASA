@@ -9,6 +9,7 @@ Tests for the **Variable** class in *PyDASA*.
 import unittest
 import pytest
 import numpy as np
+from typing import Any, cast
 from pydasa.core.parameter import Variable
 from tests.pydasa.data.test_data import get_variable_test_data
 
@@ -172,7 +173,7 @@ class TestVariable(unittest.TestCase):
         """Test dim_col property setter with invalid type."""
         var = Variable()
         with pytest.raises(ValueError) as excinfo:
-            var.dim_col = "not a list"
+            var.dim_col = cast(Any, "not a list")
         assert "Dimensional column must be a list" in str(excinfo.value)
 
     # Standardized dimensions property tests
@@ -213,7 +214,7 @@ class TestVariable(unittest.TestCase):
         """Test min property setter with invalid type."""
         var = Variable()
         with pytest.raises(ValueError) as excinfo:
-            var.min = "not a number"
+            var.min = cast(Any, "not a number")
         assert "Minimum range must be a number" in str(excinfo.value)
 
     def test_min_max_relationship(self) -> None:
@@ -247,7 +248,7 @@ class TestVariable(unittest.TestCase):
         """Test max property setter with invalid type."""
         var = Variable()
         with pytest.raises(ValueError) as excinfo:
-            var.max = "not a number"
+            var.max = cast(Any, "not a number")
         assert "Maximum val must be a number" in str(excinfo.value)
 
     def test_max_min_relationship(self) -> None:
@@ -281,7 +282,7 @@ class TestVariable(unittest.TestCase):
         """Test mean property setter with invalid type."""
         var = Variable()
         with pytest.raises(ValueError) as excinfo:
-            var.mean = "not a number"
+            var.mean = cast(Any, "not a number")
         assert "Mean value must be a number" in str(excinfo.value)
 
     def test_mean_setter_out_of_range(self) -> None:
@@ -337,7 +338,7 @@ class TestVariable(unittest.TestCase):
         """Test std_min property setter with invalid type."""
         var = Variable()
         with pytest.raises(ValueError) as excinfo:
-            var.std_min = "not a number"
+            var.std_min = cast(Any, "not a number")
         assert "Standardized minimum must be a number" in str(excinfo.value)
 
     def test_std_max_getter(self) -> None:
@@ -357,7 +358,7 @@ class TestVariable(unittest.TestCase):
         """Test std_max property setter with invalid type."""
         var = Variable()
         with pytest.raises(ValueError) as excinfo:
-            var.std_max = "not a number"
+            var.std_max = cast(Any, "not a number")
         assert "Standardized maximum must be a number" in str(excinfo.value)
 
     def test_std_min_max_relationship(self) -> None:
@@ -399,7 +400,7 @@ class TestVariable(unittest.TestCase):
         """Test std_mean property setter with invalid type."""
         var = Variable()
         with pytest.raises(ValueError) as excinfo:
-            var.std_mean = "not a number"
+            var.std_mean = cast(Any, "not a number")
         assert "Standardized mean must be a number" in str(excinfo.value)
 
     def test_std_mean_setter_out_of_range(self) -> None:
@@ -438,7 +439,7 @@ class TestVariable(unittest.TestCase):
         """Test std_dev property setter with invalid type."""
         var = Variable()
         with pytest.raises(ValueError) as excinfo:
-            var.std_dev = "not a number"
+            var.std_dev = cast(Any, "not a number")
         assert "Standardized standard deviation must be a number" in str(excinfo.value)
 
     # Step and range tests
@@ -462,7 +463,7 @@ class TestVariable(unittest.TestCase):
         """Test step property setter with invalid type."""
         var = Variable()
         with pytest.raises(ValueError) as excinfo:
-            var.step = "not a number"
+            var.step = cast(Any, "not a number")
         assert "Step must be a number" in str(excinfo.value)
 
     def test_step_setter_zero(self) -> None:
@@ -513,7 +514,7 @@ class TestVariable(unittest.TestCase):
         """Test std_range property setter with invalid type."""
         var = Variable()
         with pytest.raises(ValueError) as excinfo:
-            var.std_range = [0, 1, 2, 3]
+            var.std_range = cast(Any, [0, 1, 2, 3])
         assert "Range must be a numpy array" in str(excinfo.value)
 
     # Distribution type tests
@@ -623,7 +624,7 @@ class TestVariable(unittest.TestCase):
         """Test dist_func property setter with non-callable."""
         var = Variable()
         with pytest.raises(TypeError) as excinfo:
-            var.dist_func = "not a function"
+            var.dist_func = cast(Any, "not a function")
         assert "must be callable" in str(excinfo.value)
 
     # Dependencies tests
@@ -652,7 +653,7 @@ class TestVariable(unittest.TestCase):
         var = Variable()
 
         with pytest.raises(ValueError) as excinfo:
-            var.depends = "not a list"
+            var.depends = cast(Any, "not a list")
         assert "must be a list of strings" in str(excinfo.value)
 
     def test_depends_setter_invalid_non_string_elements(self) -> None:
@@ -660,7 +661,7 @@ class TestVariable(unittest.TestCase):
         var = Variable()
 
         with pytest.raises(ValueError) as excinfo:
-            var.depends = ["var1", 123, "var3"]
+            var.depends = cast(Any, ["var1", 123, "var3"])
         assert "must be a list of strings" in str(excinfo.value)
 
     # Utility methods tests

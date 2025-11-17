@@ -10,6 +10,7 @@ import unittest
 import pytest
 import numpy as np
 from typing import Any, cast
+
 from pydasa.core.parameter import Variable
 from tests.pydasa.data.test_data import get_variable_test_data
 
@@ -18,7 +19,7 @@ class TestVariable(unittest.TestCase):
     """Test cases for Variable class."""
 
     @pytest.fixture(autouse=True)
-    def inject_fixtures(self):
+    def inject_fixtures(self) -> None:
         """Inject test data fixture."""
         self.test_data = get_variable_test_data()
 
@@ -319,7 +320,7 @@ class TestVariable(unittest.TestCase):
         var = Variable()
         with pytest.raises(ValueError) as excinfo:
             var.std_units = "   "
-        assert "Standardized Unit of Measure cannot be empty" in str(excinfo.value)
+        assert "Standardized Units of Measure cannot be empty" in str(excinfo.value)
 
     def test_std_min_getter(self) -> None:
         """Test std_min property getter."""
@@ -412,26 +413,22 @@ class TestVariable(unittest.TestCase):
         # Test std_mean > std_max raises error
         with pytest.raises(ValueError) as excinfo:
             var.std_mean = 150.0
-        assert "Must be between" in str(excinfo.value)
+        assert "must be between" in str(excinfo.value)
 
         # Test std_mean < std_min raises error
         with pytest.raises(ValueError) as excinfo:
             var.std_mean = -50.0
-        assert "Must be between" in str(excinfo.value)
+        assert "must be between" in str(excinfo.value)
 
     def test_std_dev_getter(self) -> None:
         """Test std_dev property getter."""
         var = Variable()
-        var.std_min = 0.0
-        var.std_max = 100.0
         var.std_dev = 10.0
         assert var.std_dev == 10.0
 
     def test_std_dev_setter_valid(self) -> None:
         """Test std_dev property setter with valid value."""
         var = Variable()
-        var.std_min = 0.0
-        var.std_max = 100.0
         var.std_dev = 10.0
         assert var.std_dev == 10.0
 
@@ -441,6 +438,13 @@ class TestVariable(unittest.TestCase):
         with pytest.raises(ValueError) as excinfo:
             var.std_dev = cast(Any, "not a number")
         assert "Standardized standard deviation must be a number" in str(excinfo.value)
+
+    def test_std_dev_negative(self) -> None:
+        """Test std_dev property setter with negative value."""
+        var = Variable()
+        with pytest.raises(ValueError) as excinfo:
+            var.std_dev = -5.0
+        assert "cannot be negative" in str(excinfo.value)
 
     # Step and range tests
     def test_step_getter(self) -> None:

@@ -10,6 +10,7 @@ import unittest
 import pytest
 import re
 from pydasa.utils import config
+from pydasa.dimensional.framework import DimScheme
 from tests.pydasa.data.test_data import get_config_test_data
 
 
@@ -22,6 +23,9 @@ class TestConfig(unittest.TestCase):
     def inject_fixtures(self):
         """Inject test data fixture."""
         self.test_data = get_config_test_data()
+        # resseting config due to singletton patterm fix later
+        self.test_scheme = DimScheme(_fwk="PHYSICAL")
+        self.test_scheme.update_global_config()
 
     # Physical FDUs Tests
     def test_phy_fdu_exists(self) -> None:

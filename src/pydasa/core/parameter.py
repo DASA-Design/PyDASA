@@ -217,6 +217,20 @@ class Variable(Validation):
             return True
         return bool(re.match(regex, exp))
 
+    def _validate_in_list(self, value: str, prec_lt: List[str]) -> bool:
+        """*_validate_in_list()* Validates if a value exists in a list of allowed values.
+
+        Args:
+            value (str): Value to validate.
+            prec_lt (List[str]): List of allowed values.
+
+        Returns:
+            bool: True if the value is in the list, False otherwise.
+        """
+        if value in [None, ""]:
+            return False
+        return value in prec_lt
+
     def _prepare_dims(self) -> None:
         """*_prepare_dims()* Processes dimensional expressions for analysis.
 
@@ -288,18 +302,38 @@ class Variable(Validation):
 
         Returns:
             List[int]: Exponents with the dimensional expression. e.g.: [2, -1]
+
+        Raises:
+            ValueError: If dimensional expression cannot be parsed.
         """
         # split the sympy expression into a list of dimensions
         dims_list = dims.split("* ")
         # set the default list of zeros with the FDU length
         col = [0] * len(cfg.WKNG_FDU_PREC_LT)
+
         for dim in dims_list:
             # match the exponent of the dimension
-            _exp = int(re.search(cfg.WKNG_POW_RE, dim).group(0))
+            exp_match = re.search(cfg.WKNG_POW_RE, dim)
+            if exp_match is None:
+                _msg = f"Could not extract exponent from dimension: {dim}"
+                raise ValueError(_msg)
+            _exp = int(exp_match.group(0))
+
             # match the symbol of the dimension
-            _sym = re.search(cfg.WKNG_FDU_SYM_RE, dim).group(0)
+            sym_match = re.search(cfg.WKNG_FDU_SYM_RE, dim)
+            if sym_match is None:
+                _msg = f"Could not extract symbol from dimension: {dim}"
+                raise ValueError(_msg)
+            _sym = sym_match.group(0)
+
+            # Check if symbol exists in the precedence list
+            if _sym not in cfg.WKNG_FDU_PREC_LT:
+                _msg = f"Unknown dimensional symbol: {_sym}"
+                raise ValueError(_msg)
+
             # update the column with the exponent of the dimension
             col[cfg.WKNG_FDU_PREC_LT.index(_sym)] = _exp
+
         return col
 
     # Property getters and setters
@@ -354,14 +388,14 @@ class Variable(Validation):
             ValueError: If expression is empty
             ValueError: If dimensions are invalid according to the precedence.
         """
-        _working_lt = cfg.WKNG_FDU_PREC_LT
+        # _precedence_lt = cfg.WKNG_FDU_PREC_LT
         if val is not None and not val.strip():
             raise ValueError("Dimensions cannot be empty.")
 
         # Process dimensions
-        if val and not self._validate_exp(val, _working_lt):
+        if val and not self._validate_exp(val, cfg.WKNG_FDU_RE):
             _msg = f"Invalid dimensions: {val}. "
-            _msg += f"Check FDUs according to precedence: {_working_lt}"
+            _msg += f"FDUS precedence is: {cfg.WKNG_FDU_PREC_LT}"
             raise ValueError(_msg)
         # automatically prepare the dimensions for analysis
         self._prepare_dims()
@@ -485,9 +519,9 @@ class Variable(Validation):
         """
         if val is not None and not isinstance(val, (int, float)):
             raise ValueError("Minimum range must be a number.")
-        if val > self._max:
-            _msg = f"Minimum {val} cannot be greater"
-            _msg = f" than maximum {self._max}."
+
+        if val is not None and self._max is not None and val > self._max:
+            _msg = f"Minimum {val} cannot be greater than maximum {self._max}."
             raise ValueError(_msg)
         self._min = val
 
@@ -513,9 +547,9 @@ class Variable(Validation):
         """
         if val is not None and not isinstance(val, (int, float)):
             raise ValueError("Maximum val must be a number.")
-        if val < self._min:
-            _msg = f"Maximum {val} cannot be less"
-            _msg = f" than minimum {self._min}."
+        # Check if both values exist before comparing
+        if val is not None and self._min is not None and val < self._min:
+            _msg = f"Maximum {val} cannot be less than minimum {self._min}."
             raise ValueError(_msg)
         self._max = val
 
@@ -542,13 +576,39 @@ class Variable(Validation):
         if val is not None and not isinstance(val, (int, float)):
             raise ValueError("Mean value must be a number.")
 
-        low = (self._min is not None and val < self._min)
-        high = (self._max is not None and val > self._max)
-        if low or high:
-            _msg = f"Mean {val}. "
-            _msg += f"must be between {self._min} and {self._max}."
-            raise ValueError(_msg)
+        # Only validate range if val is not None
+        if val is not None:
+            low = (self._min is not None and val < self._min)
+            high = (self._max is not None and val > self._max)
+            if low or high:
+                _msg = f"Mean {val} "
+                _msg += f"must be between {self._min} and {self._max}."
+                raise ValueError(_msg)
+
         self._mean = val
+
+    @property
+    def dev(self) -> Optional[float]:
+        """*dev* Get the Variable standard deviation.
+
+        Returns:
+            Optional[float]: Variable standard deviation.
+        """
+        return self._dev
+
+    @dev.setter
+    def dev(self, val: Optional[float]) -> None:
+        """*dev* Sets the Variable standard deviation.
+
+        Args:
+            val (Optional[float]): Variable standard deviation.
+        Raises:
+            ValueError: If value not a valid number.
+        """
+        if val is not None and not isinstance(val, (int, float)):
+            raise ValueError("Standard deviation must be a number.")
+
+        self._dev = val
 
     # Value Ranges (Standardized Units)
 
@@ -562,7 +622,7 @@ class Variable(Validation):
         return self._std_units
 
     @std_units.setter
-    def std_units(self, val: Optional[str]) -> None:
+    def std_units(self, val: str) -> None:
         """*std_units* Sets the standardized Unit of Measure.
 
         Args:
@@ -572,8 +632,7 @@ class Variable(Validation):
             ValueError: If standardized units are empty.
         """
         if val is not None and not val.strip():
-            _msg = "Standardized Unit of Measure cannot be empty."
-            raise ValueError(_msg)
+            raise ValueError("Standardized Units of Measure cannot be empty.")
         self._std_units = val
 
     @property
@@ -599,10 +658,13 @@ class Variable(Validation):
         if val is not None and not isinstance(val, (int, float)):
             raise ValueError("Standardized minimum must be a number")
 
-        if val > self._std_max:
-            _msg = f"Standard minimum val {val} cannot be greater"
-            _msg = f" than standard maximum val {self._std_max}."
+        # Check if both values exist before comparing
+        if val is not None and self._std_max is not None and val > self._std_max:
+            _msg = f"Standard minimum {val} cannot be greater"
+            _msg += f" than standard maximum {self._std_max}."
             raise ValueError(_msg)
+
+        self._std_min = val
 
         # Update range if all values are available
         if all([self._std_min is not None,
@@ -611,7 +673,6 @@ class Variable(Validation):
             self._std_range = np.arange(self._std_min,
                                         self._std_max,
                                         self._step)
-        self._std_min = val
 
     @property
     def std_max(self) -> Optional[float]:
@@ -632,10 +693,14 @@ class Variable(Validation):
         """
         if val is not None and not isinstance(val, (int, float)):
             raise ValueError("Standardized maximum must be a number")
-        if val < self._std_min:
-            _msg = f"Standard maximum *Variable* {val} cannot be less"
-            _msg = f" than standard minimum *Variable* {self._std_min}."
+
+        # Check if both values exist before comparing
+        if val is not None and self._std_min is not None and val < self._std_min:
+            _msg = f"Standard maximum {val} cannot be less"
+            _msg += f" than standard minimum {self._std_min}."
             raise ValueError(_msg)
+
+        self._std_max = val
 
         # Update range if all values are available
         if all([self._std_min is not None,
@@ -644,7 +709,6 @@ class Variable(Validation):
             self._std_range = np.arange(self._std_min,
                                         self._std_max,
                                         self._step)
-        self._std_max = val
 
     @property
     def std_mean(self) -> Optional[float]:
@@ -669,13 +733,16 @@ class Variable(Validation):
         if val is not None and not isinstance(val, (int, float)):
             raise ValueError("Standardized mean must be a number")
 
-        low = (self._std_min is not None and val < self._std_min)
-        high = (self._std_max is not None and val > self._std_max)
+        # Only validate range if val is not None
+        if val is not None:
+            low = (self._std_min is not None and val < self._std_min)
+            high = (self._std_max is not None and val > self._std_max)
 
-        if low or high:
-            _msg = f"Invalid standard mean value {val}. "
-            _msg += f"Must be between {self._std_min} and {self._std_max}."
-            raise ValueError(_msg)
+            if low or high:
+                _msg = f"Standard mean {val} "
+                _msg += f"must be between {self._std_min} and {self._std_max}."
+                raise ValueError(_msg)
+
         self._std_mean = val
 
     @property
@@ -701,15 +768,12 @@ class Variable(Validation):
         if val is not None and not isinstance(val, (int, float)):
             raise ValueError("Standardized standard deviation must be a number")
 
-        low = (self._std_min is not None and val < self._std_min)
-        high = (self._std_max is not None and val > self._std_max)
+        # Standard deviation should be non-negative
+        if val is not None and val < 0:
+            raise ValueError(f"Standard deviation {val} cannot be negative.")
 
-        if low or high:
-            _msg = f"Invalid standard deviation value {val}. "
-            _msg += f"Must be between {self._std_min} and {self._std_max}."
-            raise ValueError(_msg)
         self._std_dev = val
-
+        
     @property
     def step(self) -> Optional[float]:
         """*step* Get standardized step size.
@@ -737,10 +801,14 @@ class Variable(Validation):
         if val == 0:
             raise ValueError("Step cannot be zero.")
 
-        if val >= self._std_max - self._std_min:
-            _msg = f"Step {val} must be less than range"
-            _msg += f" {self._std_max - self._std_min}."
-            raise ValueError(_msg)
+        # Validate step against range (only if min/max are set)
+        if val is not None and self._std_min is not None and self._std_max is not None:
+            range_size = self._std_max - self._std_min
+            if val >= range_size:
+                _msg = f"Step {val} must be less than range: {range_size}."
+                raise ValueError(_msg)
+
+        self._step = val
 
         # Update range if all values are available
         if all([self._std_min is not None,
@@ -749,8 +817,6 @@ class Variable(Validation):
             self._std_range = np.arange(self._std_min,
                                         self._std_max,
                                         self._step)
-
-        self._step = val
 
     @property
     def std_range(self) -> np.ndarray:
@@ -822,24 +888,27 @@ class Variable(Validation):
         self._dist_type = val
 
     @property
-    def dist_params(self) -> Dict[str, Any]:
+    def dist_params(self) -> Optional[Dict[str, Any]]:
         """*dist_params* Get the distribution parameters.
 
         Returns:
-            Dict[str, Any]: Distribution parameters.
+            Optional[Dict[str, Any]: Distribution parameters.
         """
         return self._dist_params
 
     @dist_params.setter
-    def dist_params(self, val: Dict[str, Any]) -> None:
+    def dist_params(self, val: Optional[Dict[str, Any]]) -> None:
         """*dist_params* Set the distribution parameters.
 
         Args:
-            val (Dict[str, Any]): Distribution parameters.
+            val (Optional[Dict[str, Any]): Distribution parameters.
 
         Raises:
             ValueError: If parameters are invalid for the distribution type.
         """
+        if val is None:
+            self._dist_params = None
+            return None
         # Validate parameters based on distribution type
         if self._dist_type == "uniform":
             if "min" not in val or "max" not in val:

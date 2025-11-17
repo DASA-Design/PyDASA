@@ -476,25 +476,29 @@ class DimScheme(Validation, Generic[T]):
         # Update regex patterns
         self._setup_regex()
 
-    def remove_fdu(self, sym: str) -> bool:
+    def remove_fdu(self, sym: str) -> Dimension:
         """*remove_fdu()* Remove an FDU from the framework.
 
         Args:
             sym (str): Symbol of the FDU to remove.
 
         Returns:
-            bool: True if the FDU was removed, False if not found.
+            Dimension: removed FDU object.
         """
         if not self.has_fdu(sym):
             raise ValueError(f"FDU with symbol '{sym}' does not exist.")
 
         # Remove FDU
         # find index with the symbol
-        rmv = Dimension(_sym=sym)
-        if rmv in self._fdu_lt:
-            self._fdu_lt.remove(rmv)
-        # _idx = self._fdu_lt.
-        # self._fdu_lt = [f for f in self._fdu_lt if f.sym != symbol]
+        if sym in self._fdu_map:
+            # direct retrieve the FDU to avoid Optional return of dict.get
+            fdu_obj = self._fdu_map[sym]
+            # Remove by precedence index and capture the removed Dimension
+            idx = fdu_obj.idx
+            ans = self._fdu_lt.pop(idx)
+        else:
+            # Should not happen because of the earlier has_fdu check, but keep safe
+            raise ValueError(f"FDU with symbol '{sym}' does not exist.")
 
         # Update indices, map, and symbol precedence
         self._validate_fdu_precedence()
@@ -504,7 +508,7 @@ class DimScheme(Validation, Generic[T]):
         # Update regex patterns
         self._setup_regex()
 
-        return True
+        return ans
 
     def reset(self) -> None:
 

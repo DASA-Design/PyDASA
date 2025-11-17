@@ -82,21 +82,21 @@ class TestDimScheme(unittest.TestCase):
 
         new_dim = Dimension(
             _idx=n0,
-            _sym="Z",
-            _alias="Z",
+            _sym="W",
+            _alias="W",
             _fwk="CUSTOM",
-            _unit="u",
-            name="Zed",
-            description="Zed dim"
+            _unit="w",
+            name="Warg",
+            description="Warg dim"
         )
         scheme.add_fdu(new_dim)
         assert scheme.size == n0 + 1
-        assert scheme.has_fdu("Z")
+        assert scheme.has_fdu("W")
 
-        ans = scheme.remove_fdu("Z")
-        assert ans == new_dim
-        assert scheme.size == n0 - 1
-        # assert scheme.has_fdu("Z") is False
+        ans = scheme.remove_fdu("W")
+        assert ans is new_dim
+        assert scheme.size == n0
+        assert scheme.has_fdu("W") is False
 
     def test_add_fdu_duplicate_and_mismatch(self) -> None:
         """add_fdu() raises on duplicate symbol and framework mismatch."""

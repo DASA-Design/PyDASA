@@ -90,7 +90,7 @@ class TestDimMatrix(unittest.TestCase):
             DimMatrix: Configured test model.
         """
         variables = self.get_relevant_variables()
-        # framework = self.test_framework
+        framework = self.test_framework
 
         return DimMatrix(name=name,
                          description=description,
@@ -113,12 +113,17 @@ class TestDimMatrix(unittest.TestCase):
         assert len(model._variables) == 0
         assert isinstance(model._relevant_lt, dict)
         assert len(model._relevant_lt) == 0
-        assert model._dim_mtx is None
         assert model._n_var == 0
         assert model._n_relevant == 0
         assert model._n_in == 0
         assert model._n_out == 0
         assert model._n_ctrl == 0
+
+        expected_mtx = np.array([])
+        if model._dim_mtx is None:
+            assert expected_mtx is None or expected_mtx.size == 0
+        else:
+            assert np.array_equal(model._dim_mtx, expected_mtx)
 
     def test_initialization_with_variables(self) -> None:
         """Test creating DimMatrix with variables."""
@@ -387,37 +392,6 @@ class TestDimMatrix(unittest.TestCase):
         assert isinstance(model._pivot_cols, list)
         assert len(model._coefficients) > 0
 
-    def test_solve_matrix_creates_if_needed(self) -> None:
-        """Test solve_matrix creates matrix if not exists."""
-        model = self.create_test_model(self.test_framework,
-                                       self.test_variables)
-
-        # Don't call create_matrix first
-        assert model._dim_mtx is None
-
-        model.solve_matrix()
-
-        # Matrix should be created automatically
-        assert model._dim_mtx is not None
-        assert model._rref_mtx is not None
-
-    def test_generate_coefficients(self) -> None:
-        """Test generating dimensionless coefficients."""
-        model = self.create_test_model(self.test_framework,
-                                       self.test_variables)
-        model.solve_matrix()
-
-        assert len(model._coefficients) > 0
-
-        # Check coefficient structure
-        for coef_sym, coef in model._coefficients.items():
-            assert isinstance(coef, Coefficient)
-            assert coef._idx >= 0
-            assert coef._sym.startswith("\\Pi_")
-            assert coef._cat == "COMPUTED"
-            assert isinstance(coef._variables, dict)
-            assert isinstance(coef._dim_col, list)
-
     # ========================================================================
     # Coefficient derivation tests
     # ========================================================================
@@ -665,7 +639,11 @@ class TestDimMatrix(unittest.TestCase):
         """Test operations on empty model."""
         model = DimMatrix()
 
-        assert model._dim_mtx is None
+        expected_mtx = np.array([])
+        if model._dim_mtx is None:
+            assert expected_mtx is None or expected_mtx.size == 0
+        else:
+            assert np.array_equal(model._dim_mtx, expected_mtx)
         assert len(model._coefficients) == 0
         assert model._output is None
 

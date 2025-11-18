@@ -194,7 +194,7 @@ if __name__ == "__main__":
             "description": "Time~~~~~~~~~~~~~", "_unit": "s", "name": "Time"},
     ]
 
-    rm = DimSchema(_fdus=fdu_lt, _fwk="CUSTOM")
+    rm = DimSchema(_fdu_lt=fdu_lt, _fwk="CUSTOM")
 
     rm.update_global_config()
     print(rm, "\n")

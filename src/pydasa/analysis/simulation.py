@@ -28,7 +28,7 @@ from scipy import stats
 
 # Import validation base classes
 from pydasa.core.basic import Validation
- 
+
 # Import related classes
 from pydasa.buckingham.vashchy import Coefficient
 from pydasa.core.parameter import Variable
@@ -142,9 +142,9 @@ class MonteCarloSim(Validation, Generic[T]):
         - 'depends': List of variables this variable depends on.
     """
 
-    # :attr: _iter_values
-    _iter_values: Dict[str, List[float]] = field(default_factory=dict)
-    """Working sampled values during each simulation iteration."""
+    # :attr: _simul_cache
+    _simul_cache: Dict[str, np.array] = field(default_factory=dict)
+    """Working sampled values during each simulation iteration. memory cache."""
 
     # Results
     # :attr: inputs
@@ -213,13 +213,24 @@ class MonteCarloSim(Validation, Generic[T]):
 
         # Initialize intermediate values
         # TODO check if this works as intended
-        self._iter_values = {var: [] for var in self._variables.keys()}
+        if self._simul_cache is None or not self._simul_cache:
+            self._simul_cache = {var: [] for var in self._variables.keys()}
 
         # TODO post init exectution to allocate memory is not working, fix it!
-        # Preallocate full array space
+        # Preallocate full array space with zeros
         n_vars = len(self._variables)
-        self.inputs = np.zeros((self._iterations, n_vars))
-        self._results = np.zeros((self._iterations, 1))
+        self.inputs = np.full((self._iterations, n_vars), np.nan)
+        self._results = np.full((self._iterations, 1), np.nan)
+
+        # statistics to "not calculated" yet
+        self._mean: float = np.nan
+        self._median: float = np.nan
+        self._std_dev: float = np.nan
+        self._variance: float = np.nan
+        self._min: float = np.nan
+        self._max: float = np.nan
+        # Zero makes sense here
+        self._count: int = 0
 
     def _validate_readiness(self) -> None:
         """*_validate_readiness() * Checks if the simulation can be performed.
@@ -402,10 +413,10 @@ class MonteCarloSim(Validation, Generic[T]):
                     # store the sample in the iteration values
                     memory[var.sym] = val
                     # store the sample in the intermediate values
-                    self._iter_values[var.sym].append(val)
+                    self._simul_cache[var.sym].append(val)
                     # print(f"Iteration {i}, variable '{var.sym}': {val}")
                     # print(f"Memory state: {memory}")
-                    # print(f"Intermediate values: {self._iter_values}")
+                    # print(f"Intermediate values: {self._simul_cache}")
 
                 # OLD CODE beware!!!!!
                 # Prepare sorted/ordered values from memory for evaluation
@@ -414,7 +425,8 @@ class MonteCarloSim(Validation, Generic[T]):
                 _type = (list, tuple, np.ndarray)
                 # TODO hotfix for dealing with adjusted vals, imprtove later
                 if any(isinstance(v, _type) for v in sorted_vals):
-                    sorted_vals = [v[-1] if isinstance(v, _type) else v for v in sorted_vals]
+                    sorted_vals = [
+                        v[-1] if isinstance(v, _type) else v for v in sorted_vals]
 
                 # Create lambdify function using Python symbols
                 aliases = [self._aliases[v] for v in self._var_symbols]
@@ -454,9 +466,9 @@ class MonteCarloSim(Validation, Generic[T]):
         self._results = np.zeros((0,))
         self._reset_statistics()
         for var in self._variables.keys():
-            self._iter_values[var].clear()
+            self._simul_cache[var].clear()
         # alternative way to reset intermediate values
-        # self._iter_values = {var: [] for var in self._variables.keys()}
+        # self._simul_cache = {var: [] for var in self._variables.keys()}
 
     def _reset_statistics(self) -> None:
         """*_reset_statistics()* Reset all statistical attributes to default values."""

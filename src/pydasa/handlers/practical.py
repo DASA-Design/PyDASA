@@ -14,13 +14,15 @@ Classes:
 
     # H.Gorter, *Dimensionalanalyse: Eine Theoririe der physikalischen Dimensionen mit Anwendungen*
 """
-
+# Standard library imports
 from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Generic, Optional, Dict, List, Callable, Any
 import random
 # import re
 
+# Third-party imports
+import numpy as np
 
 # Import validation base classes
 from pydasa.core.basic import Validation
@@ -96,6 +98,9 @@ class MonteCarloHandler(Validation, Generic[T]):
     """Number of simulation to run."""
 
     # Simulation Management
+    # :arttr: _dependencies
+    _mem_cache: Dict[str, List[str]] = field(default_factory=dict)
+
     # :attr: _simulations
     _simulations: Dict[str, MonteCarloSim] = field(default_factory=dict)
     """Dictionary of Monte Carlo simulations."""

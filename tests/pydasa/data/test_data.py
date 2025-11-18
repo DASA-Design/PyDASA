@@ -712,3 +712,136 @@ def get_model_test_data() -> dict:
             ""
         ],
     }
+
+
+# test data for from pydasa.analysis.simulation import MonteCarloSim
+def get_simulation_test_data() -> dict:
+    """Get test data for MonteCarloSim tests."""
+    # Reuse coefficient and model test data for consistency
+    coef_data = get_coefficient_test_data()
+    model_data = get_model_test_data()
+
+    return {
+        # Reuse variables from both coefficient and model data
+        "TEST_VARIABLES": coef_data["TEST_VARIABLES"],
+        "MODEL_VARIABLES": model_data["TEST_VARIABLES"],
+        "MINIMAL_VARIABLES": model_data["MINIMAL_VARIABLES"],
+
+        # Reuse coefficient definitions
+        "REYNOLDS_COEFFICIENT": coef_data["REYNOLDS_COEFFICIENT"],
+        "SIMPLE_COEFFICIENT": coef_data["SIMPLE_COEFFICIENT"],
+
+        # Expression tests
+        "SIMPLE_EXPR": "\\alpha + \\beta",
+        "PHYSICS_EXPR": "\\frac{v * L}{\\nu}",
+        "REYNOLDS_EXPR": "\\frac{\\rho * v * L}{\\mu}",
+        "COMPLEX_EXPR": "\\frac{P * d^{2}}{\\mu * v}",
+        "DERIVED_EXPRESSIONS": model_data["VALID_DERIVED_EXPRESSIONS"],
+        "INVALID_EXPRESSIONS": model_data["INVALID_DERIVED_EXPRESSIONS"],
+
+        # Simulation configuration
+        "VALID_ITERATIONS": [100, 500, 1000, 5000],
+        "INVALID_ITERATIONS": [-1, -10, 0],
+        "MIN_SAMPLE_SIZE": 10,
+        "MAX_SAMPLE_SIZE": 10000,
+
+        # Statistical analysis
+        "CONFIDENCE_LEVELS": [0.90, 0.95, 0.99],
+        "INVALID_CONFIDENCE": [-0.5, 0.0, 1.0, 1.5],
+        "EXPECTED_STATISTICS": [
+            "mean", "median", "std_dev", "variance", 
+            "min", "max", "count"
+        ],
+        
+        # Distribution types and parameters
+        "DISTRIBUTION_TYPES": ["uniform", "normal", "triangular", "exponential", "lognormal"],
+        "DISTRIBUTION_PARAMS": {
+            "uniform": {"low": 0.0, "high": 1.0},
+            "normal": {"loc": 0.0, "scale": 1.0},
+            "triangular": {"left": 0.0, "mode": 0.5, "right": 1.0},
+            "exponential": {"scale": 1.0},
+            "lognormal": {"mean": 0.0, "sigma": 1.0},
+        },
+
+        # Specific variable sets for different test scenarios
+        "REYNOLDS_VARIABLES": {
+            "v": coef_data["TEST_VARIABLES"]["v"],
+            "L": coef_data["TEST_VARIABLES"]["L"],
+            "\\rho": coef_data["TEST_VARIABLES"]["\\rho"],
+            "\\mu": coef_data["TEST_VARIABLES"]["\\mu"],
+        },
+
+        # Simple test variables for basic tests
+        "SIMPLE_VARIABLES": {
+            "\\alpha": {
+                "_idx": 0,
+                "_sym": "\\alpha",
+                "_alias": "alpha",
+                "_fwk": "PHYSICAL",
+                "_cat": "IN",
+                "_dims": "L*T^-1",
+                "_units": "m/s",
+                "name": "Alpha",
+                "description": "Test variable alpha",
+                "relevant": True,
+                "_min": 0.0,
+                "_max": 10.0,
+                "_mean": 5.0,
+                "_dev": 0.5,
+                "_dist_type": "uniform",
+                "_dist_params": {"low": 0.0, "high": 10.0},
+                "_depends": []
+            },
+            "\\beta": {
+                "_idx": 1,
+                "_sym": "\\beta",
+                "_alias": "beta",
+                "_fwk": "PHYSICAL",
+                "_cat": "IN",
+                "_dims": "L",
+                "_units": "m",
+                "name": "Beta",
+                "description": "Test variable beta",
+                "relevant": True,
+                "_min": 1.0,
+                "_max": 5.0,
+                "_mean": 3.0,
+                "_dev": 0.3,
+                "_dist_type": "uniform",
+                "_dist_params": {"low": 1.0, "high": 5.0},
+                "_depends": []
+            },
+        },
+
+        # Dependent variable for testing variable dependencies
+        "DEPENDENT_VARIABLE": {
+            "\\gamma": {
+                "_idx": 2,
+                "_sym": "\\gamma",
+                "_alias": "gamma",
+                "_fwk": "PHYSICAL",
+                "_cat": "IN",
+                "_dims": "L*T^-1",
+                "_units": "m/s",
+                "name": "Gamma",
+                "description": "Dependent on alpha and beta",
+                "relevant": True,
+                "_dist_type": "custom",
+                "_depends": ["\\alpha", "\\beta"]
+            }
+        },
+
+        # Reuse model expectations
+        "EXPECTED_FDU_SYMBOLS": model_data["EXPECTED_FDU_SYMBOLS"],
+        "EXPECTED_CATEGORIES": model_data["EXPECTED_CATEGORIES"],
+        "EXPECTED_N_COEFFICIENTS": model_data["EXPECTED_N_COEFFICIENTS"],
+
+        # Simulation naming
+        "VALID_SIMULATION_NAMES": [
+            "Reynolds Number Monte Carlo",
+            "Sensitivity Analysis",
+            "Stochastic Simulation",
+            "Monte Carlo - " + model_data["VALID_MODEL_NAMES"][0],
+            "Monte Carlo - " + model_data["VALID_MODEL_NAMES"][1],
+        ],
+    }

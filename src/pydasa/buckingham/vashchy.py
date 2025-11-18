@@ -152,12 +152,23 @@ class Coefficient(Validation, Generic[T]):
 
         self.cat = self._cat
         self.variables = self._variables
-        self.dim_col = self._dim_col
-        # the pivot_lt can be empty
+
+        # Defaults to empty list
+        self.dim_col = self._dim_col or []
         self.pivot_lt = self._pivot_lt or []
-        var_keys = list(self._variables.keys())
-        self.pi_expr, self.var_dims = self._build_expression(var_keys,
-                                                             self._dim_col)
+
+        # Only build expression if we have variables
+        if len(self._variables) > 0 and len(self._dim_col) > 0:
+            var_keys = list(self._variables.keys())
+            self.pi_expr, self.var_dims = self._build_expression(var_keys,
+                                                                 self._dim_col)
+
+        else:
+            self.pi_expr = ""
+            self.var_dims = {}
+
+        # Set data
+        self.data = self._data
 
         # # Build expression if parameters and dimensions are provided
         # FIXME this is not working, fix later!
@@ -184,6 +195,12 @@ class Coefficient(Validation, Generic[T]):
         Returns:
             bool: True if the list is valid.
         """
+        # Explicitly reject strings (they're sequences but not what we want)
+        if isinstance(seq, str):
+            _msg = f"{inspect_var(seq)} must be a list or tuple, not a string. "
+            _msg += f"Provided: {type(seq).__name__}"
+            raise ValueError(_msg)
+
         if not isinstance(seq, Sequence):
             _msg = f"{inspect_var(seq)} must be from type: '{exp_type}', "
             _msg += f"Provided: {type(seq).__name__}"
@@ -308,16 +325,18 @@ class Coefficient(Validation, Generic[T]):
         Raises:
             ValueError: If variables list is invalid.
         """
-        keys = self._validate_sequence(list(val.keys()), (str,))
-        values = self._validate_sequence(list(val.values()), (Variable,))
-
-        if (keys and values) is False:
-            self._variables = val
-        else:
-            _msg = "Variables must be a dictionary with "
-            _msg += "string keys and Variable values."
-            _msg += f"Provided: {type(val)}"
+        # Validate type
+        if not isinstance(val, dict):
+            _msg = f"Variables must be a dict, got {type(val).__name__}"
             raise ValueError(_msg)
+
+        # check non-empty dictt
+        if len(val) > 0:
+            self._validate_sequence(list(val.keys()), (str,))
+            self._validate_sequence(list(val.values()), (Variable,))
+
+        # If validation passes, assign
+        self._variables = val
 
     @property
     def dim_col(self) -> List[int]:
@@ -337,13 +356,18 @@ class Coefficient(Validation, Generic[T]):
         Raises:
             ValueError: If dimensional column is invalid.
         """
-        if self._validate_sequence(val, (int, float)):
-            self._dim_col = [int(x) for x in val]   # Ensure integers
-
-        else:
-            _msg = "Dimensions must be a list with int or float values."
-            _msg += f"Provided: {type(val)}"
+        # Validate type first
+        if not isinstance(val, list):
+            _msg = "Dimensions must be a list with int or float values. "
+            _msg += f"Provided: {type(val).__name__}"
             raise ValueError(_msg)
+
+        # Validate sequence if not empty
+        if len(val) > 0:
+            self._validate_sequence(val, (int, float))
+
+        # If validation passes, assign (convert to integers)
+        self._dim_col = [int(x) for x in val]
 
     @property
     def pivot_lt(self) -> Optional[List[int]]:
@@ -364,10 +388,14 @@ class Coefficient(Validation, Generic[T]):
         Raises:
             ValueError: If pivot list is invalid.
         """
-        if val is None:
-            self._pivot_lt = None
-        elif self._validate_sequence(val, (int,)):
+        # Handle None and empty list (both allowed)
+        if val is None or len(val) == 0:
             self._pivot_lt = val
+            return
+
+        # Validate non-empty list
+        self._validate_sequence(val, (int,))
+        self._pivot_lt = val
 
     @property
     def pi_expr(self) -> Optional[str]:
@@ -576,33 +604,39 @@ class Coefficient(Validation, Generic[T]):
         """*data* Get the data array.
 
         Returns:
-            np.ndarray: Data array.
+            np.ndarray: Data array. If not explicitly set, generates from min, max, step.
         """
-        return self._data
+        # If data was explicitly set, return it
+        if len(self._data) > 0:
+            return self._data
+
+        # Otherwise, generate from range parameters
+        if self._min is not None and self._max is not None and self._step != 0:
+            return np.arange(self._min, self._max, self._step)
+
+        # Default to empty array
+        return np.array([], dtype=float)
 
     @data.setter
-    def data(self, val: Optional[np.ndarray]) -> None:
+    def data(self, val: Union[np.ndarray, list]) -> None:
         """*data* Set the data array.
 
         Args:
-            val (Optional[np.ndarray]): Data array.
+            val (Union[np.ndarray, list]): Data array or list.
 
         Raises:
-            ValueError: If value is not a numpy array.
+            ValueError: If data cannot be converted to numpy array.
         """
-        if val is None:
-            # Generate array from min, max, step
-            if all([self._min is not None,
-                    self._max is not None,
-                    self._step is not None]):
-                self._data = np.arange(self._min,
-                                       self._max,
-                                       self._step)
-
-        elif not isinstance(val, np.ndarray):
-            _msg = f"Data must be a numpy array, got {type(val).__name__}"
+        if not isinstance(val, (np.ndarray, list,)):
+            _msg = "Data must be a numpy array. "
+            _msg += f"Provided: {type(val).__name__}"
             raise ValueError(_msg)
 
+        # Convert list to numpy array if needed
+        if isinstance(val, list):
+            self._data = np.array(val, dtype=float)
+
+        # otherwise, let it be
         else:
             self._data = val
 

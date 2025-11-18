@@ -570,7 +570,7 @@ class DimMatrix(Validation, Generic[T]):
                 raise ValueError(_msg)
 
         # Determine next available index
-        if idx is -1:
+        if idx == -1:
             existing_indices = [c._idx for c in self._coefficients.values()]
             idx = max(existing_indices) + 1 if existing_indices else 0
 

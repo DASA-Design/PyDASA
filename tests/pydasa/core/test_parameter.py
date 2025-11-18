@@ -11,6 +11,7 @@ import pytest
 import numpy as np
 from typing import Any, cast
 
+from pydasa.dimensional.framework import DimScheme
 from pydasa.core.parameter import Variable
 from tests.pydasa.data.test_data import get_variable_test_data
 
@@ -22,6 +23,10 @@ class TestVariable(unittest.TestCase):
     def inject_fixtures(self) -> None:
         """Inject test data fixture."""
         self.test_data = get_variable_test_data()
+
+        # resseting config due to singletton patterm fix later
+        self.test_scheme = DimScheme(_fwk="PHYSICAL")
+        self.test_scheme.update_global_config()
 
     # Initialization tests
     def test_default_initialization(self) -> None:
@@ -48,6 +53,10 @@ class TestVariable(unittest.TestCase):
         ]
 
         for data in variable_types:
+            # Update dimensional scheme for each framework type
+            scheme = DimScheme(_fwk=data["_fwk"])
+            scheme.update_global_config()
+
             var = Variable(
                 _idx=data["_idx"],
                 _sym=data["_sym"],
@@ -98,6 +107,11 @@ class TestVariable(unittest.TestCase):
     def test_dims_setter_valid(self) -> None:
         """Test dims property setter with valid values."""
         var = Variable()
+
+        # resseting config due to singletton patterm fix later
+        self.test_scheme = DimScheme(_fwk="PHYSICAL")
+        self.test_scheme.update_global_config()
+
         for dims in self.test_data["VALID_DIMENSIONS"]:
             var.dims = dims
             assert var.dims == dims

@@ -394,12 +394,14 @@ class Variable(Validation):
 
         # Process dimensions
         if val and not self._validate_exp(val, cfg.WKNG_FDU_RE):
-            _msg = f"Invalid dimensions: {val}. "
-            _msg += f"FDUS precedence is: {cfg.WKNG_FDU_PREC_LT}"
+            _msg = f"Invalid dimensional expression: {val}. "
+            _msg += f"FDUS precedence is: {cfg.WKNG_FDU_RE}"
             raise ValueError(_msg)
+
+        self._dims = val
+
         # automatically prepare the dimensions for analysis
         self._prepare_dims()
-        self._dims = val
 
     @property
     def units(self) -> str:
@@ -773,7 +775,7 @@ class Variable(Validation):
             raise ValueError(f"Standard deviation {val} cannot be negative.")
 
         self._std_dev = val
-        
+
     @property
     def step(self) -> Optional[float]:
         """*step* Get standardized step size.

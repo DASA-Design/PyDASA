@@ -107,7 +107,7 @@ I need an object oriented design option to include the following requirements in
 1. **analysis**
 
    1. test_conversion.py: tests for unit conversion handler for the solver. NOT NOW!!! ❌
-   2. test_scenario.py: tests for sensitivity analysis of the Coefficients TODO ⚠️
+   2. test_scenario.py: tests for sensitivity analysis of the Coefficients NOT NOW!!! ❌
    3. test_simulation.py: tests for the monte carlo simulator for one coefficient. TODO ⚠️
 
    ---
@@ -142,14 +142,14 @@ I need an object oriented design option to include the following requirements in
 
    1. test_domain.py tests for the unit conversion handler/manager. NOT NOW!!! ❌
    2. test_framework.py: test for the DimSchema class to manage and control the DimMatrix in the solving process. ✅
-   3. test_model.py: test for the DimMatrix class to solve the dimensional matrix. TODO ⚠️
+   3. test_model.py: test for the DimMatrix class to solve the dimensional matrix. ✅
 
    ---
 6. **handler**
 
-   1. test_influence.py: test for the SensitivityHandler class for understanding variance in the coefficients. ✅
+   1. test_influence.py: test for the SensitivityHandler class for understanding variance in the coefficients. NOT NOW!!! ❌
    2. test_phenomena.py: test for the main Solver() class of the project 🔶👨‍💻⚠️ WORKING HERE ⚠️
-   3. test_practical.py test for the SimulationManager class to control all the montecartlo simulations of all data ✅
+   3. test_practical.py test for the SimulationManager class to control all the montecartlo simulations of all data TODO ⚠️
 
    ---
 7. **utils**

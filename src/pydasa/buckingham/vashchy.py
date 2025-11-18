@@ -18,8 +18,8 @@ Classes:
 
 # native python modules
 from __future__ import annotations
-from dataclasses import dataclass, field
-from typing import Optional, List, Dict, Any, Generic
+from dataclasses import dataclass, field, fields
+from typing import Optional, List, Dict, Any, Generic, Tuple, Union, Sequence
 # import re
 
 # Third-party modules
@@ -57,7 +57,7 @@ class Coefficient(Validation, Generic[T]):
         relevance (bool): Flag indicating if coefficient is relevant for analysis.
 
         # Coefficient Construction
-        _variables (List[str]): Variables symbols used in coefficient.
+        _variables (Dict[str, Variable]): Variables symbols used in coefficient.
         _dim_col (List[int]): Dimensional column for matrix operations.
         _pivot_lt (List[int]): Pivot indices in dimensional matrix.
         _pi_expr (str): Symbolic expression of coefficient.
@@ -78,15 +78,16 @@ class Coefficient(Validation, Generic[T]):
 
     # Coefficient construction properties
     # :attr: _variables
-    _variables: List[str] = field(default_factory=list)
+    _variables: Dict[str, Variable] = field(default_factory=dict)
     """Variables symbols used in the coefficient."""
 
+    # Coefficient calculation related variables
     # :attr: _dim_col
     _dim_col: List[int] = field(default_factory=list)
     """Dimensional column for matrix operations."""
 
     # :attr: _pivot_lt
-    _pivot_lt: Optional[List[int]] = None
+    _pivot_lt: Optional[List[int]] = field(default_factory=list)
     """Pivot indices in dimensional matrix."""
 
     # :attr: _pi_expr
@@ -94,25 +95,29 @@ class Coefficient(Validation, Generic[T]):
     """Symbolic expression of coefficient."""
 
     # :attr: var_dims
-    var_dims: Optional[Dict[str, int]] = None
+    var_dims: Optional[Dict[str, int]] = field(default_factory=dict)
     """Dimensional variable exponents in coefficient."""
 
-    # Value ranges
+    # Value ranges Variable
     # :attr: _min
     _min: Optional[float] = None
-    """Minimum value of coefficient."""
+    """Minimum value of the coefficient, always in standardized units."""
 
     # :attr: _max
     _max: Optional[float] = None
-    """Maximum value of coefficient."""
+    """Maximum value of the coefficient, always in standardized units."""
 
     # :attr: _mean
     _mean: Optional[float] = None
-    """Average value of coefficient."""
+    """Average value of the coefficient, always in standardized units."""
+
+    # :attr: _dev
+    _dev: Optional[float] = None
+    """Standard deviation of the coefficient, always in standardized units."""
 
     # :attr: _step
-    _step: float = 1e-3
-    """Step size for simulations."""
+    _step: Optional[float] = 1e-3
+    """Step size for simulations, always in standardized units."""
 
     # :attr: _data
     _data: np.ndarray = field(default_factory=lambda: np.array([]))
@@ -148,11 +153,14 @@ class Coefficient(Validation, Generic[T]):
         self.cat = self._cat
         self.variables = self._variables
         self.dim_col = self._dim_col
-        self.pivot_lt = self._pivot_lt
-        self.pi_expr, self.var_dims = self._build_expression(self._variables,
+        # the pivot_lt can be empty
+        self.pivot_lt = self._pivot_lt or []
+        var_keys = list(self._variables.keys())
+        self.pi_expr, self.var_dims = self._build_expression(var_keys,
                                                              self._dim_col)
 
         # # Build expression if parameters and dimensions are provided
+        # FIXME this is not working, fix later!
         # if self._variables and self._dim_col:
         #     self.pi_expr, self.var_dims = self._build_expression(self._variables, self._dim_col)
 
@@ -160,64 +168,47 @@ class Coefficient(Validation, Generic[T]):
         if all([self._min, self._max, self._step]):
             self._data = np.arange(self._min, self._max, self._step)
 
-    def _validate_list(self, lt: List, exp_type: List[type]) -> bool:
-        """*_validate_list()* Validates a list with expected element types.
+    def _validate_sequence(self, seq: Sequence,
+                           exp_type: Union[type, Tuple[type, ...]]) -> bool:
+        """*_validate_sequence()* Validates a list with expected element types.
 
         Args:
-            lt (List): List to validate.
-            exp_type (tuple): Expected types for list elements.
+            seq (Sequence): Sequence to validate.
+            exp_type (Union[type, Tuple[type, ...]]): Expected type(s) for sequence elements. Can be a single type or a tuple of types.
 
         Raises:
-            ValueError: If the object is not a list.
-            ValueError: If the list is empty.
-            ValueError: If the list contains elements of unexpected types.
+            ValueError: If the object is not a sequence.
+            ValueError: If the sequence is empty.
+            ValueError: If the sequence contains elements of unexpected types.
 
         Returns:
             bool: True if the list is valid.
         """
-        if not isinstance(lt, list):
-            _msg = f"{inspect_var(lt)} must be a list. "
-            _msg += f"Provided: {type(lt)}"
+        if not isinstance(seq, Sequence):
+            _msg = f"{inspect_var(seq)} must be from type: '{exp_type}', "
+            _msg += f"Provided: {type(seq).__name__}"
             raise ValueError(_msg)
-        if len(lt) == 0:
-            _msg = f"{inspect_var(lt)} cannot be empty. "
-            _msg += f"Provided: {lt}"
+
+        if len(seq) == 0:
+            _msg = f"{inspect_var(seq)} cannot be empty. Actual sequence: {seq}"
             raise ValueError(_msg)
-        if not all(isinstance(x, exp_type) for x in lt):
-            _msg = f"{inspect_var(lt)} must contain {exp_type} elements."
-            _msg += f" Provided: {[type(x).__name__ for x in lt]}"
+
+        # Convert list to tuple if needed for isinstance(), just in case
+        type_check = exp_type if isinstance(exp_type, tuple) else (exp_type,)
+
+        if not all(isinstance(x, type_check) for x in seq):
+
+            # Format expected types for error message
+            if isinstance(exp_type, tuple):
+                type_names = " or ".join(t.__name__ for t in exp_type)
+            else:
+                type_names = exp_type.__name__
+
+            _msg = f"{inspect_var(seq)} must contain {type_names} elements."
+            _msg += f" Provided: {[type(x).__name__ for x in seq]}"
             raise ValueError(_msg)
 
         return True
-
-    # def _validate_dict(self, dt: dict, exp_type: List[type]) -> bool:
-    #     """*_validate_dict()* Validates a dictionary with expected value types.
-
-    #     Args:
-    #         dt (dict): Dictionary to validate.
-    #         exp_type (List[type]): Expected types for dictionary values.
-
-    #     Raises:
-    #         ValueError: If the object is not a dictionary.
-    #         ValueError: If the dictionary is empty.
-    #         ValueError: If the dictionary contains values of unexpected types.
-
-    #     Returns:
-    #         bool: True if the dictionary is valid.
-    #     """
-    #     if not isinstance(dt, dict):
-    #         _msg = f"{inspect_var(dt)} must be a dictionary. "
-    #         _msg += f"Provided: {type(dt)}"
-    #         raise ValueError(_msg)
-    #     if len(dt) == 0:
-    #         _msg = f"{inspect_var(dt)} cannot be empty. "
-    #         _msg += f"Provided: {dt}"
-    #         raise ValueError(_msg)
-    #     if not all(isinstance(v, exp_type) for v in dt.values()):
-    #         _msg = f"{inspect_var(dt)} must contain {exp_type} values."
-    #         _msg += f" Provided: {[type(v).__name__ for v in dt.values()]}"
-    #         raise ValueError(_msg)
-    #     return True
 
     def _build_expression(self,
                           var_lt: List[str],
@@ -299,11 +290,11 @@ class Coefficient(Validation, Generic[T]):
         self._cat = val.upper()
 
     @property
-    def variables(self) -> List[str]:
+    def variables(self) -> Dict[str, Variable]:
         """*variables* Get the variable symbols list.
 
         Returns:
-            List[str]: Variables symbols list.
+            Dict[str, Variable]: Variables symbols list.
         """
         return self._variables
 
@@ -317,11 +308,16 @@ class Coefficient(Validation, Generic[T]):
         Raises:
             ValueError: If variables list is invalid.
         """
-        if self._validate_list(val, (str,)):
+        keys = self._validate_sequence(list(val.keys()), (str,))
+        values = self._validate_sequence(list(val.values()), (Variable,))
+
+        if (keys and values) is False:
             self._variables = val
-            # # Update expression if dimensional column is available
-            # if self._dim_col:
-            #     self._pi_expr, self.var_dims = self._build_expression(val, self._dim_col)
+        else:
+            _msg = "Variables must be a dictionary with "
+            _msg += "string keys and Variable values."
+            _msg += f"Provided: {type(val)}"
+            raise ValueError(_msg)
 
     @property
     def dim_col(self) -> List[int]:
@@ -333,20 +329,21 @@ class Coefficient(Validation, Generic[T]):
         return self._dim_col
 
     @dim_col.setter
-    def dim_col(self, val: List[int]) -> None:
+    def dim_col(self, val: Union[List[int], List[float]]) -> None:
         """*dim_col* Set the dimensional column.
 
         Args:
-            val (List[int]): Dimensional column.
-
+            val (Union[List[int], List[float]]): Dimensional column.
         Raises:
             ValueError: If dimensional column is invalid.
         """
-        if self._validate_list(val, (int, float)):
+        if self._validate_sequence(val, (int, float)):
             self._dim_col = [int(x) for x in val]   # Ensure integers
-            # # Update expression if variable list is available
-            # if self._variables:
-            #     self._pi_expr, self.var_dims = self._build_expression(self._variables, self._dim_col)
+
+        else:
+            _msg = "Dimensions must be a list with int or float values."
+            _msg += f"Provided: {type(val)}"
+            raise ValueError(_msg)
 
     @property
     def pivot_lt(self) -> Optional[List[int]]:
@@ -369,7 +366,7 @@ class Coefficient(Validation, Generic[T]):
         """
         if val is None:
             self._pivot_lt = None
-        elif self._validate_list(val, (int,)):
+        elif self._validate_sequence(val, (int,)):
             self._pivot_lt = val
 
     @property
@@ -420,11 +417,20 @@ class Coefficient(Validation, Generic[T]):
         """
         if val is not None and not isinstance(val, (int, float)):
             raise ValueError("Minimum range must be a number.")
-        if val > self._max:
-            _msg = f"Minimum {val} cannot be greater"
-            _msg = f" than maximum {self._max}."
+
+        if val is not None and self._max is not None and val > self._max:
+            _msg = f"Minimum {val} cannot be greater than maximum {self._max}."
             raise ValueError(_msg)
+
         self._min = val
+
+        # Update range if all values are available
+        if all([self._min is not None,
+                self._max is not None,
+                self._step is not None]):
+            self._range = np.arange(self._min,
+                                    self._max,
+                                    self._step)
 
     @property
     def max(self) -> Optional[float]:
@@ -448,11 +454,21 @@ class Coefficient(Validation, Generic[T]):
         """
         if val is not None and not isinstance(val, (int, float)):
             raise ValueError("Maximum val must be a number.")
-        if val < self._min:
-            _msg = f"Maximum {val} cannot be less"
-            _msg = f" than minimum {self._min}."
+
+        # Check if both values exist before comparing
+        if val is not None and self._min is not None and val < self._min:
+            _msg = f"Maximum {val} cannot be less than minimum {self._min}."
             raise ValueError(_msg)
+
         self._max = val
+
+        # Update range if all values are available
+        if all([self._min is not None,
+                self._max is not None,
+                self._step is not None]):
+            self._range = np.arange(self._min,
+                                    self._max,
+                                    self._step)
 
     @property
     def mean(self) -> Optional[float]:
@@ -475,15 +491,41 @@ class Coefficient(Validation, Generic[T]):
             ValueError: If value is outside min-max range.
         """
         if val is not None and not isinstance(val, (int, float)):
-            raise ValueError("Average value must be a number.")
+            raise ValueError("Mean value must be a number.")
 
-        low = (self._min is not None and val < self._min)
-        high = (self._max is not None and val > self._max)
-        if low or high:
-            _msg = f"Average {val}. "
-            _msg += f"must be between {self._min} and {self._max}."
-            raise ValueError(_msg)
+        # Only validate range if val is not None
+        if val is not None:
+            low = (self._min is not None and val < self._min)
+            high = (self._max is not None and val > self._max)
+            if low or high:
+                _msg = f"Mean {val} "
+                _msg += f"must be between {self._min} and {self._max}."
+                raise ValueError(_msg)
+
         self._mean = val
+
+    @property
+    def dev(self) -> Optional[float]:
+        """*dev* Get the Variable standard deviation.
+
+        Returns:
+            Optional[float]: Variable standard deviation.
+        """
+        return self._dev
+
+    @dev.setter
+    def dev(self, val: Optional[float]) -> None:
+        """*dev* Sets the Variable standard deviation.
+
+        Args:
+            val (Optional[float]): Variable standard deviation.
+        Raises:
+            ValueError: If value not a valid number.
+        """
+        if val is not None and not isinstance(val, (int, float)):
+            raise ValueError("Standard deviation must be a number.")
+
+        self._dev = val
 
     @property
     def step(self) -> Optional[float]:
@@ -512,20 +554,22 @@ class Coefficient(Validation, Generic[T]):
         if val == 0:
             raise ValueError("Step cannot be zero.")
 
-        if val >= self._std_max - self._std_min:
-            _msg = f"Step {val} must be less than range"
-            _msg += f" {self._std_max - self._std_min}."
-            raise ValueError(_msg)
-
-        # Update range if all values are available
-        if all([self._std_min is not None,
-                self._std_max is not None,
-                self._step is not None]):
-            self._std_rng = np.arange(self._std_min,
-                                      self._std_max,
-                                      self._step)
+        # Validate step against range (only if min/max are set)
+        if val is not None and self._min is not None and self._max is not None:
+            range_size = self._max - self._min
+            if val >= range_size:
+                _msg = f"Step {val} must be less than range: {range_size}."
+                raise ValueError(_msg)
 
         self._step = val
+
+        # Update range if all values are available
+        if all([self._min is not None,
+                self._max is not None,
+                self._step is not None]):
+            self._range = np.arange(self._min,
+                                    self._max,
+                                    self._step)
 
     @property
     def data(self) -> np.ndarray:
@@ -554,9 +598,11 @@ class Coefficient(Validation, Generic[T]):
                 self._data = np.arange(self._min,
                                        self._max,
                                        self._step)
+
         elif not isinstance(val, np.ndarray):
             _msg = f"Data must be a numpy array, got {type(val).__name__}"
             raise ValueError(_msg)
+
         else:
             self._data = val
 
@@ -575,7 +621,7 @@ class Coefficient(Validation, Generic[T]):
 
         # Reset coefficient-specific attributes
         self._cat = "COMPUTED"
-        self._variables = []
+        self._variables = {}
         self._dim_col = []
         self._pivot_lt = None
         self._pi_expr = None
@@ -588,39 +634,70 @@ class Coefficient(Validation, Generic[T]):
         self.relevance = True
 
     def to_dict(self) -> Dict[str, Any]:
-        """*to_dict()* Convert coefficient to dictionary representation.
+        """*to_dict()* Convert variable to dictionary representation.
 
         Returns:
-            Dict[str, Any]: Dictionary representation of coefficient.
+            Dict[str, Any]: Dictionary representation of variable.
         """
-        return {
-            "name": self.name,
-            "description": self.description,
-            "idx": self._idx,
-            "sym": self._sym,
-            "alias": self._alias,
-            "fwk": self._fwk,
-            "cat": self._cat,
-            "variables": self._variables,
-            "dim_col": self._dim_col,
-            "pivot_lt": self._pivot_lt,
-            "pi_expr": self._pi_expr,
-            "var_dims": self.var_dims,
-            "min": self._min,
-            "max": self._max,
-            "mean": self._mean,
-            "step": self._step,
-            "relevance": self.relevance
-        }
+        result = {}
+
+        # Get all dataclass fields
+        for f in fields(self):
+            attr_name = f.name
+            attr_value = getattr(self, attr_name)
+
+            # Skip numpy arrays (not JSON serializable without special handling)
+            if isinstance(attr_value, np.ndarray):
+                # Convert to list for JSON compatibility
+                attr_value = attr_value.tolist()
+
+            # Skip callables (can't be serialized)
+            if callable(attr_value) and attr_name == "_dist_func":
+                continue
+
+            # Remove leading underscore from private attributes
+            if attr_name.startswith("_"):
+                clean_name = attr_name[1:]  # Remove first character
+            else:
+                clean_name = attr_name
+
+            result[clean_name] = attr_value
+
+        return result
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> Coefficient:
-        """*from_dict()* Create coefficient from dictionary representation.
+        """*from_dict()* Create variable from dictionary representation.
 
         Args:
-            data (Dict[str, Any]): Dictionary representation of coefficient.
+            data (Dict[str, Any]): Dictionary representation of variable.
 
         Returns:
-            Coefficient: New coefficient instance.
+            Variable: New variable instance.
         """
-        return cls(**data)
+        # Get all valid field names from the dataclass
+        field_names = {f.name for f in fields(cls)}
+
+        # Map keys without underscores to keys with underscores
+        mapped_data = {}
+
+        for key, value in data.items():
+            # Try the key as-is first (handles both _idx and name)
+            if key in field_names:
+                mapped_data[key] = value
+            # Try adding underscore prefix (handles idx -> _idx)
+            elif f"_{key}" in field_names:
+                mapped_data[f"_{key}"] = value
+            # Try removing underscore prefix (handles _name -> name if needed)
+            elif key.startswith("_") and key[1:] in field_names:
+                mapped_data[key[1:]] = value
+            else:
+                # Use as-is for unknown keys (will be validated by dataclass)
+                mapped_data[key] = value
+
+        # Convert lists back to numpy arrays for range attributes
+        for range_key in ["std_range", "_std_range"]:
+            if range_key in mapped_data and isinstance(mapped_data[range_key], list):
+                mapped_data[range_key] = np.array(mapped_data[range_key])
+
+        return cls(**mapped_data)

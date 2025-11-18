@@ -14,7 +14,7 @@ Classes:
 """
 
 from __future__ import annotations
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 from typing import Optional, List, Dict, Any, Callable
 import re
 import numpy as np
@@ -525,7 +525,16 @@ class Variable(Validation):
         if val is not None and self._max is not None and val > self._max:
             _msg = f"Minimum {val} cannot be greater than maximum {self._max}."
             raise ValueError(_msg)
+
         self._min = val
+
+        # Update range if all values are available
+        if all([self._min is not None,
+                self._max is not None,
+                self._step is not None]):
+            self._range = np.arange(self._min,
+                                    self._max,
+                                    self._step)
 
     @property
     def max(self) -> Optional[float]:
@@ -549,11 +558,21 @@ class Variable(Validation):
         """
         if val is not None and not isinstance(val, (int, float)):
             raise ValueError("Maximum val must be a number.")
+
         # Check if both values exist before comparing
         if val is not None and self._min is not None and val < self._min:
             _msg = f"Maximum {val} cannot be less than minimum {self._min}."
             raise ValueError(_msg)
+
         self._max = val
+
+        # Update range if all values are available
+        if all([self._min is not None,
+                self._max is not None,
+                self._step is not None]):
+            self._range = np.arange(self._min,
+                                    self._max,
+                                    self._step)
 
     @property
     def mean(self) -> Optional[float]:
@@ -768,7 +787,8 @@ class Variable(Validation):
             ValueError: If value is outside std_min-std_max range.
         """
         if val is not None and not isinstance(val, (int, float)):
-            raise ValueError("Standardized standard deviation must be a number")
+            raise ValueError(
+                "Standardized standard deviation must be a number")
 
         # Standard deviation should be non-negative
         if val is not None and val < 0:
@@ -852,6 +872,7 @@ class Variable(Validation):
         elif not isinstance(val, np.ndarray):
             _msg = f"Range must be a numpy array, got {type(val)}"
             raise ValueError(_msg)
+
         else:
             self._std_range = val
 
@@ -1028,28 +1049,31 @@ class Variable(Validation):
         Returns:
             Dict[str, Any]: Dictionary representation of variable.
         """
-        return {
-            "name": self.name,
-            "description": self.description,
-            "idx": self._idx,
-            "sym": self._sym,
-            "alias": self._alias,
-            "fwk": self._fwk,
-            "cat": self._cat,
-            "dims": self._dims,
-            "units": self._units,
-            "min": self._min,
-            "max": self._max,
-            "mean": self._mean,
-            "std_units": self._std_units,
-            "std_min": self._std_min,
-            "std_max": self._std_max,
-            "std_mean": self._std_mean,
-            "step": self._step,
-            "dist_type": self._dist_type,
-            "dist_params": self._dist_params,
-            "relevant": self.relevant
-        }
+        result = {}
+
+        # Get all dataclass fields
+        for f in fields(self):
+            attr_name = f.name
+            attr_value = getattr(self, attr_name)
+
+            # Skip numpy arrays (not JSON serializable without special handling)
+            if isinstance(attr_value, np.ndarray):
+                # Convert to list for JSON compatibility
+                attr_value = attr_value.tolist()
+
+            # Skip callables (can't be serialized)
+            if callable(attr_value) and attr_name == "_dist_func":
+                continue
+
+            # Remove leading underscore from private attributes
+            if attr_name.startswith("_"):
+                clean_name = attr_name[1:]  # Remove first character
+            else:
+                clean_name = attr_name
+
+            result[clean_name] = attr_value
+
+        return result
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> Variable:
@@ -1061,31 +1085,29 @@ class Variable(Validation):
         Returns:
             Variable: New variable instance.
         """
+        # Get all valid field names from the dataclass
+        field_names = {f.name for f in fields(cls)}
+
         # Map keys without underscores to keys with underscores
         mapped_data = {}
-        key_mapping = {
-            "idx": "_idx",
-            "sym": "_sym",
-            "alias": "_alias",
-            "fwk": "_fwk",
-            "cat": "_cat",
-            "dims": "_dims",
-            "units": "_units",
-            "min": "_min",
-            "max": "_max",
-            "mean": "_mean",
-            "std_units": "_std_units",
-            "std_min": "_std_min",
-            "std_max": "_std_max",
-            "std_mean": "_std_mean",
-            "step": "_step",
-            "dist_type": "_dist_type",
-            "dist_params": "_dist_params",
-        }
 
         for key, value in data.items():
-            # Use mapped key if it exists, otherwise use original key
-            mapped_key = key_mapping.get(key, key)
-            mapped_data[mapped_key] = value
+            # Try the key as-is first (handles both _idx and name)
+            if key in field_names:
+                mapped_data[key] = value
+            # Try adding underscore prefix (handles idx -> _idx)
+            elif f"_{key}" in field_names:
+                mapped_data[f"_{key}"] = value
+            # Try removing underscore prefix (handles _name -> name if needed)
+            elif key.startswith("_") and key[1:] in field_names:
+                mapped_data[key[1:]] = value
+            else:
+                # Use as-is for unknown keys (will be validated by dataclass)
+                mapped_data[key] = value
+
+        # Convert lists back to numpy arrays for range attributes
+        for range_key in ["std_range", "_std_range"]:
+            if range_key in mapped_data and isinstance(mapped_data[range_key], list):
+                mapped_data[range_key] = np.array(mapped_data[range_key])
 
         return cls(**mapped_data)

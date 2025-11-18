@@ -33,7 +33,7 @@ python setup.py bdist_wheel sdist
 
 python setup.py bdist_wheel
 
-pip install .
+pip install -e .
 
 
 ============= Virtual Enviroments ============
@@ -47,3 +47,66 @@ deactivate
 pip freeze > requirements.txt
 pip install -r requirements.txt
 python .\main.py
+
+
+============ Coverage =================
+
+
+commands:
+    pytest --cov=pydasa --cov-report=html tests/
+
+-- for the pyproject.toml file ---
+
+# [tool.coverage.run]
+# source = ["pydasa"]
+# omit = [
+#     "*/tests/*",
+#     "*/test_*.py",
+#     "main.py",
+#     "setup.py"
+# ]
+
+# [tool.coverage.report]
+# exclude_lines = [
+#     "pragma: no cover",
+#     "def __repr__",
+#     "if __name__ == .__main__.:",
+# ]
+
+========================= DEVELOPMENT WORKFLOW =========================
+
+# Install in editable mode (for development/testing)
+pip install -e .
+
+# Run tests with coverage
+pytest --cov=pydasa --cov-report=html tests/
+
+# Clean coverage cache
+del .coverage
+rmdir /s /q htmlcov
+
+
+========================= DISTRIBUTION (Release Only) =========================
+
+# Only build distribution when ready to release
+python -m build
+
+# Or the old way
+python setup.py bdist_wheel sdist
+
+# Install from built wheel (for testing the distribution)
+pip install dist/pydasa-0.1.0-py3-none-any.whl
+
+
+========================= Virtual Environments ============
+
+python -m venv venv
+.\venv\Scripts\activate
+deactivate
+
+# Install dependencies + package in editable mode
+pip install -e .
+pip install -e ".[dev]"  # if you have dev dependencies
+
+pip freeze > requirements.txt
+pip install -r requirements.txt

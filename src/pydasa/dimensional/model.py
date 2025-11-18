@@ -289,16 +289,17 @@ class DimMatrix(Validation, Generic[T]):
         self._find_output_variable()
 
         # Extract working FDUs from relevant variables
-        working_fdus = self._extract_fdus()
+        self.working_fdus = self._extract_fdus()
 
         # Handle CUSTOM framework
-        if self._fwk == "CUSTOM" and working_fdus:
-            if not all(fdu in self._framework.fdu_symbols for fdu in working_fdus):
-                _msg = f"Invalid CUSTOM FDUs: {working_fdus}. "
-                _msg += f"Must be subset of: {self._framework.fdu_symbols}."
+        if self._fwk == "CUSTOM" and self.working_fdus:
+            _fwk = self._framework
+            _w_fdus = self.working_fdus
+            if not all(fdu in _fwk.fdu_symbols for fdu in _w_fdus):
+                _msg = f"Invalid CUSTOM FDUs: {_w_fdus}. "
+                _msg += f"Must be subset of: {_fwk.fdu_symbols}."
                 raise ValueError(_msg)
 
-            self.working_fdus = working_fdus
             # Update framework and global configuration
             self._framework.update_global_config()
 
@@ -314,11 +315,11 @@ class DimMatrix(Validation, Generic[T]):
 
         # Count all variables
         self._n_var = len(_vars)
-        self._n_relevant = sum(1 for v in _vars if v.relevant)
+        self._n_relevant = len([v for v in _vars if v.relevant])
 
         # Count by category (only relevant ones)
-        self._n_in = sum(1 for v in _vars if v.cat == "IN" and v.relevant)
-        self._n_out = sum(1 for v in _vars if v.cat == "OUT" and v.relevant)
+        self._n_in = len([v for v in _vars if v.cat == "IN" and v.relevant])
+        self._n_out = len([v for v in _vars if v.cat == "OUT" and v.relevant])
         self._n_ctrl = self._n_relevant - self._n_in - self._n_out
 
         # Validate output count
@@ -359,13 +360,13 @@ class DimMatrix(Validation, Generic[T]):
         # Get category order from global config
         cat_order = list(cfg.PARAMS_CAT_DT.keys())
 
-        # # Sort by category precedence
-        # sorted_items = sorted(vars_lt.items(),
-        #                       key=lambda v: cat_order.index(v[1].cat))
-
-        # FIXME IA weird lambda function, check later!!!
+        # Sort by category precedence
         sorted_items = sorted(vars_lt.items(),
-                              key=lambda v: cat_order.index(v[1].cat) if v[1].cat in cat_order else len(cat_order))
+                              key=lambda v: cat_order.index(v[1].cat))
+
+        # # FIXME IA weird lambda function, check later!!!
+        # sorted_items = sorted(vars_lt.items(),
+        #                       key=lambda v: cat_order.index(v[1].cat) if v[1].cat in cat_order else len(cat_order))
 
         # Update indices and rebuild dictionary
         sorted_dict = {}
@@ -392,10 +393,10 @@ class DimMatrix(Validation, Generic[T]):
             List[str]: List of unique FDU symbols used, in precedence order.
         """
         # Collect all dimension strings
-        dim_strings = [v.std_dims for v in self._relevant_lt.values()]
+        var_dims = [v.std_dims for v in self._relevant_lt.values()]
 
         # Extract FDU symbols using regex
-        fdus = [d for d in re.findall(cfg.WKNG_FDU_SYM_RE, str(dim_strings))]
+        fdus = [d for d in re.findall(cfg.WKNG_FDU_SYM_RE, str(var_dims))]
 
         # Remove duplicates while preserving order
         unique_fdus = list({fdus[i] for i in range(len(fdus))})
@@ -426,6 +427,7 @@ class DimMatrix(Validation, Generic[T]):
 
         # Fill matrix with dimension columns
         for var in self._relevant_lt.values():
+            # Ensure dimension column has correct length
             dim_col = var._dim_col
 
             # Pad or truncate to match FDU count
@@ -449,7 +451,7 @@ class DimMatrix(Validation, Generic[T]):
             ValueError: If matrix hasn't been created yet.
         """
         # Ensure matrix exists
-        if self._dim_mtx is None:
+        if not isinstance(self._dim_mtx, np.ndarray) or self._dim_mtx.size == 0:
             self.create_matrix()
 
         # Convert to SymPy for symbolic computation
@@ -503,7 +505,7 @@ class DimMatrix(Validation, Generic[T]):
                 _alias=f"Pi_{i}",
                 _fwk=self._fwk,
                 _cat="COMPUTED",
-                _variables=self._variables,
+                _variables=self._relevant_lt,
                 _dim_col=vector_np.tolist(),
                 _pivot_lt=self._pivot_cols,
                 name=f"Pi-{i}",
@@ -729,6 +731,8 @@ class DimMatrix(Validation, Generic[T]):
             raise ValueError(_msg)
 
         self._variables = val
+
+        # Update relevant variables and prepare for analysis
         self._prepare_analysis()
 
     @property
@@ -791,9 +795,11 @@ class DimMatrix(Validation, Generic[T]):
 
         # Set relevant variables and prepare for analysis
         # self._relevant_lt = [p for p in val if p.relevant]
-        _vars = self._variables
-        self._relevant_lt = {k: v for k, v in _vars.items() if v.relevant}
+        self._relevant_lt = {
+            k: v for k, v in self._variables.items() if v.relevant
+        }
 
+        # Update relevant variables and prepare for analysis
         self._prepare_analysis()
 
     @property

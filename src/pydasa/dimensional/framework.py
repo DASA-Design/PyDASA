@@ -3,12 +3,12 @@
 Module framework.py
 ===========================================
 
-Module for **DimScheme** to manage Fundamental Dimensional Units (FDUs) for Dimensional Analysis in *PyDASA*.
+Module for **DimSchema** to manage Fundamental Dimensional Units (FDUs) for Dimensional Analysis in *PyDASA*.
 
-This module provides the DimScheme class which manages dimensional frameworks, FDU precedence, and regex patterns for dimensional expression validation.
+This module provides the DimSchema class which manages dimensional frameworks, FDU precedence, and regex patterns for dimensional expression validation.
 
 Classes:
-    **DimScheme**: Manages dimensional frameworks and FDUs, providing methods for validation,
+    **DimSchema**: Manages dimensional frameworks and FDUs, providing methods for validation,
 
 *IMPORTANT:* Based on the theory from:
 
@@ -16,8 +16,8 @@ Classes:
 """
 
 from __future__ import annotations
+from dataclasses import dataclass, field, fields
 from typing import List, Dict, Optional, Generic, Any, Sequence, Mapping, cast
-from dataclasses import dataclass, field
 
 # Import validation base classes
 from pydasa.core.basic import Validation
@@ -42,8 +42,8 @@ from pydasa.utils import config as cfg
 
 
 @dataclass
-class DimScheme(Validation, Generic[T]):
-    """**DimScheme** Manages dimensional frameworks and FDUs for *PyDASA*.
+class DimSchema(Validation, Generic[T]):
+    """**DimSchema** Manages dimensional frameworks and FDUs for *PyDASA*.
 
     Maintains a collection of Dimensions with their precedence, provides regex patterns
     for dimensional expressions, and manages the dimensional framework context.
@@ -519,6 +519,102 @@ class DimScheme(Validation, Generic[T]):
         self._fdu_pow_regex = DFLT_POW_RE
         self._fdu_no_pow_regex = ""
         self._fdu_sym_regex = ""
+
+    def to_dict(self) -> Dict[str, Any]:
+        """*to_dict()* Convert framework to dictionary representation.
+
+        Returns:
+            Dict[str, Any]: Dictionary representation of the framework.
+        """
+        result = {}
+
+        # Get all dataclass fields
+        for f in fields(self):
+            attr_name = f.name
+            attr_value = getattr(self, attr_name)
+
+            # Handle Dimension list (convert each Dimension)
+            if isinstance(attr_value, list) and all(isinstance(d, Dimension) for d in attr_value):
+                attr_value = [d.to_dict() for d in attr_value]
+
+            # Handle Dimension dictionary (convert each Dimension)
+            if isinstance(attr_value, dict) and all(isinstance(d, Dimension) for d in attr_value.values()):
+                attr_value = {k: d.to_dict() for k, d in attr_value.items()}
+
+            # Skip None values for optional fields
+            if attr_value is None:
+                continue
+
+            # Remove leading underscore from private attributes
+            if attr_name.startswith("_"):
+                clean_name = attr_name[1:]  # Remove first character
+            else:
+                clean_name = attr_name
+
+            result[clean_name] = attr_value
+
+        return result
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> DimSchema:
+        """*from_dict()* Create framework from dictionary representation.
+
+        Args:
+            data (Dict[str, Any]): Dictionary representation of the framework.
+
+        Returns:
+            DimScheme: New DimScheme instance.
+        """
+        # Get all valid field names from the dataclass
+        field_names = {f.name for f in fields(cls)}
+
+        # Map keys without underscores to keys with underscores
+        mapped_data = {}
+
+        for key, value in data.items():
+            # Try the key as-is first (handles both _fwk and name)
+            if key in field_names:
+                mapped_data[key] = value
+            # Try adding underscore prefix (handles fwk -> _fwk)
+            elif f"_{key}" in field_names:
+                mapped_data[f"_{key}"] = value
+            # Try removing underscore prefix (handles _name -> name if needed)
+            elif key.startswith("_") and key[1:] in field_names:
+                mapped_data[key[1:]] = value
+
+        # Convert Dimension list back
+        if "fdu_lt" in mapped_data or "_fdu_lt" in mapped_data:
+            fdu_data = mapped_data.get("fdu_lt") or mapped_data.get("_fdu_lt")
+            if isinstance(fdu_data, list):
+                mapped_data["_fdu_lt"] = [
+                    Dimension.from_dict(d) if isinstance(d, dict) else d
+                    for d in fdu_data
+                ]
+
+        # Convert Dimension map back
+        if "fdu_map" in mapped_data or "_fdu_map" in mapped_data:
+            map_data = mapped_data.get(
+                "fdu_map") or mapped_data.get("_fdu_map")
+            if isinstance(map_data, dict):
+                mapped_data["_fdu_map"] = {
+                    k: Dimension.from_dict(d) if isinstance(d, dict) else d
+                    for k, d in map_data.items()
+                }
+
+        # Remove computed/derived fields that shouldn't be passed to constructor
+        computed_fields = [
+            "fdu_map", "_fdu_map",  # Reconstructed from fdu_lt
+            "fdu_symbols", "_fdu_symbols",  # Reconstructed from fdu_lt
+            "size"  # Computed property
+        ]
+
+        for field_name in computed_fields:
+            mapped_data.pop(field_name, None)
+
+        # Create framework instance
+        framework = cls(**mapped_data)
+
+        return framework
 
     # def validate_dimensional_expression(self, expression: str) -> bool:
     # TODO old code, to be removed in the future

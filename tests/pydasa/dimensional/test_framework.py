@@ -189,10 +189,10 @@ class TestDimSchema(unittest.TestCase):
         scheme = DimSchema(_fwk="PHYSICAL")
         dct = scheme.to_dict()
         assert isinstance(dct, dict)
-        assert dct["_fwk"] == "PHYSICAL"
-        assert isinstance(dct["_fdu_lt"], list)
-        assert len(dct["_fdu_lt"]) == scheme.size
-        for item in dct["_fdu_lt"]:
+        assert dct["fwk"] == "PHYSICAL"
+        assert isinstance(dct["fdu_lt"], list)
+        assert len(dct["fdu_lt"]) == scheme.size
+        for item in dct["fdu_lt"]:
             assert isinstance(item, dict)
             assert "sym" in item
             assert "unit" in item
@@ -200,4 +200,12 @@ class TestDimSchema(unittest.TestCase):
             assert "description" in item
 
     def test_from_dict(self) -> None:
-        pass
+        """from_dict() creates DimSchema from dictionary."""
+        scheme = DimSchema(_fwk="SOFTWARE")
+        dct = scheme.to_dict()
+        new_scheme = DimSchema.from_dict(dct)
+        assert isinstance(new_scheme, DimSchema)
+        assert new_scheme.fwk == "SOFTWARE"
+        assert new_scheme.size == scheme.size
+        for sym in scheme.fdu_symbols:
+            assert new_scheme.has_fdu(sym)

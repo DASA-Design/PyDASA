@@ -28,10 +28,9 @@ I need an object oriented design option to include the following requirements in
 3. DONE ✅
 4. WARNING ⚠️
 
-## Path Structure
+## Src Path Structure
 
 1. **pydasa**
-
    1. **analysis**
 
       1. conversion.py unit conversion handler for the solver, OUT OF SCOPE for now!!!❌
@@ -56,14 +55,14 @@ I need an object oriented design option to include the following requirements in
 
       1. **lists**
 
-         1. dymarray.py: arraylist. ✅
-         2. singlelinked.py: single linked list. ✅
-         3. doublelinked.py: double linked list. ✅
-         4. nodes.py: node list for double and single linked. ✅
+         1. arlt.py: arraylist. ✅
+         2. sllt.py: single linked list. ✅
+         3. dllt.py: double linked list. ✅
+         4. ndlt.py: node list for double and single linked. ✅
       2. **tables**
 
-         1. chaining.py: separate chaining hashtable. ✅
-         2. entry.py: entry useful for the separate chaining hashtable. ✅
+         1. scht.py: separate chaining hashtable. ✅
+         2. htme.py: entry used in the separate chaining hashtable. ✅
 
          ---
    5. **dimensional**
@@ -76,24 +75,90 @@ I need an object oriented design option to include the following requirements in
    6. **handler**
 
       1. influence.py: contains the SensitivityHandler class for understanding variance in the coefficients. ✅
-      2. phenomena.py: has the main Solver() class of the project 🔶👨‍💻⚠️ WORKING HERE⚠️
-      3. practical.py contains the SimulationManager class to control all the montecartlo simulations of all data ✅
+      2. phenomena.py: has the main Solver() class of the project. TODO ⚠️
+      3. practical.py contains the MonteCarloHandler class to control all the montecartlo simulations of all data ✅ 🔶👨‍💻⚠️ WORKING HERE ⚠️
 
       ---
    7. **utils**
 
       1. config.py: contains all global and shared variables for the analysis. ✅
       2. default.py contains all the default stuff needed for custom datastructures + other functionalities, usefull in the future!!! ✅
-      3. errors.py: contains the generic error_handler() function for all components. ✅
+      3. error.py: contains the generic error_handler() function for all components. ✅
       4. helpers.py: contains any other funcion useful for the process, include MAD for hashtable, check if is prime, and other stuff. ✅
-      5. queues.py: library that implement the queue theory for simulations and stuff ✅ ->  ⚠️ TODO: test and check
-      6. io.py: contains all the input/ouput functions for saving data of the analyisis, also exports to be use in other platforms (MATPLOTLIB and files!!) NOT NOW❌
+      5. ~~queues.py: library that implement the queue theory for simulations and stuff ✅ ->  ⚠️ REMOVED FROM REPO~~
+      6. ~~io.py: contains all the input/ouput functions for saving data of the analyisis, also exports to be use in other platforms (MATPLOTLIB and files!!) NOT NOW❌~~
+      7. latex.py: contains all the LaTeX parsing functions for better representation of formulas and stuff. ✅
 
       ---
-   8. math ⚠️⚠️⚠️ TODO ⚠️⚠️⚠️ do i need them????
+   8. ~~math ⚠️⚠️⚠️ TODO ⚠️⚠️⚠️ do i need them????❌ outside of lib scope!!!~~
 
-      1. numbers.py
-      2. queues.py
+      1. ~~numbers.py❌~~
+      2. ~~queues.py❌~~
 
       ---
    9. ~~**visualization:** dont NEED it, USE MATPLOTLIB OR OTHER STUFF!!!!, but y need to create plots and charts from vars + coefficients ❌~~
+
+
+## Tests Path Structure
+
+1. **pydasa**
+
+🔶👨‍💻⚠️ WORKING HERE ⚠️
+
+   1. **analysis**
+
+      1. test_conversion.py: tests for unit conversion handler for the solver. NOT NOW!!! ❌
+      2. test_scenario.py: tests for sensitivity analysis of the Coefficients TODO ⚠️
+      3. test_simulation.py: tests for the monte carlo simulator for one coefficient. TODO ⚠️
+
+      ---
+   2. **buckingham**
+
+      1. test_cvaschy.py: tests for the the Pi/PiCoefficient/Coefficient class. TODO ⚠️
+
+      ---
+   3. **core:** shared and core capabilities
+
+      1. test_basics.py: tests for the Validation class. ✅
+      2. test_fundamental.py: tests for the Dimension class ✅
+      3. test_measurements.py: tests for the Unit class. NOT NOW!!! ❌
+      4. test_parameters.py: tests for the Variable class. ✅
+
+      ---
+   4. **datastructs:** data structures to manage the unit conversion process.
+
+      1. **lists**
+
+         1. test_arlt.py: tests for the arraylist. NOT NOW!!! ❌
+         2. test_sllt.py: tests for the single linked list. NOT NOW!!! ❌
+         3. test_dllt.py: tests for the double linked list. NOT NOW!!! ❌
+         4. test_ndlt.py: tests for the node list for double and single linked. NOT NOW!!! ❌
+      2. **tables**
+
+         1. test_scht.py: tests for the separate chaining hashtable. NOT NOW!!! ❌
+         2. test_htme.py: tests for the entry useful for the separate chaining hashtable. NOT NOW!!! ❌
+         ---
+   5. **dimensional**
+
+      1. test_domain.py tests for the unit conversion handler/manager. NOT NOW!!! ❌
+      2. test_framework.py: test for the DimScheme class to manage and control the DimMatrix in the solving process. ✅
+      3. test_model.py: test for the DimMatrix class to solve the dimensional matrix. TODO ⚠️
+
+      ---
+   6. **handler**
+
+      1. test_influence.py: test for the SensitivityHandler class for understanding variance in the coefficients. ✅
+      2. test_phenomena.py: test for the main Solver() class of the project 🔶👨‍💻⚠️ WORKING HERE ⚠️
+      3. test_practical.py test for the SimulationManager class to control all the montecartlo simulations of all data ✅
+
+      ---
+   7. **utils**
+
+      1. test_config.py: test for all global and shared variables for the analysis. ✅
+      2. test_default.py test for all the default stuff needed for custom datastructures + other functionalities. NOT NOW!!! ❌
+      3. test_errors.py: test for the generic error_handler() function for all components. ✅
+      4. test_helpers.py: test for any other funcion useful for the process, include MAD for hashtable, check if is prime, and other stuff. NOT NOW!!! ❌
+      5. test_io.py: tests for all the input/ouput functions for saving data of the analyisis, also exports to be use in other platforms (MATPLOTLIB and files!!) NOT NOW!!! ❌
+      6. test_latex.py: tests for all the LaTeX parsing functions for better representation of formulas and stuff. ✅
+
+      ---

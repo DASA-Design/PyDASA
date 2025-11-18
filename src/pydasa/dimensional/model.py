@@ -762,3 +762,73 @@ class DimMatrix(Validation, Generic[T]):
             model._prepare_analysis()
 
         return model
+
+
+    def to_dict(self) -> Dict[str, Any]:
+        """*to_dict()* Convert variable to dictionary representation.
+
+        Returns:
+            Dict[str, Any]: Dictionary representation of variable.
+        """
+        result = {}
+
+        # Get all dataclass fields
+        for f in fields(self):
+            attr_name = f.name
+            attr_value = getattr(self, attr_name)
+
+            # Skip numpy arrays (not JSON serializable without special handling)
+            if isinstance(attr_value, np.ndarray):
+                # Convert to list for JSON compatibility
+                attr_value = attr_value.tolist()
+
+            # Skip callables (can't be serialized)
+            if callable(attr_value) and attr_name == "_dist_func":
+                continue
+
+            # Remove leading underscore from private attributes
+            if attr_name.startswith("_"):
+                clean_name = attr_name[1:]  # Remove first character
+            else:
+                clean_name = attr_name
+
+            result[clean_name] = attr_value
+
+        return result
+
+    # @classmethod
+    # def from_dict(cls, data: Dict[str, Any]) -> Coefficient:
+    #     """*from_dict()* Create variable from dictionary representation.
+
+    #     Args:
+    #         data (Dict[str, Any]): Dictionary representation of variable.
+
+    #     Returns:
+    #         Variable: New variable instance.
+    #     """
+    #     # Get all valid field names from the dataclass
+    #     field_names = {f.name for f in fields(cls)}
+
+    #     # Map keys without underscores to keys with underscores
+    #     mapped_data = {}
+
+    #     for key, value in data.items():
+    #         # Try the key as-is first (handles both _idx and name)
+    #         if key in field_names:
+    #             mapped_data[key] = value
+    #         # Try adding underscore prefix (handles idx -> _idx)
+    #         elif f"_{key}" in field_names:
+    #             mapped_data[f"_{key}"] = value
+    #         # Try removing underscore prefix (handles _name -> name if needed)
+    #         elif key.startswith("_") and key[1:] in field_names:
+    #             mapped_data[key[1:]] = value
+    #         else:
+    #             # Use as-is for unknown keys (will be validated by dataclass)
+    #             mapped_data[key] = value
+
+    #     # Convert lists back to numpy arrays for range attributes
+    #     for range_key in ["std_range", "_std_range"]:
+    #         if range_key in mapped_data and isinstance(mapped_data[range_key], list):
+    #             mapped_data[range_key] = np.array(mapped_data[range_key])
+
+    #     return cls(**mapped_data)

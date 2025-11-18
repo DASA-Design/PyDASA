@@ -541,3 +541,174 @@ def get_coefficient_test_data() -> dict:
         "VALID_CATEGORIES": ["COMPUTED", "DERIVED", "computed", "derived"],
         "INVALID_CATEGORIES": ["INVALID", "INPUT", "OUTPUT", ""],
     }
+
+
+# test data for from pydasa.dimensional.model import DimMatrix
+def get_model_test_data() -> dict:
+    """Get test data for DimMatrix/model tests."""
+    return {
+        "TEST_VARIABLES": {
+            "v": {
+                "_sym": "v",
+                "_alias": "v",
+                "_fwk": "PHYSICAL",
+                "_cat": "IN",
+                "_dims": "L*T^-1",
+                "_units": "m/s",
+                "name": "Velocity",
+                "description": "Fluid velocity",
+                "relevant": True,
+                "_idx": 0
+            },
+            "L": {
+                "_sym": "L",
+                "_alias": "L",
+                "_fwk": "PHYSICAL",
+                "_cat": "IN",
+                "_dims": "L",
+                "_units": "m",
+                "name": "Length",
+                "description": "Characteristic length",
+                "relevant": True,
+                "_idx": 1
+            },
+            "\\rho": {
+                "_sym": "\\rho",
+                "_alias": "rho",
+                "_fwk": "PHYSICAL",
+                "_cat": "IN",
+                "_dims": "M*L^-3",
+                "_units": "kg/m^3",
+                "name": "Density",
+                "description": "Fluid density",
+                "relevant": True,
+                "_idx": 2
+            },
+            "\\mu": {
+                "_sym": "\\mu",
+                "_alias": "mu",
+                "_fwk": "PHYSICAL",
+                "_cat": "CTRL",
+                "_dims": "M*L^-1*T^-1",
+                "_units": "Pa*s",
+                "name": "Dynamic Viscosity",
+                "description": "Dynamic viscosity",
+                "relevant": True,
+                "_idx": 3
+            },
+            "P": {
+                "_sym": "P",
+                "_alias": "P",
+                "_fwk": "PHYSICAL",
+                "_cat": "OUT",
+                "_dims": "M*L^-1*T^-2",
+                "_units": "Pa",
+                "name": "Pressure",
+                "description": "Fluid pressure",
+                "relevant": True,
+                "_idx": 4
+            },
+            "d": {
+                "_sym": "d",
+                "_alias": "d",
+                "_fwk": "PHYSICAL",
+                "_cat": "IN",
+                "_dims": "L",
+                "_units": "m",
+                "name": "Diameter",
+                "description": "Pipe diameter",
+                "relevant": False,  # Not relevant for basic analysis
+                "_idx": 5
+            },
+            "g": {
+                "_sym": "g",
+                "_alias": "g",
+                "_fwk": "PHYSICAL",
+                "_cat": "IN",
+                "_dims": "L*T^-2",
+                "_units": "m/s^2",
+                "name": "Gravity",
+                "description": "Gravitational acceleration",
+                "relevant": True,
+                "_idx": 6
+            },
+            "\\nu": {
+                "_sym": "\\nu",
+                "_alias": "nu",
+                "_fwk": "PHYSICAL",
+                "_cat": "CTRL",
+                "_dims": "L^2*T^-1",
+                "_units": "m^2/s",
+                "name": "Kinematic Viscosity",
+                "description": "Kinematic viscosity",
+                "relevant": True,
+                "_idx": 7
+            }
+        },
+        "MINIMAL_VARIABLES": {
+            "v": {
+                "_sym": "v",
+                "_cat": "IN",
+                "_dims": "L*T^-1",
+                "relevant": True
+            },
+            "P": {
+                "_sym": "P",
+                "_cat": "OUT",
+                "_dims": "M*L^-1*T^-2",
+                "relevant": True
+            }
+        },
+        "VARIABLES_NO_OUTPUT": {
+            "v": {
+                "_sym": "v",
+                "_cat": "IN",
+                "_dims": "L*T^-1",
+                "relevant": True
+            },
+            "L": {
+                "_sym": "L",
+                "_cat": "IN",
+                "_dims": "L",
+                "relevant": True
+            }
+        },
+        "VARIABLES_MULTI_OUTPUT": {
+            "v": {
+                "_sym": "v",
+                "_cat": "IN",
+                "_dims": "L*T^-1",
+                "relevant": True
+            },
+            "P1": {
+                "_sym": "P1",
+                "_cat": "OUT",
+                "_dims": "M*L^-1*T^-2",
+                "relevant": True
+            },
+            "P2": {
+                "_sym": "P2",
+                "_cat": "OUT",
+                "_dims": "M*L^-1*T^-2",
+                "relevant": True
+            }
+        },
+        "EXPECTED_FDU_SYMBOLS": ["M", "L", "T"],
+        "EXPECTED_CATEGORIES": ["IN", "OUT", "CTRL"],
+        "VALID_MODEL_NAMES": [
+            "Fluid Dynamics Model",
+            "Reynolds Number Analysis",
+            "Dimensional Matrix Test"
+        ],
+        "EXPECTED_N_COEFFICIENTS": 2,  # Expected number of Pi coefficients
+        "VALID_DERIVED_EXPRESSIONS": [
+            "\\Pi_{0} * \\Pi_{1}",
+            "\\Pi_{0} / \\Pi_{1}",
+            "\\Pi_{0}^2 * \\Pi_{1}"
+        ],
+        "INVALID_DERIVED_EXPRESSIONS": [
+            "invalid * expression",
+            "\\Pi_{999} * \\Pi_{1000}",
+            ""
+        ],
+    }

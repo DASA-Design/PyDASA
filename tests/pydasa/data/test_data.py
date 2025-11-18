@@ -320,3 +320,72 @@ def get_framework_test_data() -> dict:
             ]
         },
     }
+
+
+# test data for from pydasa.dimensional.coefficient import Coefficient
+def get_coefficient_test_data() -> dict:
+    """Get test data for Coefficient tests."""
+    return {
+        "REYNOLDS_COEFFICIENT": {
+            "_idx": 0,
+            "_sym": "\\Pi_{Re}",
+            "_alias": "Pi_Re",
+            "_fwk": "PHYSICAL",
+            "_cat": "COMPUTED",
+            "_dim_col": [1, 1, 1, -1],  # v*L*rho/mu
+            "variables": {
+                "v": {
+                    "_sym": "v",
+                    "_dims": "L*T^-1",
+                    "_fwk": "PHYSICAL",
+                    "name": "Velocity"
+                },
+                "L": {
+                    "_sym": "L",
+                    "_dims": "L",
+                    "_fwk": "PHYSICAL",
+                    "name": "Length"
+                },
+                "rho": {
+                    "_sym": "\\rho",
+                    "_dims": "M*L^-3",
+                    "_fwk": "PHYSICAL",
+                    "name": "Density"
+                },
+                "mu": {
+                    "_sym": "\\mu",
+                    "_dims": "M*L^-1*T^-1",
+                    "_fwk": "PHYSICAL",
+                    "name": "Viscosity"
+                }
+            },
+            "name": "Reynolds Number",
+            "description": "Ratio of inertial to viscous forces"
+        },
+        "SIMPLE_COEFFICIENT": {
+            "_idx": 1,
+            "_sym": "\\Pi_{1}",
+            "_alias": "Pi_1",
+            "_fwk": "PHYSICAL",
+            "_cat": "COMPUTED",
+            "_dim_col": [1, -1],  # v/L
+            "variables": {
+                "v": {
+                    "_sym": "v",
+                    "_dims": "L*T^-1",
+                    "_fwk": "PHYSICAL",
+                    "name": "Velocity"
+                },
+                "L": {
+                    "_sym": "L",
+                    "_dims": "L",
+                    "_fwk": "PHYSICAL",
+                    "name": "Length"
+                }
+            },
+            "name": "Simple Ratio",
+            "description": "Simple velocity-length ratio"
+        },
+        "VALID_CATEGORIES": ["COMPUTED", "DERIVED", "computed", "derived"],
+        "INVALID_CATEGORIES": ["INVALID", "INPUT", "OUTPUT", ""],
+    }

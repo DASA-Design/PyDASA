@@ -17,7 +17,7 @@ Classes:
 # native python modules
 from __future__ import annotations
 from dataclasses import dataclass, field, fields
-from typing import List, Dict, Optional, Any, Generic
+from typing import List, Dict, Optional, Any, Generic, Union
 import re
 
 # python third-party modules
@@ -88,21 +88,27 @@ class DimMatrix(Validation, Generic[T]):
     # Core Identification
     # ========================================================================
     # TODO may be I don't need it
+    # :attr: name
     name: str = "Dimensional Matrix"
     """User-friendly name of the dimensional matrix."""
 
+    # :attr: description
     description: str = ""
     """Brief summary of the dimensional matrix and its purpose."""
 
+    # :attr: _idx
     _idx: int = -1
     """Index/precedence of the dimensional model."""
 
+    # :attr: _sym
     _sym: str = ""
     """Symbol representation (LaTeX or alphanumeric)."""
 
+    # :attr: _alias
     _alias: str = ""
     """Python-compatible alias for use in code."""
 
+    # :attr: _fwk
     _fwk: str = "PHYSICAL"
     """Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM)."""
 
@@ -110,9 +116,11 @@ class DimMatrix(Validation, Generic[T]):
     # Framework Management
     # ========================================================================
 
+    # :attr: _framework
     _framework: DimSchema = field(default_factory=DimSchema)
     """Dimensional framework managing Fundamental Dimensional Units (FDUs)."""
 
+    # :attr: working_fdus
     working_fdus: List[str] = field(default_factory=list)
     """List of active FDU symbols used in the current analysis."""
 
@@ -120,12 +128,14 @@ class DimMatrix(Validation, Generic[T]):
     # Variable Management
     # ========================================================================
 
+    # :attr: _variables
     _variables: Dict[str, Variable] = field(default_factory=dict)
     """Dictionary of all parameters/variables in the model.
 
     Keys are variable symbols (str), values are Variable instances.
     """
 
+    # :attr: _relevant_lt
     _relevant_lt: Dict[str, Variable] = field(default_factory=dict)
     """Dictionary of relevant parameters/variables for dimensional analysis.
 
@@ -134,6 +144,7 @@ class DimMatrix(Validation, Generic[T]):
     NOTE: called 'relevant list' by convention.
     """
 
+    # :attr: _output
     _output: Optional[Variable] = None
     """The single output variable for the dimensional analysis.
 
@@ -144,18 +155,23 @@ class DimMatrix(Validation, Generic[T]):
     # Variable Statistics
     # ========================================================================
 
+    # :attr: _n_var
     _n_var: int = 0
     """Total number of variables in the model."""
 
+    # :attr: _n_relevant
     _n_relevant: int = 0
     """Number of variables marked as relevant for analysis."""
 
+    # :attr: _n_in
     _n_in: int = 0
     """Number of input variables (cat == "IN" and relevant == True)."""
 
+    # :attr: _n_out
     _n_out: int = 0
     """Number of output variables (cat == "OUT" and relevant == True)."""
 
+    # :attr: _n_ctrl
     _n_ctrl: int = 0
     """Number of control variables (cat == "CTRL" and relevant == True)."""
 
@@ -163,7 +179,8 @@ class DimMatrix(Validation, Generic[T]):
     # Matrix Representations
     # ========================================================================
 
-    _dim_mtx: Optional[np.ndarray] = None
+    # :attr: _dim_mtx
+    _dim_mtx: Optional[np.ndarray] = field(default_factory=lambda: np.array([]))
     """Dimensional matrix as NumPy array.
 
     Shape: (n_fdus, n_relevant_vars)
@@ -171,6 +188,7 @@ class DimMatrix(Validation, Generic[T]):
     Each row represents an FDU's exponent across all variables.
     """
 
+    # :attr: _dim_mtx_trans
     _dim_mtx_trans: Optional[np.ndarray] = None
     """Transposed dimensional matrix.
 
@@ -178,13 +196,15 @@ class DimMatrix(Validation, Generic[T]):
     Transpose of _dim_mtx for alternative operations.
     """
 
-    _sym_mtx: Optional[sp.Matrix] = None
+    # :attr: _sym_mtx
+    _sym_mtx: Optional[sp.Matrix] = field(default_factory=lambda: sp.Matrix([]))
     """SymPy Matrix representation for symbolic computation.
 
     Used for RREF calculation and nullspace computation.
     Equivalent to _dim_mtx but in SymPy format.
     """
 
+    # :attr: _rref_mtx
     _rref_mtx: Optional[np.ndarray] = None
     """Row-Reduced Echelon Form (RREF) of the dimensional matrix.
 
@@ -192,16 +212,24 @@ class DimMatrix(Validation, Generic[T]):
     Used to identify pivot columns and compute nullspace.
     """
 
+    # :attr: _nullspace
+    _nullspace: List[Union[np.ndarray, sp.Matrix]] = field(default_factory=list)
+    """List of nullspace vectors of the dimensional matrix.
+
+    Can be list of arrays or list of sympy vectors"""
+
     # ========================================================================
     # Analysis Results
     # ========================================================================
 
+    # :attr: _pivot_cols
     _pivot_cols: List[int] = field(default_factory=list)
     """Indices of pivot columns in the RREF matrix.
 
     Identifies which variables are dependent (pivot) vs. independent (free).
     """
 
+    # :attr: _coefficients
     _coefficients: Dict[str, Coefficient] = field(default_factory=dict)
     """Dictionary of dimensionless Pi coefficients.
 
@@ -228,6 +256,13 @@ class DimMatrix(Validation, Generic[T]):
         # Process variables if provided
         if self._variables:
             self._prepare_analysis()
+
+        # Ensure proper types
+        if not isinstance(self._dim_mtx, np.ndarray):
+            self._dim_mtx = np.array([], dtype=float)
+
+        if not isinstance(self._sym_mtx, sp.Matrix):
+            self._sym_mtx = sp.Matrix([])
 
     # ========================================================================
     # Preparation Methods
@@ -331,7 +366,6 @@ class DimMatrix(Validation, Generic[T]):
         # FIXME IA weird lambda function, check later!!!
         sorted_items = sorted(vars_lt.items(),
                               key=lambda v: cat_order.index(v[1].cat) if v[1].cat in cat_order else len(cat_order))
-
 
         # Update indices and rebuild dictionary
         sorted_dict = {}
@@ -441,7 +475,7 @@ class DimMatrix(Validation, Generic[T]):
             raise ValueError(_msg)
 
         # Compute nullspace vectors
-        nullspace_vectors = self._sym_mtx.nullspace()
+        self._nullspace = self._sym_mtx.nullspace()
 
         # Clear existing coefficients
         self._coefficients.clear()
@@ -450,16 +484,16 @@ class DimMatrix(Validation, Generic[T]):
         var_syms = [var for var in self._relevant_lt.keys()]
 
         # Create coefficient for each nullspace vector
-        for i, vector in enumerate(nullspace_vectors):
+        for i, vector in enumerate(self._nullspace):
             # Convert to numpy array
             vector_np = np.array(vector).flatten().astype(float)
 
             # Create variable dictionary for this coefficient
             # TODO is this reduntant? check later!!!
-            # coef_vars = {}
-            # for j, val in enumerate(vector_np):
-            #     if j < len(var_syms) and isinstance(val, (int, float)):
-            #         coef_vars[var_syms[j]] = self._relevant_lt[var_syms[j]]
+            coef_vars = {}
+            for j, val in enumerate(vector_np):
+                if j < len(var_syms) and isinstance(val, (int, float)):
+                    coef_vars[var_syms[j]] = self._relevant_lt[var_syms[j]]
 
             # Create Pi coefficient
             pi_sym = f"\\Pi_{{{i}}}"
@@ -617,18 +651,30 @@ class DimMatrix(Validation, Generic[T]):
         self.solve_matrix()
 
     def clear(self) -> None:
-        """*clear()* Resets the dimensional matrix and analysis results.
+        """*clear()* Resets all dimensional matrix and analysis data.
 
         Clears all computed results while preserving the framework.
-        Variables are cleared by default.
-        """
-        # Clear base class
-        super().clear()
 
+        NOTE: Numpy arrays don't have .clear() method, so we reassign. Lists have .clear() method.
+        """
         # Clear variables
+        # Reassign numpy arrays (no .clear() method)
+        self._dim_mtx = np.array([], dtype=float)
+
+        # Reassign sympy matrices
+        self._sym_mtx = sp.Matrix([])
+
+        # Clear lists (these have .clear() method)
         self._variables.clear()
         self._relevant_lt.clear()
         self._output = None
+
+        # Reset scalars
+        self._idx = -1
+        self._sym = ""
+        self._alias = ""
+        self.name = ""
+        self.description = ""
 
         # Reset statistics
         self._n_var = 0

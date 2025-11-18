@@ -22,7 +22,7 @@ from pydasa.utils import config
 from pydasa.core.fundamental import Dimension
 
 # FDU regex management
-from pydasa.dimensional.framework import DimScheme
+from pydasa.dimensional.framework import DimSchema
 
 # Variable and Variable modules
 from pydasa.core.parameter import Variable
@@ -179,7 +179,7 @@ if __name__ == "__main__":
                   _dims="M*T^-2*L^-1",)
     print(p1, "\n")
 
-    rm = DimScheme(_fwk="SOFTWARE",)
+    rm = DimSchema(_fwk="SOFTWARE",)
     print(rm, "\n")
 
     rm.update_global_config()
@@ -194,7 +194,7 @@ if __name__ == "__main__":
             "description": "Time~~~~~~~~~~~~~", "_unit": "s", "name": "Time"},
     ]
 
-    rm = DimScheme(_fdus=fdu_lt, _fwk="CUSTOM")
+    rm = DimSchema(_fdus=fdu_lt, _fwk="CUSTOM")
 
     rm.update_global_config()
     print(rm, "\n")
@@ -556,7 +556,7 @@ if __name__ == "__main__":
                           _pi_expr=DAModel.coefficients["\\Pi_{1}"].pi_expr,
                           _variables=DAModel.variables,
                           _distributions=dist_specs,
-                          _iterations=100,)
+                          _iterations=10,)
     # Configure with coefficient, this is critical!!!
     monte.set_coefficient(DAModel.coefficients["\\Pi_{1}"])
     # monte.config_simulations()

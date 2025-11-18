@@ -141,7 +141,7 @@ I need an object oriented design option to include the following requirements in
 5. **dimensional**
 
    1. test_domain.py tests for the unit conversion handler/manager. NOT NOW!!! ❌
-   2. test_framework.py: test for the DimScheme class to manage and control the DimMatrix in the solving process. ✅
+   2. test_framework.py: test for the DimSchema class to manage and control the DimMatrix in the solving process. ✅
    3. test_model.py: test for the DimMatrix class to solve the dimensional matrix. TODO ⚠️
 
    ---

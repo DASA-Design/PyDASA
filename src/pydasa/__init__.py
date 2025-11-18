@@ -29,7 +29,7 @@ from .datastruct.tables.scht import Bucket, SCHashTable
 # exposing dimensional packages
 # TODO domain still in development
 # from .pydasa.dimensional.domain import MeasurementSys
-from .dimensional.framework import DimScheme
+from .dimensional.framework import DimSchema
 from .dimensional.model import DimMatrix
 
 # exposing data handling packages
@@ -64,7 +64,7 @@ assert Bucket
 assert SCHashTable
 
 # assert MeasurementSys
-assert DimScheme
+assert DimSchema
 assert DimMatrix
 
 assert SensitivityHandler
@@ -80,7 +80,7 @@ assert save
 __all__ = [
     "Dimension",
     "Variable",
-    "DimScheme",
+    "DimSchema",
     "DimMatrix",
     "DimSensitivity",
     "SensitivityHandler",

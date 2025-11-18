@@ -324,12 +324,14 @@ class DimMatrix(Validation, Generic[T]):
         # Get category order from global config
         cat_order = list(cfg.PARAMS_CAT_DT.keys())
 
-        # Sort by category precedence
-        sorted_items = sorted(vars_lt.items(),
-                              key=lambda v: cat_order.index(v[1].cat))
-        # FIXME IA weird lambda function, check later!!!
+        # # Sort by category precedence
         # sorted_items = sorted(vars_lt.items(),
-        #                       key=lambda v: cat_order.index(v[1].cat) if v[1].cat in cat_order else len(cat_order))
+        #                       key=lambda v: cat_order.index(v[1].cat))
+
+        # FIXME IA weird lambda function, check later!!!
+        sorted_items = sorted(vars_lt.items(),
+                              key=lambda v: cat_order.index(v[1].cat) if v[1].cat in cat_order else len(cat_order))
+
 
         # Update indices and rebuild dictionary
         sorted_dict = {}
@@ -445,7 +447,7 @@ class DimMatrix(Validation, Generic[T]):
         self._coefficients.clear()
 
         # Get variable symbols in order
-        var_syms = list(self._relevant_lt.keys())
+        var_syms = [var for var in self._relevant_lt.keys()]
 
         # Create coefficient for each nullspace vector
         for i, vector in enumerate(nullspace_vectors):
@@ -453,10 +455,11 @@ class DimMatrix(Validation, Generic[T]):
             vector_np = np.array(vector).flatten().astype(float)
 
             # Create variable dictionary for this coefficient
-            coef_vars = {}
-            for j, val in enumerate(vector_np):
-                if j < len(var_syms) and abs(val) > 1e-10:
-                    coef_vars[var_syms[j]] = self._relevant_lt[var_syms[j]]
+            # TODO is this reduntant? check later!!!
+            # coef_vars = {}
+            # for j, val in enumerate(vector_np):
+            #     if j < len(var_syms) and isinstance(val, (int, float)):
+            #         coef_vars[var_syms[j]] = self._relevant_lt[var_syms[j]]
 
             # Create Pi coefficient
             pi_sym = f"\\Pi_{{{i}}}"
@@ -466,7 +469,7 @@ class DimMatrix(Validation, Generic[T]):
                 _alias=f"Pi_{i}",
                 _fwk=self._fwk,
                 _cat="COMPUTED",
-                _variables=coef_vars,
+                _variables=self._variables,
                 _dim_col=vector_np.tolist(),
                 _pivot_lt=self._pivot_cols,
                 name=f"Pi-{i}",
@@ -809,46 +812,117 @@ class DimMatrix(Validation, Generic[T]):
             attr_name = f.name
             attr_value = getattr(self, attr_name)
 
-            # Skip numpy arrays (convert to list for JSON compatibility)
-            if isinstance(attr_value, np.ndarray):
-                attr_value = attr_value.tolist()
-
-            # Skip sympy matrices (convert to list)
-            if isinstance(attr_value, sp.Matrix):
-                attr_value = [[float(val) for val in row] for row in attr_value.tolist()]
-
-            # Handle DimSchema framework (convert to dict)
-            if isinstance(attr_value, DimSchema):
-                attr_value = attr_value.to_dict()
-
-            # Handle Variable dictionaries (convert each Variable)
-            if isinstance(attr_value, dict) and all(isinstance(v, Variable) for v in attr_value.values()):
-                attr_value = {k: v.to_dict() for k, v in attr_value.items()}
-
-            # Handle Coefficient dictionaries (convert each Coefficient)
-            if isinstance(attr_value, dict) and all(isinstance(c, Coefficient) for c in attr_value.values()):
-                attr_value = {k: c.to_dict() for k, c in attr_value.items()}
-
-            # Handle Variable instance (output variable)
-            if isinstance(attr_value, Variable):
-                attr_value = attr_value.to_dict()
-
             # Skip None values for optional fields
             if attr_value is None:
                 continue
 
-            # Remove leading underscore from private attributes
-            if attr_name.startswith("_"):
-                clean_name = attr_name[1:]  # Remove first character
-            else:
-                clean_name = attr_name
+            # Convert based on type
+            converted_value = self._convert_value(attr_value)
 
-            result[clean_name] = attr_value
+            # Remove leading underscore from private attributes
+            clean_name = attr_name[1:] if attr_name.startswith("_") else attr_name
+            result[clean_name] = converted_value
 
         return result
 
+    def _convert_value(self, value: Any) -> Any:
+        """Convert a value to JSON-serializable format.
+
+        Args:
+            value (Any): Value to convert.
+
+        Returns:
+            Any: Converted value.
+        """
+        # Handle None
+        if value is None:
+            return None
+
+        # Handle numpy arrays
+        if isinstance(value, np.ndarray):
+            return value.tolist()
+
+        # Handle sympy matrices
+        if isinstance(value, sp.Matrix):
+            return [[float(val) for val in row] for row in value.tolist()]
+
+        # Handle objects with to_dict method
+        if isinstance(value, (DimSchema, Variable, Coefficient)):
+            return value.to_dict()
+
+        # Handle dictionaries
+        if isinstance(value, dict):
+            if not value:  # Empty dict
+                return {}
+
+            # Check if all values have to_dict method
+            first_val = next(iter(value.values()))
+            if isinstance(first_val, (Variable, Coefficient)):
+                return {k: v.to_dict() for k, v in value.items()}
+
+            # Regular dict
+            return value
+
+        # Handle lists
+        if isinstance(value, list):
+            return [self._convert_value(item) for item in value]
+
+        # Default: return as-is
+        return value
+
+    # def to_dict(self) -> Dict[str, Any]:
+    #     """*to_dict()* Convert model to dictionary representation.
+
+    #     Returns:
+    #         Dict[str, Any]: Dictionary representation of the model.
+    #     """
+    #     result = {}
+
+    #     # Get all dataclass fields
+    #     for f in fields(self):
+    #         attr_name = f.name
+    #         attr_value = getattr(self, attr_name)
+
+    #         # Skip numpy arrays (convert to list for JSON compatibility)
+    #         if isinstance(attr_value, np.ndarray):
+    #             attr_value = attr_value.tolist()
+
+    #         # Skip sympy matrices (convert to list)
+    #         if isinstance(attr_value, sp.Matrix):
+    #             attr_value = [[float(val) for val in row] for row in attr_value.tolist()]
+
+    #         # Handle DimSchema framework (convert to dict)
+    #         if isinstance(attr_value, DimSchema):
+    #             attr_value = attr_value.to_dict()
+
+    #         # Handle Variable dictionaries (convert each Variable)
+    #         if isinstance(attr_value, dict) and all(isinstance(v, Variable) for v in attr_value.values()):
+    #             attr_value = {k: v.to_dict() for k, v in attr_value.items()}
+
+    #         # Handle Coefficient dictionaries (convert each Coefficient)
+    #         if isinstance(attr_value, dict) and all(isinstance(c, Coefficient) for c in attr_value.values()):
+    #             attr_value = {k: c.to_dict() for k, c in attr_value.items()}
+
+    #         # Handle Variable instance (output variable)
+    #         if isinstance(attr_value, Variable):
+    #             attr_value = attr_value.to_dict()
+
+    #         # Skip None values for optional fields
+    #         if attr_value is None:
+    #             continue
+
+    #         # Remove leading underscore from private attributes
+    #         if attr_name.startswith("_"):
+    #             clean_name = attr_name[1:]  # Remove first character
+    #         else:
+    #             clean_name = attr_name
+
+    #         result[clean_name] = attr_value
+
+    #     return result
+
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> DimMatrix:
+    def from_dict(cls, data: Dict[str, Any]) -> "DimMatrix":
         """*from_dict()* Create model from dictionary representation.
 
         Args:
@@ -863,148 +937,69 @@ class DimMatrix(Validation, Generic[T]):
         # Map keys without underscores to keys with underscores
         mapped_data = {}
 
+        # Define conversion rules
+        object_converters = {
+            "framework": DimSchema,
+            "variables": Variable,
+            "relevant_lt": Variable,
+            "output": Variable,
+            "coefficients": Coefficient
+        }
+
+        array_fields = ["dim_mtx", "dim_mtx_trans", "rref_mtx"]
+        matrix_fields = ["sym_mtx"]
+
+        # Computed fields that should not be passed to constructor
+        computed_fields = {
+            "n_var", "n_relevant", "n_in", "n_out", "n_ctrl",
+            "relevant_lt", "output", "coefficients",
+            "dim_mtx", "dim_mtx_trans", "sym_mtx", "rref_mtx", "pivot_cols"
+        }
+
         for key, value in data.items():
-            # Try the key as-is first (handles both _idx and name)
+            # Skip computed fields
+            clean_key = key[1:] if key.startswith("_") else key
+            if clean_key in computed_fields:
+                continue
+
+            # Map key to field name
+            field_key = None
             if key in field_names:
-                mapped_data[key] = value
-            # Try adding underscore prefix (handles idx -> _idx)
+                field_key = key
             elif f"_{key}" in field_names:
-                mapped_data[f"_{key}"] = value
-            # Try removing underscore prefix (handles _name -> name if needed)
+                field_key = f"_{key}"
             elif key.startswith("_") and key[1:] in field_names:
-                mapped_data[key[1:]] = value
+                field_key = key[1:]
 
-        # Convert framework back from dict
-        if "framework" in mapped_data or "_framework" in mapped_data:
-            framework_data = mapped_data.get("framework") or mapped_data.get("_framework")
-            if isinstance(framework_data, dict):
-                mapped_data["_framework"] = DimSchema.from_dict(framework_data)
+            if field_key is None:
+                continue
 
-        # Convert Variable dictionaries back
-        if "variables" in mapped_data or "_variables" in mapped_data:
-            vars_data = mapped_data.get("variables") or mapped_data.get("_variables")
-            if isinstance(vars_data, dict):
-                mapped_data["_variables"] = {
-                    k: Variable.from_dict(v) if isinstance(v, dict) else v
-                    for k, v in vars_data.items()
-                }
+            # Convert objects
+            if clean_key in object_converters:
+                converter = object_converters[clean_key]
 
-        # Convert relevant_lt back (usually reconstructed, but handle if present)
-        if "relevant_lt" in mapped_data or "_relevant_lt" in mapped_data:
-            rel_data = mapped_data.get("relevant_lt") or mapped_data.get("_relevant_lt")
-            if isinstance(rel_data, dict):
-                mapped_data["_relevant_lt"] = {
-                    k: Variable.from_dict(v) if isinstance(v, dict) else v
-                    for k, v in rel_data.items()
-                }
+                if isinstance(value, dict):
+                    if clean_key in ["variables", "relevant_lt", "coefficients"]:
+                        # Dictionary of objects
+                        mapped_data[field_key] = {
+                            k: converter.from_dict(v) if isinstance(v, dict) else v
+                            for k, v in value.items()
+                        }
+                    else:
+                        # Single object
+                        mapped_data[field_key] = converter.from_dict(value)
 
-        # Convert output variable back
-        if "output" in mapped_data or "_output" in mapped_data:
-            output_data = mapped_data.get("output") or mapped_data.get("_output")
-            if isinstance(output_data, dict):
-                mapped_data["_output"] = Variable.from_dict(output_data)
+            # Convert arrays
+            elif clean_key in array_fields and isinstance(value, list):
+                mapped_data[field_key] = np.array(value)
 
-        # Convert Coefficient dictionaries back
-        if "coefficients" in mapped_data or "_coefficients" in mapped_data:
-            coef_data = mapped_data.get("coefficients") or mapped_data.get("_coefficients")
-            if isinstance(coef_data, dict):
-                mapped_data["_coefficients"] = {
-                    k: Coefficient.from_dict(c) if isinstance(c, dict) else c
-                    for k, c in coef_data.items()
-                }
+            # Convert matrices
+            elif clean_key in matrix_fields and isinstance(value, list):
+                mapped_data[field_key] = sp.Matrix(value)
 
-        # Convert lists back to numpy arrays
-        for array_key in ["dim_mtx", "_dim_mtx", "dim_mtx_trans","_dim_mtx_trans",
-                        "rref_mtx", "_rref_mtx"]:
-            if array_key in mapped_data and isinstance(mapped_data[array_key], list):
-                mapped_data[array_key] = np.array(mapped_data[array_key])
-
-        # Convert lists back to sympy matrices
-        if "sym_mtx" in mapped_data or "_sym_mtx" in mapped_data:
-            sym_data = mapped_data.get("sym_mtx") or mapped_data.get("_sym_mtx")
-            if isinstance(sym_data, list):
-                mapped_data["_sym_mtx"] = sp.Matrix(sym_data)
-
-        # Remove computed/derived fields that shouldn't be passed to constructor
-        computed_fields = [
-            "n_var", "_n_var",
-            "n_relevant", "_n_relevant",
-            "n_in", "_n_in",
-            "n_out", "_n_out",
-            "n_ctrl", "_n_ctrl",
-            "relevant_lt", "_relevant_lt",  # Reconstructed from variables
-            "output", "_output",  # Found during preparation
-            "coefficients", "_coefficients",  # Generated during solve
-            "dim_mtx", "_dim_mtx",  # Created during analysis
-            "dim_mtx_trans", "_dim_mtx_trans",
-            "sym_mtx", "_sym_mtx",
-            "rref_mtx", "_rref_mtx",
-            "pivot_cols", "_pivot_cols"
-        ]
-        
-        for f in computed_fields:
-            mapped_data.pop(f, None)
+            # Default: use as-is
+            else:
+                mapped_data[field_key] = value
 
         # Create model instance
-        model = cls(**mapped_data)
-
-        # Variables trigger preparation which recreates derived fields
-        # No need to manually set computed fields
-
-        return model
-
-    # def to_dict(self) -> Dict[str, Any]:
-    #     """*to_dict* Convert model to dictionary representation.
-
-    #     Returns:
-    #         Dict[str, Any]: Dictionary containing model data.
-    #     """
-    #     return {
-    #         "name": self.name,
-    #         "description": self.description,
-    #         "idx": self._idx,
-    #         "sym": self._sym,
-    #         "alias": self._alias,
-    #         "fwk": self._fwk,
-    #         "variables": {k: v.to_dict() for k, v in self._variables.items()},
-    #         "coefficients": {k: c.to_dict() for k, c in self._coefficients.items()},
-    #         "n_var": self._n_var,
-    #         "n_relevant": self._n_relevant,
-    #         "n_in": self._n_in,
-    #         "n_out": self._n_out,
-    #         "n_ctrl": self._n_ctrl
-    #     }
-
-    # @classmethod
-    # def from_dict(cls, data: Dict[str, Any]) -> "DimMatrix":
-    #     """*from_dict* Create model from dictionary representation.
-
-    #     Args:
-    #         data (Dict[str, Any]): Dictionary containing model data.
-
-    #     Returns:
-    #         DimMatrix: New DimMatrix instance.
-    #     """
-    #     # Extract variables
-    #     variables = {}
-    #     if "variables" in data:
-    #         variables = {
-    #             k: Variable.from_dict(v) for k, v in data["variables"].items()
-    #         }
-
-    #     # Remove keys not in constructor
-    #     model_data = {
-    #         k: v for k, v in data.items()
-    #         if k not in ["variables", "coefficients", "n_var", "n_relevant",
-    #                     "n_in", "n_out", "n_ctrl"]
-    #     }
-
-    #     # Create model
-    #     model = cls(**model_data)
-
-    #     # Set variables (triggers preparation)
-    #     if variables:
-    #         model._variables = variables
-    #         model._prepare_analysis()
-
-    #     return model
+        return cls(**mapped_data)

@@ -15,7 +15,7 @@ from typing import Any, cast
 # import the module to test
 from pydasa.buckingham.vashchy import Coefficient
 from pydasa.core.parameter import Variable
-from pydasa.dimensional.framework import DimScheme
+from pydasa.dimensional.framework import DimSchema
 
 # import the data to test
 from tests.pydasa.data.test_data import get_coefficient_test_data
@@ -23,7 +23,7 @@ from tests.pydasa.data.test_data import get_coefficient_test_data
 # asserting module imports
 assert Coefficient
 assert Variable
-assert DimScheme
+assert DimSchema
 assert get_coefficient_test_data
 
 
@@ -36,7 +36,7 @@ class TestCoefficient(unittest.TestCase):
         self.test_data = get_coefficient_test_data()
 
         # Setup dimensional scheme
-        self.test_scheme = DimScheme(_fwk="PHYSICAL")
+        self.test_scheme = DimSchema(_fwk="PHYSICAL")
         self.test_scheme.update_global_config()
 
         # Create test variables from test data

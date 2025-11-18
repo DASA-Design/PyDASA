@@ -3,20 +3,20 @@
 Test Module for framework.py
 ===========================================
 
-Simple tests for the **DimScheme** class in *PyDASA*.
+Simple tests for the **DimSchema** class in *PyDASA*.
 """
 
 import unittest
 import pytest
 
-from pydasa.dimensional.framework import DimScheme
+from pydasa.dimensional.framework import DimSchema
 from pydasa.core.fundamental import Dimension
 from tests.pydasa.data.test_data import get_framework_test_data
 from pydasa.utils import config as cfg
 
 
-class TestDimScheme(unittest.TestCase):
-    """Test cases for DimScheme class."""
+class TestDimSchema(unittest.TestCase):
+    """Test cases for DimSchema class."""
 
     @pytest.fixture(autouse=True)
     def inject_fixtures(self) -> None:
@@ -25,9 +25,9 @@ class TestDimScheme(unittest.TestCase):
 
     def test_default_initialization(self) -> None:
         """Default PHYSICAL framework has FDUs and regex set."""
-        scheme = DimScheme()
+        scheme = DimSchema()
         assert scheme is not None
-        assert isinstance(scheme, DimScheme)
+        assert isinstance(scheme, DimSchema)
         assert len(scheme.fdu_lt) > 0
         assert isinstance(scheme.fdu_regex, str) and scheme.fdu_regex != ""
         assert isinstance(scheme.fdu_pow_regex, str) and scheme.fdu_pow_regex != ""
@@ -42,14 +42,14 @@ class TestDimScheme(unittest.TestCase):
             ("SOFTWARE", len(self.data["SOFTWARE_FDU_LIST"])),
         ]
         for fwk, expected in cases:
-            scheme = DimScheme(_fwk=fwk)
+            scheme = DimSchema(_fwk=fwk)
             assert scheme.size == expected
             assert all(isinstance(d, Dimension) for d in scheme.fdu_lt)
 
     def test_custom_framework_initialization(self) -> None:
         """CUSTOM accepts list of dicts and converts to Dimension."""
         custom = self.data["CUSTOM_FDU_LIST"]
-        scheme = DimScheme(_fwk="CUSTOM", _fdu_lt=custom)
+        scheme = DimSchema(_fwk="CUSTOM", _fdu_lt=custom)
         assert scheme.size == len(custom)
         assert all(isinstance(d, Dimension) for d in scheme.fdu_lt)
         # symbols preserved
@@ -58,7 +58,7 @@ class TestDimScheme(unittest.TestCase):
 
     def test_get_and_has_fdu(self) -> None:
         """get_fdu() and has_fdu() work for known symbols."""
-        scheme = DimScheme(_fwk="PHYSICAL")
+        scheme = DimSchema(_fwk="PHYSICAL")
         for sym in self.data["PHYSICAL_SYMBOLS"]:
             assert scheme.has_fdu(sym) is True
             fdu = scheme.get_fdu(sym)
@@ -70,14 +70,14 @@ class TestDimScheme(unittest.TestCase):
 
     def test_fdu_symbols_and_count(self) -> None:
         """fdu_symbols order matches framework precedence."""
-        scheme = DimScheme(_fwk="PHYSICAL")
+        scheme = DimSchema(_fwk="PHYSICAL")
         assert scheme.fdu_symbols == self.data["PHYSICAL_SYMBOLS"]
         assert scheme.size == len(self.data["PHYSICAL_SYMBOLS"])
 
     def test_add_and_remove_fdu_custom(self) -> None:
         """add_fdu() and remove_fdu() on CUSTOM framework."""
         custom = self.data["CUSTOM_FDU_LIST"]
-        scheme = DimScheme(_fwk="CUSTOM", _fdu_lt=custom)
+        scheme = DimSchema(_fwk="CUSTOM", _fdu_lt=custom)
         n0 = scheme.size
 
         new_dim = Dimension(
@@ -100,7 +100,7 @@ class TestDimScheme(unittest.TestCase):
 
     def test_add_fdu_duplicate_and_mismatch(self) -> None:
         """add_fdu() raises on duplicate symbol and framework mismatch."""
-        scheme = DimScheme(_fwk="PHYSICAL")
+        scheme = DimSchema(_fwk="PHYSICAL")
         dup = Dimension(_idx=99, _sym="L", _alias="L", _fwk="PHYSICAL", _unit="m", name="L", description="dup")
         with pytest.raises(ValueError):
             scheme.add_fdu(dup)
@@ -111,13 +111,13 @@ class TestDimScheme(unittest.TestCase):
 
     def test_remove_fdu_invalid(self) -> None:
         """remove_fdu() invalid symbol raises."""
-        scheme = DimScheme(_fwk="PHYSICAL")
+        scheme = DimSchema(_fwk="PHYSICAL")
         with pytest.raises(ValueError):
             scheme.remove_fdu("ZZZ")
 
     def test_regex_property_setters(self) -> None:
         """Regex property setters accept non-empty strings and reject empty."""
-        scheme = DimScheme(_fwk="PHYSICAL")
+        scheme = DimSchema(_fwk="PHYSICAL")
 
         new_main = r"^[LMT](\^-?\d+)?(\*[LMT](?:\^-?\d+)?)*$"
         scheme.fdu_regex = new_main
@@ -146,7 +146,7 @@ class TestDimScheme(unittest.TestCase):
     def test_fdu_lt_setter_validation(self) -> None:
         """fdu_lt setter validates type and content."""
         custom = self.data["CUSTOM_FDU_LIST"]
-        scheme = DimScheme(_fwk="CUSTOM", _fdu_lt=custom)
+        scheme = DimSchema(_fwk="CUSTOM", _fdu_lt=custom)
 
         # valid: set as list[Dimension]
         new_dims = [
@@ -164,7 +164,7 @@ class TestDimScheme(unittest.TestCase):
 
     def test_update_global_config(self) -> None:
         """update_global_config populates global regex and symbol config."""
-        scheme = DimScheme(_fwk="COMPUTATION")
+        scheme = DimSchema(_fwk="COMPUTATION")
         scheme.update_global_config()
         # Symbols
         assert cfg.WKNG_FDU_PREC_LT == self.data["COMPUTATION_SYMBOLS"]
@@ -176,10 +176,28 @@ class TestDimScheme(unittest.TestCase):
 
     def test_reset(self) -> None:
         """reset clears internal state."""
-        scheme = DimScheme(_fwk="PHYSICAL")
+        scheme = DimSchema(_fwk="PHYSICAL")
         scheme.reset()
         assert scheme.size == 0
         assert scheme.fdu_symbols == []
         assert scheme.fdu_regex == ""
         assert scheme.fdu_no_pow_regex == ""
         assert scheme.fdu_sym_regex == ""
+
+    def test_to_dict(self) -> None:
+        """to_dict() returns expected dictionary representation."""
+        scheme = DimSchema(_fwk="PHYSICAL")
+        dct = scheme.to_dict()
+        assert isinstance(dct, dict)
+        assert dct["_fwk"] == "PHYSICAL"
+        assert isinstance(dct["_fdu_lt"], list)
+        assert len(dct["_fdu_lt"]) == scheme.size
+        for item in dct["_fdu_lt"]:
+            assert isinstance(item, dict)
+            assert "sym" in item
+            assert "unit" in item
+            assert "name" in item
+            assert "description" in item
+
+    def test_from_dict(self) -> None:
+        pass

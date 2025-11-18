@@ -1061,4 +1061,31 @@ class Variable(Validation):
         Returns:
             Variable: New variable instance.
         """
-        return cls(**data)
+        # Map keys without underscores to keys with underscores
+        mapped_data = {}
+        key_mapping = {
+            "idx": "_idx",
+            "sym": "_sym",
+            "alias": "_alias",
+            "fwk": "_fwk",
+            "cat": "_cat",
+            "dims": "_dims",
+            "units": "_units",
+            "min": "_min",
+            "max": "_max",
+            "mean": "_mean",
+            "std_units": "_std_units",
+            "std_min": "_std_min",
+            "std_max": "_std_max",
+            "std_mean": "_std_mean",
+            "step": "_step",
+            "dist_type": "_dist_type",
+            "dist_params": "_dist_params",
+        }
+
+        for key, value in data.items():
+            # Use mapped key if it exists, otherwise use original key
+            mapped_key = key_mapping.get(key, key)
+            mapped_data[mapped_key] = value
+
+        return cls(**mapped_data)

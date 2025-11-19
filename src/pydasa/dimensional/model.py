@@ -23,6 +23,7 @@ import re
 # python third-party modules
 import numpy as np
 import sympy as sp
+from numpy.typing import NDArray
 
 # Import validation base classes
 from pydasa.core.basic import Validation
@@ -74,10 +75,10 @@ class DimMatrix(Validation, Generic[T]):
         _n_ctrl (int): Number of control variables.
 
         # Matrix Representations
-        _dim_mtx (Optional[np.ndarray]): Dimensional matrix (FDUs × Variables).
-        _dim_mtx_trans (Optional[np.ndarray]): Transposed dimensional matrix.
+        _dim_mtx (Optional[NDArray[np.float64]]): Dimensional matrix (FDUs × Variables).
+        _dim_mtx_trans (Optional[NDArray[np.float64]]): Transposed dimensional matrix.
         _sym_mtx (Optional[sp.Matrix]): SymPy matrix for symbolic computation.
-        _rref_mtx (Optional[np.ndarray]): Row-Reduced Echelon Form matrix.
+        _rref_mtx (Optional[NDArray[np.float64]]): Row-Reduced Echelon Form matrix.
 
         # Analysis Results
         _pivot_cols (List[int]): Pivot columns in the RREF matrix.
@@ -180,7 +181,8 @@ class DimMatrix(Validation, Generic[T]):
     # ========================================================================
 
     # :attr: _dim_mtx
-    _dim_mtx: Optional[np.ndarray] = field(default_factory=lambda: np.array([]))
+    # _dim_mtx: Optional[np.ndarray] = field(default_factory=lambda: np.array([]))
+    _dim_mtx: Optional[NDArray[np.float64]] = None
     """Dimensional matrix as NumPy array.
 
     Shape: (n_fdus, n_relevant_vars)
@@ -189,7 +191,7 @@ class DimMatrix(Validation, Generic[T]):
     """
 
     # :attr: _dim_mtx_trans
-    _dim_mtx_trans: Optional[np.ndarray] = None
+    _dim_mtx_trans: Optional[NDArray[np.float64]] = None
     """Transposed dimensional matrix.
 
     Shape: (n_relevant_vars, n_fdus)
@@ -205,7 +207,7 @@ class DimMatrix(Validation, Generic[T]):
     """
 
     # :attr: _rref_mtx
-    _rref_mtx: Optional[np.ndarray] = None
+    _rref_mtx: Optional[NDArray[np.float64]] = None
     """Row-Reduced Echelon Form (RREF) of the dimensional matrix.
 
     Result of Gaussian elimination on _sym_mtx.
@@ -821,20 +823,20 @@ class DimMatrix(Validation, Generic[T]):
         return self._output
 
     @property
-    def dim_mtx(self) -> Optional[np.ndarray]:
+    def dim_mtx(self) -> Optional[NDArray[np.float64]]:
         """*dim_mtx* Get the dimensional matrix.
 
         Returns:
-            Optional[np.ndarray]: Dimensional matrix, or None.
+            Optional[NDArray[np.float64]]: Dimensional matrix, or None.
         """
         return self._dim_mtx if self._dim_mtx is not None else None
 
     @property
-    def rref_mtx(self) -> Optional[np.ndarray]:
+    def rref_mtx(self) -> Optional[NDArray[np.float64]]:
         """*rref_mtx* Get the RREF matrix.
 
         Returns:
-            Optional[np.ndarray]: RREF matrix, or None.
+            Optional[NDArray[np.float64]]: RREF matrix, or None.
         """
         return self._rref_mtx if self._rref_mtx is not None else None
 

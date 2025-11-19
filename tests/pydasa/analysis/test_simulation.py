@@ -37,19 +37,19 @@ class TestMonteCarloSim(unittest.TestCase):
     def inject_fixtures(self) -> None:
         """*inject_fixtures()* injects global test parameters as a fixture."""
         self.test_data = get_simulation_test_data()
-        
+
         # Create test variables from the test data
         self.test_variables = {}
         for key, var_data in self.test_data["TEST_VARIABLES"].items():
             var = Variable(**var_data)
             self.test_variables[key] = var
-        
+
         # Create simple test variables
         self.simple_variables = {}
         for key, var_data in self.test_data["SIMPLE_VARIABLES"].items():
             var = Variable(**var_data)
             self.simple_variables[key] = var
-        
+
         # Create Reynolds-specific variables
         self.reynolds_variables = {}
         for key, var_data in self.test_data["REYNOLDS_VARIABLES"].items():
@@ -59,11 +59,11 @@ class TestMonteCarloSim(unittest.TestCase):
     def test_default_simulation(self) -> None:
         """*test_default_simulation()* tests creating a simulation with default values."""
         sim = MonteCarloSim()
-        
+
         # Test initialization
         assert sim is not None
         assert isinstance(sim, MonteCarloSim)
-        
+
         # Test default values
         assert sim._iterations == 1000
         assert sim._cat == "NUM"
@@ -72,7 +72,7 @@ class TestMonteCarloSim(unittest.TestCase):
         assert sim._exe_func is None
         assert len(sim._variables) == 0
         assert len(sim._distributions) == 0
-        
+
         # Test statistics defaults
         assert np.isnan(sim._mean)
         assert np.isnan(sim._median)
@@ -89,7 +89,7 @@ class TestMonteCarloSim(unittest.TestCase):
             _fwk="PHYSICAL",
             _iterations=500
         )
-        
+
         assert sim.name == "Test Simulation"
         assert sim.description == "Test description"
         assert sim._idx == 0
@@ -102,13 +102,13 @@ class TestMonteCarloSim(unittest.TestCase):
         """*test_parse_simple_expression()* tests parsing a simple LaTeX expression."""
         expr = self.test_data["SIMPLE_EXPR"]
         sim = MonteCarloSim(_pi_expr=expr)
-        
+
         # Test expression was parsed
         assert sim._sym_func is not None
         assert len(sim._symbols) > 0
         assert len(sim._latex_to_py) > 0
         assert len(sim._py_to_latex) > 0
-        
+
         # Test variable symbols extracted
         var_count = len([k for k in sim._symbols.keys()])
         assert var_count >= 2
@@ -117,7 +117,7 @@ class TestMonteCarloSim(unittest.TestCase):
         """*test_parse_physics_expression()* tests parsing a physics LaTeX expression."""
         expr = self.test_data["PHYSICS_EXPR"]
         sim = MonteCarloSim(_pi_expr=expr)
-        
+
         assert sim._sym_func is not None
         assert len(sim._symbols) >= 3
 
@@ -134,14 +134,14 @@ class TestMonteCarloSim(unittest.TestCase):
         """*test_parse_complex_expression()* tests parsing a complex expression."""
         expr = self.test_data["COMPLEX_EXPR"]
         sim = MonteCarloSim(_pi_expr=expr)
-        
+
         assert sim._sym_func is not None
         assert len(sim._symbols) >= 3
 
     def test_invalid_expression(self) -> None:
         """*test_invalid_expression()* tests handling invalid expressions."""
         with pytest.raises(ValueError) as excinfo:
-            sim = MonteCarloSim(_pi_expr="invalid$$expression@@##")
+            MonteCarloSim(_pi_expr="invalid$$expression@@##")
         assert "Failed to parse" in str(excinfo.value) or "expression" in str(excinfo.value).lower()
 
     def test_set_reynolds_coefficient(self) -> None:
@@ -154,18 +154,21 @@ class TestMonteCarloSim(unittest.TestCase):
             _alias=reynolds_data["_alias"],
             _fwk=reynolds_data["_fwk"],
             _cat=reynolds_data["_cat"],
-            pi_expr=self.test_data["REYNOLDS_EXPR"],
+            _pi_expr=self.test_data["REYNOLDS_EXPR"],
             name=reynolds_data["name"],
             description=reynolds_data["description"]
         )
-        
+
         # Add variables to coefficient
-        for var_key in self.reynolds_variables:
-            coef.add_variable(self.reynolds_variables[var_key])
-        
+        vars_lt = {}
+        for key, val in self.reynolds_variables.items():
+            if key == val._sym:
+                vars_lt[key] = self.reynolds_variables[key]
+            # vars_lt.append(self.reynolds_variables[var_key])
+        coef.variables = vars_lt
+
         sim = MonteCarloSim()
         sim.set_coefficient(coef)
-        
         assert sim._coefficient is coef
         assert sim._pi_expr == coef.pi_expr
         assert sim._sym_func is not None
@@ -178,13 +181,13 @@ class TestMonteCarloSim(unittest.TestCase):
         coef = Coefficient(
             _idx=simple_data["_idx"],
             _sym=simple_data["_sym"],
-            pi_expr="\\frac{v}{L}",
+            _pi_expr="\\frac{v}{L}",
             name=simple_data["name"]
         )
-        
+
         sim = MonteCarloSim()
         sim.set_coefficient(coef)
-        
+
         assert sim._coefficient is coef
         assert sim._pi_expr is not None
 
@@ -192,7 +195,7 @@ class TestMonteCarloSim(unittest.TestCase):
         """*test_set_coefficient_without_expression()* tests error when coefficient has no expression."""
         coef = Coefficient(_idx=0, _sym="\\Pi_{0}")
         sim = MonteCarloSim()
-        
+
         with pytest.raises(ValueError) as excinfo:
             sim.set_coefficient(coef)
         assert "valid expression" in str(excinfo.value)
@@ -200,7 +203,7 @@ class TestMonteCarloSim(unittest.TestCase):
     def test_validate_readiness_no_variables(self) -> None:
         """*test_validate_readiness_no_variables()* tests validation fails without variables."""
         sim = MonteCarloSim(_pi_expr=self.test_data["SIMPLE_EXPR"])
-        
+
         with pytest.raises(ValueError) as excinfo:
             sim._validate_readiness()
         assert "variable" in str(excinfo.value).lower()
@@ -209,7 +212,7 @@ class TestMonteCarloSim(unittest.TestCase):
         """*test_validate_readiness_no_expression()* tests validation fails without expression."""
         sim = MonteCarloSim()
         sim._variables = self.simple_variables
-        
+
         with pytest.raises(ValueError) as excinfo:
             sim._validate_readiness()
         assert "expression" in str(excinfo.value).lower()
@@ -219,7 +222,7 @@ class TestMonteCarloSim(unittest.TestCase):
         sim = MonteCarloSim(_pi_expr=self.test_data["SIMPLE_EXPR"])
         sim._variables = self.simple_variables
         sim._symbols = {"alpha": None, "beta": None}
-        
+
         with pytest.raises(ValueError) as excinfo:
             sim._validate_readiness()
         assert "distribution" in str(excinfo.value).lower()
@@ -227,10 +230,10 @@ class TestMonteCarloSim(unittest.TestCase):
     def test_iterations_property(self) -> None:
         """*test_iterations_property()* tests the iterations property."""
         sim = MonteCarloSim()
-        
+
         # Test getter
         assert sim.iterations == 1000
-        
+
         # Test setter with valid values
         for val in self.test_data["VALID_ITERATIONS"]:
             sim.iterations = val
@@ -239,7 +242,7 @@ class TestMonteCarloSim(unittest.TestCase):
     def test_invalid_iterations(self) -> None:
         """*test_invalid_iterations()* tests setting invalid iteration counts."""
         sim = MonteCarloSim()
-        
+
         for val in self.test_data["INVALID_ITERATIONS"]:
             with pytest.raises(ValueError) as excinfo:
                 sim.iterations = val
@@ -250,9 +253,9 @@ class TestMonteCarloSim(unittest.TestCase):
         var = self.simple_variables["\\alpha"]
         sim = MonteCarloSim()
         memory = {}
-        
+
         sample = sim._generate_sample(var, memory)
-        
+
         assert sample is not None
         assert isinstance(sample, (int, float))
         assert not np.isnan(sample)
@@ -262,15 +265,15 @@ class TestMonteCarloSim(unittest.TestCase):
         sim = MonteCarloSim(_pi_expr=self.test_data["SIMPLE_EXPR"])
         sim._variables = self.simple_variables
         sim._simul_cache = {"alpha": [1.0, 2.0], "beta": [3.0, 4.0]}
-        
+
         # Set some data
         sim.inputs = np.array([[1, 2], [3, 4]])
         sim._results = np.array([5, 6])
         sim._mean = 5.5
-        
+
         # Reset
         sim._reset_memory()
-        
+
         assert len(sim.inputs) == 0
         assert len(sim._results) == 0
         assert sim._mean == -1.0
@@ -281,16 +284,16 @@ class TestMonteCarloSim(unittest.TestCase):
     def test_reset_statistics(self) -> None:
         """*test_reset_statistics()* tests resetting statistical attributes."""
         sim = MonteCarloSim()
-        
+
         # Set some statistics
         sim._mean = 10.0
         sim._median = 9.5
         sim._std_dev = 2.0
         sim._count = 100
-        
+
         # Reset
         sim._reset_statistics()
-        
+
         assert sim._mean == -1.0
         assert sim._median == -1.0
         assert sim._std_dev == -1.0
@@ -304,9 +307,9 @@ class TestMonteCarloSim(unittest.TestCase):
         sim = MonteCarloSim()
         test_results = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
         sim._results = test_results
-        
+
         sim._calculate_statistics()
-        
+
         assert sim._mean == pytest.approx(3.0)
         assert sim._median == pytest.approx(3.0)
         assert sim._std_dev == pytest.approx(np.std(test_results))
@@ -320,9 +323,9 @@ class TestMonteCarloSim(unittest.TestCase):
         sim = MonteCarloSim()
         sim._results = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
         sim._calculate_statistics()
-        
+
         stats = sim.statistics
-        
+
         assert isinstance(stats, dict)
         for stat in self.test_data["EXPECTED_STATISTICS"]:
             assert stat in stats
@@ -332,7 +335,7 @@ class TestMonteCarloSim(unittest.TestCase):
     def test_statistics_property_no_results(self) -> None:
         """*test_statistics_property_no_results()* tests accessing statistics without results."""
         sim = MonteCarloSim()
-        
+
         with pytest.raises(ValueError) as excinfo:
             _ = sim.statistics
         assert "run" in str(excinfo.value).lower() or "result" in str(excinfo.value).lower()
@@ -342,7 +345,7 @@ class TestMonteCarloSim(unittest.TestCase):
         sim = MonteCarloSim()
         sim._results = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
         sim._calculate_statistics()
-        
+
         for conf in self.test_data["CONFIDENCE_LEVELS"]:
             lower, upper = sim.get_confidence_interval(conf)
             assert isinstance(lower, float)
@@ -355,7 +358,7 @@ class TestMonteCarloSim(unittest.TestCase):
         sim = MonteCarloSim()
         sim._results = np.array([1.0, 2.0, 3.0])
         sim._calculate_statistics()
-        
+
         for conf in self.test_data["INVALID_CONFIDENCE"]:
             with pytest.raises(ValueError) as excinfo:
                 sim.get_confidence_interval(conf)
@@ -364,7 +367,7 @@ class TestMonteCarloSim(unittest.TestCase):
     def test_get_confidence_interval_no_results(self) -> None:
         """*test_get_confidence_interval_no_results()* tests confidence interval without results."""
         sim = MonteCarloSim()
-        
+
         with pytest.raises(ValueError) as excinfo:
             sim.get_confidence_interval()
         assert "result" in str(excinfo.value).lower()
@@ -374,9 +377,9 @@ class TestMonteCarloSim(unittest.TestCase):
         sim = MonteCarloSim()
         test_results = np.array([1.0, 2.0, 3.0])
         sim._results = test_results
-        
+
         results = sim.results
-        
+
         assert isinstance(results, np.ndarray)
         assert len(results) == 3
         assert np.array_equal(results, test_results)
@@ -384,7 +387,7 @@ class TestMonteCarloSim(unittest.TestCase):
     def test_results_property_no_results(self) -> None:
         """*test_results_property_no_results()* tests accessing results without running simulation."""
         sim = MonteCarloSim()
-        
+
         with pytest.raises(ValueError) as excinfo:
             _ = sim.results
         assert "result" in str(excinfo.value).lower()
@@ -394,7 +397,7 @@ class TestMonteCarloSim(unittest.TestCase):
         sim = MonteCarloSim()
         sim._results = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
         sim._calculate_statistics()
-        
+
         assert sim.mean == pytest.approx(3.0)
         assert sim.median == pytest.approx(3.0)
         assert sim.min_value == pytest.approx(1.0)
@@ -414,9 +417,9 @@ class TestMonteCarloSim(unittest.TestCase):
             _iterations=500
         )
         sim._results = np.array([1.0, 2.0, 3.0])
-        
+
         sim.clear()
-        
+
         assert sim._idx == -1
         assert sim.name == ""
         assert sim.description == ""
@@ -437,9 +440,9 @@ class TestMonteCarloSim(unittest.TestCase):
         )
         sim._results = np.array([1.0, 2.0, 3.0])
         sim._calculate_statistics()
-        
+
         data = sim.to_dict()
-        
+
         assert isinstance(data, dict)
         assert data["name"] == "Test Simulation"
         assert data["description"] == "Test description"
@@ -456,17 +459,17 @@ class TestMonteCarloSim(unittest.TestCase):
         coef = Coefficient(
             _idx=0,
             _sym="\\Pi_{0}",
-            pi_expr=self.test_data["SIMPLE_EXPR"]
+            _pi_expr=self.test_data["SIMPLE_EXPR"]
         )
-        
+
         sim = MonteCarloSim()
         sim.set_coefficient(coef)
         sim._py_to_latex = {"alpha": "\\alpha", "beta": "\\beta"}
         sim.inputs = np.array([[1.0, 2.0], [3.0, 4.0]])
         sim._results = np.array([[5.0], [6.0]])
-        
+
         results = sim.extract_results()
-        
+
         assert isinstance(results, dict)
         assert len(results) > 0
         # Should have coefficient results
@@ -478,9 +481,9 @@ class TestMonteCarloSim(unittest.TestCase):
         """*test_variables_property()* tests the variables property."""
         sim = MonteCarloSim()
         sim._variables = self.simple_variables
-        
+
         variables = sim.variables
-        
+
         assert isinstance(variables, dict)
         assert len(variables) == len(self.simple_variables)
 
@@ -489,7 +492,7 @@ class TestMonteCarloSim(unittest.TestCase):
         coef = Coefficient(_idx=0, _sym="\\Pi_{0}", pi_expr=self.test_data["SIMPLE_EXPR"])
         sim = MonteCarloSim()
         sim.set_coefficient(coef)
-        
+
         assert sim.coefficient is coef
 
     def test_distributions_property(self) -> None:
@@ -497,8 +500,8 @@ class TestMonteCarloSim(unittest.TestCase):
         sim = MonteCarloSim()
         test_dists = {"var1": {"dtype": "uniform", "params": {}}}
         sim._distributions = test_dists
-        
+
         dists = sim.distributions
-        
+
         assert isinstance(dists, dict)
         assert len(dists) == 1

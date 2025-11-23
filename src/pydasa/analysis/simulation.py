@@ -194,6 +194,10 @@ class MonteCarloSim(Validation, Generic[T]):
         - 'depends': List of variables this variable depends on.
     """
 
+    # :attr: _dependencies
+    _dependencies: Dict[str, List[str]] = field(default_factory=dict, init=False)
+    """Variable dependencies for simulations."""
+
     # :attr: _simul_cache
     _simul_cache: Dict[str, NDArray[np.float64]] = field(default_factory=dict)
     """Working sampled values during each simulation iteration. Memory cache."""
@@ -826,6 +830,27 @@ class MonteCarloSim(Validation, Generic[T]):
             _msg += f" Invalid entries: {inv}"
             raise ValueError(_msg)
         self._distributions = val
+
+    @property
+    def dependencies(self) -> Dict[str, List[str]]:
+        """*dependencies* Get variable dependencies.
+
+        Returns:
+            Dict[str, List[str]]: Dictionary of variable dependencies.
+        """
+        return self._dependencies
+
+    @dependencies.setter
+    def dependencies(self, val: Dict[str, List[str]]) -> None:
+        """*dependencies* Set variable dependencies.
+
+        Args:
+            val (Dict[str, List[str]]): New variable dependencies.
+        """
+        if not isinstance(val, dict):
+            _msg = f"Dependencies must be dict, got {type(val)}"
+            raise TypeError(_msg)
+        self._dependencies = val
 
     # Individual statistics properties
 

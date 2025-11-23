@@ -17,9 +17,9 @@ Classes:
 # Standard library imports
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Generic, Optional, Dict, List, Callable, Any, Tuple, Union
-import random
-# import re
+from typing import Generic, Dict, List, Any, Tuple, Union
+# import random
+# import re, Optional, Callable
 
 # Third-party imports
 import numpy as np
@@ -63,7 +63,6 @@ class MonteCarloHandler(Validation, Generic[T]):
         _variables (Dict[str, Variable]): all available parameters/variables in the model (*Variable*).
         _coefficients (Dict[str, Coefficient]): all available coefficients in the model (*Coefficient*).
         _distributions (Dict[str, Callable]): all distribution functions used in the simulations.
-        _lead_distribution (Callable): main distribution function for simulations. Uniform distribution by default.
         _experiments (int): Number of simulation to run. Default is 1000.
 
         # Simulation Results
@@ -90,18 +89,14 @@ class MonteCarloHandler(Validation, Generic[T]):
     _distributions: Dict[str, Dict[str, Any]] = field(default_factory=dict)
     """Variable sampling distributions and specifications for simulations (specific name, parameters, and function)."""
 
-
-    # :attr: _lead_distribution
-    _lead_distribution: Optional[Callable] = random.uniform
-    """Main distribution function for simulations. By default, the native python uniform distribution is used."""
-
     # :attr: _experiments
     _experiments: int = 1000
     """Number of simulation to run."""
 
     # Simulation Management
-    # :arttr: _dependencies
+    # :arttr: _mem_cache
     _mem_cache: Dict[str, NDArray[np.float64]] = field(default_factory=dict)
+    """In-memory cache for simulation data between coefficients."""
 
     # :attr: _simulations
     _simulations: Dict[str, MonteCarloSim] = field(default_factory=dict)
@@ -129,6 +124,9 @@ class MonteCarloHandler(Validation, Generic[T]):
 
         if not self.description:
             self.description = f"Manages Monte Carlo simulations for [{self._coefficients.keys()}] coefficients."
+
+        if self._mem_cache is None:
+            self._mem_cache = {}
 
         # if len(self._distributions) == 0:
         #     self._config_distributions()
@@ -238,10 +236,12 @@ class MonteCarloHandler(Validation, Generic[T]):
                 _fwk=self._fwk,
                 _cat=self._cat,
                 _pi_expr=coef.pi_expr,
+                _coefficient=coef,
                 _variables=self._variables,
+                _simul_cache=self._mem_cache,
                 # _distributions=self._get_distributions(keys),
                 name=f"Monte Carlo Simulation for {coef.name}",
-                description=f"Monte Carlo simulation for {coef.sym}"
+                description=f"Monte Carlo simulation for {coef.sym}",
             )
 
             # Configure with coefficient, this is critical!!!
@@ -444,7 +444,6 @@ class MonteCarloHandler(Validation, Generic[T]):
         super().clear()
 
         # Reset specific attributes
-        self._lead_distribution = None
         self._simulations.clear()
         self._distributions.clear()
         self._results.clear()

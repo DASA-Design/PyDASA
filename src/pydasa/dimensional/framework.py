@@ -60,7 +60,7 @@ class DimSchema(Validation, Generic[T]):
     # FDUs storage
     # FDU precedence list, linked to WKNG_FDU_PREC_LT.
     # :attr: _fdu_lt
-    _fdu_lt: List[Dimension] = field(default_factory=list)
+    _fdu_lt: List[Dimension] = field(default_factory=list[Dimension])
     """List of Fundamental Dimensional Units in precedence order."""
 
     # FDU framework

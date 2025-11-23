@@ -45,6 +45,9 @@ assert DimMatrix
 assert DimSchema
 assert get_simulation_test_data
 
+# Number of experiments for simulations
+N_EXP: int = 50
+
 
 # ============================================================================
 # Distribution Functions
@@ -111,7 +114,7 @@ class TestMonteCarloSim(unittest.TestCase):
         self.variables = {}
         for var_sym, var_config in var_data.items():
             # Create a copy to avoid modifying test data
-            config = var_config.copy()
+            config = var_config.copy()  # ✅ This line creates 'config'
 
             # Add distribution functions based on variable
             if var_sym == "U":
@@ -225,7 +228,7 @@ class TestMonteCarloSim(unittest.TestCase):
             name=f"Monte Carlo for {first_pi}",
             description=f"Monte Carlo simulation for {first_pi}",
             _coefficient=coef,
-            _experiments=10
+            _experiments=N_EXP
         )
 
         assert mc_sim is not None
@@ -239,7 +242,7 @@ class TestMonteCarloSim(unittest.TestCase):
                 _idx=0,
                 _sym="MC_Test",
                 _fwk="CUSTOM",
-                _experiments=10
+                _experiments=N_EXP
             )
 
     def test_monte_carlo_set_coefficient(self) -> None:
@@ -252,11 +255,12 @@ class TestMonteCarloSim(unittest.TestCase):
         coef2 = self.coefficients[pi_keys[1]]
 
         # Create with first coefficient
-        mc_sim = MonteCarloSim(_coefficient=coef1, _experiments=10)
+        mc_sim = MonteCarloSim(_coefficient=coef1,
+                               _experiments=N_EXP)
 
         # Change to second coefficient
         mc_sim.set_coefficient(coef2)
-        
+
         assert mc_sim._coefficient == coef2
         assert mc_sim._pi_expr == coef2._pi_expr
 
@@ -267,7 +271,8 @@ class TestMonteCarloSim(unittest.TestCase):
     def test_expression_parsing_from_coefficient(self) -> None:
         """*test_expression_parsing_from_coefficient()* tests parsing coefficient expressions."""
         for pi_sym, coef in self.coefficients.items():
-            mc_sim = MonteCarloSim(_coefficient=coef, _experiments=10)
+            mc_sim = MonteCarloSim(_coefficient=coef,
+                                   _experiments=N_EXP)
 
             assert mc_sim._sym_func is not None
             assert mc_sim._var_symbols is not None
@@ -278,7 +283,8 @@ class TestMonteCarloSim(unittest.TestCase):
         # Test with Pi_1 if it exists
         if "\\Pi_{1}" in self.coefficients:
             coef = self.coefficients["\\Pi_{1}"]
-            mc_sim = MonteCarloSim(_coefficient=coef, _experiments=10)
+            mc_sim = MonteCarloSim(_coefficient=coef,
+                                   _experiments=N_EXP)
 
             # Get variables from coefficient
             vars_in_coef = list(coef.var_dims.keys())
@@ -296,15 +302,15 @@ class TestMonteCarloSim(unittest.TestCase):
             pytest.skip("Pi_1 coefficient not found")
 
         coef = self.coefficients["\\Pi_{1}"]
-        mc_sim = MonteCarloSim(_coefficient=coef, _experiments=10)
+        mc_sim = MonteCarloSim(_coefficient=coef,
+                               _experiments=N_EXP)
 
         # Get variables in this coefficient
         vars_in_coef = list(coef.var_dims.keys())
 
         # Set up distributions only for variables in this coefficient
         mc_sim._distributions = {
-            k: v for k, v in self.dist_specs.items() 
-            if k in vars_in_coef
+            k: v for k, v in self.dist_specs.items() if k in vars_in_coef
         }
 
         assert mc_sim._distributions is not None
@@ -316,7 +322,9 @@ class TestMonteCarloSim(unittest.TestCase):
             pytest.skip("Pi_1 coefficient not found")
 
         coef = self.coefficients["\\Pi_{1}"]
-        mc_sim = MonteCarloSim(_coefficient=coef, _experiments=10)
+        mc_sim = MonteCarloSim(_coefficient=coef,
+                               _variables=self.variables,
+                               _experiments=N_EXP)
 
         # Don't set distributions
         with pytest.raises(ValueError) as excinfo:
@@ -337,7 +345,8 @@ class TestMonteCarloSim(unittest.TestCase):
                 _fwk="CUSTOM",
                 name=f"Monte Carlo {pi_sym}",
                 _coefficient=coef,
-                _experiments=20
+                _variables=self.variables,
+                _experiments=N_EXP
             )
 
             # Get variables in this coefficient
@@ -345,8 +354,7 @@ class TestMonteCarloSim(unittest.TestCase):
 
             # Set up distributions only for variables in this coefficient
             mc_sim._distributions = {
-                k: v for k, v in self.dist_specs.items() 
-                if k in vars_in_coef
+                k: v for k, v in self.dist_specs.items() if k in vars_in_coef
             }
 
             # Skip if not all variables have distributions
@@ -359,9 +367,9 @@ class TestMonteCarloSim(unittest.TestCase):
 
                 # Verify results
                 assert mc_sim._results.size > 0
-                assert len(mc_sim._results) == 20
+                assert len(mc_sim._results) == N_EXP
                 assert not all(np.isnan(mc_sim._results.flatten()))
-    
+
             except ValueError as e:
                 pytest.fail(f"Simulation failed for {pi_sym}: {str(e)}")
 
@@ -378,7 +386,8 @@ class TestMonteCarloSim(unittest.TestCase):
             _fwk="CUSTOM",
             name="Monte Carlo Pi_1",
             _coefficient=coef,
-            _experiments=50
+            _variables=self.variables,
+            _experiments=N_EXP
         )
 
         # Get variables in coefficient
@@ -398,15 +407,8 @@ class TestMonteCarloSim(unittest.TestCase):
         mc_sim.run()
 
         # Verify results
-        assert mc_sim._results.size == 50
+        assert mc_sim._results.size == N_EXP
         assert not all(np.isnan(mc_sim._results.flatten()))
-
-        # Print results for manual verification
-        print(f"\nPi_1 Simulation Results:")
-        print(f"  Mean: {mc_sim.mean:.4f}")
-        print(f"  Std Dev: {mc_sim.std_dev:.4f}")
-        print(f"  Min: {mc_sim._min:.4f}")
-        print(f"  Max: {mc_sim._max:.4f}")
 
     def test_run_simulation_with_dependencies(self) -> None:
         """*test_run_simulation_with_dependencies()* tests simulation with dependent variables."""
@@ -423,7 +425,8 @@ class TestMonteCarloSim(unittest.TestCase):
 
         mc_sim = MonteCarloSim(
             _coefficient=target_coef,
-            _experiments=30
+            _variables=self.variables,
+            _experiments=N_EXP
         )
 
         # Set distributions
@@ -445,7 +448,7 @@ class TestMonteCarloSim(unittest.TestCase):
 
         mc_sim.run()
 
-        assert mc_sim._results.size == 30
+        assert mc_sim._results.size == N_EXP
         assert not all(np.isnan(mc_sim._results.flatten()))
 
     # ========================================================================
@@ -458,7 +461,9 @@ class TestMonteCarloSim(unittest.TestCase):
             pytest.skip("Pi_1 coefficient not found")
 
         coef = self.coefficients["\\Pi_{1}"]
-        mc_sim = MonteCarloSim(_coefficient=coef, _experiments=100)
+        mc_sim = MonteCarloSim(_coefficient=coef,
+                               _variables=self.variables,
+                               _experiments=N_EXP)
 
         # Setup distributions
         vars_in_coef = list(coef.var_dims.keys())
@@ -477,7 +482,7 @@ class TestMonteCarloSim(unittest.TestCase):
         assert not np.isnan(mc_sim.std_dev)
         assert not np.isnan(mc_sim.variance)
         assert not np.isnan(mc_sim.median)
-        assert mc_sim._count == 100
+        assert mc_sim._count == N_EXP
 
     def test_statistics_property(self) -> None:
         """*test_statistics_property()* tests statistics dictionary property."""
@@ -485,8 +490,9 @@ class TestMonteCarloSim(unittest.TestCase):
             pytest.skip("Pi_1 coefficient not found")
 
         coef = self.coefficients["\\Pi_{1}"]
-        mc_sim = MonteCarloSim(_coefficient=coef, _experiments=50)
-
+        mc_sim = MonteCarloSim(_coefficient=coef,
+                               _variables=self.variables,
+                               _experiments=N_EXP)
         # Setup and run
         vars_in_coef = list(coef.var_dims.keys())
         mc_sim._distributions = {
@@ -517,8 +523,9 @@ class TestMonteCarloSim(unittest.TestCase):
             pytest.skip("Pi_1 coefficient not found")
 
         coef = self.coefficients["\\Pi_{1}"]
-        mc_sim = MonteCarloSim(_coefficient=coef, _experiments=100)
-
+        mc_sim = MonteCarloSim(_coefficient=coef,
+                               _variables=self.variables,
+                               _experiments=N_EXP)
         # Setup and run
         vars_in_coef = list(coef.var_dims.keys())
         mc_sim._distributions = {
@@ -548,8 +555,9 @@ class TestMonteCarloSim(unittest.TestCase):
             pytest.skip("Pi_1 coefficient not found")
 
         coef = self.coefficients["\\Pi_{1}"]
-        mc_sim = MonteCarloSim(_coefficient=coef, _experiments=30)
-
+        mc_sim = MonteCarloSim(_coefficient=coef,
+                               _variables=self.variables,
+                               _experiments=N_EXP)
         # Setup and run
         vars_in_coef = list(coef.var_dims.keys())
         mc_sim._distributions = {
@@ -564,13 +572,13 @@ class TestMonteCarloSim(unittest.TestCase):
 
         # Extract results
         results = mc_sim.extract_results()
-        
+
         assert isinstance(results, dict)
         assert len(results) > 0
 
         # Should have coefficient results
         assert coef.sym in results
-        assert len(results[coef.sym]) == 30
+        assert len(results[coef.sym]) == N_EXP
 
     def test_extract_results_keys(self) -> None:
         """*test_extract_results_keys()* tests result dictionary keys."""
@@ -578,7 +586,9 @@ class TestMonteCarloSim(unittest.TestCase):
             pytest.skip("Pi_1 coefficient not found")
 
         coef = self.coefficients["\\Pi_{1}"]
-        mc_sim = MonteCarloSim(_coefficient=coef, _experiments=20)
+        mc_sim = MonteCarloSim(_coefficient=coef,
+                               _variables=self.variables,
+                               _experiments=N_EXP)
 
         # Setup and run
         vars_in_coef = list(coef.var_dims.keys())
@@ -651,7 +661,8 @@ class TestMonteCarloSim(unittest.TestCase):
     def test_cache_initialization(self) -> None:
         """*test_cache_initialization()* tests cache is initialized."""
         coef = list(self.coefficients.values())[0]
-        mc_sim = MonteCarloSim(_coefficient=coef, _experiments=10)
+        mc_sim = MonteCarloSim(_coefficient=coef,
+                               _experiments=N_EXP)
 
         assert mc_sim._simul_cache is not None
         assert isinstance(mc_sim._simul_cache, dict)
@@ -661,7 +672,7 @@ class TestMonteCarloSim(unittest.TestCase):
         coef = list(self.coefficients.values())[0]
         mc_sim = MonteCarloSim(_coefficient=coef,
                                _variables=self.variables,
-                               _experiments=10)
+                               _experiments=N_EXP)
 
         if len(mc_sim._variables) == 0:
             pytest.skip("No variables in coefficient")
@@ -685,7 +696,9 @@ class TestMonteCarloSim(unittest.TestCase):
             pytest.skip("Pi_1 coefficient not found")
 
         coef = self.coefficients["\\Pi_{1}"]
-        mc_sim = MonteCarloSim(_coefficient=coef, _experiments=10)
+        mc_sim = MonteCarloSim(_coefficient=coef,
+                               _variables=self.variables,
+                               _experiments=N_EXP)
 
         # Setup and run
         vars_in_coef = list(coef.var_dims.keys())

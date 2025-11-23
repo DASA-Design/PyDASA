@@ -432,133 +432,6 @@ class MonteCarloSim(Validation, Generic[T]):
     # Simulation Execution
     # ========================================================================
 
-    def _generate_sample_OLD(self,
-                             var: Variable,
-                             memory: Dict[str, float]) -> float:
-        """*_generate_sample()* Generate a sample for a given variable.
-
-        Args:
-            var (Variable): The variable to generate a sample for.
-            memory (Dict[str, float]): The current iteration values.
-
-        Returns:
-            float: The generated sample.
-        """
-        sample: float = -1.0
-
-        # If the variable is independent
-        if not var.depends or len(var.depends) == 0:
-            # sample = var._dist_func
-            # if sample is not None:
-            #     memory[var.sym] = sample()
-            if var._dist_func is not None:
-                sample = float(var._dist_func())
-                memory[var.sym] = sample
-
-        # If the variable has dependencies
-        elif len(var.depends) > 0:
-            # Gather dependencies values from memory
-            deps: List[float] = []
-            for d in var.depends:
-                # Only add the dependency if it is already in memory
-                if d in memory:
-                    dep_val = memory[d]
-                    # If the dependency is a list, tuple or ndarray, take the last value
-                    if isinstance(dep_val, (list, tuple, np.ndarray)):
-                        dep_val = dep_val[-1]
-                    deps.append(dep_val)
-
-            # If all dependencies are available in memory
-            if len(deps) == len(var.depends):
-                # # sample = var._dist_func
-                # # memory[var.sym] = sample
-                # sample = var._dist_func
-                # if sample is not None:
-                #     memory[var.sym] = sample()
-                if var._dist_func is not None:
-                    sample = float(var._dist_func(*deps))
-                    memory[var.sym] = sample
-
-        return sample
-
-    def run_OLD(self, iters: Optional[int] = None) -> None:
-        """*run()* Execute the Monte Carlo simulation.
-
-        Args:
-            iters (int, optional): Number of iterations to run. If None, uses _experiments.
-
-        Raises:
-            ValueError: If simulation is not ready or encounters errors during execution.
-        """
-        # Validate simulation readiness
-        self._validate_readiness()
-
-        # Set iterations if necessary
-        if iters is not None:
-            self._experiments = iters
-
-        # Clear previous results, inputs, and intermediate values
-        self._reset_memory()
-
-        # Preallocate full array space
-        # FIXME this is old, possible i dont need it anymore, erase after test
-        self.inputs = np.zeros((self._experiments, len(self._var_symbols)))
-        self._results = np.zeros((self._experiments, 1))
-
-        # Run simulation
-        i = 0
-        # TODO aki voy!!!, aqui toca empezar a utilizar el self._simul_cache
-        while i < self._experiments:
-            try:
-                # Dict to store sample memory for this iteration
-                memory: Dict[str, float] = {}
-
-                # Generate samples for all variables
-                for var in self._variables.values():
-                    # Generate sample for the variable
-                    val = self._generate_sample(var, memory)
-                    # Store the sample in the iteration values
-                    memory[var.sym] = val
-                    # Store the sample in the intermediate values
-                    self._simul_cache[var.sym] = np.append(self._simul_cache[var.sym], val)
-
-                # Prepare sorted/ordered values from memory for evaluation
-                sorted_vals = [memory[var] for var in self._latex_to_py]
-
-                _type = (list, tuple, np.ndarray)
-                # Handle adjusted values
-                if any(isinstance(v, _type) for v in sorted_vals):
-                    sorted_vals = [
-                        v[-1] if isinstance(v, _type) else v for v in sorted_vals]
-
-                # Create lambdify function using Python symbols
-                aliases = [self._aliases[v] for v in self._var_symbols]
-                self._exe_func = lambdify(aliases, self._sym_func, "numpy")
-
-                # Evaluate the coefficient
-                result = float(self._exe_func(*sorted_vals))
-
-                # Handle array results
-                if isinstance(result, _type):
-                    result = result[-1]
-                    sorted_vals = [v[-1] for v in result]
-
-                # Save simulation inputs and results
-                self.inputs[i, :] = sorted_vals
-                self._results[i] = result
-
-            except Exception as e:
-                _msg = f"Error during simulation run {i}: {str(e)}"
-                raise ValueError(_msg)
-
-            i += 1
-
-        # Calculate statistics
-        if len(self._results) == self._experiments:
-            self._calculate_statistics()
-        else:
-            raise ValueError("Invalid results, check your distributions!")
-
     def _generate_sample(self,
                          var: Variable,
                          memory: Dict[str, float]) -> float:
@@ -571,8 +444,6 @@ class MonteCarloSim(Validation, Generic[T]):
         Returns:
             float: The generated sample.
         """
-        sample: float = -1.0
-
         sample: float = -1.0
 
         # If the variable is independent
@@ -1192,11 +1063,5 @@ class MonteCarloSim(Validation, Generic[T]):
         if "variables" in data and data["variables"]:
             for sym, specs in data["variables"].items():
                 instance._variables[sym] = Variable(**specs)
-
-            # TODO this is maybe not a good idea, check later, keep in comments
-            # # Reinitialize cache for restored variables
-            # instance._simul_cache = {
-            #     var: np.array([], dtype=np.float64) for var in instance._variables.keys()
-            # }
 
         return instance

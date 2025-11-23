@@ -18,9 +18,11 @@ import unittest
 import pytest
 import random
 
+# typying imports
+from typing import Dict, Any
+
 # Import numpy for numerical operations
 import numpy as np
-# from typing import Dict, Any
 
 # Import core PyDASA modules
 # from pydasa.core.fundamental import Dimension
@@ -75,6 +77,18 @@ class TestMonteCarloSim(unittest.TestCase):
     """
 
     # ========================================================================
+    # Type hints for class attributes
+    # ========================================================================
+
+    # Add type hints at class level
+    dim_schema: DimSchema
+    variables: Dict[str, Variable]
+    dim_model: DimMatrix
+    coefficients: Dict[str, Coefficient]
+    dist_specs: Dict[str, Dict[str, Any]]
+    test_data: Dict[str, Any]
+
+    # ========================================================================
     # Fixtures and Setup
     # ========================================================================
 
@@ -114,7 +128,7 @@ class TestMonteCarloSim(unittest.TestCase):
         self.variables = {}
         for var_sym, var_config in var_data.items():
             # Create a copy to avoid modifying test data
-            config = var_config.copy()  # ✅ This line creates 'config'
+            config = var_config.copy()
 
             # Add distribution functions based on variable
             if var_sym == "U":
@@ -150,8 +164,27 @@ class TestMonteCarloSim(unittest.TestCase):
         self.dim_model.create_matrix()
         self.dim_model.solve_matrix()
 
-        # Store coefficients for tests
-        self.coefficients = self.dim_model.coefficients
+        # Get coefficients
+        coefficients = self.dim_model.coefficients
+
+        if coefficients is None:
+            raise ValueError(
+                "Dimensional model did not produce coefficients. "
+                "Check that solve_matrix() completed successfully."
+            )
+
+        if not isinstance(coefficients, dict):
+            raise TypeError(
+                f"Expected coefficients to be dict, got {type(coefficients)}"
+            )
+
+        if len(coefficients) == 0:
+            raise ValueError(
+                "Dimensional model produced empty coefficients dictionary. "
+                "The model may not have enough variables or proper dimensional setup."
+            )
+
+        self.coefficients = coefficients
 
     def _setup_distribution_specs(self) -> None:
         """*_setup_distribution_specs()* creates distribution specifications."""
@@ -203,10 +236,12 @@ class TestMonteCarloSim(unittest.TestCase):
     def test_dimensional_matrix_solution(self) -> None:
         """*test_dimensional_matrix_solution()* tests matrix solving."""
         assert self.coefficients is not None
+        assert isinstance(self.coefficients, dict)
         assert len(self.coefficients) > 0
 
-        # Check that coefficients have expressions
+        # Now type checker knows coefficients is not None
         for pi_sym, coef in self.coefficients.items():
+            assert coef is not None
             assert coef.pi_expr is not None
             assert coef._pi_expr is not None
 
@@ -217,6 +252,10 @@ class TestMonteCarloSim(unittest.TestCase):
     def test_monte_carlo_creation_with_coefficient(self) -> None:
         """*test_monte_carlo_creation_with_coefficient()* tests MC sim creation."""
         # Get first coefficient
+        assert self.coefficients is not None
+        assert len(self.coefficients) > 0
+
+        # Get first coefficient - type checker now knows this is valid
         first_pi = list(self.coefficients.keys())[0]
         coef = self.coefficients[first_pi]
 
@@ -287,7 +326,9 @@ class TestMonteCarloSim(unittest.TestCase):
                                    _experiments=N_EXP)
 
             # Get variables from coefficient
-            vars_in_coef = list(coef.var_dims.keys())
+            vars_in_coef = []
+            if mc_sim.coefficient is not None:
+                vars_in_coef = list(mc_sim.coefficient.var_dims.keys())
 
             assert len(vars_in_coef) > 0
             assert all(v in self.variables for v in vars_in_coef)
@@ -338,6 +379,8 @@ class TestMonteCarloSim(unittest.TestCase):
 
     def test_run_simulation_on_each_coefficient(self) -> None:
         """*test_run_simulation_on_each_coefficient()* tests running MC on all coefficients."""
+        assert self.coefficients is not None
+
         for pi_sym, coef in self.coefficients.items():
             mc_sim = MonteCarloSim(
                 _idx=0,

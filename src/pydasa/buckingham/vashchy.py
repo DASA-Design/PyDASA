@@ -86,6 +86,10 @@ class Coefficient(Validation, Generic[T]):
     _dim_col: List[int] = field(default_factory=list)
     """Dimensional column for matrix operations."""
 
+    # :attr: var_dims
+    var_dims: Dict[str, int] = field(default_factory=dict)
+    """Dimensional variable exponents in coefficient."""
+
     # :attr: _pivot_lt
     _pivot_lt: Optional[List[int]] = field(default_factory=list)
     """Pivot indices in dimensional matrix."""
@@ -93,10 +97,6 @@ class Coefficient(Validation, Generic[T]):
     # :attr: _pi_expr
     _pi_expr: Optional[str] = None
     """Symbolic expression of coefficient."""
-
-    # :attr: var_dims
-    var_dims: Optional[Dict[str, int]] = field(default_factory=dict)
-    """Dimensional variable exponents in coefficient."""
 
     # Value ranges Variable
     # :attr: _min
@@ -654,7 +654,7 @@ class Coefficient(Validation, Generic[T]):
         self._dim_col = []
         self._pivot_lt = None
         self._pi_expr = None
-        self.var_dims = None
+        self.var_dims = {}
         self._min = None
         self._max = None
         self._mean = None

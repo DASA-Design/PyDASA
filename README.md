@@ -75,8 +75,8 @@ I need an object oriented design option to include the following requirements in
    6. **handler**
 
       1. influence.py: contains the SensitivityHandler class for understanding variance in the coefficients. ✅
-      2. phenomena.py: has the main Solver() class of the project. TODO ⚠️
-      3. practical.py contains the MonteCarloHandler class to control all the montecartlo simulations of all data ✅ 🔶👨‍💻⚠️ WORKING HERE ⚠️
+      2. phenomena.py: has the main Solver() class of the project. 🔶👨‍💻⚠️ WORKING HERE ⚠️
+      3. practical.py contains the MonteCarloHandler class to control all the montecartlo simulations of all data ✅
 
       ---
    7. **utils**
@@ -148,8 +148,8 @@ I need an object oriented design option to include the following requirements in
 6. **handler**
 
    1. test_influence.py: test for the SensitivityHandler class for understanding variance in the coefficients. NOT NOW!!! ❌
-   2. test_phenomena.py: test for the main Solver() class of the project 🔶👨‍💻⚠️ WORKING HERE ⚠️
-   3. test_practical.py test for the SimulationManager class to control all the montecartlo simulations of all data TODO ⚠️
+   2. test_phenomena.py: test for the main Solver() class of the project TODO⚠️
+   3. test_practical.py test for the SimulationManager class to control all the montecartlo simulations of all data 🔶👨‍💻⚠️ WORKING HERE ⚠️
 
    ---
 7. **utils**

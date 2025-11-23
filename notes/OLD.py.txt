@@ -545,8 +545,10 @@ if __name__ == "__main__":
         }
     }
 
-    monte = MonteCarloSim()
-    # print(monte, "\n")
+    # monte = MonteCarloSim()
+    # # print(monte, "\n")
+    
+    print("PI UNO BEBE!!!", DAModel.coefficients["\\Pi_{1}"].pi_expr)
 
     monte = MonteCarloSim(_idx=0,
                           _sym="MC_{0}",
@@ -554,9 +556,10 @@ if __name__ == "__main__":
                           name="Monte Carlo Simulation",
                           description="Monte Carlo Simulation~~~~~!!!",
                           _pi_expr=DAModel.coefficients["\\Pi_{1}"].pi_expr,
-                          _variables=DAModel.variables,
+                          _coefficient=DAModel.coefficients["\\Pi_{1}"],
+                          _variables=DAModel.relevant_lt,
                           _distributions=dist_specs,
-                          _iterations=10,)
+                          _experiments=10,)
     # Configure with coefficient, this is critical!!!
     monte.set_coefficient(DAModel.coefficients["\\Pi_{1}"])
     # monte.config_simulations()
@@ -580,15 +583,16 @@ if __name__ == "__main__":
     print("===========================")
 
     # FIXME something weird in the individual invocation of the simulation
-    # monte.run()
-    # print("Monte Carlo Simulation Results:")
-    # for k, v in monte.statistics.items():
-    #     print(f"{k}: {v}")
-    # print("Mean:", monte.mean)
-    # print("Variance:", monte.variance)
-    # # print("Summary:", monte.summary)
-    # # a = monte.export_results().keys()
-    # print("Confidence result keys:", monte.extract_results().keys())
+    monte.run()
+    print(monte)
+    print("Monte Carlo Simulation Results:")
+    for k, v in monte.statistics.items():
+        print(f"{k}: {v}")
+    print("Mean:", monte.mean)
+    print("Variance:", monte.variance)
+    # print("Summary:", monte.summary)
+    # a = monte.export_results().keys()
+    print("Confidence result keys:", monte.extract_results().keys())
 
     # print("Confidence report:", monte.get_confidence_interval(0.95))
 

@@ -8,6 +8,7 @@
 
 import os
 import sys
+import pydasa._version as ver
 # without */docs/source/ folder
 sys.path.insert(0, os.path.abspath(".."))
 # with */docs/source/ folder
@@ -16,7 +17,9 @@ sys.path.insert(0, os.path.abspath(".."))
 project = "PyDASA"
 copyright = "2025, @SFAM, Uniandes, DISC, Bogotá D.C. Colombia"
 author = "@SFAM"
-release = "0.0.1"
+# the release is in _version.py
+release = ver.__version__
+version = ver.__version__
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

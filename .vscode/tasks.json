@@ -1,0 +1,15 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Sphinx: Build HTML",
+            "type": "shell",
+            "command": "sphinx-build",
+            "args": [
+                "-b", "html",  // ✅ Should be "html" not "builder"
+                "docs/source",
+                "docs/build/html"
+            ]
+        }
+    ]
+}

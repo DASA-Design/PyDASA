@@ -28,7 +28,7 @@ extensions = [
     "sphinx.ext.autodoc.typehints",
     "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
-    "sphinx.ext.viewcode",
+    # "sphinx.ext.viewcode",    # DONT KNOW WHY IS NOT WORKING
     "autoapi.extension",
     "sphinx.ext.todo",
     "sphinx.ext.intersphinx",
@@ -49,7 +49,9 @@ templates_path = ["_templates"]
 exclude_patterns = [
     "_build",
     "Thumbs.db",
-    ".DS_Store"
+    ".DS_Store",
+    '**/__pycache__',
+    '**/test_*.py',
 ]
 
 # internationalization options
@@ -172,7 +174,7 @@ html_context = {
 html_static_path = ["_static"]
 
 # viewcode specific config
-viewcode_follow_imported_members = False
+# viewcode_follow_imported_members = True
 
-# viewcode_import = True
+viewcode_import = True
 # viewcode_enable_epub = False

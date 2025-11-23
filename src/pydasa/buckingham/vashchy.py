@@ -157,7 +157,7 @@ class Coefficient(Validation, Generic[T]):
         self.dim_col = self._dim_col or []
         self.pivot_lt = self._pivot_lt or []
 
-        # Only build expression if we have variables
+        # Only build expression if parameters and dimensions are provided
         if len(self._variables) > 0 and len(self._dim_col) > 0:
             var_keys = list(self._variables.keys())
             self.pi_expr, self.var_dims = self._build_expression(var_keys,
@@ -169,11 +169,6 @@ class Coefficient(Validation, Generic[T]):
 
         # Set data
         self.data = self._data
-
-        # # Build expression if parameters and dimensions are provided
-        # FIXME this is not working, fix later!
-        # if self._variables and self._dim_col:
-        #     self.pi_expr, self.var_dims = self._build_expression(self._variables, self._dim_col)
 
         # Set up data array if all required values are provided
         if all([self._min, self._max, self._step]):

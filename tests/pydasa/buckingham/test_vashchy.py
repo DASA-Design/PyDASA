@@ -124,7 +124,7 @@ class TestCoefficient(unittest.TestCase):
         coef = Coefficient(
             _variables=simple_vars,
             _dim_col=[1, -1]  # v/L
-            )
+        )
 
         assert coef._pi_expr is not None
         assert isinstance(coef._pi_expr, str)
@@ -193,14 +193,14 @@ class TestCoefficient(unittest.TestCase):
         """Test variables property setter with invalid keys."""
         coef = Coefficient()
         with pytest.raises(ValueError) as excinfo:
-            coef.variables = {123: self.test_variables["v"]}
+            coef.variables = {123: self.test_variables["v"]}     # type: ignore
         assert "must contain" in str(excinfo.value)
 
     def test_variables_setter_invalid_values(self) -> None:
         """Test variables property setter with invalid values."""
         coef = Coefficient()
         with pytest.raises(ValueError) as excinfo:
-            coef.variables = {"v": "not a variable"}
+            coef.variables = {"v": "not a variable"}     # type: ignore
         assert "must contain" in str(excinfo.value)
 
     # ========================================================================
@@ -235,7 +235,7 @@ class TestCoefficient(unittest.TestCase):
         """Test dim_col property setter with invalid elements."""
         coef = Coefficient()
         with pytest.raises(ValueError) as excinfo:
-            coef.dim_col = [1, "two", 3]
+            coef.dim_col = [1, "two", 3]    # type: ignore
         assert "must contain" in str(excinfo.value)
 
     # ========================================================================
@@ -256,7 +256,7 @@ class TestCoefficient(unittest.TestCase):
     def test_pivot_lt_setter_none(self) -> None:
         """Test pivot_lt property setter with None."""
         coef = Coefficient()
-        coef.pivot_lt = None
+        coef.pivot_lt = None    # type: ignore
         assert coef.pivot_lt is None
 
     # ========================================================================

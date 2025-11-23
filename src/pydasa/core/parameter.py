@@ -157,13 +157,13 @@ class Variable(Validation):
     _dist_params: Optional[Dict[str, Any]] = field(default_factory=dict)
     """Parameters for the distribution (e.g., {'min': 0, 'max': 1} for uniform)."""
 
-    # :attr: _dist_func
-    _dist_func: Optional[Callable] = None
-    """Callable representing the distribution function defined externally by the user."""
-
     # :attr: _depends
     _depends: List[str] = field(default_factory=list)
     """List of variable names that this variable depends on. (e.g., for calculated variables like F = m*a)."""
+
+    # :attr: _dist_func
+    _dist_func: Optional[Callable[..., float]] = None
+    """Callable representing the distribution function defined externally by the user."""
 
     # Flags
     # :attr: relevant
@@ -335,6 +335,38 @@ class Variable(Validation):
             col[cfg.WKNG_FDU_PREC_LT.index(_sym)] = _exp
 
         return col
+
+    def sample(self, **kwargs) -> float:
+        """*sample()* Generate a random sample.
+
+        Args:
+            **kwargs: Additional arguments for the distribution function.
+
+        Returns:
+            float: Random sample from distribution.
+
+        Raises:
+            ValueError: If no distribution has been set.
+        """
+        if self._dist_func is None:
+            _msg = f"No distribution set for variable '{self.sym}'. "
+            _msg += "Call set_function() first."
+            raise ValueError(_msg)
+
+        # if kwargs are provided, pass them to the function parameters
+        elif len(kwargs) > 0:
+            return self._dist_func(**kwargs)
+
+        # otherwise, execute without them
+        return self._dist_func()
+
+    def has_function(self) -> bool:
+        """*has_function()* Check if distribution is set.
+
+        Returns:
+            bool: True if distribution is configured.
+        """
+        return self._dist_func is not None
 
     # Property getters and setters
     # Identification and Classification
@@ -958,7 +990,7 @@ class Variable(Validation):
         self._dist_params = val
 
     @property
-    def dist_func(self) -> Optional[Callable]:
+    def dist_func(self) -> Optional[Callable[..., float]]:
         """*dist_func* Get the distribution function.
 
         Returns:
@@ -967,7 +999,7 @@ class Variable(Validation):
         return self._dist_func
 
     @dist_func.setter
-    def dist_func(self, val: Optional[Callable]) -> None:
+    def dist_func(self, val: Optional[Callable[..., float]]) -> None:
         """*dist_func* Set the distribution function.
 
         Args:

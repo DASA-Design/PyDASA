@@ -8,6 +8,7 @@ Tests data for all the classes in PyDASA.
 # import testing package
 # import unittest
 # import pytest
+import numpy as np
 
 
 # test data for from pydasa.utils import config
@@ -231,6 +232,12 @@ def get_variable_test_data() -> dict:
         "VALID_UNITS": ["m", "m/s", "kg/m3", "bit", "req/s"],
         "VALID_DIST_TYPES": ["uniform", "normal", "triangular",
                              "exponential", "lognormal", "custom"],
+        # Minimal distribution function test data
+        "SAMPLE_TEST_FUNCTIONS": {
+            "constant": lambda: 42.0,
+            "uniform": lambda: float(np.random.uniform(0, 10)),
+            "dependent": lambda x: 2 * x + 1.0,
+        }
     }
 
 

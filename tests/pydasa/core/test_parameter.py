@@ -555,6 +555,66 @@ class TestVariable(unittest.TestCase):
             var.dist_type = "invalid_distribution"
         assert "Unsupported distribution type" in str(excinfo.value)
 
+    # ========================================================================
+    # Distribution Function Tests (sample() and has_function())
+    # ========================================================================
+
+    def test_has_function_no_distribution(self) -> None:
+        """Test has_function returns False when no distribution is set."""
+        var = Variable()
+        assert var.has_function() is False
+
+    def test_has_function_with_distribution(self) -> None:
+        """Test has_function returns True when distribution is set."""
+        var = Variable()
+        var.dist_func = self.test_data["SAMPLE_TEST_FUNCTIONS"]["constant"]
+        assert var.has_function() is True
+
+    def test_sample_no_distribution_raises_error(self) -> None:
+        """Test sample raises error when no distribution is set."""
+        var = Variable(_sym="x")
+
+        with pytest.raises(ValueError) as excinfo:
+            var.sample()
+        assert "No distribution set for variable 'x'" in str(excinfo.value)
+
+    def test_sample_with_lambda_function(self) -> None:
+        """Test sample with simple lambda function."""
+        var = Variable()
+        var.dist_func = self.test_data["SAMPLE_TEST_FUNCTIONS"]["constant"]
+
+        result = var.sample()
+        assert result == 42.0
+        assert isinstance(result, float)
+
+    def test_sample_with_numpy_uniform(self) -> None:
+        """Test sample with numpy uniform distribution."""
+        var = Variable()
+        var.dist_func = self.test_data["SAMPLE_TEST_FUNCTIONS"]["uniform"]
+
+        # Generate samples and check they're in range
+        samples = [var.sample() for _ in range(50)]
+
+        assert all(0 <= s <= 10 for s in samples)
+        assert len(set(samples)) > 1  # Should have variety
+
+    def test_sample_with_kwargs(self) -> None:
+        """Test sample with keyword arguments for dependent variables."""
+        var = Variable(_sym="y", _depends=["x"])
+        var.dist_func = self.test_data["SAMPLE_TEST_FUNCTIONS"]["dependent"]
+
+        result = var.sample(x=5.0)
+        assert result == 11.0
+
+    def test_sample_returns_float_type(self) -> None:
+        """Test sample always returns float, not array."""
+        var = Variable()
+        var.dist_func = self.test_data["SAMPLE_TEST_FUNCTIONS"]["uniform"]
+
+        result = var.sample()
+        assert isinstance(result, float)
+        assert not isinstance(result, np.ndarray)
+
     # Distribution parameters tests
     def test_dist_params_getter(self) -> None:
         """Test dist_params property getter."""

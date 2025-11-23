@@ -108,7 +108,7 @@ I need an object oriented design option to include the following requirements in
 
    1. test_conversion.py: tests for unit conversion handler for the solver. NOT NOW!!! ❌
    2. test_scenario.py: tests for sensitivity analysis of the Coefficients NOT NOW!!! ❌
-   3. test_simulation.py: tests for the monte carlo simulator for one coefficient. TODO ⚠️
+   3. test_simulation.py: tests for the monte carlo simulator for one coefficient. ✅
 
    ---
 2. **buckingham**

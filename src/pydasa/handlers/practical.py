@@ -17,12 +17,13 @@ Classes:
 # Standard library imports
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Generic, Optional, Dict, List, Callable, Any
+from typing import Generic, Optional, Dict, List, Callable, Any, Tuple, Union
 import random
 # import re
 
 # Third-party imports
 import numpy as np
+from numpy.typing import NDArray
 
 # Import validation base classes
 from pydasa.core.basic import Validation
@@ -63,7 +64,7 @@ class MonteCarloHandler(Validation, Generic[T]):
         _coefficients (Dict[str, Coefficient]): all available coefficients in the model (*Coefficient*).
         _distributions (Dict[str, Callable]): all distribution functions used in the simulations.
         _lead_distribution (Callable): main distribution function for simulations. Uniform distribution by default.
-        _iterations (int): Number of simulation to run. Default is 1000.
+        _experiments (int): Number of simulation to run. Default is 1000.
 
         # Simulation Results
         _simulations (Dict[str, MonteCarloSim]): all Monte Carlo simulations performed.
@@ -89,17 +90,18 @@ class MonteCarloHandler(Validation, Generic[T]):
     _distributions: Dict[str, Dict[str, Any]] = field(default_factory=dict)
     """Variable sampling distributions and specifications for simulations (specific name, parameters, and function)."""
 
+
     # :attr: _lead_distribution
     _lead_distribution: Optional[Callable] = random.uniform
     """Main distribution function for simulations. By default, the native python uniform distribution is used."""
 
-    # :attr: _iterations
-    _iterations: int = 1000
+    # :attr: _experiments
+    _experiments: int = 1000
     """Number of simulation to run."""
 
     # Simulation Management
     # :arttr: _dependencies
-    _mem_cache: Dict[str, List[str]] = field(default_factory=dict)
+    _mem_cache: Dict[str, NDArray[np.float64]] = field(default_factory=dict)
 
     # :attr: _simulations
     _simulations: Dict[str, MonteCarloSim] = field(default_factory=dict)
@@ -139,7 +141,8 @@ class MonteCarloHandler(Validation, Generic[T]):
         if len(self._simulations) == 0:
             self._config_simulations()
 
-    def _validate_dict(self, dt: dict, exp_type: List[type]) -> bool:
+    def _validate_dict(self, dt: Dict,
+                       exp_type: Union[type, Tuple[type, ...]]) -> bool:
         """*_validate_dict()* Validates a dictionary with expected value types.
 
         Args:
@@ -155,15 +158,24 @@ class MonteCarloHandler(Validation, Generic[T]):
             bool: True if the dictionary is valid.
         """
         if not isinstance(dt, dict):
-            _msg = f"{inspect_var(dt)} must be a dictionary. "
-            _msg += f"Provided: {type(dt)}"
+            _msg = f"{inspect_var(dt)} must be from type: '{exp_type}', "
+            _msg += f"Provided: {type(dt).__name__}"
             raise ValueError(_msg)
+
         if len(dt) == 0:
-            _msg = f"{inspect_var(dt)} cannot be empty. "
-            _msg += f"Provided: {dt}"
+            _msg = f"{inspect_var(dt)} cannot be empty. Actual map: {dt}"
             raise ValueError(_msg)
-        if not all(isinstance(v, exp_type) for v in dt.values()):
-            _msg = f"{inspect_var(dt)} must contain {exp_type} values."
+
+        # Convert list to tuple if needed for isinstance(), just in case
+        type_check = exp_type if isinstance(exp_type, tuple) else (exp_type,)
+
+        if not all(isinstance(v, type_check) for v in dt.values()):
+            # Format expected types for error message
+            if isinstance(exp_type, tuple):
+                type_names = " or ".join(t.__name__ for t in exp_type)
+            else:
+                type_names = exp_type.__name__
+            _msg = f"{inspect_var(dt)} must contain {type_names} values."
             _msg += f" Provided: {[type(v).__name__ for v in dt.values()]}"
             raise ValueError(_msg)
         return True
@@ -241,11 +253,12 @@ class MonteCarloHandler(Validation, Generic[T]):
             # Set the distributions and dependencies
             sim._distributions = self._get_distributions(vars_in_coef)
             sim._dependencies = self._get_dependencies(vars_in_coef)
+
             # Add to list
             self._simulations[pi] = sim
 
     def simulate(self,
-                 n_samples: int = 1000) -> Dict[str, Dict[str, Any]]:
+                 n_samples: int = 1000) -> None:
         """*_simulate()* Runs the Monte Carlo simulations.
 
         Args:

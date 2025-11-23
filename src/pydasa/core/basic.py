@@ -275,7 +275,7 @@ class Validation(IdxValidation):
         """*__post_init__()* Post-initialization processing with description capitalization.
         """
         if self.description:
-            self.description = self.description.capitalize()
+            self.description = self.description.strip()
 
     def _validate_name(self, name: str) -> None:
         """Validate the name format.

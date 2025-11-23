@@ -213,8 +213,8 @@ class TestValidation(unittest.TestCase):
             assert obj._alias == data["_alias"]
             assert obj._fwk == data["_fwk"]
             assert obj.name == data["name"]
-            # Description should be capitalized
-            assert obj.description[0].isupper()
+            # Description should al least exists
+            assert len(obj.description) > 0
 
     def test_name_validation(self) -> None:
         """Test name validation."""
@@ -230,18 +230,6 @@ class TestValidation(unittest.TestCase):
             with pytest.raises(ValueError) as excinfo:
                 obj._validate_name(invalid_name)
             assert "Name must be a non-empty string" in str(excinfo.value)
-
-    def test_description_capitalization(self) -> None:
-        """Test that description is automatically capitalized."""
-        descriptions = [
-            ("test description", "Test description"),
-            ("another test", "Another test"),
-            ("UPPERCASE", "Uppercase"),
-        ]
-
-        for desc_in, desc_out in descriptions:
-            obj = Validation(description=desc_in)
-            assert obj.description == desc_out
 
     def test_str_representation(self) -> None:
         """Test __str__ method."""

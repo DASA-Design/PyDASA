@@ -174,6 +174,16 @@ class SymValidation(ABC):
             msg += f"{', '.join(FDU_FWK_DT.keys())}."
             raise ValueError(msg)
 
+    def clear(self) -> None:
+        """*clear()* Reset symbol and framework attributes to default values.
+
+        Resets the entity's symbol-related properties to their initial state.
+        """
+        # Reset symbol attributes
+        self._sym = ""
+        self._alias = ""
+        self._fwk = "PHYSICAL"
+
 
 @dataclass
 class IdxValidation(SymValidation):
@@ -230,6 +240,17 @@ class IdxValidation(SymValidation):
             _msg = f"Index must be a non-negative integer. Provided: {val}"
             raise ValueError(_msg)
 
+    def clear(self) -> None:
+        """*clear()* Reset index and inherited attributes to default values.
+
+        Resets the entity's index and symbol-related properties to their initial state.
+        """
+        # Reset parent class attributes
+        super().clear()
+
+        # Reset index attribute
+        self._idx = -1
+
 
 @dataclass
 class Validation(IdxValidation):
@@ -269,6 +290,18 @@ class Validation(IdxValidation):
             _msg = f"Name must be a non-empty string. Provided: {name}"
             raise ValueError(_msg)
         self.name = name.strip()
+
+    def clear(self) -> None:
+        """*clear()* Reset all attributes to default values.
+
+        Resets the entity's properties to their initial state.
+        """
+        # Reset parent class attributes
+        super().clear()
+
+        # Reset name and description attributes
+        self.name = ""
+        self.description = ""
 
     def __str__(self) -> str:
         """*__str__()* String representation showing all non-private attributes.

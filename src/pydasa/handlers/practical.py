@@ -375,7 +375,7 @@ class MonteCarloHandler(Validation, Generic[T]):
                 self._simulations[pi] = sim
 
             except Exception as e:
-                _msg = f"Failed to create simulation for '{pi}': {str(e)}"   
+                _msg = f"Failed to create simulation for '{pi}': {str(e)}"
                 raise RuntimeError(_msg) from e
 
     # ========================================================================

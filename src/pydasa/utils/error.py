@@ -60,17 +60,44 @@ def inspect_var(var: Any) -> str:
     Raises:
         ValueError: If the variable name cannot be found in the current scope.
     """
-    frame = inspect.currentframe().f_back
-    for name, value in frame.f_locals.items():
-        # Check if the variable matches by identity or value
-        if value is var:
-            return name
-    # If the variable is an object, try to find its name in the local scope
-    for name, value in frame.f_locals.items():
-        if id(value) == id(var):
-            return name
-    raise ValueError("Parameter name not found in current scope.")
+    # Get the current frame
+    frame = inspect.currentframe()
+    try:
+        # Check if frame exists
+        if frame is None:
+            return "<unknown>"
 
+        # Get the caller's frame
+        caller_frame = frame.f_back
+
+        # Check if caller_frame exists
+        if caller_frame is None:
+            return "<unknown>"
+
+        # Get local variables from caller's frame
+        caller_locals = caller_frame.f_locals
+
+        # Search for the variable in caller's locals
+        for name, value in caller_locals.items():
+            if value is var:
+                return name
+
+        # If not found in locals, check globals
+        caller_globals = caller_frame.f_globals
+        for name, value in caller_globals.items():
+            if value is var:
+                return name
+
+        return "<unknown>"
+
+    except Exception as e:
+        # If introspection fails for any reason, return unknown
+        _msg = f"Could not inspect variable: {var}"
+        _msg += f" due to error: {e}"
+        raise ValueError(_msg)
+    finally:
+        # Clean up frame references to avoid reference cycles
+        del frame
     # FIXME old code, keep until we know the new version works
     # frame = inspect.currentframe().f_back
     # for name, value in frame.f_locals.items():

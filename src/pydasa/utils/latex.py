@@ -8,11 +8,12 @@ Module for default global variables and comparison functions for use by all *PyD
 # python native modules
 # from dataclasses import dataclass
 # from typing import TypeVar
+from typing import Tuple, Dict
 import re
 
 # custom modules
 from sympy.parsing.latex import parse_latex
-from sympy import symbols
+from sympy import Symbol, symbols
 
 # import global variables
 from pydasa.utils.config import LATEX_RE
@@ -50,7 +51,7 @@ def latex_to_python(expr: str) -> str:
     return alias
 
 
-def extract_latex_vars(expr: str) -> tuple[dict]:
+def extract_latex_vars(expr: str) -> Tuple[Dict[str, str], Dict[str, str]]:
     """*extract_latex_vars()* Extract variable names in LaTeX format with their Python equivalents.
 
     Args:
@@ -85,7 +86,11 @@ def extract_latex_vars(expr: str) -> tuple[dict]:
     return latex_to_py, py_to_latex
 
 
-def create_latex_mapping(expr: str) -> tuple[dict]:
+def create_latex_mapping(expr: str) -> Tuple[Dict[Symbol, Symbol],  # symbol_map
+                                             Dict[str, Symbol],  # py_symbol_map
+                                             Dict[str, str],     # latex_to_py
+                                             Dict[str, str]      # py_to_latex
+                                             ]:
     """*create_latex_mapping()* Create a mapping between LaTeX symbols and Python symbols.
 
     Args:
@@ -102,13 +107,13 @@ def create_latex_mapping(expr: str) -> tuple[dict]:
     latex_to_py, py_to_latex = extract_latex_vars(expr)
 
     # Parse to get LaTeX symbols
-    expr = parse_latex(expr)
+    sym_expr = parse_latex(expr)
 
     # Create mapping for sympy substitution
     symbol_map = {}         # For internal substitution
     py_symbol_map = {}      # For lambdify
 
-    for latex_sym in expr.free_symbols:
+    for latex_sym in sym_expr.free_symbols:
         latex_name = str(latex_sym)
 
         # Find corresponding Python name

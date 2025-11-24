@@ -300,8 +300,9 @@ class MonteCarloSim(Validation, Generic[T]):
                                         np.nan,
                                         dtype=np.float64)
 
-        # Initialize simulation cached/intermediate values
+        # Only initialize cache if not already provided
         if not self._simul_cache:
+            # Create local cache only if no external cache provided
             for var in self._variables.keys():
                 self._simul_cache[var] = np.full((self._experiments, 1),
                                                  np.nan,
@@ -446,42 +447,56 @@ class MonteCarloSim(Validation, Generic[T]):
         Returns:
             float: The generated sample.
         """
-        sample: float = -1.0
+        # Initialize sample
+        data: float = -1.0
 
-        # If the variable is independent
-        if not var.depends or len(var.depends) == 0:
-            # sample = var._dist_func
-            # if sample is not None:
-            #     memory[var.sym] = sample()
-            if var._dist_func is not None:
-                sample = float(var._dist_func())
-                memory[var.sym] = sample
+        # relevant data type, HOTFIX
+        _type = (list, tuple, np.ndarray)
 
-        # If the variable has dependencies
-        elif len(var.depends) > 0:
-            # Gather dependencies values from memory
-            deps: List[float] = []
-            for d in var.depends:
-                # Only add the dependency if it is already in memory
-                if d in memory:
-                    dep_val = memory[d]
-                    # If the dependency is a list, tuple or ndarray, take the last value
-                    if isinstance(dep_val, (list, tuple, np.ndarray)):
-                        dep_val = dep_val[-1]
-                    deps.append(dep_val)
+        # Get dependency values from memory
+        chace_deps = []
+        for dep in var.depends:
+            if dep in memory:
+                dep_val = memory[dep]
+                # If dependency is a list/tuple/array, take the last value
+                if isinstance(dep_val, (list, tuple, np.ndarray)):
+                    dep_val = dep_val[-1]
+                chace_deps.append(dep_val)
 
-            # If all dependencies are available in memory
-            if len(deps) == len(var.depends):
-                # # sample = var._dist_func
-                # # memory[var.sym] = sample
-                # sample = var._dist_func
-                # if sample is not None:
-                #     memory[var.sym] = sample()
-                if var._dist_func is not None:
-                    sample = float(var._dist_func(*deps))
-                    memory[var.sym] = sample
+        # print(f"chace_deps: {chace_deps}")
 
-        return sample
+        # if the distribution function is defined
+        if var._dist_func is not None:
+            # If the variable is independent
+            if not var.depends:
+                data = var.sample()
+
+            # If the variable has dependencies
+            elif len(var.depends) == len(chace_deps):
+                raw_data = var.sample(*chace_deps)
+                # print(f"raw_data: {raw_data}")
+
+                # Handle array-like results
+                if isinstance(raw_data, _type):
+                    # get the last number
+                    data = raw_data[-1]
+
+                    # adjust the memory accordingly to the rest of the list
+                    for dep in var.depends:
+                        if dep in memory:
+                            memory[dep] = raw_data[var.depends.index(dep)]
+                # otherwise, its a number
+                else:
+                    data = raw_data
+
+        # print(f"dependencies keys {var.depends}")
+        # print(f"memory: {memory}")
+
+        # Store sample in memory
+        memory[var.sym] = float(data)
+
+        # return sampled data
+        return data
 
     def run(self, iters: Optional[int] = None) -> None:
         """*run()* Execute the Monte Carlo simulation.
@@ -573,11 +588,11 @@ class MonteCarloSim(Validation, Generic[T]):
         self.inputs = np.full((self._experiments, n_sym), np.nan)
         self._results = np.full((self._experiments, 1), np.nan)
 
-        # reset intermediate values
-        for var in self._variables.keys():
-            self._simul_cache[var] = np.full((self._experiments, 1),
-                                             np.nan,
-                                             dtype=np.float64)
+        # # reset intermediate values
+        # for var in self._variables.keys():
+        #     self._simul_cache[var] = np.full((self._experiments, 1),
+        #                                      np.nan,
+        #                                      dtype=np.float64)
 
     def _reset_statistics(self) -> None:
         """*_reset_statistics()* Reset all statistical attributes to default values."""
@@ -636,28 +651,46 @@ class MonteCarloSim(Validation, Generic[T]):
     # simulation cache management
     # ========================================================================
 
-    def _is_cache_valid(self, var_sym: str, idx: int) -> bool:
-        """*_is_cache_valid()* Check if cache has valid value for variable at the iteration.
+    def _validate_cache_locations(self,
+                                  var_syms: Union[str, List[str]],
+                                  idx: int) -> bool:
+        """*_validate_cache_locations()* Check if cache locations are valid for variable(s) at the iteration.
 
         Args:
-            var_sym (str): Variable symbol to check.
+            var_syms (Union[str, List[str]]): Variable symbol(s) to check.
             idx (int): Iteration index to check.
 
         Returns:
-            bool: True if cache has valid (non-NaN) value, False otherwise.
+            bool: True if all cache locations are valid (including NaN placeholders), False otherwise.
         """
-        # the assumption is that the cache data does not exists
+        # Convert single string to list for uniform handling
+        syms = [var_syms] if isinstance(var_syms, str) else var_syms
+
+        # Start with assumption that cache is invalid
         valid = False
 
-        # the cache data key doesnt exists
-        cache_array = self._simul_cache.get(var_sym, None)
-        if cache_array is not None:
-            # Check bounds
-            if idx < cache_array.shape[0] - 1:
-                valid = True
-            # Check if value is valid (not NaN)
-            elif np.isnan(cache_array[idx, 0]):
-                valid = True
+        # Check each symbol
+        for var_sym in syms:
+            # Reset validity check for each variable
+            var_valid = False
+
+            # Get cache array for the variable
+            cache_array = self._simul_cache.get(var_sym, None)
+
+            # Check if cache exists and location is valid
+            if cache_array is not None:
+                # Check if index is within bounds
+                if idx < cache_array.shape[0] and idx >= 0:
+                    # Location exists - valid regardless of whether value is NaN
+                    # (NaN is a valid placeholder for uncomputed values)
+                    var_valid = True
+
+            # If any variable is invalid, entire check fails
+            if not var_valid:
+                return False
+
+        # All variables passed validation
+        valid = True
         return valid
 
     def _get_cached_value(self, var_sym: str, idx: int) -> Optional[float]:
@@ -670,27 +703,68 @@ class MonteCarloSim(Validation, Generic[T]):
         Returns:
             Optional[float]: Cached value if valid, None otherwise.
         """
+        # Initialize return value
         cache_data = None
-        if self._is_cache_valid(var_sym, idx):
-            cache_data = float(self._simul_cache[var_sym][idx])
+
+        # Check if cache location is valid
+        if self._validate_cache_locations(var_sym, idx):
+            # Retrieve cached data
+            cache_data = self._simul_cache[var_sym][idx]
+            # if value is not NaN (valid location, but no data yet)
+            if not np.isnan(cache_data):
+                # cast to float the computed value
+                cache_data = float(cache_data)
+        # return valid cache location
         return cache_data
 
-    def _set_cached_value(self, var_sym: str, idx: int, value: float) -> None:
+    def _set_cached_value(self,
+                          var_sym: str,
+                          idx: int,
+                          val: Union[float, Dict]) -> None:
         """*_set_cached_value()* Store value in cache for variable at the iteration.
 
         Args:
             var_sym (str): Variable symbol.
             idx (int): Iteration index.
-            value (float): Value to cache.
+            val (Union[float, Dict]): Value to cache. It can be a normal number (float) or a memory cache correction (dict).
 
         Raises:
             ValueError: If cache location is invalid.
         """
-        # if cache location is invalid, raise error
-        if self._is_cache_valid(var_sym, idx) is False:
-            raise ValueError(f"Invalid cache location for: {var_sym}[{idx}]")
+        # Normalize input to dictionary format
+        cache_updates = val if isinstance(val, dict) else {var_sym: val}
 
-        self._simul_cache[var_sym][idx, 0] = value
+        # Validate all cache locations
+        if not self._validate_cache_locations(list(cache_updates.keys()), idx):
+            invalid_vars = list(cache_updates.keys())
+            _msg = f"Invalid cache location at index {idx}. "
+            _msg += f"For variables: {invalid_vars}"
+            raise ValueError(_msg)
+
+        # Store all values
+        for k, v in cache_updates.items():
+            self._simul_cache[k][idx, 0] = v
+
+        # # if value is a float, store directly
+        # if isinstance(val, float):
+
+        #     # if cache location is invalid, raise error
+        #     if self._validate_cache_locations(var_sym, idx) is False:
+        #         _msg = f"Invalid cache location for: {var_sym}[{idx}]"
+        #         raise ValueError(_msg)
+
+        #     self._simul_cache[var_sym][idx, 0] = val
+        # # if value is a dict, update multiple cache entries
+        # elif isinstance(val, Dict):
+        #     if any([not self._validate_cache_locations(k, idx) for k in val.keys()]):
+        #         _msg = f"Invalid cache location at index {idx}. "
+        #         invalid_vars = [
+        #             k for k in val.keys() if not self._validate_cache_locations(k, idx)
+        #         ]
+        #         _msg += f"Invalid Cache Variables: {invalid_vars}"
+        #         raise ValueError(_msg)
+        #     for k, v in val.items():
+        #         self._simul_cache[k][idx, 0] = v
 
     # ========================================================================
     # Results Extraction

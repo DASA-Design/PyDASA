@@ -18,17 +18,19 @@ Classes:
 
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Optional, List, Dict, Any, Generic, Callable, Tuple
-import numpy as np
-from sympy import lambdify
-from scipy import stats
+from typing import Optional, List, Dict, Any, Generic, Callable, Tuple, Union
 
-# import matplotlib.pyplot as plt
-# from sympy import lambdify
+# python third-party modules
+import numpy as np
+from numpy.typing import NDArray
+from sympy import lambdify
+# from sympy import Expr, Symbol
+from scipy import stats
+import sympy as sp
 
 # Import validation base classes
 from pydasa.core.basic import Validation
- 
+
 # Import related classes
 from pydasa.buckingham.vashchy import Coefficient
 from pydasa.core.parameter import Variable
@@ -39,7 +41,11 @@ from pydasa.utils.latex import parse_latex, create_latex_mapping
 
 # Import configuration
 from pydasa.utils.latex import latex_to_python
-# from pydasa.utils import config as cfg
+
+# # Type aliases
+# SymbolDict = Dict[str, sp.Symbol]
+# # FIX: Allow Basic or Expr since subs() returns Basic
+# SymExpr = Union[sp.Expr, sp.Basic]
 
 
 @dataclass
@@ -50,7 +56,7 @@ class MonteCarloSim(Validation, Generic[T]):
     variations.
 
     Attributes:
-        # Identification and Classification
+        # Core Identification
         name (str): User-friendly name of the Monte Carlo simulation.
         description (str): Brief summary of the simulation.
         _idx (int): Index/precedence of the simulation.
@@ -59,22 +65,27 @@ class MonteCarloSim(Validation, Generic[T]):
         _fwk (str): Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
         _cat (str): Category of analysis (SYM, NUM, HYB).
 
-        # Expression Management
+        # Coefficient and Expression Management
+        _coefficient (Optional[Coefficient]): Coefficient for the simulation.
         _pi_expr (str): LaTeX expression to analyze.
         _sym_func (Callable): Sympy function of the simulation.
         _exe_func (Callable): Executable function for numerical evaluation.
-        _variables (List[str]): Variable symbols in the expression.
+
+        # Variable Management
+        _variables (Dict[str, Variable]): Variable symbols in the expression.
+        _symbols (Dict[str, Any]): Python symbols for the variables.
+        _aliases (Dict[str, Any]): Variable aliases for use in code.
         _latex_to_py (Dict[str, str]): Mapping from LaTeX to Python variable names.
         _py_to_latex (Dict[str, str]): Mapping from Python to LaTeX variable names.
 
         # Simulation Configuration
-        _iterations (int): Number of simulation to run. Default is 1000.
-        _distributions (Dict[str, Any]): Variable sampling distributions and specifications (specific name, parameters, dependencie, and function).
+        _experiments (int): Number of simulation experiments to run. Default is 1000.
+        _distributions (Dict[str, Dict[str, Any]]): Variable sampling distributions.
+        _simul_cache (Dict[str, NDArray[np.float64]]): Working sampled values cache.
 
-        # Results
-        inputs (np.ndarray): variable simulated inputs.
-        _results (np.ndarray): Raw simulation results.
-        summary (Dict[str, float]): Statistical summary of the simulation results.
+        # Results and Inputs
+        inputs (Optional[np.ndarray]): Variable simulated inputs.
+        _results (Optional[np.ndarray]): Raw simulation results.
 
         # Statistics
         _mean (float): Mean value of simulation results.
@@ -84,114 +95,180 @@ class MonteCarloSim(Validation, Generic[T]):
         _min (float): Minimum value in simulation results.
         _max (float): Maximum value in simulation results.
         _count (int): Number of valid simulation results.
+        _statistics (Optional[Dict[str, float]]): Statistical summary.
     """
 
-    # Category attribute
+    # ========================================================================
+    # Core Identification
+    # ========================================================================
+
+    # :attr: name
+    name: str = ""
+    """User-friendly name of the Monte Carlo simulation."""
+
+    # :attr: description
+    description: str = ""
+    """Brief summary of the simulation."""
+
+    # :attr: _idx
+    _idx: int = -1
+    """Index/precedence of the simulation."""
+
+    # :attr: _sym
+    _sym: str = ""
+    """Symbol representation (LaTeX or alphanumeric)."""
+
+    # :attr: _alias
+    _alias: str = ""
+    """Python-compatible alias for use in code."""
+
+    # :attr: _fwk
+    _fwk: str = "PHYSICAL"
+    """Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM)."""
+
     # :attr: _cat
     _cat: str = "NUM"
-    """Category of sensitivity analysis (SYM, NUM)."""
+    """Category of analysis (SYM, NUM, HYB)."""
 
-    # Expression properties
+    # ========================================================================
+    # Coefficient and Expression Management
+    # ========================================================================
+
+    # :attr: _coefficient
+    _coefficient: Coefficient = field(default_factory=Coefficient)
+    """Coefficient for the simulation."""
+
     # :attr: _pi_expr
     _pi_expr: Optional[str] = None
     """LaTeX expression to analyze."""
 
     # :attr: _sym_func
-    _sym_func: Optional[Callable] = None
-    """Sympy function of the coefficient."""
+    _sym_func: Optional[Union[sp.Expr, sp.Basic]] = None
+    """Sympy expression object for the coefficient (Mul, Add, Pow, Symbol, etc.)."""
 
     # :attr: _exe_func
-    _exe_func: Optional[Callable] = None
-    """Executable function for numerical evaluation."""
+    _exe_func: Optional[Callable[..., Union[float, np.ndarray]]] = None
+    """Compiled executable function for evaluation of the coefficient."""
+
+    # ========================================================================
+    # Variable Management
+    # ========================================================================
 
     # :attr: _variables
-    _variables: Dict[str: Variable] = field(default_factory=dict)
-    """Variable symbols in the expression."""
+    _variables: Dict[str, Variable] = field(default_factory=dict)
+    """Dictionary of variables in the expression."""
 
     # :attr: _symbols
-    _symbols: Dict[str: Any] = field(default_factory=dict)
-    """Python symbols for the variables."""
+    _symbols: Dict[str, sp.Symbol] = field(default_factory=dict)
+    """Map from variable names (strings) to sympy Symbols."""
 
     # :attr: _aliases
-    _aliases: Dict[str: Any] = field(default_factory=dict)
-    """Variable aliases for use in code."""
+    _aliases: Dict[str, sp.Symbol] = field(default_factory=dict)
+    """Map from Variable aliases to sympy Symbols."""
 
     # :attr: _latex_to_py
     _latex_to_py: Dict[str, str] = field(default_factory=dict)
-    """Mapping from LaTeX symbols to Python-compatible names."""
+    """Map from LaTeX symbols to Python-compatible names."""
 
     # :attr: _py_to_latex
     _py_to_latex: Dict[str, str] = field(default_factory=dict)
-    """Mapping from Python-compatible names to LaTeX symbols."""
+    """Map from Python-compatible names to LaTeX symbols."""
 
-    # :attr: _coefficient
-    _coefficient: Optional[Coefficient] = None
-    """Coefficient for the simulation."""
+    # :attr: _var_symbols
+    _var_symbols: List[str] = field(default_factory=list)
+    """List of variable names extracted from expression."""
+    # ========================================================================
+    # Simulation Configuration
+    # ========================================================================
 
-    # Simulation configuration
-    # :attr: _iterations
-    _iterations: int = 1000
-    """Number of simulation to run."""
+    # :attr: _experiments
+    _experiments: int = 1000
+    """Number of simulation iterations to run."""
 
     # :attr: _distributions
     _distributions: Dict[str, Dict[str, Any]] = field(default_factory=dict)
     """Variable sampling distributions and specifications that includes:
-        - 'dtype': Name of the variable.
+        - 'dtype': Distribution type name.
         - 'params': Distribution parameters (mean, std_dev, etc.).
-        - 'func':  Function for sampling, ussually in Lambda format.
+        - 'func': Function for sampling, usually in Lambda format.
         - 'depends': List of variables this variable depends on.
     """
 
-    # :attr: _iter_values
-    _iter_values: Dict[str, List[float]] = field(default_factory=dict)
-    """Working sampled values during each simulation iteration."""
+    # :attr: _dependencies
+    _dependencies: Dict[str, List[str]] = field(default_factory=dict, init=False)
+    """Variable dependencies for simulations."""
 
-    # Results
+    # :attr: _simul_cache
+    _simul_cache: Dict[str, NDArray[np.float64]] = field(default_factory=dict)
+    """Working sampled values during each simulation iteration. Memory cache."""
+
+    # ========================================================================
+    # Results and Inputs
+    # ========================================================================
+
     # :attr: inputs
-    inputs: Optional[np.ndarray] = None
+    inputs: NDArray[np.float64] = field(
+        default_factory=lambda: np.array([], dtype=np.float64))
     """Sample value range for the simulation."""
 
     # :attr: _results
-    _results: Optional[np.ndarray] = None
+    _results: NDArray[np.float64] = field(
+        default_factory=lambda: np.array([], dtype=np.float64))
     """Raw simulation results."""
 
-    # Individual statistics attributes
+    # ========================================================================
+    # Statistics
+    # ========================================================================
+
     # :attr: _mean
-    _mean: float = -1.0
+    _mean: float = np.nan
     """Mean value of simulation results."""
 
     # :attr: _median
-    _median: float = -1.0
+    _median: float = np.nan
     """Median value of simulation results."""
 
     # :attr: _std_dev
-    _std_dev: float = -1.0
+    _std_dev: float = np.nan
     """Standard deviation of simulation results."""
 
     # :attr: _variance
-    _variance: float = -1.0
+    _variance: float = np.nan
     """Variance of simulation results."""
 
     # :attr: _min
-    _min: float = -1.0
+    _min: float = np.nan
     """Minimum value in simulation results."""
 
     # :attr: _max
-    _max: float = -1.0
+    _max: float = np.nan
     """Maximum value in simulation results."""
 
     # :attr: _count
-    _count: int = -1
+    _count: int = 0
     """Number of valid simulation results."""
 
     # :attr: _statistics
     _statistics: Optional[Dict[str, float]] = None
     """Statistical summary of the Monte Carlo simulation results."""
 
+    # ========================================================================
+    # Initialization
+    # ========================================================================
+
     def __post_init__(self) -> None:
         """*__post_init__()* Initializes the Monte Carlo simulation."""
         # Initialize from base class
         super().__post_init__()
+
+        # Validate coefficient
+        print("pcoeffffff!!!!! ===\n", self._coefficient)
+        print("pucha!!!!! ===\n", self._coefficient.pi_expr)
+        if not self._coefficient.pi_expr:
+            raise ValueError("Coefficient must have a valid expression")
+
+        # Derive expression from coefficient
+        self._pi_expr = self._coefficient.pi_expr
 
         # Set default symbol if not specified
         if not self._sym:
@@ -204,6 +281,7 @@ class MonteCarloSim(Validation, Generic[T]):
         # Set name and description if not already set
         if not self.name:
             self.name = f"{self._sym} Monte Carlo"
+
         if not self.description:
             self.description = f"Monte Carlo simulation for {self._sym}"
 
@@ -211,18 +289,43 @@ class MonteCarloSim(Validation, Generic[T]):
             # Parse the expression
             self._parse_expression(self._pi_expr)
 
-        # Initialize intermediate values
-        # TODO check if this works as intended
-        self._iter_values = {var: [] for var in self._variables.keys()}
+        # Preallocate full array space with NaN
+        n_sym = len(self._symbols)
+        if n_sym > 0:
+            # Only allocate if we have variables
+            if self.inputs.size == 0:  # Check size, not None
+                self.inputs = np.full((self._experiments, n_sym),
+                                      np.nan,
+                                      dtype=np.float64)
+            if self._results.size == 0:  # Check size, not None
+                self._results = np.full((self._experiments, 1),
+                                        np.nan,
+                                        dtype=np.float64)
 
-        # TODO post init exectution to allocate memory is not working, fix it!
-        # Preallocate full array space
-        n_vars = len(self._variables)
-        self.inputs = np.zeros((self._iterations, n_vars))
-        self._results = np.zeros((self._iterations, 1))
+        # Initialize simulation cached/intermediate values
+        if not self._simul_cache:
+            for var in self._variables.keys():
+                self._simul_cache[var] = np.full((self._experiments, 1),
+                                                 np.nan,
+                                                 dtype=np.float64)
+
+        # Statistics initialized to NaN (not calculated yet)
+        self._mean = np.nan
+        self._median = np.nan
+        self._std_dev = np.nan
+        self._variance = np.nan
+        self._min = np.nan
+        self._max = np.nan
+
+        # Zero makes sense here
+        self._count = 0
+
+    # ========================================================================
+    # Validation and Configuration
+    # ========================================================================
 
     def _validate_readiness(self) -> None:
-        """*_validate_readiness() * Checks if the simulation can be performed.
+        """*_validate_readiness()* Checks if the simulation can be performed.
 
         Raises:
             ValueError: If the simulation is not ready due to missing variables, executable function, distributions, or invalid number of iterations.
@@ -231,16 +334,14 @@ class MonteCarloSim(Validation, Generic[T]):
             raise ValueError("No variables found in the expression.")
         if not self._sym_func:
             raise ValueError("No expression has been defined for analysis.")
-        # if not self._exe_func:
-        #     raise ValueError("No executable function defined for simulation.")
         if not self._distributions:
             _vars = self._variables
             missing = [v for v in _vars if v not in self._distributions]
             if missing:
                 _msg = f"Missing distributions for variables: {missing}"
                 raise ValueError(_msg)
-        if self._iterations < -1:
-            _msg = f"Invalid number of iterations: {self._iterations}"
+        if self._experiments < 1:
+            _msg = f"Invalid number of iterations: {self._experiments}"
             raise ValueError(_msg)
 
     def set_coefficient(self, coef: Coefficient) -> None:
@@ -255,18 +356,19 @@ class MonteCarloSim(Validation, Generic[T]):
         if not coef.pi_expr:
             raise ValueError("Coefficient does not have a valid expression.")
 
-        # save coefficient
+        # Save coefficient
         self._coefficient = coef
 
         # Set expression
         self._pi_expr = coef.pi_expr
-        # parse coefficient expresion
+
+        # Parse coefficient expression
         if coef._pi_expr:
             self._parse_expression(self._pi_expr)
 
         # Set name and description if not already set
         if not self.name:
-            self.name = f"{coef.name} Monte Carlo"
+            self.name = f"{coef.name} Monte Carlo Experiments"
         if not self.description:
             self.description = f"Monte Carlo simulation for {coef.name}"
 
@@ -283,56 +385,56 @@ class MonteCarloSim(Validation, Generic[T]):
             # Parse the expression
             self._sym_func = parse_latex(expr)
 
+            if self._sym_func is None:
+                raise ValueError("Parsing returned None")
+
+            # Store the sympy expression
+            self._sym_func = self._sym_func
+
             # Create symbol mapping
             maps = create_latex_mapping(expr)
-            self._symbols = maps[0]
-            self._aliases = maps[1]
-            self._latex_to_py = maps[2]
-            self._py_to_latex = maps[3]
+
+            symbols_raw: Dict[Any, sp.Symbol] = maps[0]
+            aliases_raw: Dict[str, sp.Symbol] = maps[1]
+            latex_to_py: Dict[str, str] = maps[2]
+            py_to_latex: Dict[str, str] = maps[3]
+
+            # Convert Symbol keys to strings
+            self._symbols = {
+                str(k): v for k, v in symbols_raw.items()
+            }
+            self._aliases = aliases_raw
+            self._latex_to_py = latex_to_py
+            self._py_to_latex = py_to_latex
 
             # Substitute LaTeX symbols with Python symbols
-            for latex_sym, py_sym in self._symbols.items():
-                self._sym_func = self._sym_func.subs(latex_sym, py_sym)
+            for latex_sym_key, py_sym in symbols_raw.items():
+                if self._sym_func is None:
+                    break
 
-            # Get Python variable names
-            self._var_symbols = [str(s) for s in self._sym_func.free_symbols]
-            self._var_symbols = sorted(self._var_symbols)
+                # Handle both string and Symbol keys
+                if isinstance(latex_sym_key, sp.Symbol):
+                    # subs() returns Basic, which is fine
+                    self._sym_func = self._sym_func.subs(latex_sym_key, py_sym)
+                else:
+                    # Try to find the symbol by name
+                    latex_symbol = sp.Symbol(str(latex_sym_key))
+                    self._sym_func = self._sym_func.subs(latex_symbol, py_sym)
+
+            # Get Python variable names as strings
+            if self._sym_func is not None and hasattr(self._sym_func, 'free_symbols'):
+                free_symbols = self._sym_func.free_symbols
+                self._var_symbols = sorted([str(s) for s in free_symbols])
+            else:
+                raise ValueError("Expression has no free symbols")
 
         except Exception as e:
             _msg = f"Failed to parse expression: {str(e)}"
             raise ValueError(_msg)
 
-    def set_distribution(self,
-                         var: str,
-                         dist: Callable,
-                         specs: Dict = None) -> None:
-        # TODO old code, probably dont need it, delete later!
-        """*set_distribution()* Set the sampling distribution for a variable in the coefficient.
-        Args:
-            var (str): Variable name to set the distribution.
-            dist (Callable): Callable function that samples from the distribution.
-
-        Raises:
-            ValueError: If the variable is not found in the expression or if the distribution is not callable.
-            ValueError: If specs are provided but not a dictionary.
-        """
-
-        if var not in self._symbols:
-            _msg = f"Variable '{var}' not found in expression. "
-            _msg += f"Available variables: {[self._py_to_latex.get(v, v) for v in self._symbols]}"
-            raise ValueError(_msg)
-
-        if not callable(dist):
-            _msg = f"Distribution must be callable. Got: {type(dist)}"
-            raise ValueError(_msg)
-
-        self._distributions[var] = dist
-
-        if specs:
-            if not isinstance(specs, dict):
-                _msg = f"Specs must be a dictionary. Got: {type(specs)}"
-                raise ValueError(_msg)
-            self.specs[var] = specs
+    # ========================================================================
+    # Simulation Execution
+    # ========================================================================
 
     def _generate_sample(self,
                          var: Variable,
@@ -340,161 +442,185 @@ class MonteCarloSim(Validation, Generic[T]):
         """*_generate_sample()* Generate a sample for a given variable.
 
         Args:
-            var (str): The variable to generate a sample for.
+            var (Variable): The variable to generate a sample for.
             memory (Dict[str, float]): The current iteration values.
 
         Returns:
             float: The generated sample.
         """
-        sample = None
-        # if the variable is independent
-        if len(var.depends) == 0:
-            sample = var._dist_func()
-            memory[var.sym] = sample
-        # else if the variable is dependent
+        sample: float = -1.0
+
+        # If the variable is independent
+        if not var.depends or len(var.depends) == 0:
+            # sample = var._dist_func
+            # if sample is not None:
+            #     memory[var.sym] = sample()
+            if var._dist_func is not None:
+                sample = float(var._dist_func())
+                memory[var.sym] = sample
+
+        # If the variable has dependencies
         elif len(var.depends) > 0:
-            # gather dependencies values from memory
-            deps = []
+            # Gather dependencies values from memory
+            deps: List[float] = []
             for d in var.depends:
-                # only add the dependency if it is already in memory
+                # Only add the dependency if it is already in memory
                 if d in memory:
                     dep_val = memory[d]
-                    # if the dependency is a list, tuple or ndarray, take the last value
-                    # TODO hotfix improve later
+                    # If the dependency is a list, tuple or ndarray, take the last value
                     if isinstance(dep_val, (list, tuple, np.ndarray)):
                         dep_val = dep_val[-1]
                     deps.append(dep_val)
 
-            # TODO OLD code list comprehension, delete later!
-            # deps = [memory[d] for d in var.depends if d in memory]
-            # if all dependencies are available in memory
-            if None not in deps:
-                sample = var._dist_func(*deps)
-                memory[var.sym] = sample
-        # return the generated sample
+            # If all dependencies are available in memory
+            if len(deps) == len(var.depends):
+                # # sample = var._dist_func
+                # # memory[var.sym] = sample
+                # sample = var._dist_func
+                # if sample is not None:
+                #     memory[var.sym] = sample()
+                if var._dist_func is not None:
+                    sample = float(var._dist_func(*deps))
+                    memory[var.sym] = sample
+
         return sample
 
-    def run(self, iters: int = None) -> None:
+    def run(self, iters: Optional[int] = None) -> None:
+        """*run()* Execute the Monte Carlo simulation.
+
+        Args:
+            iters (int, optional): Number of iterations to run. If None, uses _experiments.
+
+        Raises:
+            ValueError: If simulation is not ready or encounters errors during execution.
+        """
         # Validate simulation readiness
         self._validate_readiness()
 
-        # Set iterations if necesary
+        # Set iterations if necessary
         if iters is not None:
-            self._iterations = iters
+            self._experiments = iters
 
-        # Clear previous results, inputs, and intermediate values.
+        # Clear previous results, inputs, and intermediate values
         self._reset_memory()
 
-        # Preallocate full array space
-        self.inputs = np.zeros((self._iterations, len(self._var_symbols)))
-        self._results = np.zeros((self._iterations, 1))  # 2D array for results
+        # Create lambdify function using Python symbols
+        aliases = [self._aliases[v] for v in self._var_symbols]
+        self._exe_func = lambdify(aliases, self._sym_func, "numpy")
 
-        # Run simulation
-        i = 0
-        while i < self._iterations:
+        if self._exe_func is None:
+            raise ValueError("Failed to create executable function")
+
+        # Run experiment loop
+        for _iter in range(self._experiments):
             try:
-                # dict to store sample memory for this iteration
-                memory = {}
-                # TODO calculate independent and dependenant values
-                for var in self._variables.values():
-                    # generate sample for the variable
-                    val = self._generate_sample(var, memory)
-                    # store the sample in the iteration values
-                    memory[var.sym] = val
-                    # store the sample in the intermediate values
-                    self._iter_values[var.sym].append(val)
-                    # print(f"Iteration {i}, variable '{var.sym}': {val}")
-                    # print(f"Memory state: {memory}")
-                    # print(f"Intermediate values: {self._iter_values}")
+                # Dict to store sample memory for the iteration
+                memory: Dict[str, float] = {}
 
-                # OLD CODE beware!!!!!
+                # run through all variables
+                for var in self._variables.values():
+                    # Check for cached value
+                    cached_val = self._get_cached_value(var.sym, _iter)
+
+                    # if no cached value, generate new sample
+                    if cached_val is None or np.isnan(cached_val):
+                        # Generate sample for the variable
+                        val = self._generate_sample(var, memory)
+                        # Store the sample in the iteration values
+                        memory[var.sym] = val
+                        self._set_cached_value(var.sym, _iter, val)
+
+                    # otherwise use cached value
+                    else:
+                        # Use cached value
+                        memory[var.sym] = cached_val
+
                 # Prepare sorted/ordered values from memory for evaluation
                 sorted_vals = [memory[var] for var in self._latex_to_py]
 
+                # FIXME hotfix for queue functions
                 _type = (list, tuple, np.ndarray)
-                # TODO hotfix for dealing with adjusted vals, imprtove later
+                # Handle adjusted values
                 if any(isinstance(v, _type) for v in sorted_vals):
-                    sorted_vals = [v[-1] if isinstance(v, _type) else v for v in sorted_vals]
-
-                # Create lambdify function using Python symbols
-                aliases = [self._aliases[v] for v in self._var_symbols]
-                self._exe_func = lambdify(aliases, self._sym_func, "numpy")
+                    sorted_vals = [
+                        v[-1] if isinstance(v, _type) else v for v in sorted_vals]
 
                 # Evaluate the coefficient
                 result = float(self._exe_func(*sorted_vals))
 
-                # TODO hotfix for dealing with adjusted vals, imprtove later
+                # Handle array results
                 if isinstance(result, _type):
-                    print("Warning: Result needs to be a scalar value.")
-                    print(result)
-                    result = result[-1]  # Take the first element
+                    result = result[-1]
                     sorted_vals = [v[-1] for v in result]
 
-                # save simulation inputs and results
-                self.inputs[i, :] = sorted_vals
-                self._results[i] = result
+                # Save simulation inputs and results
+                self.inputs[_iter, :] = sorted_vals
+                self._results[_iter] = result
 
             except Exception as e:
-                # Handle numerical errors (e.g., division by zero)
-                _msg = f"Error during simulation run {i}: {str(e)}"
-                # TODO add logger later
+                _msg = f"Error during simulation run {_iter}: {str(e)}"
                 raise ValueError(_msg)
-                # continue
-            i += 1
 
         # Calculate statistics
-        if len(self._results) == self._iterations:
-            self._calculate_statistics()
-        else:
-            raise ValueError("Invalid results, check your distributions!")
+        self._calculate_statistics()
+
+    # ========================================================================
+    # Memory and Statistics Management
+    # ========================================================================
 
     def _reset_memory(self) -> None:
         """*_reset_memory()* Reset results and inputs arrays."""
-        self.inputs = np.zeros((0,))
-        self._results = np.zeros((0,))
-        self._reset_statistics()
+        # reseting full array space with NaN
+        n_sym = len(self._symbols)
+        self.inputs = np.full((self._experiments, n_sym), np.nan)
+        self._results = np.full((self._experiments, 1), np.nan)
+
+        # reset intermediate values
         for var in self._variables.keys():
-            self._iter_values[var].clear()
-        # alternative way to reset intermediate values
-        # self._iter_values = {var: [] for var in self._variables.keys()}
+            self._simul_cache[var] = np.full((self._experiments, 1),
+                                             np.nan,
+                                             dtype=np.float64)
 
     def _reset_statistics(self) -> None:
         """*_reset_statistics()* Reset all statistical attributes to default values."""
-        self._mean = -1.0
-        self._median = -1.0
-        self._std_dev = -1.0
-        self._variance = -1.0
-        self._min = -1.0
-        self._max = -1.0
+        # reset statistics to NaN or zero
+        self._mean = np.nan
+        self._median = np.nan
+        self._std_dev = np.nan
+        self._variance = np.nan
+        self._min = np.nan
+        self._max = np.nan
         self._count = 0
 
     def _calculate_statistics(self) -> None:
         """*_calculate_statistics()* Calculate statistical properties of simulation results."""
-        # results = np.array(self._results)
+        # Check for empty array (size == 0), not None
+        if self._results.size == 0:
+            raise ValueError("No results available. Run simulation first.")
 
-        # Calculate and store each statistic separately
-        self._mean = float(np.mean(self._results))
-        self._median = float(np.median(self._results))
-        self._std_dev = float(np.std(self._results))
-        self._variance = float(np.var(self._results))
-        self._min = float(np.min(self._results))
-        self._max = float(np.max(self._results))
-        self._count = len(self._results)
+        else:
+            self._mean = float(np.mean(self._results))
+            self._median = float(np.median(self._results))
+            self._std_dev = float(np.std(self._results))
+            self._variance = float(np.var(self._results))
+            self._min = float(np.min(self._results))
+            self._max = float(np.max(self._results))
+            self._count = len(self._results)
 
     def get_confidence_interval(self,
                                 conf: float = 0.95) -> Tuple[float, float]:
-        """*get_confidence_interval()* Calculate the confidence interval for the simulation results.
+        """*get_confidence_interval()* Calculate the confidence interval.
 
         Args:
             conf (float, optional): Confidence level for the interval. Defaults to 0.95.
 
         Raises:
-            ValueError: If no results are available or if the confidence level is not between 0 and 1.
+            ValueError: If no results are available or if the confidence level is invalid.
 
         Returns:
             Tuple[float, float]: Lower and upper bounds of the confidence interval.
         """
-        if self._results is None:
+        if self._results.size == 0:
             _msg = "No results available. Run the simulation first."
             raise ValueError(_msg)
 
@@ -508,13 +634,77 @@ class MonteCarloSim(Validation, Generic[T]):
         ans = (self._mean - margin, self._mean + margin)
         return ans
 
-    def extract_results(self) -> Dict[str, Any]:
+    # ========================================================================
+    # simulation cache management
+    # ========================================================================
+
+    def _is_cache_valid(self, var_sym: str, idx: int) -> bool:
+        """*_is_cache_valid()* Check if cache has valid value for variable at the iteration.
+
+        Args:
+            var_sym (str): Variable symbol to check.
+            idx (int): Iteration index to check.
+
+        Returns:
+            bool: True if cache has valid (non-NaN) value, False otherwise.
+        """
+        # the assumption is that the cache data does not exists
+        valid = False
+
+        # the cache data key doesnt exists
+        cache_array = self._simul_cache.get(var_sym, None)
+        if cache_array is not None:
+            # Check bounds
+            if idx < cache_array.shape[0] - 1:
+                valid = True
+            # Check if value is valid (not NaN)
+            elif np.isnan(cache_array[idx, 0]):
+                valid = True
+        return valid
+
+    def _get_cached_value(self, var_sym: str, idx: int) -> Optional[float]:
+        """*_get_cached_value()* Retrieve cached value for variable at the iteration.
+
+        Args:
+            var_sym (str): Variable symbol.
+            idx (int): Iteration index.
+
+        Returns:
+            Optional[float]: Cached value if valid, None otherwise.
+        """
+        cache_data = None
+        if self._is_cache_valid(var_sym, idx):
+            cache_data = float(self._simul_cache[var_sym][idx])
+        return cache_data
+
+    def _set_cached_value(self, var_sym: str, idx: int, value: float) -> None:
+        """*_set_cached_value()* Store value in cache for variable at the iteration.
+
+        Args:
+            var_sym (str): Variable symbol.
+            idx (int): Iteration index.
+            value (float): Value to cache.
+
+        Raises:
+            ValueError: If cache location is invalid.
+        """
+        # if cache location is invalid, raise error
+        if self._is_cache_valid(var_sym, idx) is False:
+            raise ValueError(f"Invalid cache location for: {var_sym}[{idx}]")
+
+        self._simul_cache[var_sym][idx, 0] = value
+
+    # ========================================================================
+    # Results Extraction
+    # ========================================================================
+
+    def extract_results(self) -> Dict[str, NDArray[np.float64]]:
         """*extract_results()* Extract simulation results.
 
         Returns:
-            Dict[str, Any]: Dictionary containing simulation results.
+            Dict[str, NDArray[np.float64]]: Dictionary containing simulation results.
         """
-        export = {}
+        export: Dict[str, NDArray[np.float64]] = {}
 
         # Extract all values for each variable (column)
         for i, var in enumerate(self._py_to_latex.values()):
@@ -523,21 +713,22 @@ class MonteCarloSim(Validation, Generic[T]):
 
             # Use a meaningful key that includes variable name and coefficient
             key = f"{var}@{self._coefficient.sym}"
-            # key = f"{var}"
             export[key] = column
 
         # Add the coefficient results
         export[self._coefficient.sym] = self._results.flatten()
         return export
 
-    # Properties for accessing results and statistics
+    # ========================================================================
+    # Properties
+    # ========================================================================
 
     @property
     def variables(self) -> Dict[str, Variable]:
         """*variables* Get the variables involved in the simulation.
 
         Returns:
-            Dict[str, Variable]: Dictionary of variable symbols and their corresponding Variable objects.
+            Dict[str, Variable]: Dictionary of variable symbols and Variable objects.
         """
         return self._variables.copy()
 
@@ -546,41 +737,35 @@ class MonteCarloSim(Validation, Generic[T]):
         """*coefficient* Get the coefficient associated with the simulation.
 
         Returns:
-            Optional[Coefficient]: The associated Coefficient object, or None if not set.
+            Optional[Coefficient]: The associated Coefficient object, or None.
         """
         return self._coefficient
 
     @property
-    def results(self) -> List[float]:
+    def results(self) -> NDArray[np.float64]:
         """*results* Raw simulation results.
 
         Returns:
-            List[float]: Copy of the simulation results.
+            NDArray[np.float64]: Copy of the simulation results.
 
         Raises:
             ValueError: If no results are available.
         """
-        if self._results is None:
+        if self._results.size == 0:
             raise ValueError("No results available. Run the simulation first.")
         return self._results.copy()
 
     @property
     def statistics(self) -> Dict[str, float]:
         """*statistics* Get the statistical analysis of simulation results.
+
         Raises:
             ValueError: If no results are available.
 
         Returns:
-            Dict[str, float]: Dictionary containing statistical properties:
-                - "mean"": Mean value of results
-                - "median": Median value of results
-                - "std_dev": Standard deviation of results
-                - "variance": Variance of results
-                - "min": Minimum value in results
-                - "max": Maximum value in results
-                - "count": Number of valid results
+            Dict[str, float]: Dictionary containing statistical properties.
         """
-        if self._results is None:
+        if self._results.size == 0:
             _msg = "No statistics available. Run the simulation first."
             raise ValueError(_msg)
 
@@ -597,44 +782,44 @@ class MonteCarloSim(Validation, Generic[T]):
         return self._statistics
 
     @property
-    def iterations(self) -> int:
-        """*iterations* Number of simulation iterations.
+    def experiments(self) -> int:
+        """*experiments* Number of simulation experiments.
 
         Returns:
-            int: Current number of iterations.
+            int: Current number of experiments.
         """
-        return self._iterations
+        return self._experiments
 
-    @iterations.setter
-    def iterations(self, val: int) -> None:
-        """*iterations* Set the number of simulation runs.
+    @experiments.setter
+    def experiments(self, val: int) -> None:
+        """*experiments* Set the number of simulation runs.
 
         Args:
-            val (int): Number of iterations to run the simulation.
+            val (int): Number of experiments to run the simulation.
 
         Raises:
-            ValueError: If the number of iterations is not positive.
+            ValueError: If the number of experiments is not positive.
         """
-        if val < 0:
-            _msg = f"Number of iterations must be positive. Got: {val}"
+        if val < 1:
+            _msg = f"Number of experiments must be positive. Got: {val}"
             raise ValueError(_msg)
-        self._iterations = val
+        self._experiments = val
 
     @property
-    def distributions(self) -> Dict[str, Any]:
+    def distributions(self) -> Dict[str, Dict[str, Any]]:
         """*distributions* Get the variable distributions.
 
         Returns:
-            Dict[str, Any]: Current variable distributions.
+            Dict[str, Dict[str, Any]]: Current variable distributions.
         """
         return self._distributions.copy()
 
     @distributions.setter
-    def distributions(self, val: Dict[str, Any]) -> None:
+    def distributions(self, val: Dict[str, Dict[str, Any]]) -> None:
         """*distributions* Set the variable distributions.
 
         Args:
-            val (Dict[str, Any]): New variable distributions.
+            val (Dict[str, Dict[str, Any]]): New variable distributions.
 
         Raises:
             ValueError: If the distributions are invalid.
@@ -646,7 +831,28 @@ class MonteCarloSim(Validation, Generic[T]):
             raise ValueError(_msg)
         self._distributions = val
 
-    # Additional properties for statistics
+    @property
+    def dependencies(self) -> Dict[str, List[str]]:
+        """*dependencies* Get variable dependencies.
+
+        Returns:
+            Dict[str, List[str]]: Dictionary of variable dependencies.
+        """
+        return self._dependencies
+
+    @dependencies.setter
+    def dependencies(self, val: Dict[str, List[str]]) -> None:
+        """*dependencies* Set variable dependencies.
+
+        Args:
+            val (Dict[str, List[str]]): New variable dependencies.
+        """
+        if not isinstance(val, dict):
+            _msg = f"Dependencies must be dict, got {type(val)}"
+            raise TypeError(_msg)
+        self._dependencies = val
+
+    # Individual statistics properties
 
     @property
     def mean(self) -> float:
@@ -658,7 +864,7 @@ class MonteCarloSim(Validation, Generic[T]):
         Raises:
             ValueError: If no results are available.
         """
-        if self._results is None:
+        if self._results.size == 0:
             _msg = "No statistics available. Run the simulation first."
             raise ValueError(_msg)
         return self._mean
@@ -673,7 +879,7 @@ class MonteCarloSim(Validation, Generic[T]):
         Raises:
             ValueError: If no results are available.
         """
-        if self._results is None:
+        if self._results.size == 0:
             _msg = "No statistics available. Run the simulation first."
             raise ValueError(_msg)
         return self._median
@@ -688,7 +894,7 @@ class MonteCarloSim(Validation, Generic[T]):
         Raises:
             ValueError: If no results are available.
         """
-        if self._results is None:
+        if self._results.size == 0:
             _msg = "No statistics available. Run the simulation first."
             raise ValueError(_msg)
         return self._std_dev
@@ -703,7 +909,7 @@ class MonteCarloSim(Validation, Generic[T]):
         Raises:
             ValueError: If no results are available.
         """
-        if self._results is None:
+        if self._results.size == 0:
             _msg = "No statistics available. Run the simulation first."
             raise ValueError(_msg)
         return self._variance
@@ -718,7 +924,7 @@ class MonteCarloSim(Validation, Generic[T]):
         Raises:
             ValueError: If no results are available.
         """
-        if self._results is None:
+        if self._results.size == 0:
             _msg = "No statistics available. Run the simulation first."
             raise ValueError(_msg)
         return self._min
@@ -733,7 +939,7 @@ class MonteCarloSim(Validation, Generic[T]):
         Raises:
             ValueError: If no results are available.
         """
-        if self._results is None:
+        if self._results.size == 0:
             _msg = "No statistics available. Run the simulation first."
             raise ValueError(_msg)
         return self._max
@@ -748,38 +954,27 @@ class MonteCarloSim(Validation, Generic[T]):
         Raises:
             ValueError: If no results are available.
         """
-        if self._results is None:
+        if self._results.size == 0:
             _msg = "No statistics available. Run the simulation first."
             raise ValueError(_msg)
         return self._count
 
     @property
     def summary(self) -> Dict[str, float]:
-        """*summary()* Get the statistical analysis of simulation results.
+        """*summary* Get the statistical analysis of simulation results.
 
         Raises:
             ValueError: If no results are available.
 
         Returns:
-            Dict[str, float]: Dictionary containing statistical properties:
-                - "inputs" array with the simulation inputs.
-                - "results" array with the simulation results.
-                - "mean": Mean value of results.
-                - "median": Median value of results.
-                - "std_dev": Standard deviation of results.
-                - "variance": Variance of results.
-                - "min": Minimum value in results.
-                - "max": Maximum value in results.
-                - "count": Number of valid results.
+            Dict[str, float]: Dictionary containing statistical properties.
         """
-        if self._results is None:
+        if self._results.size == 0:
             _msg = "No statistics available. Run the simulation first."
             raise ValueError(_msg)
 
         # Build summary dictionary from individual attributes
         self._summary = {
-            # "inputs": self.inputs,
-            # "results": self._results,
             "mean": self._mean,
             "median": self._median,
             "std_dev": self._std_dev,
@@ -789,6 +984,10 @@ class MonteCarloSim(Validation, Generic[T]):
             "count": self._count
         }
         return self._summary
+
+    # ========================================================================
+    # Utility Methods
+    # ========================================================================
 
     def clear(self) -> None:
         """*clear()* Reset all attributes to default values."""
@@ -807,13 +1006,18 @@ class MonteCarloSim(Validation, Generic[T]):
         self._variables = {}
         self._latex_to_py = {}
         self._py_to_latex = {}
-        self._iterations = 1000
+        self._experiments = 1000
         self._distributions = {}
-        self.inputs = np.zeros((0,))
-        self._results = np.zeros((0,))
+
+        # reset results, inputs and intermediate values
+        self._reset_memory()
 
         # Reset statistics
         self._reset_statistics()
+
+    # ========================================================================
+    # Serialization
+    # ========================================================================
 
     def to_dict(self) -> Dict[str, Any]:
         """*to_dict()* Convert simulation to dictionary representation."""
@@ -827,11 +1031,8 @@ class MonteCarloSim(Validation, Generic[T]):
             "description": self.description,
             # Simulation attributes
             "pi_expr": self._pi_expr,
-            # "sym_func": str(self._sym_func) if self._sym_func else None,
-            # "exe_func": str(self._exe_func) if self._exe_func else None,
             "variables": self._variables,
-            "iterations": self._iterations,
-            # "distributions": {k: str(v) for k, v in self._distributions.items()},
+            "iterations": self._experiments,
             # Results
             "mean": self._mean,
             "median": self._median,
@@ -840,34 +1041,52 @@ class MonteCarloSim(Validation, Generic[T]):
             "min": self._min,
             "max": self._max,
             "count": self._count,
-            "inputs": self.inputs,
-            "results": self._results
+            "inputs": self.inputs.tolist() if self.inputs.size > 0 else None,
+            "results": self._results.tolist() if self._results.size > 0 else None,
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> MonteCarloSim:
-        """*from_dict()* Create simulation from dictionary representation."""
+    def from_dict(cls, data: Dict[str, Any]) -> "MonteCarloSim":
+        """*from_dict()* Create simulation from dictionary representation.
+
+        Args:
+            data (Dict[str, Any]): Dictionary representation.
+
+        Returns:
+            MonteCarloSim: New simulation instance.
+        """
         # Create basic instance
         instance = cls(
             name=data.get("name", ""),
             description=data.get("description", ""),
             _idx=data.get("idx", -1),
-            _sym=data.get("sym", ""),
+            _sym=data.get("sym", "MC_\\Pi_{}"),
             _fwk=data.get("fwk", "PHYSICAL"),
             _alias=data.get("alias", ""),
+            _cat=data.get("cat", "NUM"),
             _pi_expr=data.get("pi_expr", None),
-            _iterations=data.get("iterations", 1000),
+            _experiments=data.get("iterations", 1000),
         )
 
-        # Optionally set statistics if available
-        if "statistics" in data:
-            stats = data["statistics"]
-            instance._mean = stats.get("mean", -1.0)
-            instance._median = stats.get("median", -1.0)
-            instance._std_dev = stats.get("std_dev", -1.0)
-            instance._variance = stats.get("variance", -1.0)
-            instance._min = stats.get("min", -1.0)
-            instance._max = stats.get("max", -1.0)
-            instance._count = stats.get("count", -1)
+        # The to_dict() method stores them at the top level
+        instance._mean = data.get("mean", np.nan)
+        instance._median = data.get("median", np.nan)
+        instance._std_dev = data.get("std_dev", np.nan)
+        instance._variance = data.get("variance", np.nan)
+        instance._min = data.get("min", np.nan)
+        instance._max = data.get("max", np.nan)
+        instance._count = data.get("count", 0)
+
+        # Optionally set inputs and results if available
+        if "inputs" in data and data["inputs"] is not None:
+            instance.inputs = np.array(data["inputs"], dtype=np.float64)
+
+        if "results" in data and data["results"] is not None:
+            instance._results = np.array(data["results"], dtype=np.float64)
+
+        # Optionally set variables if available
+        if "variables" in data and data["variables"]:
+            for sym, specs in data["variables"].items():
+                instance._variables[sym] = Variable(**specs)
 
         return instance

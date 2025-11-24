@@ -14,7 +14,7 @@ Classes:
 """
 
 from __future__ import annotations
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 from typing import Optional, List, Dict, Any, Callable
 import re
 import numpy as np
@@ -157,13 +157,13 @@ class Variable(Validation):
     _dist_params: Optional[Dict[str, Any]] = field(default_factory=dict)
     """Parameters for the distribution (e.g., {'min': 0, 'max': 1} for uniform)."""
 
-    # :attr: _dist_func
-    _dist_func: Optional[Callable] = None
-    """Callable representing the distribution function defined externally by the user."""
-
     # :attr: _depends
     _depends: List[str] = field(default_factory=list)
     """List of variable names that this variable depends on. (e.g., for calculated variables like F = m*a)."""
+
+    # :attr: _dist_func
+    _dist_func: Optional[Callable[..., float]] = None
+    """Callable representing the distribution function defined externally by the user."""
 
     # Flags
     # :attr: relevant
@@ -216,6 +216,20 @@ class Variable(Validation):
         if exp in [None, ""]:
             return True
         return bool(re.match(regex, exp))
+
+    def _validate_in_list(self, value: str, prec_lt: List[str]) -> bool:
+        """*_validate_in_list()* Validates if a value exists in a list of allowed values.
+
+        Args:
+            value (str): Value to validate.
+            prec_lt (List[str]): List of allowed values.
+
+        Returns:
+            bool: True if the value is in the list, False otherwise.
+        """
+        if value in [None, ""]:
+            return False
+        return value in prec_lt
 
     def _prepare_dims(self) -> None:
         """*_prepare_dims()* Processes dimensional expressions for analysis.
@@ -288,19 +302,71 @@ class Variable(Validation):
 
         Returns:
             List[int]: Exponents with the dimensional expression. e.g.: [2, -1]
+
+        Raises:
+            ValueError: If dimensional expression cannot be parsed.
         """
         # split the sympy expression into a list of dimensions
         dims_list = dims.split("* ")
         # set the default list of zeros with the FDU length
         col = [0] * len(cfg.WKNG_FDU_PREC_LT)
+
         for dim in dims_list:
             # match the exponent of the dimension
-            _exp = int(re.search(cfg.WKNG_POW_RE, dim).group(0))
+            exp_match = re.search(cfg.WKNG_POW_RE, dim)
+            if exp_match is None:
+                _msg = f"Could not extract exponent from dimension: {dim}"
+                raise ValueError(_msg)
+            _exp = int(exp_match.group(0))
+
             # match the symbol of the dimension
-            _sym = re.search(cfg.WKNG_FDU_SYM_RE, dim).group(0)
+            sym_match = re.search(cfg.WKNG_FDU_SYM_RE, dim)
+            if sym_match is None:
+                _msg = f"Could not extract symbol from dimension: {dim}"
+                raise ValueError(_msg)
+            _sym = sym_match.group(0)
+
+            # Check if symbol exists in the precedence list
+            if _sym not in cfg.WKNG_FDU_PREC_LT:
+                _msg = f"Unknown dimensional symbol: {_sym}"
+                raise ValueError(_msg)
+
             # update the column with the exponent of the dimension
             col[cfg.WKNG_FDU_PREC_LT.index(_sym)] = _exp
+
         return col
+
+    def sample(self, **kwargs) -> float:
+        """*sample()* Generate a random sample.
+
+        Args:
+            **kwargs: Additional arguments for the distribution function.
+
+        Returns:
+            float: Random sample from distribution.
+
+        Raises:
+            ValueError: If no distribution has been set.
+        """
+        if self._dist_func is None:
+            _msg = f"No distribution set for variable '{self.sym}'. "
+            _msg += "Call set_function() first."
+            raise ValueError(_msg)
+
+        # if kwargs are provided, pass them to the function parameters
+        elif len(kwargs) > 0:
+            return self._dist_func(**kwargs)
+
+        # otherwise, execute without them
+        return self._dist_func()
+
+    def has_function(self) -> bool:
+        """*has_function()* Check if distribution is set.
+
+        Returns:
+            bool: True if distribution is configured.
+        """
+        return self._dist_func is not None
 
     # Property getters and setters
     # Identification and Classification
@@ -354,18 +420,20 @@ class Variable(Validation):
             ValueError: If expression is empty
             ValueError: If dimensions are invalid according to the precedence.
         """
-        _working_lt = cfg.WKNG_FDU_PREC_LT
+        # _precedence_lt = cfg.WKNG_FDU_PREC_LT
         if val is not None and not val.strip():
             raise ValueError("Dimensions cannot be empty.")
 
         # Process dimensions
-        if val and not self._validate_exp(val, _working_lt):
-            _msg = f"Invalid dimensions: {val}. "
-            _msg += f"Check FDUs according to precedence: {_working_lt}"
+        if val and not self._validate_exp(val, cfg.WKNG_FDU_RE):
+            _msg = f"Invalid dimensional expression: {val}. "
+            _msg += f"FDUS precedence is: {cfg.WKNG_FDU_RE}"
             raise ValueError(_msg)
+
+        self._dims = val
+
         # automatically prepare the dimensions for analysis
         self._prepare_dims()
-        self._dims = val
 
     @property
     def units(self) -> str:
@@ -485,11 +553,20 @@ class Variable(Validation):
         """
         if val is not None and not isinstance(val, (int, float)):
             raise ValueError("Minimum range must be a number.")
-        if val > self._max:
-            _msg = f"Minimum {val} cannot be greater"
-            _msg = f" than maximum {self._max}."
+
+        if val is not None and self._max is not None and val > self._max:
+            _msg = f"Minimum {val} cannot be greater than maximum {self._max}."
             raise ValueError(_msg)
+
         self._min = val
+
+        # Update range if all values are available
+        if all([self._min is not None,
+                self._max is not None,
+                self._step is not None]):
+            self._range = np.arange(self._min,
+                                    self._max,
+                                    self._step)
 
     @property
     def max(self) -> Optional[float]:
@@ -513,11 +590,21 @@ class Variable(Validation):
         """
         if val is not None and not isinstance(val, (int, float)):
             raise ValueError("Maximum val must be a number.")
-        if val < self._min:
-            _msg = f"Maximum {val} cannot be less"
-            _msg = f" than minimum {self._min}."
+
+        # Check if both values exist before comparing
+        if val is not None and self._min is not None and val < self._min:
+            _msg = f"Maximum {val} cannot be less than minimum {self._min}."
             raise ValueError(_msg)
+
         self._max = val
+
+        # Update range if all values are available
+        if all([self._min is not None,
+                self._max is not None,
+                self._step is not None]):
+            self._range = np.arange(self._min,
+                                    self._max,
+                                    self._step)
 
     @property
     def mean(self) -> Optional[float]:
@@ -542,13 +629,39 @@ class Variable(Validation):
         if val is not None and not isinstance(val, (int, float)):
             raise ValueError("Mean value must be a number.")
 
-        low = (self._min is not None and val < self._min)
-        high = (self._max is not None and val > self._max)
-        if low or high:
-            _msg = f"Mean {val}. "
-            _msg += f"must be between {self._min} and {self._max}."
-            raise ValueError(_msg)
+        # Only validate range if val is not None
+        if val is not None:
+            low = (self._min is not None and val < self._min)
+            high = (self._max is not None and val > self._max)
+            if low or high:
+                _msg = f"Mean {val} "
+                _msg += f"must be between {self._min} and {self._max}."
+                raise ValueError(_msg)
+
         self._mean = val
+
+    @property
+    def dev(self) -> Optional[float]:
+        """*dev* Get the Variable standard deviation.
+
+        Returns:
+            Optional[float]: Variable standard deviation.
+        """
+        return self._dev
+
+    @dev.setter
+    def dev(self, val: Optional[float]) -> None:
+        """*dev* Sets the Variable standard deviation.
+
+        Args:
+            val (Optional[float]): Variable standard deviation.
+        Raises:
+            ValueError: If value not a valid number.
+        """
+        if val is not None and not isinstance(val, (int, float)):
+            raise ValueError("Standard deviation must be a number.")
+
+        self._dev = val
 
     # Value Ranges (Standardized Units)
 
@@ -562,7 +675,7 @@ class Variable(Validation):
         return self._std_units
 
     @std_units.setter
-    def std_units(self, val: Optional[str]) -> None:
+    def std_units(self, val: str) -> None:
         """*std_units* Sets the standardized Unit of Measure.
 
         Args:
@@ -572,8 +685,7 @@ class Variable(Validation):
             ValueError: If standardized units are empty.
         """
         if val is not None and not val.strip():
-            _msg = "Standardized Unit of Measure cannot be empty."
-            raise ValueError(_msg)
+            raise ValueError("Standardized Units of Measure cannot be empty.")
         self._std_units = val
 
     @property
@@ -599,10 +711,13 @@ class Variable(Validation):
         if val is not None and not isinstance(val, (int, float)):
             raise ValueError("Standardized minimum must be a number")
 
-        if val > self._std_max:
-            _msg = f"Standard minimum val {val} cannot be greater"
-            _msg = f" than standard maximum val {self._std_max}."
+        # Check if both values exist before comparing
+        if val is not None and self._std_max is not None and val > self._std_max:
+            _msg = f"Standard minimum {val} cannot be greater"
+            _msg += f" than standard maximum {self._std_max}."
             raise ValueError(_msg)
+
+        self._std_min = val
 
         # Update range if all values are available
         if all([self._std_min is not None,
@@ -611,7 +726,6 @@ class Variable(Validation):
             self._std_range = np.arange(self._std_min,
                                         self._std_max,
                                         self._step)
-        self._std_min = val
 
     @property
     def std_max(self) -> Optional[float]:
@@ -632,10 +746,14 @@ class Variable(Validation):
         """
         if val is not None and not isinstance(val, (int, float)):
             raise ValueError("Standardized maximum must be a number")
-        if val < self._std_min:
-            _msg = f"Standard maximum *Variable* {val} cannot be less"
-            _msg = f" than standard minimum *Variable* {self._std_min}."
+
+        # Check if both values exist before comparing
+        if val is not None and self._std_min is not None and val < self._std_min:
+            _msg = f"Standard maximum {val} cannot be less"
+            _msg += f" than standard minimum {self._std_min}."
             raise ValueError(_msg)
+
+        self._std_max = val
 
         # Update range if all values are available
         if all([self._std_min is not None,
@@ -644,7 +762,6 @@ class Variable(Validation):
             self._std_range = np.arange(self._std_min,
                                         self._std_max,
                                         self._step)
-        self._std_max = val
 
     @property
     def std_mean(self) -> Optional[float]:
@@ -669,13 +786,16 @@ class Variable(Validation):
         if val is not None and not isinstance(val, (int, float)):
             raise ValueError("Standardized mean must be a number")
 
-        low = (self._std_min is not None and val < self._std_min)
-        high = (self._std_max is not None and val > self._std_max)
+        # Only validate range if val is not None
+        if val is not None:
+            low = (self._std_min is not None and val < self._std_min)
+            high = (self._std_max is not None and val > self._std_max)
 
-        if low or high:
-            _msg = f"Invalid standard mean value {val}. "
-            _msg += f"Must be between {self._std_min} and {self._std_max}."
-            raise ValueError(_msg)
+            if low or high:
+                _msg = f"Standard mean {val} "
+                _msg += f"must be between {self._std_min} and {self._std_max}."
+                raise ValueError(_msg)
+
         self._std_mean = val
 
     @property
@@ -699,15 +819,13 @@ class Variable(Validation):
             ValueError: If value is outside std_min-std_max range.
         """
         if val is not None and not isinstance(val, (int, float)):
-            raise ValueError("Standardized standard deviation must be a number")
+            raise ValueError(
+                "Standardized standard deviation must be a number")
 
-        low = (self._std_min is not None and val < self._std_min)
-        high = (self._std_max is not None and val > self._std_max)
+        # Standard deviation should be non-negative
+        if val is not None and val < 0:
+            raise ValueError(f"Standard deviation {val} cannot be negative.")
 
-        if low or high:
-            _msg = f"Invalid standard deviation value {val}. "
-            _msg += f"Must be between {self._std_min} and {self._std_max}."
-            raise ValueError(_msg)
         self._std_dev = val
 
     @property
@@ -737,10 +855,14 @@ class Variable(Validation):
         if val == 0:
             raise ValueError("Step cannot be zero.")
 
-        if val >= self._std_max - self._std_min:
-            _msg = f"Step {val} must be less than range"
-            _msg += f" {self._std_max - self._std_min}."
-            raise ValueError(_msg)
+        # Validate step against range (only if min/max are set)
+        if val is not None and self._std_min is not None and self._std_max is not None:
+            range_size = self._std_max - self._std_min
+            if val >= range_size:
+                _msg = f"Step {val} must be less than range: {range_size}."
+                raise ValueError(_msg)
+
+        self._step = val
 
         # Update range if all values are available
         if all([self._std_min is not None,
@@ -749,8 +871,6 @@ class Variable(Validation):
             self._std_range = np.arange(self._std_min,
                                         self._std_max,
                                         self._step)
-
-        self._step = val
 
     @property
     def std_range(self) -> np.ndarray:
@@ -784,6 +904,7 @@ class Variable(Validation):
         elif not isinstance(val, np.ndarray):
             _msg = f"Range must be a numpy array, got {type(val)}"
             raise ValueError(_msg)
+
         else:
             self._std_range = val
 
@@ -822,24 +943,27 @@ class Variable(Validation):
         self._dist_type = val
 
     @property
-    def dist_params(self) -> Dict[str, Any]:
+    def dist_params(self) -> Optional[Dict[str, Any]]:
         """*dist_params* Get the distribution parameters.
 
         Returns:
-            Dict[str, Any]: Distribution parameters.
+            Optional[Dict[str, Any]: Distribution parameters.
         """
         return self._dist_params
 
     @dist_params.setter
-    def dist_params(self, val: Dict[str, Any]) -> None:
+    def dist_params(self, val: Optional[Dict[str, Any]]) -> None:
         """*dist_params* Set the distribution parameters.
 
         Args:
-            val (Dict[str, Any]): Distribution parameters.
+            val (Optional[Dict[str, Any]): Distribution parameters.
 
         Raises:
             ValueError: If parameters are invalid for the distribution type.
         """
+        if val is None:
+            self._dist_params = None
+            return None
         # Validate parameters based on distribution type
         if self._dist_type == "uniform":
             if "min" not in val or "max" not in val:
@@ -866,7 +990,7 @@ class Variable(Validation):
         self._dist_params = val
 
     @property
-    def dist_func(self) -> Optional[Callable]:
+    def dist_func(self) -> Optional[Callable[..., float]]:
         """*dist_func* Get the distribution function.
 
         Returns:
@@ -875,7 +999,7 @@ class Variable(Validation):
         return self._dist_func
 
     @dist_func.setter
-    def dist_func(self, val: Optional[Callable]) -> None:
+    def dist_func(self, val: Optional[Callable[..., float]]) -> None:
         """*dist_func* Set the distribution function.
 
         Args:
@@ -957,28 +1081,31 @@ class Variable(Validation):
         Returns:
             Dict[str, Any]: Dictionary representation of variable.
         """
-        return {
-            "name": self.name,
-            "description": self.description,
-            "idx": self._idx,
-            "sym": self._sym,
-            "alias": self._alias,
-            "fwk": self._fwk,
-            "cat": self._cat,
-            "dims": self._dims,
-            "units": self._units,
-            "min": self._min,
-            "max": self._max,
-            "mean": self._mean,
-            "std_units": self._std_units,
-            "std_min": self._std_min,
-            "std_max": self._std_max,
-            "std_mean": self._std_mean,
-            "step": self._step,
-            "dist_type": self._dist_type,
-            "dist_params": self._dist_params,
-            "relevant": self.relevant
-        }
+        result = {}
+
+        # Get all dataclass fields
+        for f in fields(self):
+            attr_name = f.name
+            attr_value = getattr(self, attr_name)
+
+            # Skip numpy arrays (not JSON serializable without special handling)
+            if isinstance(attr_value, np.ndarray):
+                # Convert to list for JSON compatibility
+                attr_value = attr_value.tolist()
+
+            # Skip callables (can't be serialized)
+            if callable(attr_value) and attr_name == "_dist_func":
+                continue
+
+            # Remove leading underscore from private attributes
+            if attr_name.startswith("_"):
+                clean_name = attr_name[1:]  # Remove first character
+            else:
+                clean_name = attr_name
+
+            result[clean_name] = attr_value
+
+        return result
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> Variable:
@@ -990,4 +1117,29 @@ class Variable(Validation):
         Returns:
             Variable: New variable instance.
         """
-        return cls(**data)
+        # Get all valid field names from the dataclass
+        field_names = {f.name for f in fields(cls)}
+
+        # Map keys without underscores to keys with underscores
+        mapped_data = {}
+
+        for key, value in data.items():
+            # Try the key as-is first (handles both _idx and name)
+            if key in field_names:
+                mapped_data[key] = value
+            # Try adding underscore prefix (handles idx -> _idx)
+            elif f"_{key}" in field_names:
+                mapped_data[f"_{key}"] = value
+            # Try removing underscore prefix (handles _name -> name if needed)
+            elif key.startswith("_") and key[1:] in field_names:
+                mapped_data[key[1:]] = value
+            else:
+                # Use as-is for unknown keys (will be validated by dataclass)
+                mapped_data[key] = value
+
+        # Convert lists back to numpy arrays for range attributes
+        for range_key in ["std_range", "_std_range"]:
+            if range_key in mapped_data and isinstance(mapped_data[range_key], list):
+                mapped_data[range_key] = np.array(mapped_data[range_key])
+
+        return cls(**mapped_data)

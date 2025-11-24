@@ -603,7 +603,7 @@ class TestVariable(unittest.TestCase):
         var = Variable(_sym="y", _depends=["x"])
         var.dist_func = self.test_data["SAMPLE_TEST_FUNCTIONS"]["dependent"]
 
-        result = var.sample(x=5.0)
+        result = var.sample(5.0)
         assert result == 11.0
 
     def test_sample_returns_float_type(self) -> None:

@@ -336,11 +336,11 @@ class Variable(Validation):
 
         return col
 
-    def sample(self, **kwargs) -> float:
+    def sample(self, *args) -> float:
         """*sample()* Generate a random sample.
 
         Args:
-            **kwargs: Additional arguments for the distribution function.
+            *args: Additional arguments for the distribution function.
 
         Returns:
             float: Random sample from distribution.
@@ -354,8 +354,8 @@ class Variable(Validation):
             raise ValueError(_msg)
 
         # if kwargs are provided, pass them to the function parameters
-        elif len(kwargs) > 0:
-            return self._dist_func(**kwargs)
+        elif len(args) > 0:
+            return self._dist_func(*args)
 
         # otherwise, execute without them
         return self._dist_func()

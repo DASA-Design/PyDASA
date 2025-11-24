@@ -22,7 +22,7 @@ from pydasa.utils import config
 from pydasa.core.fundamental import Dimension
 
 # FDU regex management
-from pydasa.dimensional.framework import DimScheme
+from pydasa.dimensional.framework import DimSchema
 
 # Variable and Variable modules
 from pydasa.core.parameter import Variable
@@ -179,7 +179,7 @@ if __name__ == "__main__":
                   _dims="M*T^-2*L^-1",)
     print(p1, "\n")
 
-    rm = DimScheme(_fwk="SOFTWARE",)
+    rm = DimSchema(_fwk="SOFTWARE",)
     print(rm, "\n")
 
     rm.update_global_config()
@@ -194,7 +194,7 @@ if __name__ == "__main__":
             "description": "Time~~~~~~~~~~~~~", "_unit": "s", "name": "Time"},
     ]
 
-    rm = DimScheme(_fdus=fdu_lt, _fwk="CUSTOM")
+    rm = DimSchema(_fdu_lt=fdu_lt, _fwk="CUSTOM")
 
     rm.update_global_config()
     print(rm, "\n")
@@ -545,8 +545,10 @@ if __name__ == "__main__":
         }
     }
 
-    monte = MonteCarloSim()
-    # print(monte, "\n")
+    # monte = MonteCarloSim()
+    # # print(monte, "\n")
+    
+    print("PI UNO BEBE!!!", DAModel.coefficients["\\Pi_{1}"].pi_expr)
 
     monte = MonteCarloSim(_idx=0,
                           _sym="MC_{0}",
@@ -554,9 +556,10 @@ if __name__ == "__main__":
                           name="Monte Carlo Simulation",
                           description="Monte Carlo Simulation~~~~~!!!",
                           _pi_expr=DAModel.coefficients["\\Pi_{1}"].pi_expr,
-                          _variables=DAModel.variables,
+                          _coefficient=DAModel.coefficients["\\Pi_{1}"],
+                          _variables=DAModel.relevant_lt,
                           _distributions=dist_specs,
-                          _iterations=100,)
+                          _experiments=10,)
     # Configure with coefficient, this is critical!!!
     monte.set_coefficient(DAModel.coefficients["\\Pi_{1}"])
     # monte.config_simulations()
@@ -580,15 +583,16 @@ if __name__ == "__main__":
     print("===========================")
 
     # FIXME something weird in the individual invocation of the simulation
-    # monte.run()
-    # print("Monte Carlo Simulation Results:")
-    # for k, v in monte.statistics.items():
-    #     print(f"{k}: {v}")
-    # print("Mean:", monte.mean)
-    # print("Variance:", monte.variance)
-    # # print("Summary:", monte.summary)
-    # # a = monte.export_results().keys()
-    # print("Confidence result keys:", monte.extract_results().keys())
+    monte.run()
+    print(monte)
+    print("Monte Carlo Simulation Results:")
+    for k, v in monte.statistics.items():
+        print(f"{k}: {v}")
+    print("Mean:", monte.mean)
+    print("Variance:", monte.variance)
+    # print("Summary:", monte.summary)
+    # a = monte.export_results().keys()
+    print("Confidence result keys:", monte.extract_results().keys())
 
     # print("Confidence report:", monte.get_confidence_interval(0.95))
 

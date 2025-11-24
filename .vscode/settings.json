@@ -1,12 +1,20 @@
 {
-    "python.analysis.typeCheckingMode": "off",
+    "python.analysis.typeCheckingMode": "standard",
     "python.testing.pytestArgs": [
-        "tests"
+        "tests",
+        "--cov=src/pydasa",
+        "--cov-report=html",
+        "--cov-report=term-missing",
+        "-v"
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/src"
+    ],
+    "python.envFile": "${workspaceFolder}/.env",
     "flake8.args": [
-        // "--max-line-length=120",
+        // "--max-line-length=120", W503
         "--ignore=E501,",
     ],
     "python.testing.unittestArgs": [
@@ -15,5 +23,10 @@
         "./tests",
         "-p",
         "test_*.py"
-    ]
+    ],
+    "coverage-gutters.coverageFileNames": [
+        ".coverage",
+        "coverage.xml",
+        "htmlcov/index.html"
+    ],
 }

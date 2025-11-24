@@ -149,7 +149,7 @@ I need an object oriented design option to include the following requirements in
 
    1. test_influence.py: test for the SensitivityHandler class for understanding variance in the coefficients. NOT NOW!!! ❌
    2. test_phenomena.py: test for the main Solver() class of the project TODO⚠️
-   3. test_practical.py test for the SimulationManager class to control all the montecartlo simulations of all data 🔶👨‍💻⚠️ WORKING HERE ⚠️
+   3. test_practical.py test for the SimulationManager class to control all the montecartlo simulations of all data ✅
 
    ---
 7. **utils**

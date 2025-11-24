@@ -262,8 +262,6 @@ class MonteCarloSim(Validation, Generic[T]):
         super().__post_init__()
 
         # Validate coefficient
-        print("pcoeffffff!!!!! ===\n", self._coefficient)
-        print("pucha!!!!! ===\n", self._coefficient.pi_expr)
         if not self._coefficient.pi_expr:
             raise ValueError("Coefficient must have a valid expression")
 

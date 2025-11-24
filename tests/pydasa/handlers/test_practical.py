@@ -10,6 +10,7 @@ This module provides unit tests for managing Monte Carlo simulations.
 # import testing package
 import unittest
 import pytest
+import numpy as np
 
 # import the module to test
 from pydasa.handlers.practical import MonteCarloHandler
@@ -211,7 +212,7 @@ class TestMonteCarloHandler(unittest.TestCase):
         assert len(handler._simulations) == 0
         assert len(handler._distributions) == 0
         assert len(handler._results) == 0
-        assert len(handler._mem_cache) == 0
+        assert len(handler._shared_cache) == 0
 
     def test_properties(self) -> None:
         """*test_properties()* tests property getters and setters."""
@@ -292,3 +293,84 @@ class TestMonteCarloHandler(unittest.TestCase):
         assert "fwk" in data
         assert data["name"] == "Test"
         assert data["description"] == "Test handler"
+
+    def test_shared_cache_initialization(self) -> None:
+        """*test_shared_cache_initialization()* tests that shared cache is properly initialized."""
+        handler = MonteCarloHandler(
+            _fwk="CUSTOM",
+            _variables=self.test_variables,
+            _coefficients=self.test_coefficients
+        )
+        handler.config_simulations()
+
+        # Verify shared cache exists
+        assert hasattr(handler, '_shared_cache')
+        assert isinstance(handler._shared_cache, dict)
+
+        # Verify cache for all variables
+        for var_sym in handler._variables.keys():
+            assert var_sym in handler._shared_cache
+            assert handler._shared_cache[var_sym].shape == (handler._experiments, 1)
+
+    def test_simulations_share_same_cache(self) -> None:
+        """*test_simulations_share_same_cache()* tests all simulations reference same cache object."""
+        handler = MonteCarloHandler(
+            _fwk="CUSTOM",
+            _variables=self.test_variables,
+            _coefficients=self.test_coefficients
+        )
+        handler.config_simulations()
+
+        # Get cache IDs from all simulations
+        cache_ids = [id(sim._simul_cache) for sim in handler._simulations.values()]
+
+        # All should reference the same object
+        assert len(set(cache_ids)) == 1
+        assert cache_ids[0] == id(handler._shared_cache)
+
+    def test_cache_values_consistent_across_coefficients(self) -> None:
+        """*test_cache_values_consistent_across_coefficients()* tests same variable has identical values across coefficients."""
+        handler = MonteCarloHandler(
+            _fwk="CUSTOM",
+            _variables=self.test_variables,
+            _coefficients=self.test_coefficients,
+            _experiments=5
+        )
+        handler.config_simulations()
+        handler.simulate(n_samples=5)
+
+        # Extract results
+        all_results = {pi: sim.extract_results() for pi, sim in handler._simulations.items()}
+
+        # Check variable 'U' appears in multiple coefficients
+        u_values = []
+        for pi_sym, results in all_results.items():
+            for key in results.keys():
+                if key.startswith("U@"):
+                    u_values.append(results[key])
+
+        # All U values should be identical
+        if len(u_values) > 1:
+            reference = u_values[0]
+            for values in u_values[1:]:
+                np.testing.assert_array_equal(reference, values)
+
+    def test_cache_modification_visible_everywhere(self) -> None:
+        """*test_cache_modification_visible_everywhere()* tests cache changes are visible to all simulations."""
+        handler = MonteCarloHandler(
+            _fwk="CUSTOM",
+            _variables=self.test_variables,
+            _coefficients=self.test_coefficients
+        )
+        handler.config_simulations()
+
+        # Modify cache through handler
+        test_var = 'd'
+        test_idx = 2
+        test_value = 99.99
+        handler._shared_cache[test_var][test_idx, 0] = test_value
+
+        # Verify all simulations see the change
+        for sim in handler._simulations.values():
+            cached = sim._get_cached_value(test_var, test_idx)
+            assert cached == test_value

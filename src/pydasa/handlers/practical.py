@@ -68,7 +68,7 @@ class MonteCarloHandler(Validation, Generic[T]):
         # Simulation Results
         _simulations (Dict[str, MonteCarloSim]): all Monte Carlo simulations performed.
         _results (Dict[str, Any]): all results from the simulations.
-        _mem_cache (Dict[str, NDArray[np.float64]]): In-memory cache for simulation data between coefficients.
+        _shared_cache (Dict[str, NDArray[np.float64]]): In-memory cache for simulation data between coefficients.
     """
 
     # Identification and Classification
@@ -95,8 +95,8 @@ class MonteCarloHandler(Validation, Generic[T]):
     """Number of simulation to run."""
 
     # Simulation Management
-    # :attr: _mem_cache
-    _mem_cache: Dict[str, NDArray[np.float64]] = field(default_factory=dict)
+    # :attr: _shared_cache
+    _shared_cache: Dict[str, NDArray[np.float64]] = field(default_factory=dict)
     """In-memory cache for simulation data between coefficients."""
 
     # :attr: _simulations
@@ -128,8 +128,8 @@ class MonteCarloHandler(Validation, Generic[T]):
             self.description = f"Manages Monte Carlo simulations for [{coef_keys}] coefficients."
 
         # Ensure mem_cache is always initialized
-        if self._mem_cache is None:
-            self._mem_cache = {}
+        if self._shared_cache is None:
+            self._shared_cache = {}
 
     def config_simulations(self) -> None:
         """*config_simulations()* Configures distributions and simulations if not already set."""
@@ -310,6 +310,14 @@ class MonteCarloHandler(Validation, Generic[T]):
         }
         return deps
 
+    def _init_shared_cache(self) -> None:
+        """*_init_shared_cache()* Initialize shared cache for all variables."""
+        # Initialize cache for each variable once
+        for var_sym in self._variables.keys():
+            self._shared_cache[var_sym] = np.full((self._experiments, 1),
+                                                  np.nan,
+                                                  dtype=np.float64)
+
     def _config_simulations(self) -> None:
         """*_config_simulations()* Sets up Monte Carlo simulation objects for each coefficient to be analyzed.
 
@@ -333,6 +341,10 @@ class MonteCarloHandler(Validation, Generic[T]):
 
         # Clear existing simulations
         self._simulations.clear()
+
+        # Initialize shared cache once
+        if not self._shared_cache:
+            self._init_shared_cache()
 
         # Create simulations for each coefficient
         for i, (pi, coef) in enumerate(self._coefficients.items()):
@@ -358,7 +370,7 @@ class MonteCarloHandler(Validation, Generic[T]):
                     _pi_expr=coef.pi_expr,
                     _coefficient=coef,
                     _variables=self._variables,
-                    _simul_cache=self._mem_cache,
+                    # _simul_cache=self._shared_cache,
                     _experiments=self._experiments,
                     name=f"Monte Carlo Simulation for {coef.name}",
                     description=f"Monte Carlo simulation for {coef.sym}",
@@ -370,6 +382,9 @@ class MonteCarloHandler(Validation, Generic[T]):
                 # Get distributions with validation
                 sim._distributions = self._get_distributions(vars_in_coef)
                 sim._dependencies = self._get_dependencies(vars_in_coef)
+
+                # CRITICAL: Share the cache reference
+                sim._simul_cache = self._shared_cache
 
                 # Add to simulations dictionary
                 self._simulations[pi] = sim
@@ -399,13 +414,26 @@ class MonteCarloHandler(Validation, Generic[T]):
             raise ValueError(_msg)
 
         # Use default if not specified
-        if n_samples is None:
-            n_samples = self._experiments
+        if n_samples is not None:
+            self._experiments = n_samples
 
         #  Validate n_samples
-        if n_samples < 1:
-            _msg = f"Number of samples must be positive. Got: {n_samples}"
+        if self._experiments < 1:
+            _msg = f"Experiments must be positive. Got: {n_samples}"
             raise ValueError(_msg)
+
+        # ✅ Initialize shared cache BEFORE running simulations
+        if not self._shared_cache:
+            for var_sym in self._variables.keys():
+                self._shared_cache[var_sym] = np.full((self._experiments, 1),
+                                                      np.nan,
+                                                      dtype=np.float64)
+
+        # print("----------")
+        # print(f"_shared_cache keys: {self._shared_cache.keys()}")
+        # # ✅ Assign shared cache to ALL simulations
+        # for sim in self._simulations.values():
+        #     sim._simul_cache = self._shared_cache
 
         results = {}
 
@@ -418,8 +446,15 @@ class MonteCarloHandler(Validation, Generic[T]):
                 raise ValueError(_msg)
 
             try:
+                # print("-----------------------------------")
+                # print(f"_shared_cache status:\n {self._shared_cache}")
+                # print("-----------------------------------")
+
+                # ✅ Use shared cache
+                sim._simul_cache = self._shared_cache
+
                 # Run the simulation
-                sim.run(n_samples)
+                sim.run(self._experiments)
 
                 # Store comprehensive results
                 res = {
@@ -643,7 +678,7 @@ class MonteCarloHandler(Validation, Generic[T]):
         self._simulations.clear()
         self._distributions.clear()
         self._results.clear()
-        self._mem_cache.clear()
+        self._shared_cache.clear()
 
     def to_dict(self) -> Dict[str, Any]:
         """*to_dict()* Convert the handler's state to a dictionary.

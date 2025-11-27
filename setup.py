@@ -45,35 +45,33 @@ setup(
     author="@SFAM",
     author_email="your_email@example.com",
     # TODO check classifiers!!!
-    license="GPL-3.0",
+    # license="GPL-3.0",
     classifiers=[
         "Programming Language :: Python :: 3.10",
         "Development Status :: 3 - Alpha",
-        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Operating System :: OS Independent",
         "Intended Audience :: Science/Research",
         "Intended Audience :: Developers",
         "Topic :: Scientific/Engineering",
-        # "Topic :: Scientific/Engineering :: Physics",
     ],
-    install_requires=[
-        "antlr4-python3-runtime==4.11",
-        "numpy>=1.26.4",
-        "scipy>=1.13.0",
-        "sympy>=1.12",
-        "matplotlib>=3.8.0",
-        "pandas>=2.1.0",
-        "SALib>=1.4.5",
-    ],
-    extras_require={
-        "dev": [
-            "pytest>=8.1.1",
-            "twine>=6.1.0",
-        ],
-        "docs": [
-            "sphinx>=7.3.7",
-            "sphinx-rtd-theme>=1.3.0",
-        ],
-    },
+    # install_requires=[
+    #     "antlr4-python3-runtime==4.11",
+    #     "numpy>=1.26.4",
+    #     "scipy>=1.13.0",
+    #     "sympy>=1.12",
+    #     "matplotlib>=3.8.0",
+    #     "pandas>=2.1.0",
+    #     "SALib>=1.4.5",
+    # ],
+    # extras_require={
+    #     "dev": [
+    #         "pytest>=8.1.1",
+    #         "twine>=6.1.0",
+    #     ],
+    #     "docs": [
+    #         "sphinx>=7.3.7",
+    #         "sphinx-rtd-theme>=1.3.0",
+    #     ],
+    # },
     python_requires=">=3.10",
 )

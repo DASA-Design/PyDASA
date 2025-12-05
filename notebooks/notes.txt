@@ -110,3 +110,24 @@ pip install -e ".[dev]"  # if you have dev dependencies
 
 pip freeze > requirements.txt
 pip install -r requirements.txt
+
+
+========================= DISTRIBUTION (Release Only) =========================
+
+# 1. Clean old builds
+Remove-Item -Recurse -Force dist, build, src\pydasa.egg-info
+
+# 2. Build package
+python -m build
+
+# 3. Test on TestPyPI (optional but recommended)
+python -m twine upload --repository testpypi dist/*
+
+# 4. Upload to PyPI
+python -m twine upload dist/*
+
+# 5. Install from PyPI
+pip install pydasa
+
+# 6. Verify installation
+python -c "import pydasa; print(pydasa.__version__)"

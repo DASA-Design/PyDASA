@@ -131,3 +131,67 @@ pip install pydasa
 
 # 6. Verify installation
 python -c "import pydasa; print(pydasa.__version__)"
+
+
+
+
+
+
+
+=============================================
+
+PyDASA/
+├── docs/
+│   ├── source/
+│   │   ├── conf.py                 # Sphinx configuration
+│   │   ├── index.rst               # Main landing page
+│   │   ├── _static/                # Custom CSS, logos, images
+│   │   ├── _templates/             # Custom HTML templates
+│   │   │
+│   │   ├── getting_started/
+│   │   │   ├── index.rst
+│   │   │   ├── installation.rst
+│   │   │   ├── quickstart.rst
+│   │   │   └── tutorial.rst
+│   │   │
+│   │   ├── user_guide/
+│   │   │   ├── index.rst
+│   │   │   ├── dimensional_analysis.rst
+│   │   │   ├── variables.rst
+│   │   │   ├── simulation.rst
+│   │   │   └── sensitivity.rst
+│   │   │
+│   │   ├── api/
+│   │   │   ├── index.rst
+│   │   │   ├── core.rst
+│   │   │   ├── buckingham.rst
+│   │   │   ├── dimensional.rst
+│   │   │   ├── analysis.rst
+│   │   │   ├── handler.rst
+│   │   │   └── utils.rst
+│   │   │
+│   │   ├── examples/
+│   │   │   ├── index.rst
+│   │   │   ├── basic_example.rst
+│   │   │   ├── monte_carlo.rst
+│   │   │   └── sensitivity_analysis.rst
+│   │   │
+│   │   ├── developer/
+│   │   │   ├── index.rst
+│   │   │   ├── contributing.rst
+│   │   │   ├── architecture.rst
+│   │   │   └── testing.rst
+│   │   │
+│   │   └── changelog.rst
+│   │
+│   ├── Makefile                    # Unix build
+│   └── make.bat                    # Windows build
+│
+├── .github/
+│   └── workflows/
+│       ├── docs.yml                # Build & deploy docs
+│       ├── tests.yml               # Run tests
+│       └── publish.yml             # Publish to PyPI
+│
+├── .readthedocs.yml                # ReadTheDocs config
+└── pyproject.toml

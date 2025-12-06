@@ -6,20 +6,20 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-import os
 import sys
-import pydasa._version as ver
+import os
+from pydasa._version import __version__
+
 # without */docs/source/ folder
-sys.path.insert(0, os.path.abspath(".."))
-# with */docs/source/ folder
-# sys.path.insert(0, os.path.abspath("../src"))
+sys.path.insert(0, os.path.abspath("../../"))
 
 project = "PyDASA"
-copyright = "2025, @SFAM, Uniandes, DISC, Bogotá D.C. Colombia"
-author = "@SFAM"
-# the release is in _version.py
-release = ver.__version__
-version = ver.__version__
+copyright = "2025, sa-artea, Uniandes, DISC, Bogotá D.C. Colombia"
+author = "sa-artea"
+
+# Get version from package
+version = __version__
+release = __version__
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -31,30 +31,38 @@ extensions = [
     "sphinx.ext.autodoc.typehints",
     "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
-    # "sphinx.ext.viewcode",    # DONT KNOW WHY IS NOT WORKING
-    "autoapi.extension",
-    "sphinx.ext.todo",
+    # "sphinx.ext.viewcode",
     "sphinx.ext.intersphinx",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.todo",
     "sphinx.ext.graphviz",
     "sphinx.ext.duration",
     "sphinx.ext.inheritance_diagram",
+    "sphinx_autodoc_typehints",
+    "myst_parser",
+    "autoapi.extension",
     "sphinx_markdown_builder",
     "sphinx_copybutton",
     "sphinx_favicon",
     "sphinx_gitstamp",
     "sphinx-prompt",
-    "myst_parser",
-    # "docxsphinx",
-    # "nbsphinx",
 ]
+
+# Napoleon settings (Google/NumPy docstring style)
+# napoleon_google_docstring = True
+# napoleon_numpy_docstring = True
+
+# AutoDoc settings
+autodoc_member_order = "bysource"
+autodoc_typehints = "description"
 
 templates_path = ["_templates"]
 exclude_patterns = [
     "_build",
     "Thumbs.db",
     ".DS_Store",
-    '**/__pycache__',
-    '**/test_*.py',
+    "**/__pycache__",
+    "**/test_*.py",
 ]
 
 # internationalization options
@@ -65,21 +73,39 @@ languages = ["es", "ja", "de"]
 
 # autoapi configuration
 autoapi_dirs = [
-    # without */docs/source/ folder
-    os.path.join(os.path.dirname(__file__), "..", "src"),
-    # with */docs/source/ folder
-    # os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "src")),
+    os.path.join(os.path.dirname(__file__), "..", "..", "src"),
 ]
+
+autoapi_type = "python"
+autoapi_template_dir = "_templates/autoapi"
+autoapi_options = [
+    "members",
+    "undoc-members",
+    "show-inheritance",
+    "show-module-summary",
+    "imported-members",
+]
+
+autoapi_python_use_implicit_namespaces = True
+autoapi_python_class_content = "both"
+
+autoapi_ignore = [
+    "*/tests/*",
+    "*test_*.py",
+    "*/__pycache__/*",
+]
+autoapi_add_toctree_entry = True
+autoapi_keep_files = False  # Clean up generated files after build
 
 # myst_parser configuration
 source_suffix = {
     ".rst": "restructuredtext",
-    # ".txt": "markdown",
-    # ".md": "markdown",
+    ".txt": "markdown",
+    ".md": "markdown",
 }
 
 # myst extensions to enable
-# intall them with: pip install...
+# install them with: pip install...
 myst_enable_extensions = [
     "amsmath",
     "attrs_inline",
@@ -96,7 +122,6 @@ myst_enable_extensions = [
     "substitution",
     "tasklist",
 ]
-
 
 # favicon configuration
 favicons = [
@@ -115,42 +140,38 @@ favicons = [
     },
 ]
 
-
 # -- Options for HTML output -------------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
+
 # gitstamp configuration, URL: https://github.com/jdillard/sphinx-gitstamp
 # Date format for git timestamps
 gitstamp_fmt = "%Y-%m-%d %H:%M:%S %z"
 
-# docxsphinx configuration
-# "docx_template" need *.docx or *.dotx template file name. default is None.
-# docx_template = "template.docx"
-
 # Language to be used for generating the HTML full-text search index.
-# Sphinx supports the following languages:
-#   "da", "de", "en", "es", "fi", "fr", "hu", "it", "ja"
-#   "nl", "no", "pt", "ro", "ru", "sv", "tr", "zh"
-#
 html_search_language = "en"
 
 # A dictionary with options for the search language support, empty by default.
-# "ja" uses this config value.
-# "zh" user can custom change `jieba` dictionary path.
-#
 html_search_options = {"type": "default"}
 
 # The name of a javascript file (relative to the configuration directory) that
 # implements a search results scorer. If empty, the default will be used.
-#
 html_search_scorer = ""
 
-
 # configuration for sphinx inheritance diagram
-inheritance_graph_attrs = dict(rankdir="LR", size='"6.0, 8.0"',
-                               fontsize=14, ratio="compress")
+inheritance_graph_attrs = dict(
+    rankdir="LR",
+    size="6.0, 8.0",
+    fontsize=14,
+    ratio="compress"
+)
 
-inheritance_node_attrs = dict(shape="ellipse", fontsize=14, height=0.75,
-                              color="dodgerblue1", style="filled")
-
+inheritance_node_attrs = dict(
+    shape="ellipse",
+    fontsize=14,
+    height=0.75,
+    color="dodgerblue1",
+    style="filled"
+)
 
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 # prefered theme
@@ -163,6 +184,13 @@ html_theme = "pydata_sphinx_theme"
 
 # theme options
 html_theme_options = {
+    # TODO uncomment when ready
+    # "logo": {
+    #     "image_light": "_static/logo.png",
+    #     "image_dark": "_static/logo.png",
+    # },
+    "navbar_end": ["theme-switcher", "navbar-icon-links"],
+    "show_prev_next": True,
 }
 
 # multi-language and version configuration
@@ -175,9 +203,17 @@ html_context = {
 }
 
 html_static_path = ["_static"]
+html_logo = "_static/logo.png"
 
 # viewcode specific config
-# viewcode_follow_imported_members = True
+# viewcode_import = True
 
-viewcode_import = True
-# viewcode_enable_epub = False
+# Intersphinx mapping
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+    "numpy": ("https://numpy.org/doc/stable/", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
+    "sympy": ("https://docs.sympy.org/latest/", None),
+    "matplotlib": ("https://matplotlib.org/stable/", None),
+    "pandas": ("https://pandas.pydata.org/docs/", None),
+}

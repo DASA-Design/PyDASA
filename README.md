@@ -23,7 +23,7 @@ I need an object oriented design option to include the following requirements in
 
 ## Emoji
 
-1. DONT DO ❌
+1. TODO 📋
 2. WORKING 🔶👨‍💻
 3. DONE ✅
 4. WARNING ⚠️
@@ -33,7 +33,7 @@ I need an object oriented design option to include the following requirements in
 1. **pydasa**
    1. **analysis**
 
-      1. conversion.py unit conversion handler for the solver, OUT OF SCOPE for now!!!❌
+      1. conversion.py unit conversion handler for the solver, OUT OF SCOPE for now!!!📋
       2. scenario.py:  contains the Sensitivity class for understanding variance in the coefficients. ✅
       3. simulation.py: monte carlo slmulator for one coefficient. ✅
 
@@ -47,7 +47,7 @@ I need an object oriented design option to include the following requirements in
 
       1. basics.py: contains Validation class, shared capabilities for those who need it. ✅
       2. fundamental.py: contains Dimension class, the basis of dimensional analysis (replaces FDU), for the future it need _unit attribute/property. ✅
-      3. measurements.py: contains the Unit class, fundamental for unit conversion when necessary, NOT FEASIBLE!!! ❌
+      3. measurements.py: contains the Unit class, fundamental for unit conversion when necessary, NOT FEASIBLE!!! 📋
       4. parameters.py: contain Variable class to execute the analysis ✅
 
       ---
@@ -67,7 +67,7 @@ I need an object oriented design option to include the following requirements in
          ---
    5. **dimensional**
 
-      1. domain.py unit conversion handler/manager for the the matrix UnitsManager, OUT OF SCOPE for now!!!❌
+      1. domain.py unit conversion handler/manager for the the matrix UnitsManager, OUT OF SCOPE for now!!!📋
       2. framework.py: contaons de DimFramework class to manage and control the DimMatrix in the solving process. ✅
       3. model.py: contains de DimMatrix class to solve de dimensional matrix. ✅
 
@@ -86,17 +86,17 @@ I need an object oriented design option to include the following requirements in
       3. error.py: contains the generic error_handler() function for all components. ✅
       4. helpers.py: contains any other funcion useful for the process, include MAD for hashtable, check if is prime, and other stuff. ✅
       5. ~~queues.py: library that implement the queue theory for simulations and stuff ✅ ->  ⚠️ REMOVED FROM REPO~~
-      6. ~~io.py: contains all the input/ouput functions for saving data of the analyisis, also exports to be use in other platforms (MATPLOTLIB and files!!) NOT NOW❌~~
+      6. ~~io.py: contains all the input/ouput functions for saving data of the analyisis, also exports to be use in other platforms (MATPLOTLIB and files!!) NOT NOW📋~~
       7. latex.py: contains all the LaTeX parsing functions for better representation of formulas and stuff. ✅
 
       ---
-   8. ~~math ⚠️⚠️⚠️ TODO ⚠️⚠️⚠️ do i need them????❌ outside of lib scope!!!~~
+   8. ~~math ⚠️⚠️⚠️ TODO ⚠️⚠️⚠️ do i need them????📋 outside of lib scope!!!~~
 
-      1. ~~numbers.py❌~~
-      2. ~~queues.py❌~~
+      1. ~~numbers.py📋~~
+      2. ~~queues.py📋~~
 
       ---
-   9. ~~**visualization:** dont NEED it, USE MATPLOTLIB OR OTHER STUFF!!!!, but y need to create plots and charts from vars + coefficients ❌~~
+   9. ~~**visualization:** dont NEED it, USE MATPLOTLIB OR OTHER STUFF!!!!, but y need to create plots and charts from vars + coefficients 📋~~
 
 ## Tests Path Structure
 
@@ -106,8 +106,8 @@ I need an object oriented design option to include the following requirements in
 
 1. **analysis**
 
-   1. test_conversion.py: tests for unit conversion handler for the solver. NOT NOW!!! ❌
-   2. test_scenario.py: tests for sensitivity analysis of the Coefficients NOT NOW!!! ❌
+   1. test_conversion.py: tests for unit conversion handler for the solver. NOT YET! 📋
+   2. test_scenario.py: tests for sensitivity analysis of the Coefficients NOT YET! 📋
    3. test_simulation.py: tests for the monte carlo simulator for one coefficient. ✅
 
    ---
@@ -120,7 +120,7 @@ I need an object oriented design option to include the following requirements in
 
    1. test_basics.py: tests for the Validation class. ✅
    2. test_fundamental.py: tests for the Dimension class ✅
-   3. test_measurements.py: tests for the Unit class. NOT NOW!!! ❌
+   3. test_measurements.py: tests for the Unit class. NOT YET! 📋
    4. test_parameters.py: tests for the Variable class. ✅
 
    ---
@@ -128,26 +128,26 @@ I need an object oriented design option to include the following requirements in
 
    1. **lists**
 
-      1. test_arlt.py: tests for the arraylist. NOT NOW!!! ❌
-      2. test_sllt.py: tests for the single linked list. NOT NOW!!! ❌
-      3. test_dllt.py: tests for the double linked list. NOT NOW!!! ❌
-      4. test_ndlt.py: tests for the node list for double and single linked. NOT NOW!!! ❌
+      1. test_arlt.py: tests for the arraylist. NOT YET! 📋
+      2. test_sllt.py: tests for the single linked list. NOT YET! 📋
+      3. test_dllt.py: tests for the double linked list. NOT YET! 📋
+      4. test_ndlt.py: tests for the node list for double and single linked. NOT YET! 📋
    2. **tables**
 
-      1. test_scht.py: tests for the separate chaining hashtable. NOT NOW!!! ❌
-      2. test_htme.py: tests for the entry useful for the separate chaining hashtable. NOT NOW!!! ❌
+      1. test_scht.py: tests for the separate chaining hashtable. NOT YET! 📋
+      2. test_htme.py: tests for the entry useful for the separate chaining hashtable. NOT YET! 📋
 
       ---
 5. **dimensional**
 
-   1. test_domain.py tests for the unit conversion handler/manager. NOT NOW!!! ❌
+   1. test_domain.py tests for the unit conversion handler/manager. NOT YET! 📋
    2. test_framework.py: test for the DimSchema class to manage and control the DimMatrix in the solving process. ✅
    3. test_model.py: test for the DimMatrix class to solve the dimensional matrix. ✅
 
    ---
 6. **handler**
 
-   1. test_influence.py: test for the SensitivityHandler class for understanding variance in the coefficients. NOT NOW!!! ❌
+   1. test_influence.py: test for the SensitivityHandler class for understanding variance in the coefficients. NOT YET! 📋
    2. test_phenomena.py: test for the main Solver() class of the project TODO⚠️
    3. test_practical.py test for the SimulationManager class to control all the montecartlo simulations of all data ✅
 
@@ -155,10 +155,10 @@ I need an object oriented design option to include the following requirements in
 7. **utils**
 
    1. test_config.py: test for all global and shared variables for the analysis. ✅
-   2. test_default.py test for all the default stuff needed for custom datastructures + other functionalities. NOT NOW!!! ❌
+   2. test_default.py test for all the default stuff needed for custom datastructures + other functionalities. NOT YET! 📋
    3. test_errors.py: test for the generic error_handler() function for all components. ✅
-   4. test_helpers.py: test for any other funcion useful for the process, include MAD for hashtable, check if is prime, and other stuff. NOT NOW!!! ❌
-   5. test_io.py: tests for all the input/ouput functions for saving data of the analyisis, also exports to be use in other platforms (MATPLOTLIB and files!!) NOT NOW!!! ❌
+   4. test_helpers.py: test for any other funcion useful for the process, include MAD for hashtable, check if is prime, and other stuff. NOT YET! 📋
+   5. test_io.py: tests for all the input/ouput functions for saving data of the analyisis, also exports to be use in other platforms (MATPLOTLIB and files!!) NOT YET! 📋
    6. test_latex.py: tests for all the LaTeX parsing functions for better representation of formulas and stuff. ✅
 
    ---

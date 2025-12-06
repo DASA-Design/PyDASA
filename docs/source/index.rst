@@ -6,9 +6,16 @@
 PyDASA Documentation
 ====================
 
-**PyDASA** (Python Dimensional Analysis for Scientific Applications) is a Python library 
-for performing dimensional analysis using the Buckingham Pi theorem, with Monte Carlo 
-simulation and sensitivity analysis capabilities.
+**PyDASA** (Python Dimensional Analysis for Scientific Applications) is a Python library for performing dimensional analysis using the Buckingham Pi theorem, with Monte Carlo simulation and sensitivity analysis capabilities.
+
+Features
+========
+
+* 🔬 **Dimensional Analysis** - Automatic Buckingham Pi theorem application
+* 📈 **Sensitivity Analysis** - Understand variable importance
+* 📊 **Monte Carlo Simulation** - Statistical analysis of coefficients
+* 🔧 **Flexible Variables** - Support for custom dimensions and units
+
 
 .. image:: https://img.shields.io/pypi/v/pydasa
    :target: https://pypi.org/project/pydasa/
@@ -38,12 +45,6 @@ simulation and sensitivity analysis capabilities.
 
 .. toctree::
    :maxdepth: 2
-   :caption: API Reference
-   
-   autoapi/index
-
-.. toctree::
-   :maxdepth: 2
    :caption: Design & Architecture
 
    ../design/index
@@ -54,6 +55,12 @@ simulation and sensitivity analysis capabilities.
 
    ../development/index
 
+.. toctree::
+   :maxdepth: 2
+   :caption: API Reference
+   
+   autoapi/index
+
 Quick Links
 ===========
 
@@ -61,14 +68,6 @@ Quick Links
 * :doc:`../getting_started/quickstart` - Quick start guide
 * :doc:`../examples/basics` - Basic examples
 * :doc:`autoapi/index` - Complete API reference
-
-Features
-========
-
-* 🔬 **Dimensional Analysis** - Automatic Buckingham Pi theorem application
-* 📊 **Monte Carlo Simulation** - Statistical analysis of coefficients
-* 📈 **Sensitivity Analysis** - Understand variable importance
-* 🔧 **Flexible Variables** - Support for custom dimensions and units
 
 Indices and tables
 ==================

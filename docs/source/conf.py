@@ -11,7 +11,7 @@ import os
 from pydasa._version import __version__
 
 # without */docs/source/ folder
-sys.path.insert(0, os.path.abspath("../../"))
+sys.path.insert(0, os.path.abspath("../../src"))
 
 project = "PyDASA"
 copyright = "2025, sa-artea, Uniandes, DISC, Bogotá D.C. Colombia"

@@ -40,6 +40,7 @@ extensions = [
     "sphinx.ext.inheritance_diagram",
     "sphinx_autodoc_typehints",
     "myst_parser",
+    "sphinx_design",  # For grid cards like NumPy
     "autoapi.extension",
     "sphinx_markdown_builder",
     "sphinx_copybutton",

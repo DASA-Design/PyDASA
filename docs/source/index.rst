@@ -1,77 +1,106 @@
 .. PyDASA documentation master file, created by
-   sphinx-quickstart on Fri Dec  5 19:35:35 2025.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+    sphinx-quickstart on Fri Dec  5 19:35:35 2025.
+    You can adapt this file completely to your liking, but it should at least
+    contain the root `toctree` directive.
 
-PyDASA Documentation
-====================
+PyDASA
+======
 
-**PyDASA** (Python Dimensional Analysis for Scientific Applications) is a Python library for performing dimensional analysis using the Buckingham Pi theorem, with Monte Carlo simulation and sensitivity analysis capabilities.
+**Python Dimensional Analysis for Scientific Applications**
 
-Features
-========
-
-* 🔬 **Dimensional Analysis** - Automatic Buckingham Pi theorem application
-* 📈 **Sensitivity Analysis** - Understand variable importance
-* 📊 **Monte Carlo Simulation** - Statistical analysis of coefficients
-* 🔧 **Flexible Variables** - Support for custom dimensions and units
+    .. grid:: 2
+        :gutter: 3    'sphinx_design',  # For grid cards like NumPy
 
 
-.. image:: https://img.shields.io/pypi/v/pydasa
-   :target: https://pypi.org/project/pydasa/
-   :alt: PyPI version
+    .. grid-item-card:: 🚀 Getting Started
+        :link: getting_started/installation
+        :link-type: doc
 
-.. image:: https://img.shields.io/badge/License-GPL%20v3-blue.svg
-   :target: https://www.gnu.org/licenses/gpl-3.0
-   :alt: License
+        New to PyDASA? Check out the getting started guide for installation
+        and quick start examples.
+
+    .. grid-item-card:: 📖 User Guide
+        :link: user_guide/index
+        :link-type: doc
+
+        The user guide provides in-depth information on dimensional analysis
+        concepts and PyDASA features.
+
+    .. grid-item-card:: 📚 API Reference
+        :link: autoapi/index
+        :link-type: doc
+
+        Complete API documentation with detailed descriptions of all
+        modules, classes, and functions.
+
+    .. grid-item-card:: 💡 Examples
+        :link: examples/index
+        :link-type: doc
+
+        Practical examples and tutorials demonstrating PyDASA capabilities
+        in real-world scenarios.
+
+Installation
+------------
+
+Install PyDASA using pip:
+
+.. code-block:: bash
+
+    pip install pydasa
+
+Quick Example
+-------------
+
+.. code-block:: python
+
+    from pydasa.handler.phenomena import Solver
+    from pydasa.core.parameter import Variable
+    from pydasa.core.fundamental import Dimension
+
+    # Define dimensions
+    L = Dimension(length=1)
+    T = Dimension(time=1)
+
+    # Create variables
+    velocity = Variable("v", L/T)
+    length = Variable("L", L)
+    
+    # Solve for dimensionless numbers
+    solver = Solver()
+    result = solver.solve([velocity, length])
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Getting Started
+    :maxdepth: 2
+    :caption: Getting Started
+    :hidden:
 
-   ../getting_started/index
-
-.. toctree::
-   :maxdepth: 2
-   :caption: User Guide
-
-   ../user_guide/index
+    getting_started/index
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Examples
+    :maxdepth: 2
+    :caption: User Guide
+    :hidden:
 
-   ../examples/index
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Design & Architecture
-
-   ../design/index
+    user_guide/index
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Development
-
-   ../development/index
+    :maxdepth: 2
+    :caption: API Reference
+    :hidden:
+    
+    autoapi/index
 
 .. toctree::
-   :maxdepth: 3
-   :caption: API Reference
-   
-   autoapi/index
+    :maxdepth: 2
+    :caption: Examples
+    :hidden:
 
-Quick Links
-===========
+    examples/index
 
-* :doc:`../getting_started/installation` - Install PyDASA
-* :doc:`../getting_started/quickstart` - Quick start guide
-* :doc:`../examples/basics` - Basic examples
-* :doc:`autoapi/index` - Complete API reference
+.. toctree::
+    :maxdepth: 2
+    :caption: Development
+    :hidden:
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+    development/index

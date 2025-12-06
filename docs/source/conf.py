@@ -195,7 +195,7 @@ html_theme_options = {
 
 # multi-language and version configuration
 html_context = {
-    "default_mode": "dark",
+    "default_mode": "default",
     "current_version": release,
     "versions": [["1.0", "link to 1.0"], ["2.0", "link to 2.0"]],
     "current_language": "en",

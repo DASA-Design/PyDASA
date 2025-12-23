@@ -6,7 +6,7 @@
             "type": "shell",
             "command": "sphinx-build",
             "args": [
-                "-b", "html",  // ✅ Should be "html" not "builder"
+                "-b", "html",
                 "docs/source",
                 "docs/build/html"
             ]

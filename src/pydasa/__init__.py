@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 # expose imports
 # exposing analytics packages
 # TODO conversion still in development

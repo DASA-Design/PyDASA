@@ -29,4 +29,5 @@
         "coverage.xml",
         "htmlcov/index.html"
     ],
+    "codeStatsViewer.maxLargestFilesSidebar": 10,
 }

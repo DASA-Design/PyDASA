@@ -17,16 +17,13 @@ Classes:
 
 from __future__ import annotations
 from dataclasses import dataclass, field, fields
-from typing import List, Dict, Optional, Generic, Any, Sequence, Mapping, cast
+from typing import List, Dict, Optional, Any, Sequence, Mapping, cast
 
 # Import validation base classes
 from pydasa.core.basic import Validation
 
 # Import Dimension class
 from pydasa.core.fundamental import Dimension
-
-# Import generic type
-from pydasa.utils.default import T
 
 # Import global variables
 from pydasa.utils.config import (
@@ -42,11 +39,13 @@ from pydasa.utils import config as cfg
 
 
 @dataclass
-class DimSchema(Validation, Generic[T]):
+class DimSchema(Validation):
     """**DimSchema** Manages dimensional frameworks and FDUs for *PyDASA*.
 
-    Maintains a collection of Dimensions with their precedence, provides regex patterns
-    for dimensional expressions, and manages the dimensional framework context.
+    Maintains a collection of Dimensions with their precedence, provides regex patterns for dimensional expressions, and manages the dimensional framework context.
+
+    Args:
+        Validation: Base class for validation of symbols and frameworks.
 
     Attributes:
         _fdu_lt (List[Dimension]): List of Fundamental Dimensional Units in precedence order.

@@ -5,7 +5,7 @@ Module vashchy.py
 
 Module for representing Dimensionless Coefficients in Dimensional Analysis for *PyDASA*.
 
-This module provides the Coefficient class which models dimensionless numbers used in Vaschy-Buckingham's π-theorem for dimensional analysis.
+This module provides the Coefficient class which models dimensionless numbers used in Vaschy-Buckingham's Pi-theorem for dimensional analysis.
 
 Classes:
 
@@ -19,7 +19,7 @@ Classes:
 # native python modules
 from __future__ import annotations
 from dataclasses import dataclass, field, fields
-from typing import Optional, List, Dict, Any, Generic, Tuple, Union, Sequence
+from typing import Optional, List, Dict, Any, Tuple, Union, Sequence
 # import re
 
 # Third-party modules
@@ -30,7 +30,6 @@ from pydasa.core.basic import Validation
 from pydasa.core.parameter import Variable
 
 # Import utils
-from pydasa.utils.default import T
 from pydasa.utils.error import inspect_var
 from pydasa.utils.latex import latex_to_python
 # Import global configuration
@@ -39,11 +38,14 @@ from pydasa.utils import config as cfg
 
 
 @dataclass
-class Coefficient(Validation, Generic[T]):
+class Coefficient(Validation):
     """**Coefficient** class for Dimensional Analysis in *PyDASA*.
 
     A comprehensive implementation that represents dimensionless coefficients
-    (π numbers) used in the Vaschy-Buckingham π-theorem method.
+    (Pi numbers) used in the Vaschy-Buckingham Pi-theorem method.
+
+    Args:
+        Validation: Base class for validation of symbols and frameworks.
 
     Attributes:
         # Identification and Classification

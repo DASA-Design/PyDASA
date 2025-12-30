@@ -17,7 +17,7 @@ Classes:
 
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Optional, List, Dict, Any, Generic, Callable
+from typing import Optional, List, Dict, Any, Callable
 import re
 
 # Third-party modules
@@ -35,7 +35,6 @@ from pydasa.buckingham.vashchy import Coefficient
 # from pydasa.core.parameter import Variable
 
 # Import utils
-from pydasa.utils.default import T
 from pydasa.utils.latex import parse_latex
 from pydasa.utils.latex import create_latex_mapping
 from pydasa.utils.latex import latex_to_python
@@ -46,11 +45,14 @@ from pydasa.utils import config as cfg
 
 
 @dataclass
-class DimSensitivity(Validation, Generic[T]):
-    # TODO clean code, some vars are unnecesary!!!
+class DimSensitivity(Validation):
+    # FIXME clean code, some vars and types are inconsistent
     """**DimSensitivity** class for analyzing variable impacts in *PyDASA*.
 
     Performs sensitivity analysis on dimensionless coefficients to determine which variables have the most significant impact on the system behavior.
+
+    Args:
+        Validation: Base class for validation of symbols and frameworks.
 
     Attributes:
         # Identification and Classification

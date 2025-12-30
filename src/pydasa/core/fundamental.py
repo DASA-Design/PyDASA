@@ -17,7 +17,6 @@ Classes:
 # import dataclass for defining the node class
 from __future__ import annotations
 from dataclasses import dataclass
-from typing import Generic
 # import re
 
 # custom modules
@@ -25,22 +24,20 @@ from pydasa.core.basic import Validation
 
 # generic error handling and type checking
 from pydasa.utils.error import handle_error as error
-from pydasa.utils.default import T
 
 # checking custom modules
 assert error
-assert T
 
 
 @dataclass
-class Dimension(Validation, Generic[T]):
+class Dimension(Validation):
     """
     **Dimension** class for processing the data of a Fundamental Dimensional Unit (FDU) in *PyDASA*.
 
     FDUs are fundamental building blocks of dimensional analysis and are used to define the dimensions of physical and digital quantities.
 
     Args:
-        Generic (T): Generic type for a Python data structure.
+        Validation: Base class for validation of symbols and frameworks.
 
     Attributes:
         _idx (int): The Index of the Fundamental Dimension (precedence in the Dimensional Matrix).

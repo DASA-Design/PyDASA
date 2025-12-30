@@ -17,7 +17,7 @@ Classes:
 # native python modules
 from __future__ import annotations
 from dataclasses import dataclass, field, fields
-from typing import List, Dict, Optional, Any, Generic, Union
+from typing import List, Dict, Optional, Any, Union
 import re
 
 # python third-party modules
@@ -34,7 +34,6 @@ from pydasa.dimensional.framework import DimSchema
 from pydasa.buckingham.vashchy import Coefficient
 
 # Import utils
-from pydasa.utils.default import T
 from pydasa.utils import config as cfg
 
 # Global constants
@@ -46,8 +45,11 @@ MAX_IN: int = 10
 
 
 @dataclass
-class DimMatrix(Validation, Generic[T]):
+class DimMatrix(Validation):
     """**DimMatrix** for Dimensional Analysis in *PyDASA*. Manages the dimensional matrix for performing analysis using the Buckingham Pi theorem methodology.
+
+    Args:
+        Validation: Base class for validation of symbols and frameworks.
 
     Attributes:
         # Core Identification

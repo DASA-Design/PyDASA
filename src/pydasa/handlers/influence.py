@@ -17,7 +17,7 @@ Classes:
 
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import List, Dict, Any, Generic
+from typing import List, Dict, Any
 # import re
 
 # Import validation base classes
@@ -29,7 +29,6 @@ from pydasa.buckingham.vashchy import Coefficient
 from pydasa.analysis.scenario import DimSensitivity
 
 # Import utils
-from pydasa.utils.default import T
 from pydasa.utils.error import inspect_var
 from pydasa.utils.latex import latex_to_python
 
@@ -39,7 +38,7 @@ from pydasa.utils import config as cfg
 
 
 @dataclass
-class SensitivityHandler(Validation, Generic[T]):
+class SensitivityHandler(Validation):
     """**SensitivityHandler** class for managing multiple sensitivity analyses in *PyDASA*.
 
     Coordinates sensitivity analyses for multiple coefficients, processes their results, and generates comprehensive reports on variable impacts.

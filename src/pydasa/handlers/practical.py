@@ -17,7 +17,7 @@ Classes:
 # Standard library imports
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Generic, Dict, List, Any, Tuple, Union, Optional
+from typing import Dict, List, Any, Tuple, Union, Optional
 # import random
 # import re, Optional, Callable
 
@@ -34,7 +34,6 @@ from pydasa.buckingham.vashchy import Coefficient
 from pydasa.analysis.simulation import MonteCarloSim
 
 # Import utils
-from pydasa.utils.default import T
 from pydasa.utils.error import inspect_var
 from pydasa.utils.latex import latex_to_python
 
@@ -44,10 +43,13 @@ from pydasa.utils import config as cfg
 
 
 @dataclass
-class MonteCarloHandler(Validation, Generic[T]):
+class MonteCarloHandler(Validation):
     """**MonteCarloHandler** class for managing Monte Carlo simulations in *PyDASA*.
 
     Manages the creation, configuration, and execution of Monte Carlo simulations of dimensionless coefficients.
+
+    Args:
+        Validation: Base class for validation of symbols and frameworks.
 
     Attributes:
         # Identification and Classification

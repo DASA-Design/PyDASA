@@ -24,7 +24,7 @@ import inspect
 
 # custom modules
 # generic error handling and type checking
-from pydasa.utils.error import handle_error as error
+from pydasa.validations.error import handle_error as error
 from pydasa.utils.default import T
 
 # checking custom modules

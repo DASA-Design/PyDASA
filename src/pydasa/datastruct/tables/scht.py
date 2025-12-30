@@ -33,7 +33,7 @@ from pydasa.datastruct.lists.sllt import SingleLinkedList
 # util functions for the hash table
 from pydasa.utils.helpers import next_prime, previous_prime
 from pydasa.utils.helpers import mad_hash
-from pydasa.utils.error import handle_error as error
+from pydasa.validations.error import handle_error as error
 
 
 # default cmp function for the hash table

@@ -30,7 +30,7 @@ from pydasa.core.basic import Validation
 from pydasa.core.parameter import Variable
 
 # Import utils
-from pydasa.utils.error import inspect_var
+from pydasa.validations.error import inspect_var
 from pydasa.utils.latex import latex_to_python
 # Import global configuration
 # import the 'cfg' module to allow global variable edition

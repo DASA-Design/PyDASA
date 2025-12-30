@@ -23,7 +23,7 @@ from dataclasses import dataclass
 from pydasa.core.basic import Validation
 
 # generic error handling and type checking
-from pydasa.utils.error import handle_error as error
+from pydasa.validations.error import handle_error as error
 
 # checking custom modules
 assert error

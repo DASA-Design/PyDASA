@@ -34,7 +34,7 @@ from pydasa.buckingham.vashchy import Coefficient
 from pydasa.analysis.simulation import MonteCarloSim
 
 # Import utils
-from pydasa.utils.error import inspect_var
+from pydasa.validations.error import inspect_var
 from pydasa.utils.latex import latex_to_python
 
 # Import global configuration

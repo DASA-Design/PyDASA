@@ -15,6 +15,7 @@ Module for default global variables and comparison functions for use by all *PyD
 
 # python native modules
 from dataclasses import dataclass
+from typing import Any
 # TODO check if i need later this imports!
 # import re
 
@@ -121,12 +122,12 @@ def dflt_cmp_func_lt(key: str, elm1, elm2) -> int:
     raise TypeError(_msg)
 
 
-def dflt_cmp_func_ht(key: str, ekey1: T, entry2) -> int:
+def dflt_cmp_func_ht(key: str, ekey1: Any, entry2) -> int:
     """*dflt_cmp_func_ht()* Compare the entries of the ADT Map (Hash Table). can be of Python native or user-defined.
 
     Args:
         key (str): Key for comparing dictionary elements.
-        ekey1 (T): Key of the first entry (key-value pair) to compare.
+        ekey1 (Any): Key of the first entry (key-value pair) to compare.
         entry2 (MapEntry): Second entry (key-value pair) to compare.
 
     Raises:

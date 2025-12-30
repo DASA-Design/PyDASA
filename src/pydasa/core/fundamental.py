@@ -27,10 +27,6 @@ from pydasa.core.basic import Validation
 from pydasa.utils.error import handle_error as error
 from pydasa.utils.default import T
 
-# import global variables
-# Don't need to import global variables here, they are imported in the Validation class
-# from new.pydasa.utils.config import FDU_FWK_DT, LATEX_RE
-
 # checking custom modules
 assert error
 assert T

@@ -192,9 +192,9 @@ def gfactorial(x: Union[int, float],
         120
         >>> gfactorial(0)
         1
-        >>> gfactorial(0.5)  # Equivalent to Γ(1.5) = 0.5 * Γ(0.5) = 0.5 * √π
+        >>> gfactorial(0.5)  # Equivalent to Γ(1.5) = 0.5 * Γ(0.5) = 0.5 * √Pi
         0.8862269254527579
-        >>> gfactorial(-0.5)  # Equivalent to Γ(0.5) = √π
+        >>> gfactorial(-0.5)  # Equivalent to Γ(0.5) = √Pi
         1.7724538509055159
     """
     if isinstance(x, int) and x >= 0:

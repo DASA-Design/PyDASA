@@ -102,6 +102,34 @@ def get_error_test_data():
     }
 
 
+# test data for from pydasa.utils.io import load_json, save_json, load, save
+def get_io_test_data():
+    """Get test data for I/O tests."""
+    return {
+        "SIMPLE_JSON": {"key": "value", "number": 42},
+        "NESTED_JSON": {
+            "level1": {
+                "level2": {
+                    "value": "nested"
+                }
+            }
+        },
+        "UNICODE_JSON": {"text": "αβγ", "emoji": "🚀"},
+        "ARRAY_JSON": {"items": [1, 2, 3], "names": ["a", "b", "c"]},
+        "INVALID_JSON_CONTENT": "{invalid json}",
+        "SUPPORTED_FORMATS": [".json"],
+        "UNSUPPORTED_FORMATS": [".xml", ".csv", ".txt", ".yaml"],
+        "TEST_FILENAMES": {
+            "simple": "test.json",
+            "nested": "nested.json",
+            "unicode": "unicode.json",
+            "output": "output.json",
+            "invalid": "invalid.json",
+            "nested_dir": "subdir/nested/file.json",
+        },
+    }
+
+
 # test data for from pydasa.utils.latex import (latex_to_python,
 # extract_latex_vars,
 # create_latex_mapping,

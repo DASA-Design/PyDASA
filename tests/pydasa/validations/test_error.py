@@ -8,7 +8,7 @@ Tests for error handling and exceptions in PyDASA.
 
 import unittest
 import pytest
-from pydasa.utils.error import handle_error, inspect_var
+from pydasa.validations.error import handle_error, inspect_var
 from tests.pydasa.data.test_data import get_error_test_data
 
 

@@ -41,13 +41,12 @@ def load(file_path: str) -> Dict[str, Any]:
         >>> print(data)
         {'key': 'value', 'number': 42}
     """
-    if not os.path.exists(file_path):
-        raise FileNotFoundError(f"File not found: {file_path}")
-
     try:
         with open(file_path, 'r', encoding='utf-8-sig') as file:
             data = json.load(file)
             return data
+    except FileNotFoundError:
+        raise FileNotFoundError(f"File not found: {file_path}")
     except json.JSONDecodeError as err:
         raise json.JSONDecodeError(
             f"Invalid JSON in file {file_path}: {err.msg}",

@@ -99,6 +99,23 @@ class TestLoad:
         finally:
             os.unlink(tmp_path)
 
+    def test_load_with_bom(self):
+        """Test loading JSON with UTF-8 BOM (Byte Order Mark)."""
+        with tempfile.NamedTemporaryFile(mode='wb', suffix='.json', delete=False) as tmp_file:
+            test_data = {'key': 'value', 'number': 42}
+            # Write BOM followed by JSON data
+            tmp_file.write(b'\xef\xbb\xbf')  # UTF-8 BOM
+            tmp_file.write(json.dumps(test_data).encode('utf-8'))
+            tmp_path = tmp_file.name
+
+        try:
+            loaded_data = io.load(tmp_path)
+            assert loaded_data == test_data
+            assert loaded_data['key'] == 'value'
+            assert loaded_data['number'] == 42
+        finally:
+            os.unlink(tmp_path)
+
 
 class TestSave:
     """Test suite for the save() function."""

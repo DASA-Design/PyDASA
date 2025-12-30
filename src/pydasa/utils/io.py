@@ -16,7 +16,8 @@ This module provides functions for reading and writing data to files, handling d
 
 
 def load(file_path: str) -> dict:
-    pass
+
+    return {}
 
 
 def save(data: dict, file_path: str) -> None:

@@ -15,7 +15,6 @@ Module for default global variables and comparison functions for use by all *PyD
 
 # python native modules
 from dataclasses import dataclass
-from typing import TypeVar
 # TODO check if i need later this imports!
 # import re
 
@@ -66,15 +65,6 @@ Allowed input/output types for loading and saving data in the ADTs with the *loa
 DFLT_PRIME: int = 109345121
 """
 Default big prime number for the MAD compression function in hash tables.
-"""
-
-
-# Type for the element stored in the list
-# :data: T: TypeVar
-# TODO do I need to use TypeVar for my project?
-T = TypeVar("T")
-"""
-Generic Type for defining the element types in classes and methods.
 """
 
 

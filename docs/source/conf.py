@@ -27,21 +27,20 @@ release = __version__
 # extensions to use
 # install them with: pip install...
 extensions = [
+    "autoapi.extension",
+    "sphinx.ext.todo",
     "sphinx.ext.autodoc",
-    "sphinx.ext.autodoc.typehints",
+    "sphinx.ext.viewcode",
     "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
-    # "sphinx.ext.viewcode",
     "sphinx.ext.intersphinx",
     "sphinx.ext.mathjax",
-    "sphinx.ext.todo",
     "sphinx.ext.graphviz",
     "sphinx.ext.duration",
     "sphinx.ext.inheritance_diagram",
     "sphinx_autodoc_typehints",
     "myst_parser",
     "sphinx_design",  # For grid cards like NumPy
-    "autoapi.extension",
     "sphinx_markdown_builder",
     "sphinx_copybutton",
     "sphinx_favicon",

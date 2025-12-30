@@ -23,7 +23,7 @@ import dataclasses
 
 # import global variables
 from pydasa.utils.default import VLD_IODATA_LT
-from pydasa.utils.default import T
+from pydasa.types.generics import T
 
 
 # Memory Helpers

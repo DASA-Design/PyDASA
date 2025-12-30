@@ -26,7 +26,7 @@ import inspect
 # generic error handling and type checking
 from pydasa.validations.error import handle_error as error
 from pydasa.utils.default import dflt_cmp_func_lt
-from pydasa.utils.default import T
+from pydasa.types.generics import T
 from pydasa.utils.default import DFLT_DICT_KEY
 from pydasa.utils.default import VLD_IODATA_LT
 

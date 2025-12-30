@@ -39,7 +39,7 @@ from pydasa.validations.error import handle_error as error
 # default cmp function for the hash table
 from pydasa.utils.default import dflt_cmp_func_ht
 # default data type for the hash table
-from pydasa.utils.default import T
+from pydasa.types.generics import T
 from pydasa.utils.default import VLD_DTYPE_LT
 from pydasa.utils.default import DFLT_DICT_KEY
 from pydasa.utils.default import VLD_IODATA_LT

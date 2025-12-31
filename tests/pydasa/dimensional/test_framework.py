@@ -12,7 +12,7 @@ import pytest
 from pydasa.dimensional.framework import DimSchema
 from pydasa.core.fundamental import Dimension
 from tests.pydasa.data.test_data import get_framework_test_data
-from pydasa.utils import config as cfg
+from pydasa.core import config as cfg
 
 
 class TestDimSchema(unittest.TestCase):

@@ -34,7 +34,7 @@ from pydasa.validations.error import inspect_var
 from pydasa.utils.latex import latex_to_python
 # Import global configuration
 # import the 'cfg' module to allow global variable edition
-from pydasa.utils import config as cfg
+from pydasa.core import config as cfg
 
 
 @dataclass

@@ -39,7 +39,7 @@ from pydasa.utils.latex import latex_to_python
 
 # Import global configuration
 # Import the 'cfg' module to allow global variable editing
-from pydasa.utils import config as cfg
+from pydasa.core import config as cfg
 
 
 @dataclass

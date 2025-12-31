@@ -52,55 +52,11 @@ Working Patterns:
 # python native modules
 # global variables
 
-# Physical FDUs precedence dict
-# :attr: PHY_FDU_PREC_DT
-PHY_FDU_PREC_DT: dict = {
-    "L": {
-        "_unit": "m",
-        "name": "Length",
-        "description": "Distance between two points in space."
-    },
-    "M": {
-        "_unit": "kg",
-        "name": "Mass",
-        "description": "Amount of matter in an object."
-    },
-    "T": {
-        "_unit": "s",
-        "name": "Time",
-        "description": "Duration of an event or interval."
-    },
-    "K": {
-        "_unit": "K",
-        "name": "Temperature",
-        "description": "Measure of average kinetic energy of particles."
-    },
-    "I": {
-        "_unit": "A",
-        "name": "Electric Current",
-        "description": "Flow of electric charge."
-    },
-    "N": {
-        "_unit": "mol",
-        "name": "Amount of Substance",
-        "description": "Quantity of entities (e.g., atoms, molecules)."
-    },
-    "C": {
-        "_unit": "cd",
-        "name": "Luminous Intensity",
-        "description": "Perceived power of light in a given direction."
-    },
-}
-"""
-Physical FDUs Precedence Dictionary.
-    - Length [L]: Distance between two points in space.
-    - Mass [M]: Amount of matter in an object.
-    - Time [T]: Duration of an event or interval.
-    - Temperature [K]: Measure of average kinetic energy of particles.
-    - Electric Current [I]: Flow of electric charge.
-    - Amount of Substance [N/n/mol]: Quantity of entities (e.g., atoms, molecules).
-    - Luminous Intensity [C/c/cd]: Perceived power of light in a given direction.
-"""
+# import global constants
+from pydasa.dimensional.constant import PHY_FDU_PREC_DT
+# from pydasa.utils.constant import COMPU_FDU_PREC_DT
+# from pydasa.utils.constant import SOFT_FDU_PREC_DT
+
 
 # Computation FDUs precedence dict
 # :attr: COMPU_FDU_PREC_DT

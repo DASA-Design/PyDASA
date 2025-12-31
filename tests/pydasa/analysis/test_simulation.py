@@ -693,7 +693,7 @@ class TestMonteCarloSim(unittest.TestCase):
         """*test_variables_property()* tests variables property."""
         coef = list(self.coefficients.values())[0]
         mc_sim = MonteCarloSim(_coefficient=coef)
-        
+
         vars_dict = mc_sim.variables
         assert isinstance(vars_dict, dict)
 

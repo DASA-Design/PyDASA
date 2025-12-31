@@ -26,16 +26,19 @@ from pydasa.core.basic import Validation
 from pydasa.core.fundamental import Dimension
 
 # Import global variables
-from pydasa.utils.config import (
-    FDU_FWK_DT,
+from pydasa.core.config import FDU_FWK_DT
+
+from pydasa.dimensional.constants import (
     PHY_FDU_PREC_DT,
     COMPU_FDU_PREC_DT,
     SOFT_FDU_PREC_DT,
-    DFLT_POW_RE
 )
 
+from pydasa.utils.patterns import DFLT_POW_RE
+from pydasa.utils import patterns as pat
+
 # Import the 'cfg' module to allow global variable editing
-from pydasa.utils import config as cfg
+# from pydasa.core import config as cfg
 
 
 @dataclass
@@ -270,11 +273,12 @@ class DimSchema(Validation):
         # fdu_symbols = [fdu.sym for fdu in self._fdu_lt]
 
         # Update global configuration
-        cfg.WKNG_FDU_PREC_LT = self.fdu_symbols
-        cfg.WKNG_FDU_RE = self._fdu_regex
-        cfg.WKNG_POW_RE = self._fdu_pow_regex
-        cfg.WKNG_NO_POW_RE = self._fdu_no_pow_regex
-        cfg.WKNG_FDU_SYM_RE = self._fdu_sym_regex
+        # FIXME check after migration
+        pat.WKNG_FDU_PREC_LT = self.fdu_symbols
+        pat.WKNG_FDU_RE = self._fdu_regex
+        pat.WKNG_POW_RE = self._fdu_pow_regex
+        pat.WKNG_NO_POW_RE = self._fdu_no_pow_regex
+        pat.WKNG_FDU_SYM_RE = self._fdu_sym_regex
 
     # propierties getters and setters
 

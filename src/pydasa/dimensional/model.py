@@ -34,7 +34,7 @@ from pydasa.dimensional.framework import DimSchema
 from pydasa.buckingham.vashchy import Coefficient
 
 # Import utils
-from pydasa.utils import config as cfg
+from pydasa.core import config as cfg
 
 # Global constants
 MAX_OUT: int = 1

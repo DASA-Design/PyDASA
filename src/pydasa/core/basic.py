@@ -27,7 +27,7 @@ from abc import ABC
 import re
 
 # import global variables
-from pydasa.utils.config import FDU_FWK_DT
+from pydasa.core.config import FDU_FWK_DT
 from pydasa.utils.patterns import LATEX_RE
 
 

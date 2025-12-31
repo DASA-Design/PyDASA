@@ -31,8 +31,8 @@ from pydasa.datastruct.tables.htme import MapEntry
 from pydasa.datastruct.lists.arlt import ArrayList
 from pydasa.datastruct.lists.sllt import SingleLinkedList
 # util functions for the hash table
-from pydasa.utils.helpers import next_prime, previous_prime
-from pydasa.utils.helpers import mad_hash
+from pydasa.utils.math import next_prime, previous_prime
+from pydasa.utils.hashing import mad_hash
 from pydasa.validations.error import handle_error as error
 
 

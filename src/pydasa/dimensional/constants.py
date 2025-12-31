@@ -131,3 +131,15 @@ Digital or Dimensional Analysis Software Architecture (DASA) FDUs Precedence Dic
         - C: Connectivity, the measure of interconnections between components in a system.
         - A: Capacity, the maximum amount of data or information that can be stored or processed in a system component.
 """
+
+
+# Default Fundamental Dimensional Units (FDU) precedence list
+# :attr: DFLT_FDU_PREC_LT
+DFLT_FDU_PREC_LT: list = list(PHY_FDU_PREC_DT.keys())
+"""
+Fundamental Dimensional Units (FDUs) in precedence order for the dimensional matrix (e.g., 'M*L^-1*T^-2').
+
+Purpose:
+    - Defines the row order in the dimensional matrix.
+    - Validates parameter and variable dimensions in *PyDASA*.
+"""

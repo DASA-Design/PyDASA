@@ -53,74 +53,79 @@ Working Patterns:
 # global variables
 
 # import global constants
-from pydasa.dimensional.constant import PHY_FDU_PREC_DT
-# from pydasa.utils.constant import COMPU_FDU_PREC_DT
-# from pydasa.utils.constant import SOFT_FDU_PREC_DT
+from pydasa.dimensional.constants import PHY_FDU_PREC_DT
+from pydasa.dimensional.constants import COMPU_FDU_PREC_DT
+from pydasa.dimensional.constants import SOFT_FDU_PREC_DT
+from pydasa.dimensional.constants import DFLT_FDU_PREC_LT
+
+assert PHY_FDU_PREC_DT
+assert COMPU_FDU_PREC_DT
+assert SOFT_FDU_PREC_DT
 
 
-# Computation FDUs precedence dict
-# :attr: COMPU_FDU_PREC_DT
-COMPU_FDU_PREC_DT: dict = {
-    "T": {
-        "_unit": "s",
-        "name": "Time",
-        "description": "Duration of an event or interval."
-    },
-    "S": {
-        "_unit": "bit",
-        "name": "Space",
-        "description": "Physical extent in three dimensions."
-    },
-    "N": {
-        "_unit": "op",
-        "name": "Complexity",
-        "description": "Measure of interconnectedness or intricacy in a system."
-    },
-}
-"""
-Computation FDUs Precedence Dictionary.
-    - T: Time, the duration of an event or interval.
-    - S: Space, the memory or storage capacity of a system.
-    - N: Complexity, the measure of interconnectedness or intricacy in a system.
-"""
+# # Computation FDUs precedence dict
+# # :attr: COMPU_FDU_PREC_DT
+# COMPU_FDU_PREC_DT: dict = {
+#     "T": {
+#         "_unit": "s",
+#         "name": "Time",
+#         "description": "Duration of an event or interval."
+#     },
+#     "S": {
+#         "_unit": "bit",
+#         "name": "Space",
+#         "description": "Physical extent in three dimensions."
+#     },
+#     "N": {
+#         "_unit": "op",
+#         "name": "Complexity",
+#         "description": "Measure of interconnectedness or intricacy in a system."
+#     },
+# }
+# """
+# Computation FDUs Precedence Dictionary.
+#     - T: Time, the duration of an event or interval.
+#     - S: Space, the memory or storage capacity of a system.
+#     - N: Complexity, the measure of interconnectedness or intricacy in a system.
+# """
 
-# Software Architecture FDUs precedence dict
-# :attr: SOFT_FDU_PREC_DT
-SOFT_FDU_PREC_DT: dict = {
-    "T": {
-        "_unit": "s",
-        "name": "Time",
-        "description": "Duration of an event or interval."
-    },
-    "D": {
-        "_unit": "bit",
-        "name": "Data",
-        "description": "Information processed by a system."
-    },
-    "E": {
-        "_unit": "req",
-        "name": "Effort",
-        "description": "Measure of computational effort/complexity."
-    },
-    "C": {
-        "_unit": "node",
-        "name": "Connectivity",
-        "description": "Measure of interconnections between components."
-    },
-    "A": {
-        "_unit": "process",
-        "name": "Capacity",
-        "description": "Maximum amount of data that can be stored/processed."
-    },
-}
-"""
-Digital or Dimensional Analysis Software Architecture (DASA) FDUs Precedence Dictionary.
-        - T: Time, the duration of an event or interval.
-        - D: Data, the information processed by a system.
-        - E: Effort, the measure of how much computational effort/complexity the task demands to complete.
-        - C: Connectivity, the measure of interconnections between components in a system.
-        - A: Capacity, the maximum amount of data or information that can be stored or processed in a system component.
-"""
+# # Software Architecture FDUs precedence dict
+# # :attr: SOFT_FDU_PREC_DT
+# SOFT_FDU_PREC_DT: dict = {
+#     "T": {
+#         "_unit": "s",
+#         "name": "Time",
+#         "description": "Duration of an event or interval."
+#     },
+#     "D": {
+#         "_unit": "bit",
+#         "name": "Data",
+#         "description": "Information processed by a system."
+#     },
+#     "E": {
+#         "_unit": "req",
+#         "name": "Effort",
+#         "description": "Measure of computational effort/complexity."
+#     },
+#     "C": {
+#         "_unit": "node",
+#         "name": "Connectivity",
+#         "description": "Measure of interconnections between components."
+#     },
+#     "A": {
+#         "_unit": "process",
+#         "name": "Capacity",
+#         "description": "Maximum amount of data that can be stored/processed."
+#     },
+# }
+# """
+# Digital or Dimensional Analysis Software Architecture (DASA) FDUs Precedence Dictionary.
+#         - T: Time, the duration of an event or interval.
+#         - D: Data, the information processed by a system.
+#         - E: Effort, the measure of how much computational effort/complexity the task demands to complete.
+#         - C: Connectivity, the measure of interconnections between components in a system.
+#         - A: Capacity, the maximum amount of data or information that can be stored or processed in a system component.
+# """
 
 # Supported Fundamental Dimensional Unit (FDU) Frameworks
 # :data: FDU_FWK_DT
@@ -177,16 +182,6 @@ SENS_ANSYS_DT: dict = {
     # "CUSTOM": "User-defined sensitivity analysis for specific use cases.",
 }
 
-# Default Fundamental Dimensional Units (FDU) precedence list
-# :attr: DFLT_FDU_PREC_LT
-DFLT_FDU_PREC_LT: list = list(PHY_FDU_PREC_DT.keys())
-"""
-Fundamental Dimensional Units (FDUs) in precedence order for the dimensional matrix (e.g., 'M*L^-1*T^-2').
-
-Purpose:
-    - Defines the row order in the dimensional matrix.
-    - Validates parameter and variable dimensions in *PyDASA*.
-"""
 
 # TODO clean the regex when test are finished
 # Allow valid LaTeX strings starting with a backslash or alphanumeric strings

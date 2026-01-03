@@ -354,7 +354,7 @@ class TestValidationDecorators(unittest.TestCase):
         # LaTeX works
         obj.value = r"\Pi"
         self.assertEqual(obj.value, r"\Pi")
-        
+
         # Alphanumeric should fail
         with self.assertRaises(ValueError):
             obj.value = "V"

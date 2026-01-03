@@ -1,40 +1,15 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """
-Core Module
-===========
+Package data
+===========================================
 
-Core domain classes and configuration for PyDASA.
+Data persistence and I/O operations for PyDASA.
 
-This module contains fundamental domain entities and system configuration.
+This package provides functions for reading and writing data to files,
+handling different data formats, and ensuring compatibility with the
+data structures used in PyDASA.
 """
 
-# TODO remove unnecesary code after refactor
-from pydasa.core import config
-from pydasa.core.config import (
-    # Type-safe Enums (NEW - preferred)
-    Framework,
-    VarCardinality,
-    CoefCardinality,
-    AnaliticMode,
-    PyDASAConfig,
-    # Backward compatibility dict exports (DEPRECATED)
-    FDU_FWK_DT,
-    PARAMS_CAT_DT,
-    DC_CAT_DT,
-    SENS_ANSYS_DT,
-)
+from pydasa.core.io import load, save, load_json, save_json
 
-__all__ = [
-    "config",
-    # Enums
-    "Framework",
-    "VarCardinality",
-    "CoefCardinality",
-    "AnaliticMode",
-    "PyDASAConfig",
-    # Legacy dicts
-    "FDU_FWK_DT",
-    "PARAMS_CAT_DT",
-    "DC_CAT_DT",
-    "SENS_ANSYS_DT",
-]
+__all__ = ['load', 'save', 'load_json', 'save_json']

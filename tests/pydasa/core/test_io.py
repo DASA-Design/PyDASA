@@ -11,7 +11,7 @@ import pytest
 import json
 import tempfile
 from pathlib import Path
-from pydasa.data.io import load_json, save_json, load, save
+from pydasa.core.io import load_json, save_json, load, save
 from tests.pydasa.data.test_data import get_io_test_data
 
 

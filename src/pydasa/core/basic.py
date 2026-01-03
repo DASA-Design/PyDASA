@@ -6,9 +6,9 @@ Module basic.py
 This module provides base classes with common validation logic used across FDU, Parameter, and Variable classes to eliminate code duplication.
 
 Classes:
-    **Validation**: enforces common validation logic.
-    **IdxValidation**: enforces index/precedence validation logic.
-    **SymValidation**: enforces symbol and framework validation logic.
+    **Foundation**: enforces common validation logic.
+    **IdxBasis**: enforces index/precedence validation logic.
+    **SymBasis**: enforces symbol and framework validation logic.
 
 *IMPORTANT:* Based on the theory from:
 
@@ -18,22 +18,29 @@ Classes:
 # forward references + postpone eval type hints
 from __future__ import annotations
 from dataclasses import dataclass
-# TODO do I need the Generic, T stuff???
 from typing import Optional
-# from new.pydasa.utils.default import T
 
 # indicate it is an abstract base class
 from abc import ABC
-import re
 
 # import global variables
-from pydasa.core.config import FDU_FWK_DT
+from pydasa.core.setup import Framework
+from pydasa.core.setup import PYDASA_CFG
 from pydasa.utils.patterns import LATEX_RE
+
+# import validation decorators
+from pydasa.validations.decorators import (
+    validate_type,
+    validate_emptiness,
+    validate_choices,
+    validate_pattern,
+    validate_index,
+)
 
 
 @dataclass
-class SymValidation(ABC):
-    """**SymValidation** Base class for entities with symbols and framework functionalities.
+class SymBasis(ABC):
+    """**SymBasis** Foundation class for entities with symbols and framework functionalities.
 
     Attributes:
         _sym (str): Symbol representation.
@@ -50,7 +57,7 @@ class SymValidation(ABC):
     """Python-compatible alias for symbol, used in executable code. e.g.: `\\rho_{1}` -> `rho_1`."""
 
     # :attr: _fwk
-    _fwk: str = "PHYSICAL"
+    _fwk: str = Framework.PHYSICAL.value
     """Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM)."""
 
     def __post_init__(self) -> None:
@@ -75,6 +82,9 @@ class SymValidation(ABC):
         return self._sym
 
     @sym.setter
+    @validate_type(str)
+    @validate_emptiness()
+    @validate_pattern(LATEX_RE, allow_alnum=True)
     def sym(self, val: str) -> None:
         """*sym* Set the symbol with validation.
 
@@ -84,7 +94,6 @@ class SymValidation(ABC):
         Raises:
             ValueError: If symbol format is invalid.
         """
-        self._validate_sym(val)
         self._sym = val
 
     @property
@@ -97,6 +106,8 @@ class SymValidation(ABC):
         return self._fwk
 
     @fwk.setter
+    @validate_type(str)
+    @validate_choices(PYDASA_CFG.frameworks)
     def fwk(self, val: str) -> None:
         """*fwk* Set the framework with validation.
 
@@ -106,7 +117,6 @@ class SymValidation(ABC):
         Raises:
             ValueError: If framework is not supported.
         """
-        self._validate_fwk(val)
         self._fwk = val
 
     @property
@@ -119,6 +129,8 @@ class SymValidation(ABC):
         return self._alias
 
     @alias.setter
+    @validate_type(str)
+    @validate_emptiness()
     def alias(self, val: str) -> None:
         """*alias* Set the Python variable synonym.
 
@@ -128,52 +140,7 @@ class SymValidation(ABC):
         Raises:
             ValueError: If variable name is empty.
         """
-        if val is not None and not val.strip():
-            _msg = f"Symbol must be a non-empty string. Provided: {val}"
-            raise ValueError(_msg)
         self._alias = val
-
-    def _validate_sym(self, val: str) -> None:
-        """*_validate_sym()* Validate symbol format.
-
-        Args:
-            val (str): Symbol to validate.
-
-        Raises:
-            ValueError: If symbol format is invalid.
-            ValueError: If symbol characters are invalid.
-        """
-        if not isinstance(val, str) or not val.strip():
-            _msg = f"Symbol must be a non-empty string. Provided: {val}"
-            raise ValueError(_msg)
-
-        # Accept valid LaTeX or alphanumeric symbols
-        is_latex = re.match(LATEX_RE, val)
-        is_alnum = val.isalnum()
-
-        # Optionally restrict length for non-LaTeX symbols
-        # TODO check this, might be wrong!!!
-        if not (is_alnum or is_latex):
-            msg = "Symbol must be alphanumeric or a valid LaTeX string."
-            msg += f" Provided: '{val}'. "
-            msg += "Examples: 'V', 'd', '\\Pi_{0}', '\\rho'. "
-            raise ValueError(msg)
-
-    # Add this to your Validation or SymValidation class
-    def _validate_fwk(self, value: str) -> None:
-        """*_validate_fwk()* Validates the framework identifier.
-
-        Args:
-            value (str): Framework identifier to validate.
-
-        Raises:
-            ValueError: If the framework identifier is invalid.
-        """
-        if value not in FDU_FWK_DT:
-            msg = f"Invalid framework: {value}. "
-            msg += "Framework must be one of the following: "
-            msg += f"{', '.join(FDU_FWK_DT.keys())}."
-            raise ValueError(msg)
 
     def clear(self) -> None:
         """*clear()* Reset symbol and framework attributes to default values.
@@ -183,12 +150,12 @@ class SymValidation(ABC):
         # Reset symbol attributes
         self._sym = ""
         self._alias = ""
-        self._fwk = "PHYSICAL"
+        self._fwk = Framework.PHYSICAL.value
 
 
 @dataclass
-class IdxValidation(SymValidation):
-    """**IdxValidation** Base class for entities with index/precedence functionality.
+class IdxBasis(SymBasis):
+    """**IdxBasis** Foundation class for entities with index/precedence functionality.
 
     Attributes:
         _idx (int): Index/precedence value
@@ -215,6 +182,8 @@ class IdxValidation(SymValidation):
         return self._idx
 
     @idx.setter
+    @validate_type(int, allow_none=False)
+    @validate_index()
     def idx(self, val: int) -> None:
         """*idx* Set the index/precedence value.
 
@@ -224,22 +193,7 @@ class IdxValidation(SymValidation):
         Raises:
             ValueError: If index is not a non-negative integer.
         """
-
-        self._validate_idx(val)
         self._idx = val
-
-    def _validate_idx(self, val: int) -> None:
-        """*idx* Validate index/precedence value.
-
-        Args:
-            val (int): Index value to validate.
-
-        Raises:
-            ValueError: If index is not a non-negative integer.
-        """
-        if not isinstance(val, int) or val < 0:
-            _msg = f"Index must be a non-negative integer. Provided: {val}"
-            raise ValueError(_msg)
 
     def clear(self) -> None:
         """*clear()* Reset index and inherited attributes to default values.
@@ -254,8 +208,8 @@ class IdxValidation(SymValidation):
 
 
 @dataclass
-class Validation(IdxValidation):
-    """**Validation** Base class for all dimensional analysis entities.
+class Foundation(IdxBasis):
+    """**Foundation** Foundation class for all dimensional analysis entities.
 
     Provides common validation logic and attributes shared by FDU, Variable, and Coeffcient classes.
 
@@ -264,8 +218,8 @@ class Validation(IdxValidation):
         description (str): Brief summary or description
     """
 
-    # :attr: name
-    name: str = ""
+    # :attr: _name
+    _name: str = ""
     """User-friendly name of the entity."""
 
     # :attr: description
@@ -278,19 +232,27 @@ class Validation(IdxValidation):
         if self.description:
             self.description = self.description.strip()
 
-    def _validate_name(self, name: str) -> None:
-        """Validate the name format.
+    @property
+    def name(self) -> str:
+        """*name* Get the name.
+
+        Returns:
+            str: Name value.
+        """
+        return self._name
+
+    @name.setter
+    @validate_type(str, allow_none=False)
+    def name(self, val: str) -> None:
+        """*name* Set the name with validation.
 
         Args:
-            name (str): Name to validate.
+            val (str): Name value.
 
         Raises:
             ValueError: If name is not a non-empty string.
         """
-        if not isinstance(name, str) or not name.strip():
-            _msg = f"Name must be a non-empty string. Provided: {name}"
-            raise ValueError(_msg)
-        self.name = name.strip()
+        self._name = val.strip()
 
     def clear(self) -> None:
         """*clear()* Reset all attributes to default values.

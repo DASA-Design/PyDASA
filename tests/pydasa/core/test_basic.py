@@ -181,7 +181,7 @@ class TestValidation(unittest.TestCase):
     def test_str_representation(self) -> None:
         """Test __str__ and __repr__ methods."""
         obj = Foundation(_idx=0, _sym="L", _name="Length")
-        
+
         str_repr = str(obj)
         assert "Foundation(" in str_repr
         assert "idx=0" in str_repr

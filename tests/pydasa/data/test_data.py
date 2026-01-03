@@ -170,7 +170,7 @@ def get_latex_test_data():
     }
 
 
-# test data for from pydasa.core.basic import SymValidation et al
+# test data for from pydasa.core.basic import SymBasis et al
 def get_basic_test_data() -> dict:
     """Get test data for basic.py tests."""
     return {

@@ -133,11 +133,6 @@ pip install pydasa
 python -c "import pydasa; print(pydasa.__version__)"
 
 
-
-
-
-
-
 =============================================
 
 PyDASA/

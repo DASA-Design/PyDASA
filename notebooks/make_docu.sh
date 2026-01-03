@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 languages=("es" "ja")
 
 ./make.bat html

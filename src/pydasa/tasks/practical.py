@@ -374,7 +374,7 @@ class MonteCarloHandler(Foundation):
                     _variables=self._variables,
                     # _simul_cache=self._shared_cache,
                     _experiments=self._experiments,
-                    name=f"Monte Carlo Simulation for {coef.name}",
+                    _name=f"Monte Carlo Simulation for {coef.name}",
                     description=f"Monte Carlo simulation for {coef.sym}",
                 )
 
@@ -721,7 +721,7 @@ class MonteCarloHandler(Foundation):
         """
         # Create instance with basic attributes
         instance = cls(
-            name=data.get("name", ""),
+            _name=data.get("name", ""),
             description=data.get("description", ""),
             _idx=data.get("idx", -1),
             _sym=data.get("sym", ""),

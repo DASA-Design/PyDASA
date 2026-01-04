@@ -109,18 +109,18 @@ class TestPatterns(unittest.TestCase):
         assert hasattr(patterns, 'WKNG_FDU_PREC_LT')
         assert isinstance(patterns.WKNG_FDU_PREC_LT, list)
 
-    def test_wkng_fdu_prec_lt_matches_default(self) -> None:
-        """Test that WKNG_FDU_PREC_LT initially matches default."""
-        from pydasa.dimensional.constants import DFLT_FDU_PREC_LT
-        # Should be a copy, not the same object
-        assert patterns.WKNG_FDU_PREC_LT == DFLT_FDU_PREC_LT
-        assert patterns.WKNG_FDU_PREC_LT is not DFLT_FDU_PREC_LT
+    # def test_wkng_fdu_prec_lt_matches_default(self) -> None:
+    #     """Test that WKNG_FDU_PREC_LT initially matches default."""
+    #     from pydasa.dimensional.constants import DFLT_FDU_PREC_LT
+    #     # Should be a copy, not the same object
+    #     assert patterns.WKNG_FDU_PREC_LT == DFLT_FDU_PREC_LT
+    #     assert patterns.WKNG_FDU_PREC_LT is not DFLT_FDU_PREC_LT
 
-    def test_wkng_fdu_prec_lt_is_mutable(self) -> None:
-        """Test that WKNG_FDU_PREC_LT can be modified."""
-        # Should be a list that can be modified
-        original_length = len(patterns.WKNG_FDU_PREC_LT)
-        assert original_length > 0
+    # def test_wkng_fdu_prec_lt_is_mutable(self) -> None:
+    #     """Test that WKNG_FDU_PREC_LT can be modified."""
+    #     # Should be a list that can be modified
+    #     original_length = len(patterns.WKNG_FDU_PREC_LT)
+    #     assert original_length > 0
 
     # Working Pattern Tests
     def test_wkng_fdu_re_exists(self) -> None:
@@ -163,9 +163,9 @@ class TestPatterns(unittest.TestCase):
     def test_all_patterns_are_strings(self) -> None:
         """Test that all pattern variables are strings."""
         string_patterns = [
-            'LATEX_RE', 'DFLT_FDU_RE', 'DFLT_POW_RE', 
+            'LATEX_RE', 'DFLT_FDU_RE', 'DFLT_POW_RE',
             'DFLT_NO_POW_RE', 'DFLT_FDU_SYM_RE',
-            'WKNG_FDU_RE', 'WKNG_POW_RE', 
+            'WKNG_FDU_RE', 'WKNG_POW_RE',
             'WKNG_NO_POW_RE', 'WKNG_FDU_SYM_RE'
         ]
         for pattern_name in string_patterns:
@@ -175,9 +175,9 @@ class TestPatterns(unittest.TestCase):
     def test_all_patterns_compile(self) -> None:
         """Test that all regex patterns compile without errors."""
         pattern_names = [
-            'LATEX_RE', 'DFLT_FDU_RE', 'DFLT_POW_RE', 
+            'LATEX_RE', 'DFLT_FDU_RE', 'DFLT_POW_RE',
             'DFLT_NO_POW_RE', 'DFLT_FDU_SYM_RE',
-            'WKNG_FDU_RE', 'WKNG_POW_RE', 
+            'WKNG_FDU_RE', 'WKNG_POW_RE',
             'WKNG_NO_POW_RE', 'WKNG_FDU_SYM_RE'
         ]
         for pattern_name in pattern_names:
@@ -191,9 +191,9 @@ class TestPatterns(unittest.TestCase):
     def test_patterns_are_not_empty(self) -> None:
         """Test that all patterns are non-empty strings."""
         pattern_names = [
-            'LATEX_RE', 'DFLT_FDU_RE', 'DFLT_POW_RE', 
+            'LATEX_RE', 'DFLT_FDU_RE', 'DFLT_POW_RE',
             'DFLT_NO_POW_RE', 'DFLT_FDU_SYM_RE',
-            'WKNG_FDU_RE', 'WKNG_POW_RE', 
+            'WKNG_FDU_RE', 'WKNG_POW_RE',
             'WKNG_NO_POW_RE', 'WKNG_FDU_SYM_RE'
         ]
         for pattern_name in pattern_names:

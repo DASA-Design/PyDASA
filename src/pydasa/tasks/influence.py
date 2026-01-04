@@ -26,7 +26,7 @@ from pydasa.core.basic import Foundation
 # Import related classes
 from pydasa.elements.parameter import Variable
 from pydasa.dimensional.buckingham import Coefficient
-from pydasa.analysis.scenario import DimSensitivity
+from pydasa.analysis.scenario import Sensitivity
 
 # Import utils
 from pydasa.validations.error import inspect_var
@@ -58,7 +58,7 @@ class SensitivityHandler(Foundation):
         _coefficients (Dict[str, Coefficient]): all available coefficients in the model (*Coefficient*).
 
         # Analysis Results
-        _analyses (Dict[str, DimSensitivity]): all sensitivity analyses performed.
+        _analyses (Dict[str, Sensitivity]): all sensitivity analyses performed.
         _results (Dict[str, Dict[str, Any]]): all consolidated results of analyses.
     """
 
@@ -78,7 +78,7 @@ class SensitivityHandler(Foundation):
 
     # Analysis results
     # :attr: _analyses
-    _analyses: Dict[str, DimSensitivity] = field(default_factory=dict)
+    _analyses: Dict[str, Sensitivity] = field(default_factory=dict)
     """Dictionary of sensitivity analyses performed."""
 
     # :attr: _results
@@ -139,13 +139,13 @@ class SensitivityHandler(Foundation):
     def _create_analyses(self) -> None:
         """*_create_analyses()* Creates sensitivity analyses for each coefficient.
 
-        Sets up DimSensitivity objects for each coefficient to be analyzed.
+        Sets up Sensitivity objects for each coefficient to be analyzed.
         """
         self._analyses.clear()
 
         for i, (pi, coef) in enumerate(self._coefficients.items()):
             # Create sensitivity analysis
-            analysis = DimSensitivity(
+            analysis = Sensitivity(
                 _idx=i,
                 _sym=f"SEN_{{{coef.sym}}}",
                 _fwk=self._fwk,
@@ -374,11 +374,11 @@ class SensitivityHandler(Foundation):
             self._analyses.clear()
 
     @property
-    def analyses(self) -> Dict[str, DimSensitivity]:
+    def analyses(self) -> Dict[str, Sensitivity]:
         """*analyses* Get the dictionary of sensitivity analyses.
 
         Returns:
-            Dict[str, DimSensitivity]: Dictionary of sensitivity analyses.
+            Dict[str, Sensitivity]: Dictionary of sensitivity analyses.
         """
         return self._analyses.copy()
 

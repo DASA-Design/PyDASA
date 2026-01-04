@@ -25,11 +25,14 @@ from typing import List, Dict, Optional, Any, Sequence, Mapping, cast
 # custom modules
 # core basic foundation class
 from pydasa.core.basic import Foundation
+# import validation decorators
+from pydasa.validations.decorators import validate_type
+from pydasa.validations.decorators import validate_emptiness
+# pydasa FDU class
+from pydasa.dimensional.fundamental import Dimension
 # global variables for setup
 from pydasa.core.setup import PYDASA_CFG
 from pydasa.core.setup import FDU_FWK_DT
-# pydasa FDU class
-from pydasa.dimensional.fundamental import Dimension
 # important regex patterns
 from pydasa.utils.patterns import DFLT_POW_RE
 
@@ -52,17 +55,20 @@ class Schema(Foundation):
         _fdu_sym_regex (str): Regex pattern for matching FDUs in symbolic expressions. (e.g., 'M^(1)*L^(-1)*T^(-2)' to 'L**(-1)*M**(1)*T**(-2)').
     """
 
+    # TODO integrate _fdu_lt and _fdu_map into a single attribute
     # FDUs storage
-    # FDU precedence list, linked to WKNG_FDU_PREC_LT.
+    # FDU precedence list, linked to WKNG_FDU_PREC_LT, full object list.
     # :attr: _fdu_lt
     _fdu_lt: List[Dimension] = field(default_factory=list[Dimension])
     """List of Fundamental Dimensional Units in precedence order."""
 
     # FDU framework
+    # FDU map, linked to WKNG_FDU_PREC_LT, symbol to Dimension object.
     # :attr: _fwk
     _fdu_map: Dict[str, Dimension] = field(default_factory=dict)
     """Dictionary mapping FDU symbols to Dimension objects."""
 
+    # FDU symbol list, linked to WKNG_FDU_PREC_LT, string symbol list.
     # :attr: _fdu_symbols
     _fdu_symbols: List[str] = field(default_factory=list)
     """List of FDU symbols in the framework."""
@@ -332,6 +338,8 @@ class Schema(Foundation):
         return self._fdu_regex
 
     @fdu_regex.setter
+    @validate_type(str, allow_none=False)
+    @validate_emptiness()
     def fdu_regex(self, val: str) -> None:
         """*fdu_regex* Set the FDUs regex pattern.
 
@@ -341,10 +349,6 @@ class Schema(Foundation):
         Raises:
             ValueError: If the FDUs regex pattern is empty or not a string.
         """
-        if not val or not isinstance(val, str):
-            _msg = "FDUs regex pattern must be a non-empty string. "
-            _msg += f"Provided: {val}"
-            raise ValueError(_msg)
         self._fdu_regex = val
 
     @property
@@ -357,6 +361,8 @@ class Schema(Foundation):
         return self._fdu_pow_regex
 
     @fdu_pow_regex.setter
+    @validate_type(str, allow_none=False)
+    @validate_emptiness()
     def fdu_pow_regex(self, val: str) -> None:
         """*fdu_pow_regex* Set the FDUs pow-regex pattern.
 
@@ -366,10 +372,6 @@ class Schema(Foundation):
         Raises:
             ValueError: If the FDUs pow-regex pattern is empty or not a string.
         """
-        if not val or not isinstance(val, str):
-            _msg = f"Invalid FDU pow-regex pattern: {val}. "
-            _msg += "must be a non-empty string."
-            raise ValueError(_msg)
         self._fdu_pow_regex = val
 
     @property
@@ -382,6 +384,8 @@ class Schema(Foundation):
         return self._fdu_no_pow_regex
 
     @fdu_no_pow_regex.setter
+    @validate_type(str, allow_none=False)
+    @validate_emptiness()
     def fdu_no_pow_regex(self, val: str) -> None:
         """*fdu_no_pow_regex* Set the FDUs no-pow-regex pattern.
 
@@ -391,10 +395,6 @@ class Schema(Foundation):
         Raises:
             ValueError: If the FDUs no-pow-regex pattern is empty or not a string.
         """
-        if not val or not isinstance(val, str):
-            _msg = f"Invalid FDU no-pow-regex pattern: {val}. "
-            _msg += "must be a non-empty string."
-            raise ValueError(_msg)
         self._fdu_no_pow_regex = val
 
     @property
@@ -407,6 +407,8 @@ class Schema(Foundation):
         return self._fdu_sym_regex
 
     @fdu_sym_regex.setter
+    @validate_type(str, allow_none=False)
+    @validate_emptiness()
     def fdu_sym_regex(self, val: str) -> None:
         """*fdu_sym_regex* Set the FDUs sym-regex pattern.
 
@@ -416,10 +418,6 @@ class Schema(Foundation):
         Raises:
             ValueError: If the FDUs sym-regex pattern is empty or not a string.
         """
-        if not val or not isinstance(val, str):
-            _msg = f"Invalid FDUs sym-regex pattern: {val}. "
-            _msg += "must be a non-empty string."
-            raise ValueError(_msg)
         self._fdu_sym_regex = val
 
     def get_fdu(self, symbol: str) -> Optional[Dimension]:

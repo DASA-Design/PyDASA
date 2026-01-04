@@ -29,13 +29,11 @@ from pydasa.core.setup import PYDASA_CFG
 from pydasa.utils.patterns import LATEX_RE
 
 # import validation decorators
-from pydasa.validations.decorators import (
-    validate_type,
-    validate_emptiness,
-    validate_choices,
-    validate_pattern,
-    validate_index,
-)
+from pydasa.validations.decorators import validate_type
+from pydasa.validations.decorators import validate_emptiness
+from pydasa.validations.decorators import validate_choices
+from pydasa.validations.decorators import validate_pattern
+from pydasa.validations.decorators import validate_index
 
 
 @dataclass

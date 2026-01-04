@@ -37,7 +37,7 @@ from pydasa.validations.error import inspect_var
 from pydasa.utils.latex import latex_to_python
 # import validation decorators
 from pydasa.validations.decorators import validate_type
-from pydasa.validations.decorators import validate_emptiness
+# from pydasa.validations.decorators import validate_emptiness
 from pydasa.validations.decorators import validate_choices
 
 # # Import global configuration

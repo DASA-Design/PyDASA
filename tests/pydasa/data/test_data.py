@@ -578,9 +578,9 @@ def get_coefficient_test_data() -> dict:
     }
 
 
-# test data for from pydasa.dimensional.model import DimMatrix
+# test data for from pydasa.dimensional.model import Matrix
 def get_model_test_data() -> dict:
-    """Get test data for DimMatrix/model tests."""
+    """Get test data for Matrix/model tests."""
     return {
         "TEST_VARIABLES": {
             "v": {

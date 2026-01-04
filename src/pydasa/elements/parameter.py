@@ -24,10 +24,11 @@ import re
 import numpy as np
 
 # custom modules
-# basic-core class imports
+# basic-core and framework class imports
 from pydasa.core.basic import Foundation
 from pydasa.dimensional.framework import Schema
 # import global variables
+from pydasa.core.setup import Framework
 from pydasa.core.setup import VarCardinality
 from pydasa.core.setup import PYDASA_CFG
 # pattern interpreter imports
@@ -202,8 +203,7 @@ class Variable(Foundation):
             self._sym = f"V_{self._idx}" if self._idx >= 0 else "V_{}"
 
         # If no schema provided, create default or use global
-        if self._schema is None and self._fwk != "CUSTOM":
-            from pydasa.dimensional.framework import Schema
+        if self._schema is None and self._fwk != Framework.CUSTOM.value:
             self._schema = Schema(_fwk=self._fwk)
 
         # if custom schema is provided

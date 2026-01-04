@@ -49,7 +49,7 @@ class TestDimension(unittest.TestCase):
                 _alias=data["_alias"],
                 _fwk=data["_fwk"],
                 _unit=data["_unit"],
-                _name=data["name"],
+                _name=data["_name"],
                 description=data["description"])
 
             assert dim._idx == data["_idx"]
@@ -57,7 +57,7 @@ class TestDimension(unittest.TestCase):
             assert dim._alias == data["_alias"]
             assert dim._fwk == data["_fwk"]
             assert dim._unit == data["_unit"]
-            assert dim.name == data["name"]
+            assert dim.name == data["_name"]
             assert dim.description[0].isupper()
 
     def test_unit_property_getter(self) -> None:
@@ -88,7 +88,7 @@ class TestDimension(unittest.TestCase):
             _alias=data["_alias"],
             _fwk=data["_fwk"],
             _unit=data["_unit"],
-            _name=data["name"],
+            _name=data["_name"],
             description=data["description"])
 
         result = dim.to_dict()
@@ -99,7 +99,7 @@ class TestDimension(unittest.TestCase):
         assert result["alias"] == data["_alias"]
         assert result["fwk"] == data["_fwk"]
         assert result["unit"] == data["_unit"]
-        assert result["name"] == data["name"]
+        assert result["_name"] == data["_name"]
         assert "description" in result
 
     def test_from_dict(self) -> None:
@@ -111,7 +111,7 @@ class TestDimension(unittest.TestCase):
             "alias": data["_alias"],
             "fwk": data["_fwk"],
             "unit": data["_unit"],
-            "name": data["name"],
+            "_name": data["_name"],
             "description": data["description"]
         }
 
@@ -122,7 +122,7 @@ class TestDimension(unittest.TestCase):
         assert dim._alias == data["_alias"]
         assert dim._fwk == data["_fwk"]
         assert dim._unit == data["_unit"]
-        assert dim.name == data["name"]
+        assert dim.name == data["_name"]
 
     def test_to_dict_from_dict_roundtrip(self) -> None:
         """Test round-trip conversion between Dimension and dict."""
@@ -133,7 +133,7 @@ class TestDimension(unittest.TestCase):
             _alias=data["_alias"],
             _fwk=data["_fwk"],
             _unit=data["_unit"],
-            _name=data["name"],
+            _name=data["_name"],
             description=data["description"])
 
         # Convert to dict and back
@@ -152,7 +152,7 @@ class TestDimension(unittest.TestCase):
             _alias=data["_alias"],
             _fwk=data["_fwk"],
             _unit=data["_unit"],
-            _name=data["name"],
+            _name=data["_name"],
             description=data["description"])
 
         dim2 = Dimension(
@@ -161,7 +161,7 @@ class TestDimension(unittest.TestCase):
             _alias=data["_alias"],
             _fwk=data["_fwk"],
             _unit=data["_unit"],
-            _name=data["name"],
+            _name=data["_name"],
             description=data["description"])
 
         assert dim1 == dim2
@@ -177,7 +177,7 @@ class TestDimension(unittest.TestCase):
             _alias=data1["_alias"],
             _fwk=data1["_fwk"],
             _unit=data1["_unit"],
-            _name=data1["name"],
+            _name=data1["_name"],
             description=data1["description"])
         dim2 = Dimension(
             _idx=data2["_idx"],
@@ -185,7 +185,7 @@ class TestDimension(unittest.TestCase):
             _alias=data2["_alias"],
             _fwk=data2["_fwk"],
             _unit=data2["_unit"],
-            _name=data2["name"],
+            _name=data2["_name"],
             description=data2["description"])
 
         assert dim1 != dim2

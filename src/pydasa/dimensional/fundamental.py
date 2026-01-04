@@ -103,7 +103,7 @@ class Dimension(Foundation):
             "alias": self._alias,
             "fwk": self._fwk,
             "unit": self._unit,
-            "name": self.name,
+            "_name": self.name,
             "description": self.description
         }
 
@@ -123,7 +123,7 @@ class Dimension(Foundation):
             _alias=data.get("alias", ""),
             _fwk=data.get("fwk", "PHYSICAL"),
             _unit=data.get("unit", ""),
-            _name=data.get("name", ""),
+            _name=data.get("_name", ""),
             description=data.get("description", "")
         )
 

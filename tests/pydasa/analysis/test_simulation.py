@@ -27,7 +27,7 @@ import numpy as np
 # Import core PyDASA modules
 # from pydasa.core.fundamental import Dimension
 from pydasa.elements.parameter import Variable
-from pydasa.dimensional.framework import DimSchema
+from pydasa.dimensional.framework import Schema
 from pydasa.dimensional.model import DimMatrix
 
 # Import the module to test
@@ -44,7 +44,7 @@ assert MonteCarloSim
 assert Coefficient
 assert Variable
 assert DimMatrix
-assert DimSchema
+assert Schema
 assert get_simulation_test_data
 
 # Number of experiments for simulations
@@ -81,7 +81,7 @@ class TestMonteCarloSim(unittest.TestCase):
     # ========================================================================
 
     # Add type hints at class level
-    dim_schema: DimSchema
+    dim_schema: Schema
     variables: Dict[str, Variable]
     dim_model: DimMatrix
     coefficients: Dict[str, Coefficient]
@@ -116,7 +116,7 @@ class TestMonteCarloSim(unittest.TestCase):
         self.fdu_list = self.test_data["FDU_LIST"]
 
         # Create and configure dimensional schema
-        self.dim_schema = DimSchema(_fdu_lt=self.fdu_list, _fwk="CUSTOM")
+        self.dim_schema = Schema(_fdu_lt=self.fdu_list, _fwk="CUSTOM")
         self.dim_schema.update_global_config()
 
     def _setup_channel_flow_variables(self) -> None:

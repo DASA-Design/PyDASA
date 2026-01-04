@@ -11,7 +11,7 @@
 # import numpy as np
 # from typing import Any, cast
 
-# from pydasa.dimensional.framework import DimSchema
+# from pydasa.dimensional.framework import Schema
 # from pydasa.core.parameter import Variable
 # from tests.pydasa.data.test_data import get_variable_test_data
 
@@ -25,7 +25,7 @@
 #         self.test_data = get_variable_test_data()
 
 #         # resseting config due to singletton patterm fix later
-#         self.test_scheme = DimSchema(_fwk="PHYSICAL")
+#         self.test_scheme = Schema(_fwk="PHYSICAL")
 #         self.test_scheme.update_global_config()
 
 #     # Initialization tests
@@ -54,7 +54,7 @@
 
 #         for data in variable_types:
 #             # Update dimensional scheme for each framework type
-#             scheme = DimSchema(_fwk=data["_fwk"])
+#             scheme = Schema(_fwk=data["_fwk"])
 #             scheme.update_global_config()
 
 #             var = Variable(
@@ -109,7 +109,7 @@
 #         var = Variable()
 
 #         # resseting config due to singletton patterm fix later
-#         self.test_scheme = DimSchema(_fwk="PHYSICAL")
+#         self.test_scheme = Schema(_fwk="PHYSICAL")
 #         self.test_scheme.update_global_config()
 
 #         for dims in self.test_data["VALID_DIMENSIONS"]:

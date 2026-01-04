@@ -13,7 +13,7 @@
 # import unittest
 # import pytest
 # from pydasa.core import setup
-# from pydasa.dimensional.framework import DimSchema
+# from pydasa.dimensional.framework import Schema
 # from tests.pydasa.data.test_data import get_config_test_data
 
 
@@ -27,7 +27,7 @@
 #         """Inject test data fixture."""
 #         self.test_data = get_config_test_data()
 #         # resetting config due to singleton pattern fix later
-#         self.test_scheme = DimSchema(_fwk="PHYSICAL")
+#         self.test_scheme = Schema(_fwk="PHYSICAL")
 #         self.test_scheme.update_global_config()
 
 #     # =============================================================================

@@ -18,7 +18,7 @@
 # # import required classes
 # from pydasa.core.parameter import Variable
 # from pydasa.buckingham.vashchy import Coefficient
-# from pydasa.dimensional.framework import DimSchema
+# from pydasa.dimensional.framework import Schema
 
 # # import test data
 # from tests.pydasa.data.test_data import get_simulation_test_data
@@ -42,7 +42,7 @@
 #         self.test_data = get_simulation_test_data()
 
 #         # Setup dimensional schema
-#         self.dim_schema = DimSchema(_fwk="CUSTOM",
+#         self.dim_schema = Schema(_fwk="CUSTOM",
 #                                     _fdu_lt=self.test_data["FDU_LIST"],
 #                                     _idx=0)
 #         self.dim_schema._setup_fdus()

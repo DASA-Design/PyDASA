@@ -269,9 +269,9 @@ def get_variable_test_data() -> dict:
     }
 
 
-# test data for from pydasa.dimensional.framework import DimSchema, Dimension
+# test data for from pydasa.dimensional.framework import Schema, Dimension
 def get_framework_test_data() -> dict:
-    """Get test data for DimSchema/framework tests."""
+    """Get test data for Schema/framework tests."""
     return {
         "VALID_FRAMEWORKS": ["PHYSICAL", "COMPUTATION", "SOFTWARE", "CUSTOM"],
         "INVALID_FRAMEWORKS": ["INVALID", "physical", "", None],

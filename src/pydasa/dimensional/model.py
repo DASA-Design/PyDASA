@@ -1,40 +1,41 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 Module model.py
 ============================================
 
-Module for **DimMatrix** to perform Dimensional Analysis in *PyDASA*.
+Module for **Matrix** to perform Dimensional Analysis in *PyDASA*.
 
-This module provides the DimMatrix class which implements matrix-based dimensional analysis following the Buckingham Pi theorem methodology.
+This module provides the Matrix class which implements matrix-based dimensional analysis following the Buckingham Pi theorem methodology.
 
 Classes:
-    **DimMatrix**: Represents a dimensional matrix for performing dimensional analysis, including methods for matrix creation, solving, and coefficient generation.
+    **Matrix**: Represents a dimensional matrix for performing dimensional analysis, including methods for matrix creation, solving, and coefficient generation.
 
 *IMPORTANT:* Based on the theory from:
     H. Gorter, *Dimensionalanalyse: Eine Theoririe der physikalischen Dimensionen mit Anwendungen*
 """
 
 # native python modules
+# forward references + postpone eval type hints
 from __future__ import annotations
 from dataclasses import dataclass, field, fields
 from typing import List, Dict, Optional, Any, Union
 import re
 
-# python third-party modules
+# numeric and symbolic computation
 import numpy as np
 import sympy as sp
 from numpy.typing import NDArray
 
-# Import validation base classes
+# basic-core and dimensional analysis imports
 from pydasa.core.basic import Foundation
-
-# Import related classes
 from pydasa.elements.parameter import Variable
 from pydasa.dimensional.framework import Schema
 from pydasa.dimensional.buckingham import Coefficient
+# import global variables
+from pydasa.core.setup import Framework
+from pydasa.core.setup import VarCardinality
+from pydasa.core.setup import PYDASA_CFG
 
-# Import utils
-from pydasa.core import setup as cfg
 
 # Global constants
 MAX_OUT: int = 1
@@ -45,8 +46,8 @@ MAX_IN: int = 10
 
 
 @dataclass
-class DimMatrix(Foundation):
-    """**DimMatrix** for Dimensional Analysis in *PyDASA*. Manages the dimensional matrix for performing analysis using the Buckingham Pi theorem methodology.
+class Matrix(Foundation):
+    """**Matrix** for Dimensional Analysis in *PyDASA*. Manages the dimensional matrix for performing analysis using the Buckingham Pi theorem methodology.
 
     Args:
         Foundation: Foundation class for validation of symbols and frameworks.
@@ -60,8 +61,8 @@ class DimMatrix(Foundation):
         _alias (str): Python-compatible alias for use in code.
         _fwk (str): Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
 
-        # Framework Management
-        _framework (Schema): Dimensional framework managing FDUs.
+        # FDU Schema Management
+        _schema (Schema): Dimensional framework managing FDUs.
         working_fdus (List[str]): Active FDUs used in current analysis.
 
         # Variable Management
@@ -91,8 +92,8 @@ class DimMatrix(Foundation):
     # Core Identification
     # ========================================================================
     # TODO may be I don't need it
-    # :attr: name
-    name: str = "Dimensional Matrix"
+    # :attr: _name
+    _name: str = "Dimensional Matrix"
     """User-friendly name of the dimensional matrix."""
 
     # :attr: description
@@ -112,15 +113,15 @@ class DimMatrix(Foundation):
     """Python-compatible alias for use in code."""
 
     # :attr: _fwk
-    _fwk: str = "PHYSICAL"
+    _fwk: str = Framework.PHYSICAL.value
     """Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM)."""
 
     # ========================================================================
     # Framework Management
     # ========================================================================
 
-    # :attr: _framework
-    _framework: Schema = field(default_factory=Schema)
+    # :attr: _schema
+    _schema: Schema = field(default_factory=Schema)
     """Dimensional framework managing Fundamental Dimensional Units (FDUs)."""
 
     # :attr: working_fdus
@@ -254,8 +255,8 @@ class DimMatrix(Foundation):
         super().__post_init__()
 
         # Update global configuration from framework
-        if self._framework:
-            self._framework.update_global_config()
+        if self._schema:
+            self._schema.update_global_config()
 
         # Process variables if provided
         if self._variables:
@@ -296,8 +297,8 @@ class DimMatrix(Foundation):
         self.working_fdus = self._extract_fdus()
 
         # Handle CUSTOM framework
-        if self._fwk == "CUSTOM" and self.working_fdus:
-            _fwk = self._framework
+        if self._fwk == Framework.CUSTOM.value and self.working_fdus:
+            _fwk = self._schema
             _w_fdus = self.working_fdus
             if not all(fdu in _fwk.fdu_symbols for fdu in _w_fdus):
                 _msg = f"Invalid CUSTOM FDUs: {_w_fdus}. "
@@ -305,7 +306,7 @@ class DimMatrix(Foundation):
                 raise ValueError(_msg)
 
             # Update framework and global configuration
-            self._framework.update_global_config()
+            self._schema.update_global_config()
 
     def _update_variable_stats(self) -> None:
         """*_update_variable_stats()* Update variable statistics.
@@ -322,8 +323,10 @@ class DimMatrix(Foundation):
         self._n_relevant = len([v for v in _vars if v.relevant])
 
         # Count by category (only relevant ones)
-        self._n_in = len([v for v in _vars if v.cat == "IN" and v.relevant])
-        self._n_out = len([v for v in _vars if v.cat == "OUT" and v.relevant])
+        IN = VarCardinality.IN.value
+        OUT = VarCardinality.OUT.value
+        self._n_in = len([v for v in _vars if v.cat == IN and v.relevant])
+        self._n_out = len([v for v in _vars if v.cat == OUT and v.relevant])
         self._n_ctrl = self._n_relevant - self._n_in - self._n_out
 
         # Validate output count
@@ -343,7 +346,7 @@ class DimMatrix(Foundation):
             _msg += "At least one input variable is required."
             raise ValueError(_msg)
 
-        max_inputs = len(self._framework.fdu_symbols)
+        max_inputs = len(self._schema.fdu_symbols)
         if self._n_in > max_inputs:
             _msg = f"Too many input variables: {self._n_in}. "
             _msg += f"Maximum allowed: {max_inputs} (number of FDUs)."
@@ -362,7 +365,8 @@ class DimMatrix(Foundation):
             Dict[str, Variable]: Sorted dictionary of variables.
         """
         # Get category order from global config
-        cat_order = list(cfg.PARAMS_CAT_DT.keys())
+        # cat_order = list(PYDASA_CFG.parameter_cardinality)
+        cat_order = [c.value for c in PYDASA_CFG.parameter_cardinality]
 
         # Sort by category precedence
         sorted_items = sorted(vars_lt.items(),
@@ -400,7 +404,9 @@ class DimMatrix(Foundation):
         var_dims = [v.std_dims for v in self._relevant_lt.values()]
 
         # Extract FDU symbols using regex
-        fdus = [d for d in re.findall(cfg.WKNG_FDU_SYM_RE, str(var_dims))]
+        fdus = [
+            d for d in re.findall(self._schema.fdu_sym_regex, str(var_dims))
+        ]
 
         # Remove duplicates while preserving order
         unique_fdus = list({fdus[i] for i in range(len(fdus))})
@@ -423,7 +429,7 @@ class DimMatrix(Foundation):
             raise ValueError("No relevant variables to create matrix from.")
 
         # Get dimensions
-        n_fdu = len(self._framework.fdu_symbols)
+        n_fdu = len(self._schema.fdu_symbols)
         n_var = len(self._relevant_lt)
 
         # Initialize empty matrix
@@ -512,7 +518,7 @@ class DimMatrix(Foundation):
                 _variables=self._relevant_lt,
                 _dim_col=vector_np.tolist(),
                 _pivot_lt=self._pivot_cols,
-                name=f"Pi-{i}",
+                _name=f"Pi-{i}",
                 description=f"Dimensionless coefficient {i} from nullspace"
             )
 
@@ -625,7 +631,7 @@ class DimMatrix(Foundation):
             _alias=f"Pi_{idx}",
             _fwk=self._fwk,
             _cat="DERIVED",
-            name=name,
+            _name=name,
             description=description,
             _variables=new_variables,
             _dim_col=new_dim_col,
@@ -746,7 +752,7 @@ class DimMatrix(Foundation):
         Returns:
             Schema: Current dimensional framework.
         """
-        return self._framework
+        return self._schema
 
     @framework.setter
     def framework(self, val: Schema) -> None:
@@ -759,13 +765,13 @@ class DimMatrix(Foundation):
             ValueError: If input is not a Schema instance.
         """
         if not isinstance(val, Schema):
-            _msg = "Framework must be a Schema instance. "
+            _msg = "Schema must be a Schema instance. "
             _msg += f"Got: {type(val).__name__}"
             raise ValueError(_msg)
 
         # Update framework and global configuration
-        self._framework = val
-        self._framework.update_global_config()
+        self._schema = val
+        self._schema.update_global_config()
 
         # Prepare for analysis with new framework
         if self._variables:
@@ -978,14 +984,14 @@ class DimMatrix(Foundation):
     #     return result
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "DimMatrix":
+    def from_dict(cls, data: Dict[str, Any]) -> "Matrix":
         """*from_dict()* Create model from dictionary representation.
 
         Args:
             data (Dict[str, Any]): Dictionary representation of the model.
 
         Returns:
-            DimMatrix: New DimMatrix instance.
+            Matrix: New Matrix instance.
         """
         # Get all valid field names from the dataclass
         field_names = {f.name for f in fields(cls)}
@@ -995,7 +1001,7 @@ class DimMatrix(Foundation):
 
         # Define conversion rules
         object_converters = {
-            "framework": Schema,
+            "schema": Schema,
             "variables": Variable,
             "relevant_lt": Variable,
             "output": Variable,

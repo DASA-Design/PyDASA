@@ -3,12 +3,12 @@
 Module test_model.py
 ===========================================
 
-Unit tests for DimMatrix class in PyDASA.
+Unit tests for Matrix class in PyDASA.
 
-This module provides comprehensive test coverage for the DimMatrix class, which implements matrix-based dimensional analysis following the Buckingham Pi theorem methodology.
+This module provides comprehensive test coverage for the Matrix class, which implements matrix-based dimensional analysis following the Buckingham Pi theorem methodology.
 
 Classes:
-    TestDimMatrix: Test cases for DimMatrix class.
+    TestDimMatrix: Test cases for Matrix class.
 """
 
 # native python modules
@@ -21,7 +21,7 @@ import pytest
 import numpy as np
 
 # Import the module to test
-from pydasa.dimensional.model import DimMatrix
+from pydasa.dimensional.model import Matrix
 from pydasa.elements.parameter import Variable
 from pydasa.dimensional.framework import Schema
 from pydasa.dimensional.buckingham import Coefficient
@@ -30,7 +30,7 @@ from pydasa.dimensional.buckingham import Coefficient
 from tests.pydasa.data.test_data import get_model_test_data
 
 # asserting module imports
-assert DimMatrix
+assert Matrix
 assert Variable
 assert Schema
 assert Coefficient
@@ -38,7 +38,7 @@ assert get_model_test_data
 
 
 class TestDimMatrix(unittest.TestCase):
-    """Test cases for DimMatrix class.
+    """Test cases for Matrix class.
 
     This test class provides comprehensive coverage for dimensional matrix  operations including matrix creation, solving, and coefficient generation.
     """
@@ -77,8 +77,8 @@ class TestDimMatrix(unittest.TestCase):
                           framework: Schema,
                           variables: Dict[str, Variable],
                           name: str = "Test Model",
-                          description: str = "Test model for PyDASA",) -> DimMatrix:
-        """Create a test DimMatrix model with default or custom parameters.
+                          description: str = "Test model for PyDASA",) -> Matrix:
+        """Create a test Matrix model with default or custom parameters.
 
         Args:
             framework (Schema): Dimensional framework. If None, uses test framework.
@@ -87,28 +87,28 @@ class TestDimMatrix(unittest.TestCase):
             description (str): Model description.
 
         Returns:
-            DimMatrix: Configured test model.
+            Matrix: Configured test model.
         """
         variables = self.get_relevant_variables()
         framework = self.test_framework
 
-        return DimMatrix(name=name,
-                         description=description,
-                         _variables=variables,
-                         _framework=framework)
+        return Matrix(_name=name,
+                      description=description,
+                      _variables=variables,
+                      _schema=framework)
 
     # ========================================================================
     # Initialization tests
     # ========================================================================
 
     def test_default_initialization(self) -> None:
-        """Test creating DimMatrix with default values."""
-        model = DimMatrix()
+        """Test creating Matrix with default values."""
+        model = Matrix()
 
         assert model is not None
         assert model.name == "Dimensional Matrix"
         assert model.description == ""
-        assert isinstance(model._framework, Schema)
+        assert isinstance(model._schema, Schema)
         assert isinstance(model._variables, dict)
         assert len(model._variables) == 0
         assert isinstance(model._relevant_lt, dict)
@@ -126,7 +126,7 @@ class TestDimMatrix(unittest.TestCase):
             assert np.array_equal(model._dim_mtx, expected_mtx)
 
     def test_initialization_with_variables(self) -> None:
-        """Test creating DimMatrix with variables."""
+        """Test creating Matrix with variables."""
         model = self.create_test_model(self.test_framework,
                                        self.test_variables,
                                        name="Fluid Dynamics Model",
@@ -142,15 +142,15 @@ class TestDimMatrix(unittest.TestCase):
         assert model._n_relevant == relevant_count
 
     def test_initialization_with_custom_framework(self) -> None:
-        """Test creating DimMatrix with custom framework."""
+        """Test creating Matrix with custom framework."""
         comp_framework = Schema(_fwk="COMPUTATION")
         comp_framework.update_global_config()
 
-        model = DimMatrix(name="Computation Model",
-                          _framework=comp_framework)
+        model = Matrix(_name="Computation Model",
+                       _schema=comp_framework)
 
-        assert model._framework._fwk == "COMPUTATION"
-        assert model._framework.fdu_symbols == comp_framework.fdu_symbols
+        assert model._schema._fwk == "COMPUTATION"
+        assert model._schema.fdu_symbols == comp_framework.fdu_symbols
 
     # ========================================================================
     # Variable management tests
@@ -158,7 +158,7 @@ class TestDimMatrix(unittest.TestCase):
 
     def test_variables_property_getter(self) -> None:
         """Test variables property getter."""
-        model = DimMatrix()
+        model = Matrix()
         variables = model.variables
 
         assert isinstance(variables, dict)
@@ -166,7 +166,7 @@ class TestDimMatrix(unittest.TestCase):
 
     def test_variables_property_setter(self) -> None:
         """Test variables property setter."""
-        model = DimMatrix()
+        model = Matrix()
         relevant_vars = self.get_relevant_variables()
 
         model.variables = relevant_vars
@@ -178,7 +178,7 @@ class TestDimMatrix(unittest.TestCase):
 
     def test_variables_setter_invalid_type(self) -> None:
         """Test variables setter with invalid type."""
-        model = DimMatrix()
+        model = Matrix()
 
         with pytest.raises(ValueError) as excinfo:
             model.variables = ["not", "a", "dict"]  # type: ignore
@@ -186,7 +186,7 @@ class TestDimMatrix(unittest.TestCase):
 
     def test_variables_setter_invalid_values(self) -> None:
         """Test variables setter with invalid variable types."""
-        model = DimMatrix()
+        model = Matrix()
 
         with pytest.raises(ValueError) as excinfo:
             model.variables = {"v": "not a variable"}  # type: ignore
@@ -194,7 +194,7 @@ class TestDimMatrix(unittest.TestCase):
 
     def test_variables_setter_empty_dict(self) -> None:
         """Test variables setter with empty dictionary."""
-        model = DimMatrix()
+        model = Matrix()
 
         with pytest.raises(ValueError) as excinfo:
             model.variables = {}
@@ -206,7 +206,7 @@ class TestDimMatrix(unittest.TestCase):
 
     def test_framework_property_getter(self) -> None:
         """Test framework property getter."""
-        model = DimMatrix()
+        model = Matrix()
         framework = model.framework
 
         assert isinstance(framework, Schema)
@@ -214,7 +214,7 @@ class TestDimMatrix(unittest.TestCase):
 
     def test_framework_property_setter(self) -> None:
         """Test framework property setter."""
-        model = DimMatrix()
+        model = Matrix()
         comp_framework = Schema(_fwk="COMPUTATION")
 
         model.framework = comp_framework
@@ -223,7 +223,7 @@ class TestDimMatrix(unittest.TestCase):
 
     def test_framework_setter_invalid_type(self) -> None:
         """Test framework setter with invalid type."""
-        model = DimMatrix()
+        model = Matrix()
 
         with pytest.raises(ValueError) as excinfo:
             model.framework = "not a framework"     # type: ignore
@@ -256,7 +256,7 @@ class TestDimMatrix(unittest.TestCase):
         no_out_vars = {k: Variable(**v) for k, v in vars_no_out.items()}
 
         with pytest.raises(ValueError) as excinfo:
-            DimMatrix(_variables=no_out_vars)
+            Matrix(_variables=no_out_vars)
         assert "No output variable" in str(excinfo.value)
 
     def test_validation_too_many_outputs(self) -> None:
@@ -265,7 +265,7 @@ class TestDimMatrix(unittest.TestCase):
         multi_out_vars = {k: Variable(**v) for k, v in vars_multi_out.items()}
 
         with pytest.raises(ValueError) as excinfo:
-            DimMatrix(_variables=multi_out_vars)
+            Matrix(_variables=multi_out_vars)
         assert "Invalid number of outputs" in str(excinfo.value)
 
     def test_validation_no_input_variables(self) -> None:
@@ -279,7 +279,7 @@ class TestDimMatrix(unittest.TestCase):
         }
 
         with pytest.raises(ValueError) as excinfo:
-            DimMatrix(_variables=vars_no_input)
+            Matrix(_variables=vars_no_input)
         assert "No input variables" in str(excinfo.value)
 
     # ========================================================================
@@ -328,7 +328,7 @@ class TestDimMatrix(unittest.TestCase):
 
     def test_extract_fdus_empty_model(self) -> None:
         """Test extracting FDUs from empty model."""
-        model = DimMatrix()
+        model = Matrix()
 
         working_fdus = model._extract_fdus()
 
@@ -361,7 +361,7 @@ class TestDimMatrix(unittest.TestCase):
 
         model.create_matrix()
 
-        n_fdu = len(model._framework.fdu_symbols)
+        n_fdu = len(model._schema.fdu_symbols)
         n_var = len(model._relevant_lt)
 
         assert model._dim_mtx.shape == (n_fdu, n_var)           # type: ignore
@@ -369,7 +369,7 @@ class TestDimMatrix(unittest.TestCase):
 
     def test_create_matrix_empty_model(self) -> None:
         """Test creating matrix with empty model raises error."""
-        model = DimMatrix()
+        model = Matrix()
 
         with pytest.raises(ValueError) as excinfo:
             model.create_matrix()
@@ -465,7 +465,7 @@ class TestDimMatrix(unittest.TestCase):
 
     def test_analyze_empty_model(self) -> None:
         """Test analyze fails on empty model."""
-        model = DimMatrix()
+        model = Matrix()
         
         with pytest.raises(ValueError):
             model.analyze()
@@ -557,12 +557,12 @@ class TestDimMatrix(unittest.TestCase):
         """Test clear preserves framework."""
         model = self.create_test_model(self.test_framework,
                                        self.test_variables)
-        original_fwk = model._framework._fwk
+        original_fwk = model._schema._fwk
 
         model.analyze()
         model.clear()
 
-        assert model._framework._fwk == original_fwk
+        assert model._schema._fwk == original_fwk
 
     # ========================================================================
     # Serialization tests
@@ -608,7 +608,7 @@ class TestDimMatrix(unittest.TestCase):
         model_dict = model1.to_dict()
 
         # Recreate from dict
-        model2 = DimMatrix.from_dict(model_dict)
+        model2 = Matrix.from_dict(model_dict)
 
         # Verify basic properties
         assert model2.name == model1.name
@@ -620,11 +620,11 @@ class TestDimMatrix(unittest.TestCase):
         data = {
             "_idx": 5,
             "_sym": "DM",
-            "name": "Test",
+            "_name": "Test",
             "_fwk": "PHYSICAL"
         }
 
-        model = DimMatrix.from_dict(data)
+        model = Matrix.from_dict(data)
 
         assert model._idx == 5
         assert model._sym == "DM"
@@ -637,7 +637,7 @@ class TestDimMatrix(unittest.TestCase):
 
     def test_empty_model(self) -> None:
         """Test operations on empty model."""
-        model = DimMatrix()
+        model = Matrix()
 
         expected_mtx = np.array([])
         if model._dim_mtx is None:
@@ -652,7 +652,7 @@ class TestDimMatrix(unittest.TestCase):
         minimal_data = self.test_data["MINIMAL_VARIABLES"]
         minimal_vars = {k: Variable(**v) for k, v in minimal_data.items()}
 
-        model = DimMatrix(_variables=minimal_vars)
+        model = Matrix(_variables=minimal_vars)
 
         assert model._n_in == 1
         assert model._n_out == 1
@@ -682,12 +682,12 @@ class TestDimMatrix(unittest.TestCase):
 
         # Should raise error for too many inputs
         with pytest.raises(ValueError) as excinfo:
-            DimMatrix(_variables=large_vars)
+            Matrix(_variables=large_vars)
         assert "Too many input variables" in str(excinfo.value)
 
     def test_model_with_irrelevant_variables(self) -> None:
         """Test model correctly filters irrelevant variables."""
-        model = DimMatrix(_variables=self.test_variables)
+        model = Matrix(_variables=self.test_variables)
 
         # Should only count relevant variables
         relevant_count = len([v for v in self.test_variables.values() if v.relevant])

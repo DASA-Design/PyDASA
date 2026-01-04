@@ -749,7 +749,7 @@ def get_model_test_data() -> dict:
     }
 
 
-# test data for from pydasa.analysis.simulation import MonteCarloSim
+# test data for from pydasa.analysis.simulation import MonteCarlo
 def get_simulation_test_data() -> dict:
     """Get test data for simulation tests."""
     return {

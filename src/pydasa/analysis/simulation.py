@@ -5,11 +5,11 @@ Module simulation.py
 
 Module for Monte Carlo Simulation execution and analysis in *PyDASA*.
 
-This module provides the MonteCarloSim class for performing Monte Carlo simulations on dimensionless coefficients derived from dimensional analysis.
+This module provides the MonteCarlo class for performing Monte Carlo simulations on dimensionless coefficients derived from dimensional analysis.
 
 Classes:
 
-    **MonteCarloSim**: Performs Monte Carlo simulations on dimensionless coefficients.
+    **MonteCarlo**: Performs Monte Carlo simulations on dimensionless coefficients.
 
 *IMPORTANT:* Based on the theory from:
 
@@ -48,8 +48,8 @@ from pydasa.utils.latex import latex_to_python
 
 
 @dataclass
-class MonteCarloSim(Foundation):
-    """**MonteCarloSim** class for stochastic analysis in *PyDASA*.
+class MonteCarlo(Foundation):
+    """**MonteCarlo** class for stochastic analysis in *PyDASA*.
 
     Performs Monte Carlo simulations on dimensionless coefficients to analyze the coefficient's distribution and sensitivity to input parameter
     variations.
@@ -1120,14 +1120,14 @@ class MonteCarloSim(Foundation):
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "MonteCarloSim":
+    def from_dict(cls, data: Dict[str, Any]) -> "MonteCarlo":
         """*from_dict()* Create simulation from dictionary representation.
 
         Args:
             data (Dict[str, Any]): Dictionary representation.
 
         Returns:
-            MonteCarloSim: New simulation instance.
+            MonteCarlo: New simulation instance.
         """
         # Create basic instance
         instance = cls(

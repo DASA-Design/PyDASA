@@ -28,201 +28,198 @@ I need an object oriented design option to include the following requirements in
 3. DONE ✅
 4. WARNING ⚠️
 
+## Migration Status
+
+### ✅ Completed
+
+- **Src:** Merged buckingham→dimensional, split config, moved parameter to elements, renamed datastruct→structs and handlers→tasks
+- **Imports:** Fixed 7 files (analysis, tasks, dimensional modules) to use new paths
+- **Code Quality:** Fixed syntax errors, enhanced Enum validation, fixed frozen dataclass issues
+- **Tests:** Updated test_basic.py and test_setup.py, all 16 core tests passing, structure aligned with src
+
+### 🔶 In Progress
+
+- Implementing Solver() class in tasks/phenomena.py
+- Incremental testing and validation
+
+### 📋 Pending
+
+- **context/**: Unit conversion system (conversion.py, system.py, units.py)
+- **structs/**: Complete lists, tables, tools, types modules
+- **Tests**: Coverage for context, structs, analysis, tasks modules
+- **Docs**: API documentation, migration guide, examples
+
+## Status
+
 ## Src Path Structure
 
 1. **pydasa**
-   1. **analysis:** 
+   1. **analysis:** analysis and simulation modules, pending recheck📋!!!.
 
-      1. ~~conversion.py unit conversion handler for the solver, OUT OF SCOPE for now!!!📋~~
-      2. scenario.py:  contains the DimSensitivity class for understanding variance in the coefficients. ✅
-      3. simulation.py: monte carlo simulator for one coefficient (MonteCarloSim class). ✅
-
-      ---
-   2. **buckingham**
-
-      1. fundamental.py: contains Dimension class for Buckingham Pi-theorem specific operations. ✅
-      2. vashchy.py: contains the Coefficient class to represent the dimensionless number resulting of the analysis. ✅
+      1. scenario.py: contains the DimSensitivity class for understanding variance in the coefficients. ✅
+      2. simulation.py: monte carlo simulator for one coefficient (MonteCarloSim class). ✅
 
       ---
-   3. **core:** shared and core capabilities
+   2. **context:** unit conversion and measurement context (future scope)
 
-      1. basic_OLD.py: ~~deprecated version of validation class.~~ ⚠️
-      2. basic.py: contains Foundation, SymBasis, IdxBasis classes, shared capabilities for entities with validation. ✅
-      3. basis.py: contains base type definitions and protocols. ✅
-      4. config.py: contains all global and shared variables for the analysis. ✅
-      5. fundamental.py: contains Dimension class, the basis of dimensional analysis (replaces FDU). ✅
-      6. measurement.py: contains the Unit class, fundamental for unit conversion when necessary, NOT FEASIBLE!!! 📋
-      7. parameter.py: ~~deprecated, replaced by variable.py~~ ⚠️
-      8. ranges.py: contains range management functionality for parameters. ✅
-      9. standarization.py: contains standardization utilities for dimensional expressions. ✅
-      10. variable.py: contains Variable class to execute the analysis (replaces parameter.py). ✅
+      1. conversion.py: unit conversion handler for the solver. 📋
+      2. system.py: system of units management. 📋
+      3. units.py: unit definitions and operations. 📋
 
       ---
-   4. **data:** input/output operations
+   3. **core:** shared and core capabilities.
 
-      1. io.py: contains all the input/output functions for saving/loading data of the analysis. ✅
+      1. basic.py: contains Foundation, SymBasis, IdxBasis classes, shared capabilities for entities with validation. ✅
+      2. constants.py: contains predefined dimensional frameworks (PHYSICAL, COMPUTATION, SOFTWARE) and FDU definitions. ✅
+      3. io.py: contains all the input/output functions for saving/loading data of the analysis. ✅
+      4. setup.py: contains global configuration (Framework, VarCardinality, CoefCardinality, AnaliticMode enums) and PyDASAConfig singleton. ✅
+      5. **cfg/**: configuration files folder
+         1. default.json: default framework configurations. ✅
 
       ---
-   5. **datastruct:** data structures to manage the unit conversion process.
+   4. **dimensional:** dimensional analysis core, pending recheck📋!!!.
+
+      1. buckingham.py: contains the Coefficient class to represent dimensionless numbers (formerly vashchy.py). ✅
+      2. framework.py: contains the DimSchema class to manage and control FDUs in the solving process. UPDATING CODE NOW🔶👨‍💻!!!.
+      3. fundamental.py: contains Dimension class for Buckingham Pi-theorem specific operations. ✅
+      4. model.py: contains the DimMatrix class to solve the dimensional matrix. ✅
+
+      ---
+   5. **elements:** parameter and variable management, pending decompozition 📋!!!.
+
+      1. parameter.py: contains Parameter class for dimensional parameter analysis. ✅
+      2. ranges.py: contains range management functionality for parameters. 📋
+      3. standarization.py: contains standardization utilities for dimensional units of meassurements. 📋
+      4. variable.py: contains Variable class to execute the analysis. 📋
+
+      ---
+   6. **structs:** data structures and utilities, pending extensive tests📋!!!.
 
       1. **lists**
 
-         1. arlt.py: arraylist. ✅
-         2. sllt.py: single linked list. ✅
-         3. dllt.py: double linked list. ✅
-         4. ndlt.py: node list for double and single linked. ✅
+         1. arlt.py: arraylist implementation. ✅
+         2. dllt.py: double linked list implementation. 📋
+         3. ndlt.py: node list for double and single linked lists. ✅
+         4. sllt.py: single linked list implementation. ✅
       2. **tables**
 
-         1. scht.py: separate chaining hashtable. ✅
-         2. htme.py: entry used in the separate chaining hashtable. ✅
+         1. htme.py: entry used in the separate chaining hashtable. ✅
+         2. scht.py: separate chaining hashtable implementation. ✅
+      3. **tools**
 
-         ---
-   6. **dimensional**
+         1. hashing.py: hashing utilities for data structures. ✅
+         2. math.py: mathematical utilities for dimensional analysis. ✅
+         3. memory.py: memory management utilities. ✅
+      4. **types**
 
-      1. basis.py: contains base dimensional analysis utilities and type definitions. ✅
-      2. constants.py: contains predefined dimensional frameworks (PHYSICAL, COMPUTATION, SOFTWARE). ✅
-      3. ~~domain.py unit conversion handler/manager for the matrix UnitsManager, OUT OF SCOPE for now!!!📋~~
-      4. framework.py: contains the DimSchema class to manage and control FDUs in the solving process. ✅
-      5. model.py: contains the DimMatrix class to solve the dimensional matrix. ✅
-
-      ---
-   7. **enum:** enumeration types for domain-specific categorization
-
-      1. basis.py: base enumeration definitions. ✅
-      2. conversion.py: unit conversion enumeration types. 📋
-      3. domain.py: domain-specific enumeration types. 📋
-      4. metrics.py: metrics and measurement enumeration types. 📋
+         1. functions.py: function type definitions and utilities. ✅
+         2. generics.py: generic type definitions and type aliases. ✅
 
       ---
-   8. **environments:** alternative implementations (may be duplicates)
-
-      1. influence.py: contains the SensitivityHandler class for understanding variance. ✅
-      2. phenomena.py: alternative Solver implementation. 🔶👨‍💻
-      3. practical.py: contains the MonteCarloHandler class to control Monte Carlo simulations. ✅
-
-      ---
-   9. **handlers**
+   7. **tasks:** analysis task handlers, pending recheck📋!!!.
 
       1. influence.py: contains the SensitivityHandler class for understanding variance in the coefficients. ✅
-      2. phenomena.py: has the main Solver() class of the project. 🔶👨‍💻⚠️ WORKING HERE ⚠️
+      2. phenomena.py: has the main Solver() class of the project. IMPORTANT📋!!!
       3. practical.py: contains the MonteCarloHandler class to control all the Monte Carlo simulations. ✅
 
       ---
-   10. **types:** type definitions and generic utilities
+   8. **utils:** utility functions
 
-       1. generics.py: contains generic type definitions and type aliases. ✅
+      1. latex.py: contains all the LaTeX parsing functions for better representation of formulas. ✅
+      2. patterns.py: contains regex patterns for validation and parsing. 🔶👨‍💻
 
-       ---
-   11. **utils**
+      ---
+   9. **validations:** validation decorators and error handling
 
-       1. config_OLD.py: ~~deprecated configuration file.~~ ⚠️
-       2. config.py: ~~moved to core/config.py~~ ⚠️
-       3. default.py: contains all the default stuff needed for custom datastructures + other functionalities. ✅
-       4. hashing.py: contains hashing utilities for data structures. ✅
-       5. latex.py: contains all the LaTeX parsing functions for better representation of formulas. ✅
-       6. math.py: contains mathematical utilities for dimensional analysis. ✅
-       7. memory.py: contains memory management utilities. ✅
-       8. patterns.py: contains regex patterns for validation and parsing. ✅
-       9. ~~error.py: moved to validations/error.py~~ ⚠️
-       10. ~~helpers.py: contains any other function useful for the process, include MAD for hashtable, check if is prime, and other stuff. ✅~~
-       11. ~~queues.py: library that implement the queue theory for simulations and stuff ✅ ->  ⚠️ REMOVED FROM REPO~~
-       12. ~~io.py: moved to data/io.py~~ ⚠️
+      1. decorators.py: contains all validation decorators (@validate_type, @validate_pattern, @validate_choices, etc.). ✅
+      2. error.py: contains the generic error_handler() function and inspect_var() for all components. ✅
 
-       ---
-   12. **validations:** validation decorators and error handling
-
-       1. decorators.py: contains all validation decorators (@validate_type, @validate_pattern, etc.). ✅
-       2. error.py: contains the generic error_handler() function and inspect_var() for all components. ✅
-       3. protocols.py: contains validation protocols and interfaces. ✅
-       4. validators.py: contains validator functions and classes. ✅
-
-       ---
-   13. ~~**math** ⚠️⚠️⚠️ TODO ⚠️⚠️⚠️ do i need them????📋 outside of lib scope!!!~~
-
-       1. ~~numbers.py📋~~
-       2. ~~queues.py📋~~
-
-       ---
-   14. ~~**visualization:** dont NEED it, USE MATPLOTLIB OR OTHER STUFF!!!!, but need to create plots and charts from vars + coefficients 📋~~
+      ---
 
 ## Tests Path Structure
 
 1. **pydasa**
+   1. **analysis:** shared analytic capabilities, pending updates📋!!!.
 
-🔶👨‍💻⚠️ WORKING HERE ⚠️
-
-1. **analysis**
-
-   1. ~~test_conversion.py: tests for unit conversion handler for the solver. NOT YET! 📋~~
-   2. test_scenario.py: tests for sensitivity analysis of the Coefficients (DimSensitivity class). 📋
-   3. test_simulation.py: tests for the Monte Carlo simulator for one coefficient (MonteCarloSim class). ✅
-
-   ---
-2. **buckingham**
-
-   1. test_vashchy.py: tests for the Coefficient class. ✅
-
-   ---
-3. **core:** shared and core capabilities
-
-   1. test_basic.py: tests for the Foundation, SymBasis, IdxBasis classes. ✅
-   2. test_config.py: tests for all global and shared variables for the analysis. ✅
-   3. test_fundamental.py: tests for the Dimension class. ✅
-   4. test_measurement.py: tests for the Unit class. NOT YET! 📋
-   5. test_parameter.py: tests for the Variable class (replaces old parameter tests). ✅
-
-   ---
-4. **data:** input/output operations tests
-
-   1. test_data.py: contains test data for all PyDASA tests (fixtures and samples). ✅
-   2. test_io.py: tests for all the input/output functions for saving/loading data. 📋
-
-   ---
-5. **datastruct:** data structures tests
-
-   1. **lists**
-
-      1. test_arlt.py: tests for the arraylist. 📋
-      2. test_sllt.py: tests for the single linked list. 📋
-      3. test_dllt.py: tests for the double linked list. 📋
-      4. test_ndlt.py: tests for the node list for double and single linked. 📋
-   2. **tables**
-
-      1. test_scht.py: tests for the separate chaining hashtable. 📋
-      2. test_htme.py: tests for the entry useful for the separate chaining hashtable. 📋
+      1. test_scenario.py: tests for sensitivity analysis of the Coefficients (DimSensitivity class). ✅
+      2. test_simulation.py: tests for the Monte Carlo simulator for one coefficient (MonteCarloSim class). ✅
 
       ---
-6. **dimensional**
+   2. **context:** shared unit of measure and system capabilities.
 
-   1. test_constants.py: tests for predefined dimensional frameworks. ✅
-   2. ~~test_domain.py: tests for the unit conversion handler/manager. NOT YET! 📋~~
-   3. test_framework.py: tests for the DimSchema class to manage and control FDUs. ✅
-   4. test_model.py: tests for the DimMatrix class to solve the dimensional matrix. ✅
+      1. test_conversion.py: tests for unit conversion handler. 📋
+      2. test_system.py: tests for system of units management. 📋
+      3. test_units.py: tests for unit definitions and operations. 📋
 
-   ---
-7. **handlers**
+      ---
+   3. **core:** shared and core capabilities
 
-   1. test_influence.py: tests for the SensitivityHandler class for understanding variance in the coefficients. 📋
-   2. test_phenomena.py: tests for the main Solver() class of the project. 🔶👨‍💻⚠️ TODO ⚠️
-   3. test_practical.py: tests for the MonteCarloHandler class to control all the Monte Carlo simulations. ✅
+      1. test_basic.py: tests for the Foundation, SymBasis, IdxBasis classes. ✅
+      2. test_constants.py: tests for predefined dimensional frameworks and FDU definitions. ✅
+      3. test_io.py: tests for all the input/output functions for saving/loading data. ✅
+      4. test_setup.py: tests for global configuration and PyDASAConfig singleton. ✅
 
-   ---
-8. **types:** type definitions tests
+      ---
+   4. **data:** test fixtures and sample data
 
-   1. test_generics.py: tests for generic type definitions and type aliases. ✅
+      1. test_data.py: contains test data for all PyDASA tests (fixtures and samples). ✅
 
-   ---
-9. **utils**
+      ---
+   5. **dimensional:** main dimensiona analysis capabilities, pending updates📋!!!.
 
-   1. test_default.py: tests for all the default stuff needed for custom datastructures + other functionalities. 📋
-   2. ~~test_helpers.py: tests for any other function useful for the process, include MAD for hashtable, check if is prime, and other stuff. NOT YET! 📋~~
-   3. test_latex.py: tests for all the LaTeX parsing functions for better representation of formulas and stuff. ✅
-   4. test_patterns.py: tests for regex patterns for validation and parsing. ✅
+      1. test_buckingham.py: tests for the Coefficient class. ✅
+      2. test_framework.py: tests for the DimSchema class to manage and control FDUs. 🔶👨‍💻
+      3. test_fundamental.py: tests for the Dimension class. ✅
+      4. test_model.py: tests for the DimMatrix class to solve the dimensional matrix. ✅
 
-   ---
-10. **validations:** validation decorators and error handling tests
+      ---
+   6. **elements:** shared parameters (inputs, control, and output) of the analysis, pending updates📋!!!.
 
-    1. test_decorators.py: tests for all validation decorators (@validate_type, @validate_pattern, etc.). ✅
-    2. test_error.py: tests for the generic error_handler() function and inspect_var() for all components. ✅
+      1. test_parameter.py: tests for the Parameter class. 🔶👨‍💻
+      2. test_ranges.py: tests for range management functionality. 📋
+      3. test_standarization.py: tests for standardization utilities. 📋
+      4. test_variable.py: tests for the Variable class. 📋
 
-    ---
+      ---
+   7. **structs:** data structures tests, fundamental for unit of measure and conversions. 📋
+
+      1. **lists**
+
+         1. test_arlt.py: tests for the arraylist. 📋
+         2. test_dllt.py: tests for the double linked list. 📋
+         3. test_ndlt.py: tests for the node list for double and single linked. 📋
+         4. test_sllt.py: tests for the single linked list. 📋
+      2. **tables**
+
+         1. test_htme.py: tests for the entry useful for the separate chaining hashtable. 📋
+         2. test_scht.py: tests for the separate chaining hashtable. 📋
+      3. **tools**
+
+         1. test_hashing.py: tests for hashing utilities. 📋
+         2. test_math.py: tests for mathematical utilities. 📋
+         3. test_memory.py: tests for memory management utilities. 📋
+      4. **types**
+
+         1. test_functions.py: tests for function type definitions. 📋
+         2. test_generics.py: tests for generic type definitions and type aliases. 📋
+
+      ---
+   8. **tasks**
+
+      1. test_influence.py: tests for the SensitivityHandler class for understanding variance in the coefficients. ✅, pending updates📋!!!.
+      2. test_phenomena.py: tests for the main Solver() class of the project. 🔶👨‍💻
+      3. test_practical.py: tests for the MonteCarloHandler class to control all the Monte Carlo simulations. ✅, pending updates📋!!!.
+
+      ---
+   9. **utils**
+
+      1. test_latex.py: tests for all the LaTeX parsing functions for better representation of formulas. ✅
+      2. test_patterns.py: tests for regex patterns for validation and parsing. ✅, pending updates📋!!!.
+
+      ---
+   10. **validations:** validation decorators and error handling tests
+
+       1. test_decorators.py: tests for all validation decorators (@validate_type, @validate_pattern, @validate_choices, etc.). ✅
+       2. test_error.py: tests for the generic error_handler() function and inspect_var() for all components. ✅
+
+       ---

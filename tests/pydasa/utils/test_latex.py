@@ -9,10 +9,10 @@ Tests for LaTeX parsing and conversion functions in PyDASA.
 import unittest
 import pytest
 from sympy import Symbol
-from pydasa.utils.latex import (latex_to_python,
-                                extract_latex_vars,
-                                create_latex_mapping,
-                                IGNORE_EXPR)
+from pydasa.utils.latex import latex_to_python
+from pydasa.utils.latex import extract_latex_vars
+from pydasa.utils.latex import create_latex_mapping
+from pydasa.utils.latex import IGNORE_EXPR
 
 from tests.pydasa.data.test_data import get_latex_test_data
 

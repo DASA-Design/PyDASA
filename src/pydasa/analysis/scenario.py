@@ -28,10 +28,10 @@ from SALib.sample.fast_sampler import sample
 from SALib.analyze.fast import analyze
 
 # Import validation base classes
-from pydasa.core.basic import Validation
+from pydasa.core.basic import Foundation
 
 # Import related classes
-from pydasa.buckingham.vashchy import Coefficient
+from pydasa.dimensional.buckingham import Coefficient
 # from pydasa.core.parameter import Variable
 
 # Import utils
@@ -41,18 +41,18 @@ from pydasa.utils.latex import latex_to_python
 
 # Import configuration
 # Import the 'cfg' module to allow global variable editing
-from pydasa.core import config as cfg
+from pydasa.core import setup as cfg
 
 
 @dataclass
-class DimSensitivity(Validation):
+class DimSensitivity(Foundation):
     # FIXME clean code, some vars and types are inconsistent
     """**DimSensitivity** class for analyzing variable impacts in *PyDASA*.
 
     Performs sensitivity analysis on dimensionless coefficients to determine which variables have the most significant impact on the system behavior.
 
     Args:
-        Validation: Base class for validation of symbols and frameworks.
+        Foundation: Foundation class for validation of symbols and frameworks.
 
     Attributes:
         # Identification and Classification

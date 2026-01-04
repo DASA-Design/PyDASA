@@ -29,11 +29,11 @@ from scipy import stats
 import sympy as sp
 
 # Import validation base classes
-from pydasa.core.basic import Validation
+from pydasa.core.basic import Foundation
 
 # Import related classes
-from pydasa.buckingham.vashchy import Coefficient
-from pydasa.core.parameter import Variable
+from pydasa.dimensional.buckingham import Coefficient
+from pydasa.elements.parameter import Variable
 
 # Import utils
 from pydasa.utils.latex import parse_latex, create_latex_mapping
@@ -48,14 +48,14 @@ from pydasa.utils.latex import latex_to_python
 
 
 @dataclass
-class MonteCarloSim(Validation):
+class MonteCarloSim(Foundation):
     """**MonteCarloSim** class for stochastic analysis in *PyDASA*.
 
     Performs Monte Carlo simulations on dimensionless coefficients to analyze the coefficient's distribution and sensitivity to input parameter
     variations.
 
     Args:
-        Validation: Base class for validation of symbols and frameworks.
+        Foundation: Foundation class for validation of symbols and frameworks.
 
     Attributes:
         # Core Identification
@@ -105,7 +105,7 @@ class MonteCarloSim(Validation):
     # ========================================================================
 
     # :attr: name
-    name: str = ""
+    _name: str = ""
     """User-friendly name of the Monte Carlo simulation."""
 
     # :attr: description
@@ -279,8 +279,8 @@ class MonteCarloSim(Validation):
             self._alias = latex_to_python(self._sym)
 
         # Set name and description if not already set
-        if not self.name:
-            self.name = f"{self._sym} Monte Carlo"
+        if not self._name:
+            self._name = f"{self._sym} Monte Carlo"
 
         if not self.description:
             self.description = f"Monte Carlo simulation for {self._sym}"
@@ -322,7 +322,7 @@ class MonteCarloSim(Validation):
         self._count = 0
 
     # ========================================================================
-    # Validation and Configuration
+    # Foundation and Configuration
     # ========================================================================
 
     def _validate_readiness(self) -> None:
@@ -368,8 +368,8 @@ class MonteCarloSim(Validation):
             self._parse_expression(self._pi_expr)
 
         # Set name and description if not already set
-        if not self.name:
-            self.name = f"{coef.name} Monte Carlo Experiments"
+        if not self._name:
+            self._name = f"{coef.name} Monte Carlo Experiments"
         if not self.description:
             self.description = f"Monte Carlo simulation for {coef.name}"
 
@@ -1070,7 +1070,7 @@ class MonteCarloSim(Validation):
         self._sym = "MC_\\Pi_{}"
         self._alias = ""
         self._fwk = "PHYSICAL"
-        self.name = ""
+        self._name = ""
         self.description = ""
 
         # Reset simulation attributes
@@ -1096,12 +1096,12 @@ class MonteCarloSim(Validation):
     def to_dict(self) -> Dict[str, Any]:
         """*to_dict()* Convert simulation to dictionary representation."""
         return {
-            # Base class attributes
+            # Foundation class attributes
             "idx": self._idx,
             "sym": self._sym,
             "alias": self._alias,
             "fwk": self._fwk,
-            "name": self.name,
+            "name": self._name,
             "description": self.description,
             # Simulation attributes
             "pi_expr": self._pi_expr,
@@ -1131,7 +1131,7 @@ class MonteCarloSim(Validation):
         """
         # Create basic instance
         instance = cls(
-            name=data.get("name", ""),
+            _name=data.get("name", ""),
             description=data.get("description", ""),
             _idx=data.get("idx", -1),
             _sym=data.get("sym", "MC_\\Pi_{}"),

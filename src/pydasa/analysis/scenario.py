@@ -5,11 +5,11 @@ Module scenario.py
 
 Module for sensitivity analysis in *PyDASA*.
 
-This module provides the DimSensitivity class for performing sensitivity analysis on dimensional coefficients derived from dimensional analysis.
+This module provides the Sensitivity class for performing sensitivity analysis on dimensional coefficients derived from dimensional analysis.
 
 Classes:
 
-    **DimSensitivity**: Performs sensitivity analysis on dimensional coefficients in *PyDASA*.
+    **Sensitivity**: Performs sensitivity analysis on dimensional coefficients in *PyDASA*.
 
 *IMPORTANT:* Based on the theory from:
     # H.Gorter, *Dimensionalanalyse: Eine Theoririe der physikalischen Dimensionen mit Anwendungen*
@@ -45,9 +45,9 @@ from pydasa.core import setup as cfg
 
 
 @dataclass
-class DimSensitivity(Foundation):
+class Sensitivity(Foundation):
     # FIXME clean code, some vars and types are inconsistent
-    """**DimSensitivity** class for analyzing variable impacts in *PyDASA*.
+    """**Sensitivity** class for analyzing variable impacts in *PyDASA*.
 
     Performs sensitivity analysis on dimensionless coefficients to determine which variables have the most significant impact on the system behavior.
 
@@ -542,14 +542,14 @@ class DimSensitivity(Foundation):
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> DimSensitivity:
+    def from_dict(cls, data: Dict[str, Any]) -> Sensitivity:
         """*from_dict()* Create sensitivity analysis from dictionary representation.
 
         Args:
             data (Dict[str, Any]): Dictionary representation of sensitivity analysis.
 
         Returns:
-            DimSensitivity: New sensitivity analysis instance.
+            Sensitivity: New sensitivity analysis instance.
         """
         # Create basic instance
         instance = cls(

@@ -155,7 +155,7 @@ class TestCoefficient(unittest.TestCase):
         for invalid_cat in self.test_data["INVALID_CATEGORIES"]:
             with pytest.raises(ValueError) as excinfo:
                 coef.cat = invalid_cat
-            assert "is invalid" in str(excinfo.value)
+            assert "Invalid cat" in str(excinfo.value)
 
     # ========================================================================
     # Variables property tests
@@ -279,7 +279,7 @@ class TestCoefficient(unittest.TestCase):
         coef = Coefficient()
         with pytest.raises(ValueError) as excinfo:
             coef.pi_expr = cast(Any, 123)
-        assert "must be a string" in str(excinfo.value)
+        assert "pi_expr must be str" in str(excinfo.value)
 
     # ========================================================================
     # Value range property tests
@@ -297,7 +297,7 @@ class TestCoefficient(unittest.TestCase):
         coef = Coefficient()
         with pytest.raises(ValueError) as excinfo:
             coef.min = cast(Any, "not a number")
-        assert "must be a number" in str(excinfo.value)
+        assert "min must be int or float" in str(excinfo.value)
 
     def test_min_max_relationship(self) -> None:
         """Test min and max relationship validation."""
@@ -321,7 +321,7 @@ class TestCoefficient(unittest.TestCase):
         coef = Coefficient()
         with pytest.raises(ValueError) as excinfo:
             coef.max = cast(Any, "not a number")
-        assert "must be a number" in str(excinfo.value)
+        assert "max must be int or float" in str(excinfo.value)
 
     def test_mean_setter_valid(self) -> None:
         """Test mean property setter with valid value."""

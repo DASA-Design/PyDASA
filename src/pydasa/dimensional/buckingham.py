@@ -17,24 +17,32 @@ Classes:
 """
 
 # native python modules
+# dataclass imports
 from __future__ import annotations
 from dataclasses import dataclass, field, fields
 from typing import Optional, List, Dict, Any, Tuple, Union, Sequence
-# import re
-
-# Third-party modules
+# numerical imports
 import numpy as np
 
-# Import validation base classes
+# custom modules
+# basic-core class imports
 from pydasa.core.basic import Foundation
 from pydasa.elements.parameter import Variable
-
-# Import utils
+# import global variables
+from pydasa.core.setup import CoefCardinality
+from pydasa.core.setup import PYDASA_CFG
+# generic error handling and type checking
 from pydasa.validations.error import inspect_var
+# pattern interpreter imports
 from pydasa.utils.latex import latex_to_python
-# Import global configuration
-# import the 'cfg' module to allow global variable edition
-from pydasa.core import setup as cfg
+# import validation decorators
+from pydasa.validations.decorators import validate_type
+from pydasa.validations.decorators import validate_emptiness
+from pydasa.validations.decorators import validate_choices
+
+# # Import global configuration
+# # import the 'cfg' module to allow global variable edition
+# from pydasa.core import setup as cfg
 
 
 @dataclass
@@ -75,7 +83,7 @@ class Coefficient(Foundation):
 
     # Category attribute (COMPUTED, DERIVED)
     # :attr: _cat
-    _cat: str = "COMPUTED"
+    _cat: str = CoefCardinality.COMPUTED.value
     """Category of the coefficient (COMPUTED, DERIVED)."""
 
     # Coefficient construction properties
@@ -288,6 +296,7 @@ class Coefficient(Foundation):
         return self._cat
 
     @cat.setter
+    @validate_choices(PYDASA_CFG.coefficient_cardinality)
     def cat(self, val: str) -> None:
         """*cat* Set the coefficient category.
 
@@ -297,10 +306,6 @@ class Coefficient(Foundation):
         Raises:
             ValueError: If category is not supported.
         """
-        if val.upper() not in cfg.DC_CAT_DT:
-            _msg = f"Category {val} is invalid. "
-            _msg += f"Must be one of: {', '.join(cfg.DC_CAT_DT.keys())}"
-            raise ValueError(_msg)
         self._cat = val.upper()
 
     @property
@@ -404,6 +409,7 @@ class Coefficient(Foundation):
         return self._pi_expr
 
     @pi_expr.setter
+    @validate_type(str, allow_none=False)
     def pi_expr(self, val: str) -> None:
         """*pi_expr* Set the coefficient expression.
 
@@ -413,9 +419,6 @@ class Coefficient(Foundation):
         Raises:
             ValueError: If the coefficient expression is not a string.
         """
-        if not isinstance(val, str):
-            _msg = f"Expression must be a string, got {type(val).__name__}."
-            raise ValueError(_msg)
         self._pi_expr = val
 
     # Value range properties
@@ -430,6 +433,7 @@ class Coefficient(Foundation):
         return self._min
 
     @min.setter
+    @validate_type(int, float)
     def min(self, val: Optional[float]) -> None:
         """*min* Sets minimum range value.
 
@@ -440,9 +444,6 @@ class Coefficient(Foundation):
             ValueError: If value is not a number.
             ValueError: If value is greater than max.
         """
-        if val is not None and not isinstance(val, (int, float)):
-            raise ValueError("Minimum range must be a number.")
-
         if val is not None and self._max is not None and val > self._max:
             _msg = f"Minimum {val} cannot be greater than maximum {self._max}."
             raise ValueError(_msg)
@@ -467,6 +468,7 @@ class Coefficient(Foundation):
         return self._max
 
     @max.setter
+    @validate_type(int, float)
     def max(self, val: Optional[float]) -> None:
         """*max* Sets the maximum range value.
 
@@ -477,9 +479,6 @@ class Coefficient(Foundation):
             ValueError: If value is not a number.
             ValueError: If value is less than min.
         """
-        if val is not None and not isinstance(val, (int, float)):
-            raise ValueError("Maximum val must be a number.")
-
         # Check if both values exist before comparing
         if val is not None and self._min is not None and val < self._min:
             _msg = f"Maximum {val} cannot be less than minimum {self._min}."
@@ -505,6 +504,7 @@ class Coefficient(Foundation):
         return self._mean
 
     @mean.setter
+    @validate_type(int, float)
     def mean(self, val: Optional[float]) -> None:
         """*mean* Sets the average value.
 
@@ -515,9 +515,6 @@ class Coefficient(Foundation):
             ValueError: If value is not a number.
             ValueError: If value is outside min-max range.
         """
-        if val is not None and not isinstance(val, (int, float)):
-            raise ValueError("Mean value must be a number.")
-
         # Only validate range if val is not None
         if val is not None:
             low = (self._min is not None and val < self._min)
@@ -539,6 +536,7 @@ class Coefficient(Foundation):
         return self._dev
 
     @dev.setter
+    @validate_type(int, float)
     def dev(self, val: Optional[float]) -> None:
         """*dev* Sets the Variable standard deviation.
 
@@ -547,9 +545,6 @@ class Coefficient(Foundation):
         Raises:
             ValueError: If value not a valid number.
         """
-        if val is not None and not isinstance(val, (int, float)):
-            raise ValueError("Standard deviation must be a number.")
-
         self._dev = val
 
     @property
@@ -562,6 +557,7 @@ class Coefficient(Foundation):
         return self._step
 
     @step.setter
+    @validate_type(int, float)
     def step(self, val: Optional[float]) -> None:
         """*step* Set standardized step size.
 
@@ -573,9 +569,6 @@ class Coefficient(Foundation):
             ValueError: If step is zero.
             ValueError: If step is greater than range.
         """
-        if val is not None and not isinstance(val, (int, float)):
-            raise ValueError("Step must be a number.")
-
         if val == 0:
             raise ValueError("Step cannot be zero.")
 

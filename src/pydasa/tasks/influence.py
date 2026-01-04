@@ -21,11 +21,11 @@ from typing import List, Dict, Any
 # import re
 
 # Import validation base classes
-from pydasa.core.basic import Validation
+from pydasa.core.basic import Foundation
 
 # Import related classes
-from pydasa.core.parameter import Variable
-from pydasa.buckingham.vashchy import Coefficient
+from pydasa.elements.parameter import Variable
+from pydasa.dimensional.buckingham import Coefficient
 from pydasa.analysis.scenario import DimSensitivity
 
 # Import utils
@@ -34,11 +34,11 @@ from pydasa.utils.latex import latex_to_python
 
 # Import global configuration
 # Import the 'cfg' module to allow global variable editing
-from pydasa.core import config as cfg
+from pydasa.core import setup as cfg
 
 
 @dataclass
-class SensitivityHandler(Validation):
+class SensitivityHandler(Foundation):
     """**SensitivityHandler** class for managing multiple sensitivity analyses in *PyDASA*.
 
     Coordinates sensitivity analyses for multiple coefficients, processes their results, and generates comprehensive reports on variable impacts.
@@ -150,7 +150,7 @@ class SensitivityHandler(Validation):
                 _sym=f"SEN_{{{coef.sym}}}",
                 _fwk=self._fwk,
                 _cat=self._cat,
-                name=f"Sensitivity for {coef.name}",
+                _name=f"Sensitivity for {coef.name}",
                 description=f"Sensitivity analysis for {coef.sym}",
                 # _pi_expr=coef._pi_expr
             )

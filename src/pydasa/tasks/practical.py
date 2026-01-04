@@ -26,11 +26,11 @@ import numpy as np
 from numpy.typing import NDArray
 
 # Import validation base classes
-from pydasa.core.basic import Validation
+from pydasa.core.basic import Foundation
 
 # Import related classes
-from pydasa.core.parameter import Variable
-from pydasa.buckingham.vashchy import Coefficient
+from pydasa.elements.parameter import Variable
+from pydasa.dimensional.buckingham import Coefficient
 from pydasa.analysis.simulation import MonteCarloSim
 
 # Import utils
@@ -39,17 +39,17 @@ from pydasa.utils.latex import latex_to_python
 
 # Import global configuration
 # Import the 'cfg' module to allow global variable editing
-from pydasa.core import config as cfg
+from pydasa.core import setup as cfg
 
 
 @dataclass
-class MonteCarloHandler(Validation):
+class MonteCarloHandler(Foundation):
     """**MonteCarloHandler** class for managing Monte Carlo simulations in *PyDASA*.
 
     Manages the creation, configuration, and execution of Monte Carlo simulations of dimensionless coefficients.
 
     Args:
-        Validation: Base class for validation of symbols and frameworks.
+        Foundation: Foundation class for validation of symbols and frameworks.
 
     Attributes:
         # Identification and Classification
@@ -141,7 +141,7 @@ class MonteCarloHandler(Validation):
             self._config_simulations()
 
     # ========================================================================
-    # Validation Methods
+    # Foundation Methods
     # ========================================================================
 
     def _validate_dict(self,

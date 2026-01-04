@@ -23,7 +23,7 @@ import numpy as np
 # Import the module to test
 from pydasa.dimensional.model import DimMatrix
 from pydasa.elements.parameter import Variable
-from pydasa.dimensional.framework import DimSchema
+from pydasa.dimensional.framework import Schema
 from pydasa.dimensional.buckingham import Coefficient
 
 # Import test data
@@ -32,7 +32,7 @@ from tests.pydasa.data.test_data import get_model_test_data
 # asserting module imports
 assert DimMatrix
 assert Variable
-assert DimSchema
+assert Schema
 assert Coefficient
 assert get_model_test_data
 
@@ -53,7 +53,7 @@ class TestDimMatrix(unittest.TestCase):
         self.test_data = get_model_test_data()
 
         # Setup dimensional framework
-        self.test_framework = DimSchema(_fwk="PHYSICAL")
+        self.test_framework = Schema(_fwk="PHYSICAL")
         self.test_framework.update_global_config()
 
         # Create test variables from test data
@@ -74,14 +74,14 @@ class TestDimMatrix(unittest.TestCase):
         return {k: v for k, v in self.test_variables.items() if v.relevant}
 
     def create_test_model(self,
-                          framework: DimSchema,
+                          framework: Schema,
                           variables: Dict[str, Variable],
                           name: str = "Test Model",
                           description: str = "Test model for PyDASA",) -> DimMatrix:
         """Create a test DimMatrix model with default or custom parameters.
 
         Args:
-            framework (DimSchema): Dimensional framework. If None, uses test framework.
+            framework (Schema): Dimensional framework. If None, uses test framework.
             variables (Dict[str, Variable]): Variables dictionary. If None, uses relevant variables.
             name (str): Model name. Defaults to "Test Model".
             description (str): Model description.
@@ -108,7 +108,7 @@ class TestDimMatrix(unittest.TestCase):
         assert model is not None
         assert model.name == "Dimensional Matrix"
         assert model.description == ""
-        assert isinstance(model._framework, DimSchema)
+        assert isinstance(model._framework, Schema)
         assert isinstance(model._variables, dict)
         assert len(model._variables) == 0
         assert isinstance(model._relevant_lt, dict)
@@ -143,7 +143,7 @@ class TestDimMatrix(unittest.TestCase):
 
     def test_initialization_with_custom_framework(self) -> None:
         """Test creating DimMatrix with custom framework."""
-        comp_framework = DimSchema(_fwk="COMPUTATION")
+        comp_framework = Schema(_fwk="COMPUTATION")
         comp_framework.update_global_config()
 
         model = DimMatrix(name="Computation Model",
@@ -209,13 +209,13 @@ class TestDimMatrix(unittest.TestCase):
         model = DimMatrix()
         framework = model.framework
 
-        assert isinstance(framework, DimSchema)
+        assert isinstance(framework, Schema)
         assert framework._fwk == "PHYSICAL"
 
     def test_framework_property_setter(self) -> None:
         """Test framework property setter."""
         model = DimMatrix()
-        comp_framework = DimSchema(_fwk="COMPUTATION")
+        comp_framework = Schema(_fwk="COMPUTATION")
 
         model.framework = comp_framework
 
@@ -227,7 +227,7 @@ class TestDimMatrix(unittest.TestCase):
 
         with pytest.raises(ValueError) as excinfo:
             model.framework = "not a framework"     # type: ignore
-        assert "DimSchema instance" in str(excinfo.value)
+        assert "Schema instance" in str(excinfo.value)
 
     # ========================================================================
     # Variable statistics tests

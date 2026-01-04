@@ -3,12 +3,12 @@
 Module framework.py
 ===========================================
 
-Module for **DimSchema** to manage Fundamental Dimensional Units (FDUs) for Dimensional Analysis in *PyDASA*.
+Module for **Schema** to manage Fundamental Dimensional Units (FDUs) for Dimensional Analysis in *PyDASA*.
 
-This module provides the DimSchema class which manages dimensional frameworks, FDU precedence, and regex patterns for dimensional expression validation.
+This module provides the Schema class which manages dimensional frameworks, FDU precedence, and regex patterns for dimensional expression validation.
 
 Classes:
-    **DimSchema**: Manages dimensional frameworks and FDUs, providing methods for validation,
+    **Schema**: Manages dimensional frameworks and FDUs, providing methods for validation,
 
 *IMPORTANT:* Based on the theory from:
 
@@ -54,8 +54,8 @@ from pydasa.utils import patterns as pat
 
 
 @dataclass
-class DimSchema(Foundation):
-    """**DimSchema** Manages dimensional frameworks and FDUs for *PyDASA*.
+class Schema(Foundation):
+    """**Schema** Manages dimensional frameworks and FDUs for *PyDASA*.
 
     Maintains a collection of Dimensions with their precedence, provides regex patterns for dimensional expressions, and manages the dimensional framework context.
 
@@ -570,7 +570,7 @@ class DimSchema(Foundation):
         return result
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> DimSchema:
+    def from_dict(cls, data: Dict[str, Any]) -> Schema:
         """*from_dict()* Create framework from dictionary representation.
 
         Args:

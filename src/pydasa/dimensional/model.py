@@ -30,7 +30,7 @@ from pydasa.core.basic import Foundation
 
 # Import related classes
 from pydasa.elements.parameter import Variable
-from pydasa.dimensional.framework import DimSchema
+from pydasa.dimensional.framework import Schema
 from pydasa.dimensional.buckingham import Coefficient
 
 # Import utils
@@ -61,7 +61,7 @@ class DimMatrix(Foundation):
         _fwk (str): Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
 
         # Framework Management
-        _framework (DimSchema): Dimensional framework managing FDUs.
+        _framework (Schema): Dimensional framework managing FDUs.
         working_fdus (List[str]): Active FDUs used in current analysis.
 
         # Variable Management
@@ -120,7 +120,7 @@ class DimMatrix(Foundation):
     # ========================================================================
 
     # :attr: _framework
-    _framework: DimSchema = field(default_factory=DimSchema)
+    _framework: Schema = field(default_factory=Schema)
     """Dimensional framework managing Fundamental Dimensional Units (FDUs)."""
 
     # :attr: working_fdus
@@ -740,26 +740,26 @@ class DimMatrix(Foundation):
         self._prepare_analysis()
 
     @property
-    def framework(self) -> DimSchema:
+    def framework(self) -> Schema:
         """*framework* Get the dimensional framework.
 
         Returns:
-            DimSchema: Current dimensional framework.
+            Schema: Current dimensional framework.
         """
         return self._framework
 
     @framework.setter
-    def framework(self, val: DimSchema) -> None:
+    def framework(self, val: Schema) -> None:
         """Set the dimensional framework.
 
         Args:
-            val (DimSchema): New dimensional framework.
+            val (Schema): New dimensional framework.
 
         Raises:
-            ValueError: If input is not a DimSchema instance.
+            ValueError: If input is not a Schema instance.
         """
-        if not isinstance(val, DimSchema):
-            _msg = "Framework must be a DimSchema instance. "
+        if not isinstance(val, Schema):
+            _msg = "Framework must be a Schema instance. "
             _msg += f"Got: {type(val).__name__}"
             raise ValueError(_msg)
 
@@ -903,7 +903,7 @@ class DimMatrix(Foundation):
             return [[float(val) for val in row] for row in value.tolist()]
 
         # Handle objects with to_dict method
-        if isinstance(value, (DimSchema, Variable, Coefficient)):
+        if isinstance(value, (Schema, Variable, Coefficient)):
             return value.to_dict()
 
         # Handle dictionaries
@@ -947,8 +947,8 @@ class DimMatrix(Foundation):
     #         if isinstance(attr_value, sp.Matrix):
     #             attr_value = [[float(val) for val in row] for row in attr_value.tolist()]
 
-    #         # Handle DimSchema framework (convert to dict)
-    #         if isinstance(attr_value, DimSchema):
+    #         # Handle Schema framework (convert to dict)
+    #         if isinstance(attr_value, Schema):
     #             attr_value = attr_value.to_dict()
 
     #         # Handle Variable dictionaries (convert each Variable)
@@ -995,7 +995,7 @@ class DimMatrix(Foundation):
 
         # Define conversion rules
         object_converters = {
-            "framework": DimSchema,
+            "framework": Schema,
             "variables": Variable,
             "relevant_lt": Variable,
             "output": Variable,

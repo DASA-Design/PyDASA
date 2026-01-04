@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 Module config.py
 ===========================================
@@ -247,7 +247,7 @@ class PyDASAConfig:
 
 # Get singleton instance for configuration
 # :attr: PYDASA_CFG
-PYDASA_CFG = PyDASAConfig()
+PYDASA_CFG: PyDASAConfig = PyDASAConfig()
 """
 Singleton instance of PyDASAConfig for accessing global configuration.
 """

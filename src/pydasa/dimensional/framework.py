@@ -15,24 +15,36 @@ Classes:
     # H.Gorter, *Dimensionalanalyse: Eine Theoririe der physikalischen Dimensionen mit Anwendungen*
 """
 
+# native python modules
 from __future__ import annotations
+# dataclass imports
 from dataclasses import dataclass, field, fields
+# data type imports
 from typing import List, Dict, Optional, Any, Sequence, Mapping, cast
 
-# Import validation base classes
-from pydasa.core.basic import Validation
+# custom modules
+# core basic foundation class
+from pydasa.core.basic import Foundation
+# pydasa FDU class
+from pydasa.dimensional.fundamental import Dimension
+# file i/o operations
+from pydasa.core.io import load     # , save
+# constants for default frameworks folder + file
+from pydasa.core.constants import DFLT_CFG_FOLDER, DFLT_CFG_FILE
 
-# Import Dimension class
-from pydasa.core.fundamental import Dimension
 
 # Import global variables
-from pydasa.core.config import FDU_FWK_DT
+from pydasa.core.setup import FDU_FWK_DT
 
-from pydasa.dimensional.constants import (
-    PHY_FDU_PREC_DT,
-    COMPU_FDU_PREC_DT,
-    SOFT_FDU_PREC_DT,
-)
+from pydasa.core.constants import DFLT_FDU_FWK_DT
+from pydasa.core.constants import DFLT_FDU_PREC_LT
+
+
+# from pydasa.core.constants import (
+#     PHY_FDU_PREC_DT,
+#     COMPU_FDU_PREC_DT,
+#     SOFT_FDU_PREC_DT,
+# )
 
 from pydasa.utils.patterns import DFLT_POW_RE
 from pydasa.utils import patterns as pat
@@ -42,13 +54,13 @@ from pydasa.utils import patterns as pat
 
 
 @dataclass
-class DimSchema(Validation):
+class DimSchema(Foundation):
     """**DimSchema** Manages dimensional frameworks and FDUs for *PyDASA*.
 
     Maintains a collection of Dimensions with their precedence, provides regex patterns for dimensional expressions, and manages the dimensional framework context.
 
     Args:
-        Validation: Base class for validation of symbols and frameworks.
+        Foundation: Foundation class for validation of symbols and frameworks.
 
     Attributes:
         _fdu_lt (List[Dimension]): List of Fundamental Dimensional Units in precedence order.
@@ -173,7 +185,7 @@ class DimSchema(Validation):
                     _sym=data.get("_sym", ""),
                     _fwk=self._fwk,
                     _unit=data.get("_unit", ""),
-                    name=data.get("name", ""),
+                    _name=data.get("name", ""),
                     description=data.get("description", ""))
 
                 ans.append(fdu)
@@ -185,11 +197,12 @@ class DimSchema(Validation):
         Returns:
             List[str]: Default FDUs precedence list based on the framework map.
         """
+        # fp =
         # map for easy access to the FDUs
         _frk_map = {
-            "PHYSICAL": PHY_FDU_PREC_DT,
-            "COMPUTATION": COMPU_FDU_PREC_DT,
-            "SOFTWARE": SOFT_FDU_PREC_DT,
+            # "PHYSICAL": PHY_FDU_PREC_DT,
+            # "COMPUTATION": COMPU_FDU_PREC_DT,
+            # "SOFTWARE": SOFT_FDU_PREC_DT,
         }
         ans = []
         # select FDU framework
@@ -201,7 +214,7 @@ class DimSchema(Validation):
                     _sym=sym,
                     _fwk=self._fwk,
                     _unit=data.get("_unit", ""),
-                    name=data.get("name", ""),
+                    _name=data.get("name", ""),
                     description=data.get("description", ""))
 
                 ans.append(fdu)

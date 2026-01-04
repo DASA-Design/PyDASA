@@ -26,15 +26,15 @@ import sympy as sp
 from numpy.typing import NDArray
 
 # Import validation base classes
-from pydasa.core.basic import Validation
+from pydasa.core.basic import Foundation
 
 # Import related classes
-from pydasa.core.parameter import Variable
+from pydasa.elements.parameter import Variable
 from pydasa.dimensional.framework import DimSchema
-from pydasa.buckingham.vashchy import Coefficient
+from pydasa.dimensional.buckingham import Coefficient
 
 # Import utils
-from pydasa.core import config as cfg
+from pydasa.core import setup as cfg
 
 # Global constants
 MAX_OUT: int = 1
@@ -45,11 +45,11 @@ MAX_IN: int = 10
 
 
 @dataclass
-class DimMatrix(Validation):
+class DimMatrix(Foundation):
     """**DimMatrix** for Dimensional Analysis in *PyDASA*. Manages the dimensional matrix for performing analysis using the Buckingham Pi theorem methodology.
 
     Args:
-        Validation: Base class for validation of symbols and frameworks.
+        Foundation: Foundation class for validation of symbols and frameworks.
 
     Attributes:
         # Core Identification

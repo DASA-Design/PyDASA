@@ -11,7 +11,7 @@ Contains:
     - Default and working pattern sets for dimensional analysis
 """
 
-from pydasa.dimensional.constants import DFLT_FDU_PREC_LT
+from pydasa.core.constants import DFLT_FDU_PREC_LT
 
 # LaTeX Patterns
 # TODO clean the regex when tests are finished

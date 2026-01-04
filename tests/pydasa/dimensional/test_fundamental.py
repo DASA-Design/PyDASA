@@ -99,7 +99,7 @@ class TestDimension(unittest.TestCase):
         assert result["alias"] == data["_alias"]
         assert result["fwk"] == data["_fwk"]
         assert result["unit"] == data["_unit"]
-        assert result["_name"] == data["_name"]
+        assert result["name"] == data["_name"]
         assert "description" in result
 
     def test_from_dict(self) -> None:
@@ -117,11 +117,11 @@ class TestDimension(unittest.TestCase):
 
         dim = Dimension.from_dict(dict_data)
 
-        assert dim._idx == data["_idx"]
-        assert dim._sym == data["_sym"]
-        assert dim._alias == data["_alias"]
-        assert dim._fwk == data["_fwk"]
-        assert dim._unit == data["_unit"]
+        assert dim.idx == data["_idx"]
+        assert dim.sym == data["_sym"]
+        assert dim.alias == data["_alias"]
+        assert dim.fwk == data["_fwk"]
+        assert dim.unit == data["_unit"]
         assert dim.name == data["_name"]
 
     def test_to_dict_from_dict_roundtrip(self) -> None:

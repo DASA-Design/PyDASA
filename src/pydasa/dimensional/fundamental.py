@@ -103,7 +103,7 @@ class Dimension(Foundation):
             "alias": self._alias,
             "fwk": self._fwk,
             "unit": self._unit,
-            "_name": self.name,
+            "name": self.name,
             "description": self.description
         }
 

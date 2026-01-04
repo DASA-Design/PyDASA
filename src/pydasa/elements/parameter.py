@@ -32,6 +32,10 @@ from pydasa.core.setup import VarCardinality
 from pydasa.core.setup import PYDASA_CFG
 # pattern interpreter imports
 from pydasa.utils.latex import latex_to_python
+# import validation decorators
+from pydasa.validations.decorators import validate_type
+from pydasa.validations.decorators import validate_emptiness
+from pydasa.validations.decorators import validate_choices
 
 # # Import configuration
 # # import the 'cfg' module to allow global variable edition
@@ -423,6 +427,7 @@ class Variable(Foundation):
         return self._cat
 
     @cat.setter
+    @validate_choices(PYDASA_CFG.parameter_cardinality)
     def cat(self, val: str) -> None:
         """*cat* Set the category of the variable.
 
@@ -432,12 +437,13 @@ class Variable(Foundation):
         Raises:
             ValueError: If category is invalid.
         """
-        _param_keys = cfg.PARAMS_CAT_DT.keys()
-        if val.upper() not in _param_keys:
-            _msg = f"Invalid category: {val}. "
-            _msg += "Category must be one of the following: "
-            _msg += f"{', '.join(_param_keys)}."
-            raise ValueError(_msg)
+        # # _param_keys = cfg.PARAMS_CAT_DT.keys()
+        # _param_keys =
+        # if val.upper() not in _param_keys:
+        #     _msg = f"Invalid category: {val}. "
+        #     _msg += "Category must be one of the following: "
+        #     _msg += f"{', '.join(_param_keys)}."
+        #     raise ValueError(_msg)
         self._cat = val.upper()
 
     # Dimensional Properties
@@ -452,6 +458,8 @@ class Variable(Foundation):
         return self._dims
 
     @dims.setter
+    @validate_type(str, allow_none=False)
+    @validate_emptiness()
     def dims(self, val: str) -> None:
         """*dims* Sets the dimensional expression.
 
@@ -467,10 +475,6 @@ class Variable(Foundation):
             raise ValueError(_msg)
         # Local variable for type narrowing
         _schema = self._schema
-
-        # _precedence_lt = cfg.WKNG_FDU_PREC_LT
-        if val is not None and not val.strip():
-            raise ValueError("Dimensions cannot be empty.")
 
         # Process dimensions
         if val and not self._validate_exp(val, _schema.fdu_regex):
@@ -493,6 +497,8 @@ class Variable(Foundation):
         return self._units
 
     @units.setter
+    @validate_type(str, allow_none=False)
+    @validate_emptiness()
     def units(self, val: str) -> None:
         """*units* Sets the units of measure.
 
@@ -502,8 +508,6 @@ class Variable(Foundation):
         Raises:
             ValueError: If units are empty.
         """
-        if val is not None and not val.strip():
-            raise ValueError("Units of Measure cannot be empty.")
         self._units = val
 
     @property
@@ -516,6 +520,8 @@ class Variable(Foundation):
         return self._sym_exp
 
     @sym_exp.setter
+    @validate_type(str, allow_none=False)
+    @validate_emptiness()
     def sym_exp(self, val: str) -> None:
         """*sym_exp* Sets Sympy-compatible expression.
 
@@ -525,8 +531,6 @@ class Variable(Foundation):
         Raises:
             ValueError: If the string is empty.
         """
-        if val is not None and not val.strip():
-            raise ValueError("Dimensional expression cannot be empty.")
         self._sym_exp = val
 
     @property
@@ -564,6 +568,8 @@ class Variable(Foundation):
         return self._std_dims
 
     @std_dims.setter
+    @validate_type(str, allow_none=False)
+    @validate_emptiness()
     def std_dims(self, val: str) -> None:
         """*std_dims* Sets the standardized dimensional expression.
 
@@ -573,8 +579,6 @@ class Variable(Foundation):
         Raises:
             ValueError: If the standardized dimensional expression is empty.
         """
-        if val is not None and not val.strip():
-            raise ValueError("Standardized dimensions cannot be empty.")
         self._std_dims = val
 
     # Value Ranges (Original Units)
@@ -589,6 +593,7 @@ class Variable(Foundation):
         return self._min
 
     @min.setter
+    @validate_type(int, float)
     def min(self, val: Optional[float]) -> None:
         """*min* Sets minimum range value.
 
@@ -599,9 +604,6 @@ class Variable(Foundation):
             ValueError: If value not a valid number.
             ValueError: If value is greater than max.
         """
-        if val is not None and not isinstance(val, (int, float)):
-            raise ValueError("Minimum range must be a number.")
-
         if val is not None and self._max is not None and val > self._max:
             _msg = f"Minimum {val} cannot be greater than maximum {self._max}."
             raise ValueError(_msg)
@@ -626,6 +628,7 @@ class Variable(Foundation):
         return self._max
 
     @max.setter
+    @validate_type(int, float)
     def max(self, val: Optional[float]) -> None:
         """*max* Sets the maximum range value.
 
@@ -636,9 +639,6 @@ class Variable(Foundation):
             ValueError: If value is not a valid number.
             ValueError: If value is less than min.
         """
-        if val is not None and not isinstance(val, (int, float)):
-            raise ValueError("Maximum val must be a number.")
-
         # Check if both values exist before comparing
         if val is not None and self._min is not None and val < self._min:
             _msg = f"Maximum {val} cannot be less than minimum {self._min}."
@@ -664,6 +664,7 @@ class Variable(Foundation):
         return self._mean
 
     @mean.setter
+    @validate_type(int, float)
     def mean(self, val: Optional[float]) -> None:
         """*mean* Sets the Variable mean value.
 
@@ -674,9 +675,6 @@ class Variable(Foundation):
             ValueError: If value not a valid number.
             ValueError: If value is outside min-max range.
         """
-        if val is not None and not isinstance(val, (int, float)):
-            raise ValueError("Mean value must be a number.")
-
         # Only validate range if val is not None
         if val is not None:
             low = (self._min is not None and val < self._min)
@@ -723,6 +721,8 @@ class Variable(Foundation):
         return self._std_units
 
     @std_units.setter
+    @validate_type(str, allow_none=False)
+    @validate_emptiness()
     def std_units(self, val: str) -> None:
         """*std_units* Sets the standardized Unit of Measure.
 
@@ -732,8 +732,6 @@ class Variable(Foundation):
         Raises:
             ValueError: If standardized units are empty.
         """
-        if val is not None and not val.strip():
-            raise ValueError("Standardized Units of Measure cannot be empty.")
         self._std_units = val
 
     @property

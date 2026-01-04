@@ -96,7 +96,7 @@ class TestVariable(unittest.TestCase):
         for invalid_cat in self.test_data["INVALID_CATEGORIES"]:
             with pytest.raises(ValueError) as excinfo:
                 var.cat = invalid_cat
-            assert "Invalid category" in str(excinfo.value)
+            assert "Invalid cat" in str(excinfo.value)
 
     # Dimensions property tests
     def test_dims_getter(self) -> None:
@@ -121,7 +121,7 @@ class TestVariable(unittest.TestCase):
         var = Variable()
         with pytest.raises(ValueError) as excinfo:
             var.dims = "   "
-        assert "Dimensions cannot be empty" in str(excinfo.value)
+        assert "dims must be a non-empty string" in str(excinfo.value)
 
     def test_dims_processing(self) -> None:
         """Test dimensional expression processing."""
@@ -149,7 +149,7 @@ class TestVariable(unittest.TestCase):
         var = Variable()
         with pytest.raises(ValueError) as excinfo:
             var.units = "   "
-        assert "Units of Measure cannot be empty" in str(excinfo.value)
+        assert "units must be a non-empty string" in str(excinfo.value)
 
     # Symbol expression property tests
     def test_sym_exp_getter(self) -> None:
@@ -169,7 +169,7 @@ class TestVariable(unittest.TestCase):
         var = Variable()
         with pytest.raises(ValueError) as excinfo:
             var.sym_exp = "   "
-        assert "Dimensional expression cannot be empty" in str(excinfo.value)
+        assert "sym_exp must be a non-empty string" in str(excinfo.value)
 
     # Dimensional column property tests
     def test_dim_col_getter(self) -> None:
@@ -209,7 +209,7 @@ class TestVariable(unittest.TestCase):
         var = Variable()
         with pytest.raises(ValueError) as excinfo:
             var.std_dims = "   "
-        assert "Standardized dimensions cannot be empty" in str(excinfo.value)
+        assert "std_dims must be a non-empty string" in str(excinfo.value)
 
     # Original units range tests (min, max, mean, dev)
     def test_min_getter(self) -> None:
@@ -230,7 +230,7 @@ class TestVariable(unittest.TestCase):
         var = Variable()
         with pytest.raises(ValueError) as excinfo:
             var.min = cast(Any, "not a number")
-        assert "Minimum range must be a number" in str(excinfo.value)
+        assert "min must be int or float" in str(excinfo.value)
 
     def test_min_max_relationship(self) -> None:
         """Test min and max relationship validation."""
@@ -264,7 +264,7 @@ class TestVariable(unittest.TestCase):
         var = Variable()
         with pytest.raises(ValueError) as excinfo:
             var.max = cast(Any, "not a number")
-        assert "Maximum val must be a number" in str(excinfo.value)
+        assert "max must be int or float" in str(excinfo.value)
 
     def test_max_min_relationship(self) -> None:
         """Test max and min relationship validation."""
@@ -298,7 +298,7 @@ class TestVariable(unittest.TestCase):
         var = Variable()
         with pytest.raises(ValueError) as excinfo:
             var.mean = cast(Any, "not a number")
-        assert "Mean value must be a number" in str(excinfo.value)
+        assert "mean must be int or float" in str(excinfo.value)
 
     def test_mean_setter_out_of_range(self) -> None:
         """Test mean property setter with value outside range."""
@@ -334,7 +334,7 @@ class TestVariable(unittest.TestCase):
         var = Variable()
         with pytest.raises(ValueError) as excinfo:
             var.std_units = "   "
-        assert "Standardized Units of Measure cannot be empty" in str(excinfo.value)
+        assert "std_units must be a non-empty string" in str(excinfo.value)
 
     def test_std_min_getter(self) -> None:
         """Test std_min property getter."""
@@ -794,7 +794,7 @@ class TestVariable(unittest.TestCase):
         assert "cat" in result
         assert "dims" in result
         assert "units" in result
-        assert "_name" in result
+        assert "name" in result
         assert "description" in result
 
     def test_to_dict_values(self) -> None:
@@ -820,7 +820,7 @@ class TestVariable(unittest.TestCase):
         assert result["cat"] == data["_cat"]
         assert result["dims"] == data["_dims"]
         assert result["units"] == data["_units"]
-        assert result["_name"] == data["_name"]
+        assert result["name"] == data["_name"]
 
     def test_from_dict_creates_instance(self) -> None:
         """Test from_dict method creates Variable instance."""

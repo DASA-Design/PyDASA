@@ -21,15 +21,15 @@ LATEX_RE: str = r"\\?[a-zA-Z]+(?:_\{\d+\})?"
 LaTeX regex pattern to match LaTeX symbols (e.g., '\\alpha', '\\beta_{1}') in *PyDASA*.
 """
 
+DFLT_POW_RE: str = r"\-?\d+"
+"""
+Default regex to match FDUs with exponents (e.g., 'M*L^-1*T^-2' to 'M^(1)*L^(-1)*T^(-2)').
+"""
+
 # Default FDU Patterns
 DFLT_FDU_RE: str = rf"^[{''.join(DFLT_FDU_PREC_LT)}](\^-?\d+)?(\*[{''.join(DFLT_FDU_PREC_LT)}](?:\^-?\d+)?)*$"
 """
 Default regex pattern to match FDUs in *PyDASA* (e.g., 'M*L^-1*T^-2' to 'M^(1)*L^(-1)*T^(-2)').
-"""
-
-DFLT_POW_RE: str = r"\-?\d+"
-"""
-Default regex to match FDUs with exponents (e.g., 'M*L^-1*T^-2' to 'M^(1)*L^(-1)*T^(-2)').
 """
 
 DFLT_NO_POW_RE: str = rf"[{''.join(DFLT_FDU_PREC_LT)}](?!\^)"

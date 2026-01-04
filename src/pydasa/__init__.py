@@ -3,8 +3,8 @@
 # exposing analytics packages
 # TODO conversion still in development
 # from .pydasa.analysis.conversion import UnitConverter
-from .analysis.scenario import DimSensitivity
-from .analysis.simulation import MonteCarloSim
+from .analysis.scenario import Sensitivity
+from .analysis.simulation import MonteCarlo
 
 # exposing data pi-theorem packages
 from .dimensional.buckingham import Coefficient
@@ -47,8 +47,8 @@ from .core.io import load, save
 
 # asserting all imports
 # assert UnitConverter
-assert DimSensitivity
-assert MonteCarloSim
+assert Sensitivity
+assert MonteCarlo
 assert Coefficient
 assert Dimension
 # assert Unit
@@ -82,8 +82,8 @@ __all__ = [
     "Variable",
     "Schema",
     "Matrix",
-    "DimSensitivity",
+    "Sensitivity",
     "SensitivityHandler",
-    "MonteCarloSim",
+    "MonteCarlo",
     "MonteCarloHandler",
 ]

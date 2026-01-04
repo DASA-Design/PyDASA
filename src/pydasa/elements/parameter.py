@@ -26,13 +26,16 @@ import numpy as np
 # custom modules
 # basic-core class imports
 from pydasa.core.basic import Foundation
-
-# pattern interpreter import
+from pydasa.dimensional.framework import Schema
+# import global variables
+from pydasa.core.setup import VarCardinality
+from pydasa.core.setup import PYDASA_CFG
+# pattern interpreter imports
 from pydasa.utils.latex import latex_to_python
 
-# Import configuration
-# import the 'cfg' module to allow global variable edition
-from pydasa.core import setup as cfg
+# # Import configuration
+# # import the 'cfg' module to allow global variable edition
+# from pydasa.core import setup as cfg
 
 
 @dataclass
@@ -44,13 +47,14 @@ class Variable(Foundation):
 
     Attributes:
         # Identification and Classification
-        name (str): User-friendly name of the variable.
+        _name (str): User-friendly name of the variable.
         description (str): Brief summary of the variable.
         _idx (int): Index/precedence in the dimensional matrix.
         _sym (str): Symbol representation (LaTeX or alphanumeric).
         _alias (str): Python-compatible alias for use in code.
         _fwk (str): Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
         _cat (str): Category (INPUT, OUT, CTRL).
+        _schema (Schema): Reference to the dimensional framework or FDUs list.
         relevant (bool): Flag indicating if variable is relevant for analysis.
 
         # Dimensional Properties
@@ -79,9 +83,13 @@ class Variable(Foundation):
     """
 
     # Private attributes
+    # :attr: _schema
+    _schema: Optional[Schema] = None
+    """Reference to the dimensional framework schema."""
+
     # Category attribute (INPUT, OUT, CTRL)
     # :attr: _cat
-    _cat: str = "IN"
+    _cat: str = VarCardinality.IN.value
     """Category of the variable (INPUT, OUT, CTRL)."""
 
     # Dimensional properties
@@ -189,17 +197,27 @@ class Variable(Foundation):
         if not self._sym:
             self._sym = f"V_{self._idx}" if self._idx >= 0 else "V_{}"
 
+        # If no schema provided, create default or use global
+        if self._schema is None and self._fwk != "CUSTOM":
+            from pydasa.dimensional.framework import Schema
+            self._schema = Schema(_fwk=self._fwk)
+
+        # if custom schema is provided
+        if self._schema and len(self._dims) > 0 and self._dims != "n.a.":
+            #     if not self._schema.validate_dims(self._dims):
+            #         raise ValueError(f"Invalid dimensions for {self._fwk}")
+            # # Process dimensions if provided
+            # if len(self._dims) > 0 and self._dims != "n.a.":
+            _schema = self._schema
+            if not self._validate_exp(self._dims, _schema.fdu_regex):
+                _msg = f"Invalid dimensions {self._dims} for '{self._sym}'."
+                _msg += f"Check FDU precedence list: {_schema.fdu_lt}."
+                raise ValueError(_msg)
+            self._prepare_dims()
+
         # Set the Python alias if not specified
         if not self._alias:
             self._alias = latex_to_python(self._sym)
-
-        # Process dimensions if provided
-        if len(self._dims) > 0 and self._dims != "n.a.":
-            if not self._validate_exp(self._dims, cfg.WKNG_FDU_RE):
-                _msg = f"Invalid dimensions '{self.name}': {self._dims}. "
-                _msg += f"Check FDUs according to precedence: {cfg.WKNG_FDU_PREC_LT}"
-                raise ValueError(_msg)
-            self._prepare_dims()
 
         # Set up range array if all required values are provided
         if all([self._std_min, self._std_max, self._step]):
@@ -254,12 +272,18 @@ class Variable(Foundation):
         Returns:
             str: Standardized expression with parentheses (e.g., "L^(1)*T^(-1)").
         """
+        if self._schema is None:
+            _msg = "Schema must be initialized before standardizing dimensions"
+            raise ValueError(_msg)
+
         # Add parentheses to powers
-        _pattern = re.compile(cfg.WKNG_POW_RE)
+        # _pattern = re.compile(cfg.WKNG_POW_RE)
+        _pattern = re.compile(self._schema.fdu_pow_regex)
         dims = _pattern.sub(lambda m: f"({m.group(0)})", dims)
 
         # Add ^1 to dimensions without explicit powers
-        _pattern = re.compile(cfg.WKNG_NO_POW_RE)
+        # _pattern = re.compile(cfg.WKNG_NO_POW_RE)
+        _pattern = re.compile(self._schema.fdu_no_pow_regex)
         dims = _pattern.sub(lambda m: f"{m.group(0)}^(1)", dims)
         return dims
 
@@ -272,12 +296,19 @@ class Variable(Foundation):
         Returns:
             str: Sorted dimensional expression. e.g.: [L^(-1)*T^(2)].
         """
+        if self._schema is None:
+            _msg = "Schema must be initialized before standardizing dimensions"
+            raise ValueError(_msg)
+        # Local variable for type narrowing
+        _schema = self._schema
+
         # TODO move '*' as global operator to cfg module?
         # Split by multiplication operator
         _dims_lt = dims.split("*")
 
         # Sort based on FDU precedence
-        _dims_lt.sort(key=lambda x: cfg.WKNG_FDU_PREC_LT.index(x[0]))
+        # _dims_lt.sort(key=lambda x: cfg.WKNG_FDU_PREC_LT.index(x[0]))
+        _dims_lt.sort(key=lambda x: _schema.fdu_symbols.index(x[0]))
 
         # Rejoin with multiplication operator
         _dims = "*".join(_dims_lt)
@@ -310,33 +341,40 @@ class Variable(Foundation):
         Raises:
             ValueError: If dimensional expression cannot be parsed.
         """
+        if self._schema is None:
+            _msg = "Schema must be initialized before standardizing dimensions"
+            raise ValueError(_msg)
+        # Local variable for type narrowing
+        _schema = self._schema
+
         # split the sympy expression into a list of dimensions
         dims_list = dims.split("* ")
         # set the default list of zeros with the FDU length
-        col = [0] * len(cfg.WKNG_FDU_PREC_LT)
+        # col = [0] * len(cfg.WKNG_FDU_PREC_LT)
+        col = [0] * len(_schema.fdu_symbols)
 
         for dim in dims_list:
             # match the exponent of the dimension
-            exp_match = re.search(cfg.WKNG_POW_RE, dim)
+            exp_match = re.search(_schema.fdu_pow_regex, dim)
             if exp_match is None:
                 _msg = f"Could not extract exponent from dimension: {dim}"
                 raise ValueError(_msg)
             _exp = int(exp_match.group(0))
 
             # match the symbol of the dimension
-            sym_match = re.search(cfg.WKNG_FDU_SYM_RE, dim)
+            sym_match = re.search(_schema.fdu_sym_regex, dim)
             if sym_match is None:
                 _msg = f"Could not extract symbol from dimension: {dim}"
                 raise ValueError(_msg)
             _sym = sym_match.group(0)
 
             # Check if symbol exists in the precedence list
-            if _sym not in cfg.WKNG_FDU_PREC_LT:
+            if _sym not in _schema.fdu_symbols:
                 _msg = f"Unknown dimensional symbol: {_sym}"
                 raise ValueError(_msg)
 
             # update the column with the exponent of the dimension
-            col[cfg.WKNG_FDU_PREC_LT.index(_sym)] = _exp
+            col[_schema.fdu_symbols.index(_sym)] = _exp
 
         return col
 
@@ -424,14 +462,20 @@ class Variable(Foundation):
             ValueError: If expression is empty
             ValueError: If dimensions are invalid according to the precedence.
         """
+        if self._schema is None:
+            _msg = "Schema must be initialized before standardizing dimensions"
+            raise ValueError(_msg)
+        # Local variable for type narrowing
+        _schema = self._schema
+
         # _precedence_lt = cfg.WKNG_FDU_PREC_LT
         if val is not None and not val.strip():
             raise ValueError("Dimensions cannot be empty.")
 
         # Process dimensions
-        if val and not self._validate_exp(val, cfg.WKNG_FDU_RE):
+        if val and not self._validate_exp(val, _schema.fdu_regex):
             _msg = f"Invalid dimensional expression: {val}. "
-            _msg += f"FDUS precedence is: {cfg.WKNG_FDU_RE}"
+            _msg += f"FDUS precedence is: {_schema.fdu_regex}"
             raise ValueError(_msg)
 
         self._dims = val

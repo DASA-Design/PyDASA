@@ -193,7 +193,9 @@ class PyDASAConfig:
         cfg_data = load(fp)
 
         # Since the dataclass is frozen, use object.__setattr__ to set attributes
-        object.__setattr__(self, "SPT_FDU_FWKS", cfg_data.get("frameworks", {}))
+        object.__setattr__(self,
+                           "SPT_FDU_FWKS",
+                           cfg_data.get("frameworks", {}))
 
     @classmethod
     def get_instance(cls) -> "PyDASAConfig":

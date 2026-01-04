@@ -1,4 +1,4 @@
-﻿========================= documentation =========================
+========================= documentation =========================
 
 https://reintech.io/blog/generating-multi-language-documentation-with-sphinx
 

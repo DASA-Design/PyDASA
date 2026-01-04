@@ -31,7 +31,7 @@ from pydasa.core.basic import Foundation
 # Import related classes
 from pydasa.elements.parameter import Variable
 from pydasa.dimensional.buckingham import Coefficient
-from pydasa.analysis.simulation import MonteCarloSim
+from pydasa.analysis.simulation import MonteCarlo
 
 # Import utils
 from pydasa.validations.error import inspect_var
@@ -68,7 +68,7 @@ class MonteCarloHandler(Foundation):
         _experiments (int): Number of simulation to run. Default is 1000.
 
         # Simulation Results
-        _simulations (Dict[str, MonteCarloSim]): all Monte Carlo simulations performed.
+        _simulations (Dict[str, MonteCarlo]): all Monte Carlo simulations performed.
         _results (Dict[str, Any]): all results from the simulations.
         _shared_cache (Dict[str, NDArray[np.float64]]): In-memory cache for simulation data between coefficients.
     """
@@ -102,7 +102,7 @@ class MonteCarloHandler(Foundation):
     """In-memory cache for simulation data between coefficients."""
 
     # :attr: _simulations
-    _simulations: Dict[str, MonteCarloSim] = field(default_factory=dict)
+    _simulations: Dict[str, MonteCarlo] = field(default_factory=dict)
     """Dictionary of Monte Carlo simulations."""
 
     # :attr: _results
@@ -323,7 +323,7 @@ class MonteCarloHandler(Foundation):
     def _config_simulations(self) -> None:
         """*_config_simulations()* Sets up Monte Carlo simulation objects for each coefficient to be analyzed.
 
-        Creates a MonteCarloSim instance for each coefficient with appropriate distributions and dependencies.
+        Creates a MonteCarlo instance for each coefficient with appropriate distributions and dependencies.
 
         Raises:
             ValueError: If coefficients or variables are not properly configured.
@@ -364,7 +364,7 @@ class MonteCarloHandler(Foundation):
 
             try:
                 # Create Monte Carlo simulation
-                sim = MonteCarloSim(
+                sim = MonteCarlo(
                     _idx=i,
                     _sym=f"MC_{{{coef.sym}}}",
                     _fwk=self._fwk,
@@ -478,14 +478,14 @@ class MonteCarloHandler(Foundation):
     # Getter Methods
     # ========================================================================
 
-    def get_simulation(self, name: str) -> MonteCarloSim:
+    def get_simulation(self, name: str) -> MonteCarlo:
         """*get_simulation()* Get a simulation by name.
 
         Args:
             name (str): Name of the simulation.
 
         Returns:
-            MonteCarloSim: The requested simulation.
+            MonteCarlo: The requested simulation.
 
         Raises:
             ValueError: If the simulation doesn't exist.
@@ -647,11 +647,11 @@ class MonteCarloHandler(Foundation):
         self._experiments = val
 
     @property
-    def simulations(self) -> Dict[str, MonteCarloSim]:
+    def simulations(self) -> Dict[str, MonteCarlo]:
         """*simulations* Get the dictionary of Monte Carlo simulations.
 
         Returns:
-            Dict[str, MonteCarloSim]: Dictionary of Monte Carlo simulations.
+            Dict[str, MonteCarlo]: Dictionary of Monte Carlo simulations.
         """
         return self._simulations.copy()
 

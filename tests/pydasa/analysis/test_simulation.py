@@ -26,7 +26,7 @@ import numpy as np
 
 # Import core PyDASA modules
 # from pydasa.core.fundamental import Dimension
-from pydasa.core.parameter import Variable
+from pydasa.elements.parameter import Variable
 from pydasa.dimensional.framework import DimSchema
 from pydasa.dimensional.model import DimMatrix
 
@@ -34,7 +34,7 @@ from pydasa.dimensional.model import DimMatrix
 from pydasa.analysis.simulation import MonteCarloSim
 
 # Import related classes
-from pydasa.buckingham.vashchy import Coefficient
+from pydasa.dimensional.buckingham import Coefficient
 
 # Import test data
 from tests.pydasa.data.test_data import get_simulation_test_data
@@ -264,7 +264,7 @@ class TestMonteCarloSim(unittest.TestCase):
             _idx=0,
             _sym=f"MC_{first_pi}",
             _fwk="CUSTOM",
-            name=f"Monte Carlo for {first_pi}",
+            _name=f"Monte Carlo for {first_pi}",
             description=f"Monte Carlo simulation for {first_pi}",
             _coefficient=coef,
             _experiments=N_EXP
@@ -386,7 +386,7 @@ class TestMonteCarloSim(unittest.TestCase):
                 _idx=0,
                 _sym=f"MC_{pi_sym}",
                 _fwk="CUSTOM",
-                name=f"Monte Carlo {pi_sym}",
+                _name=f"Monte Carlo {pi_sym}",
                 _coefficient=coef,
                 _variables=self.variables,
                 _experiments=N_EXP
@@ -427,7 +427,7 @@ class TestMonteCarloSim(unittest.TestCase):
             _idx=0,
             _sym="MC_Pi_1",
             _fwk="CUSTOM",
-            name="Monte Carlo Pi_1",
+            _name="Monte Carlo Pi_1",
             _coefficient=coef,
             _variables=self.variables,
             _experiments=N_EXP

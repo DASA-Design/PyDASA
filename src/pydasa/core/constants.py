@@ -20,6 +20,15 @@ The fourth FDU framework is:
 
 # global variables
 
+# Default config folder name + settings
+# :attr: DFLT_CFG_FOLDER
+DFLT_CFG_FOLDER: str = "cfg"
+# :attr: DFLT_CFG_FILE
+DFLT_CFG_FILE: str = "default.json"
+"""
+*PyDASA* default configuration folder and file names.
+"""
+
 # Default Fundamental Dimensional Units (FDU) framework
 # :attr: DFLT_FDU_FWK_DT
 DFLT_FDU_FWK_DT: dict = dict()

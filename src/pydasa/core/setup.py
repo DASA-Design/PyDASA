@@ -35,13 +35,18 @@ Key Features:
 # native python modules
 from enum import Enum
 # dataclass imports
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 # data type inports
 from typing import ClassVar
 
 # custom modules
+from pydasa.core.io import Path, load     # , save
+from pydasa.core.constants import DFLT_CFG_FOLDER, DFLT_CFG_FILE
 
 # checking custom modules
+assert load
+assert DFLT_CFG_FOLDER
+assert DFLT_CFG_FILE
 
 # =============================================================================
 # *PyDASA* Enum Definitions
@@ -173,11 +178,25 @@ class PyDASAConfig:
     """
 
     # :attr: _instance
-    _instance: ClassVar['PyDASAConfig | None'] = None
+    _instance: ClassVar["PyDASAConfig | None"] = None
     """Singleton instance of PyDASAConfig."""
 
+    # :attr: support_fwk
+    support_fwk: dict = field(default_factory=dict)
+    """Supported Fundamental Dimensional Units (FDUs) frameworks and their configurations."""
+
+    def __post_init__(self):
+        """*__post_init__()* Post-initialization to load configuration from file."""
+        # Load configuration from default file (relative to this module's directory)
+        module_dir = Path(__file__).parent
+        fp = module_dir / DFLT_CFG_FOLDER / DFLT_CFG_FILE
+        cfg_data = load(fp)
+
+        # Since the dataclass is frozen, use object.__setattr__ to set attributes
+        object.__setattr__(self, "support_fwk", cfg_data.get("frameworks", {}))
+
     @classmethod
-    def get_instance(cls) -> 'PyDASAConfig':
+    def get_instance(cls) -> "PyDASAConfig":
         """*get_instance()* Get the singleton instance of PyDASAConfig.
 
         Returns:

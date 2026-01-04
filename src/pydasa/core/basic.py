@@ -52,13 +52,13 @@ class SymBasis(ABC):
     _sym: str = ""
     """Symbol representation (LaTeX or alphanumeric)."""
 
-    # :attr: _alias
-    _alias: str = ""
-    """Python-compatible alias for symbol, used in executable code. e.g.: `\\rho_{1}` -> `rho_1`."""
-
     # :attr: _fwk
     _fwk: str = Framework.PHYSICAL.value
     """Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM)."""
+
+    # :attr: _alias
+    _alias: str = ""
+    """Python-compatible alias for symbol, used in executable code. e.g.: `\\rho_{1}` -> `rho_1`."""
 
     def __post_init__(self) -> None:
         """*__post_init__()* Post-initialization processing with symbol and framework validation.

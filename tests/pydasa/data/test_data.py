@@ -38,7 +38,7 @@ def get_config_test_data():
             "M*L^-1*T^-2", "M*L^2*T^-2", "M*L^2*T^-3",
             "L*T^-1", "L*T^-2", "M*L^-3", "M*T^-1", "L^3*T^-1"
         ],
-        "REQUIRED_FIELDS": ["_unit", "name", "description"],
+        "REQUIRED_FIELDS": ["_unit", "_name", "description"],
     }
 
 
@@ -52,7 +52,7 @@ def get_dimension_test_data() -> dict:
             "_alias": "L",
             "_fwk": "PHYSICAL",
             "_unit": "m",
-            "name": "Length",
+            "_name": "Length",
             "description": "Physical length dimension"
         },
         "COMPUTATION_DATA": {
@@ -61,7 +61,7 @@ def get_dimension_test_data() -> dict:
             "_alias": "S",
             "_fwk": "COMPUTATION",
             "_unit": "bit",
-            "name": "Storage",
+            "_name": "Storage",
             "description": "Digital storage dimension"
         },
         "SOFTWARE_DATA": {
@@ -70,7 +70,7 @@ def get_dimension_test_data() -> dict:
             "_alias": "E",
             "_fwk": "SOFTWARE",
             "_unit": "req",
-            "name": "Events",
+            "_name": "Events",
             "description": "Software event dimension"
         },
         "INVALID_UNIT_DATA": ["", 123, None, []],
@@ -200,7 +200,7 @@ def get_basic_test_data() -> dict:
                 "_sym": "L",
                 "_alias": "L",
                 "_fwk": "PHYSICAL",
-                "name": "Length",
+                "_name": "Length",
                 "description": "physical length dimension"
             },
             {
@@ -208,7 +208,7 @@ def get_basic_test_data() -> dict:
                 "_sym": "M",
                 "_alias": "M",
                 "_fwk": "PHYSICAL",
-                "name": "Mass",
+                "_name": "Mass",
                 "description": "physical mass dimension"
             },
         ],
@@ -229,7 +229,7 @@ def get_variable_test_data() -> dict:
             "_cat": "IN",
             "_dims": "L*T^-1",
             "_units": "m/s",
-            "name": "Velocity",
+            "_name": "Velocity",
             "description": "velocity of fluid"
         },
         "COMPUTATION_VARIABLE": {
@@ -240,7 +240,7 @@ def get_variable_test_data() -> dict:
             "_cat": "OUT",
             "_dims": "T",
             "_units": "s",
-            "name": "Time",
+            "_name": "Time",
             "description": "computation time"
         },
         "SOFTWARE_VARIABLE": {
@@ -251,7 +251,7 @@ def get_variable_test_data() -> dict:
             "_cat": "CTRL",
             "_dims": "E",
             "_units": "req",
-            "name": "Events",
+            "_name": "Events",
             "description": "software events"
         },
         "VALID_CATEGORIES": ["IN", "OUT", "CTRL", "in", "out", "ctrl"],
@@ -277,61 +277,61 @@ def get_framework_test_data() -> dict:
         "INVALID_FRAMEWORKS": ["INVALID", "physical", "", None],
         "PHYSICAL_FDU_LIST": [
             {"_idx": 0, "_sym": "L", "_alias": "L", "_fwk": "PHYSICAL",
-             "_unit": "m", "name": "Length",
+             "_unit": "m", "_name": "Length",
              "description": "Distance between two points in space."},
             {"_idx": 1, "_sym": "M", "_alias": "M", "_fwk": "PHYSICAL",
-             "_unit": "kg", "name": "Mass",
+             "_unit": "kg", "_name": "Mass",
              "description": "Amount of matter in an object."},
             {"_idx": 2, "_sym": "T", "_alias": "T", "_fwk": "PHYSICAL",
-             "_unit": "s", "name": "Time",
+             "_unit": "s", "_name": "Time",
              "description": "Duration of an event or interval."},
             {"_idx": 3, "_sym": "K", "_alias": "K", "_fwk": "PHYSICAL",
-             "_unit": "K", "name": "Temperature",
+             "_unit": "K", "_name": "Temperature",
              "description": "Measure of average kinetic energy of particles."},
             {"_idx": 4, "_sym": "I", "_alias": "I", "_fwk": "PHYSICAL",
-             "_unit": "A", "name": "Electric Current",
+             "_unit": "A", "_name": "Electric Current",
              "description": "Flow of electric charge."},
             {"_idx": 5, "_sym": "N", "_alias": "N", "_fwk": "PHYSICAL",
-             "_unit": "mol", "name": "Amount of Substance",
+             "_unit": "mol", "_name": "Amount of Substance",
              "description": "Quantity of entities (e.g., atoms, molecules)."},
             {"_idx": 6, "_sym": "C", "_alias": "C", "_fwk": "PHYSICAL",
-             "_unit": "cd", "name": "Luminous Intensity",
+             "_unit": "cd", "_name": "Luminous Intensity",
              "description": "Perceived power of light in a given direction."},
         ],
         "COMPUTATION_FDU_LIST": [
             {"_idx": 0, "_sym": "T", "_alias": "T", "_fwk": "COMPUTATION",
-             "_unit": "s", "name": "Time",
+             "_unit": "s", "_name": "Time",
              "description": "Duration of an event or interval."},
             {"_idx": 1, "_sym": "S", "_alias": "S", "_fwk": "COMPUTATION",
-             "_unit": "bit", "name": "Space",
+             "_unit": "bit", "_name": "Space",
              "description": "Physical extent in three dimensions."},
             {"_idx": 2, "_sym": "N", "_alias": "N", "_fwk": "COMPUTATION",
-             "_unit": "op", "name": "Complexity",
+             "_unit": "op", "_name": "Complexity",
              "description": "Measure of interconnectedness or intricacy in a system."},
         ],
         "SOFTWARE_FDU_LIST": [
             {"_idx": 0, "_sym": "T", "_alias": "T", "_fwk": "SOFTWARE",
-             "_unit": "s", "name": "Time",
+             "_unit": "s", "_name": "Time",
              "description": "Duration of an event or interval."},
             {"_idx": 1, "_sym": "D", "_alias": "D", "_fwk": "SOFTWARE",
-             "_unit": "bit", "name": "Data",
+             "_unit": "bit", "_name": "Data",
              "description": "Information processed by a system."},
             {"_idx": 2, "_sym": "E", "_alias": "E", "_fwk": "SOFTWARE",
-             "_unit": "req", "name": "Effort",
+             "_unit": "req", "_name": "Effort",
              "description": "Measure of computational effort/complexity."},
             {"_idx": 3, "_sym": "C", "_alias": "C", "_fwk": "SOFTWARE",
-             "_unit": "node", "name": "Connectivity",
+             "_unit": "node", "_name": "Connectivity",
              "description": "Measure of interconnections between components."},
             {"_idx": 4, "_sym": "A", "_alias": "A", "_fwk": "SOFTWARE",
-             "_unit": "process", "name": "Capacity",
+             "_unit": "process", "_name": "Capacity",
              "description": "Maximum amount of data that can be stored/processed."},
         ],
         "CUSTOM_FDU_LIST": [
             {"_idx": 0, "_sym": "X", "_alias": "X", "_fwk": "CUSTOM",
-             "_unit": "unit1", "name": "Custom1",
+             "_unit": "unit1", "_name": "Custom1",
              "description": "Custom dimension 1"},
             {"_idx": 1, "_sym": "Y", "_alias": "Y", "_fwk": "CUSTOM",
-             "_unit": "unit2", "name": "Custom2",
+             "_unit": "unit2", "_name": "Custom2",
              "description": "Custom dimension 2"},
         ],
         "PHYSICAL_SYMBOLS": ["L", "M", "T", "K", "I", "N", "C"],
@@ -344,13 +344,13 @@ def get_framework_test_data() -> dict:
             "fwk": "PHYSICAL",
             "fdu_list": [
                 {"idx": 0, "sym": "L", "alias": "L", "fwk": "PHYSICAL",
-                 "unit": "m", "name": "Length",
+                 "unit": "m", "_name": "Length",
                  "description": "Distance between two points in space."},
                 {"idx": 1, "sym": "M", "alias": "M", "fwk": "PHYSICAL",
-                 "unit": "kg", "name": "Mass",
+                 "unit": "kg", "_name": "Mass",
                  "description": "Amount of matter in an object."},
                 {"idx": 2, "sym": "T", "alias": "T", "fwk": "PHYSICAL",
-                 "unit": "s", "name": "Time",
+                 "unit": "s", "_name": "Time",
                  "description": "Duration of an event or interval."},
             ]
         },
@@ -369,7 +369,7 @@ def get_coefficient_test_data() -> dict:
                 "_cat": "IN",
                 "_dims": "L*T^-1",
                 "_units": "m/s",
-                "name": "Velocity",
+                "_name": "Velocity",
                 "description": "Fluid velocity",
                 "relevant": True,
                 "_idx": 0,
@@ -394,7 +394,7 @@ def get_coefficient_test_data() -> dict:
                 "_cat": "IN",
                 "_dims": "L",
                 "_units": "m",
-                "name": "Length",
+                "_name": "Length",
                 "description": "Characteristic length",
                 "relevant": True,
                 "_idx": 1,
@@ -419,7 +419,7 @@ def get_coefficient_test_data() -> dict:
                 "_cat": "IN",
                 "_dims": "M*L^-3",
                 "_units": "kg/m^3",
-                "name": "Density",
+                "_name": "Density",
                 "description": "Fluid density",
                 "relevant": True,
                 "_idx": 2,
@@ -444,7 +444,7 @@ def get_coefficient_test_data() -> dict:
                 "_cat": "CTRL",
                 "_dims": "M*L^-1*T^-1",
                 "_units": "Pa*s",
-                "name": "Dynamic Viscosity",
+                "_name": "Dynamic Viscosity",
                 "description": "Dynamic viscosity of fluid",
                 "relevant": True,
                 "_idx": 3,
@@ -469,7 +469,7 @@ def get_coefficient_test_data() -> dict:
                 "_cat": "IN",
                 "_dims": "L",
                 "_units": "m",
-                "name": "Diameter",
+                "_name": "Diameter",
                 "description": "Pipe diameter",
                 "relevant": True,
                 "_idx": 4,
@@ -494,7 +494,7 @@ def get_coefficient_test_data() -> dict:
                 "_cat": "OUT",
                 "_dims": "M*L^-1*T^-2",
                 "_units": "Pa",
-                "name": "Pressure",
+                "_name": "Pressure",
                 "description": "Fluid pressure",
                 "relevant": True,
                 "_idx": 5,
@@ -525,28 +525,28 @@ def get_coefficient_test_data() -> dict:
                     "_sym": "v",
                     "_dims": "L*T^-1",
                     "_fwk": "PHYSICAL",
-                    "name": "Velocity"
+                    "_name": "Velocity"
                 },
                 "L": {
                     "_sym": "L",
                     "_dims": "L",
                     "_fwk": "PHYSICAL",
-                    "name": "Length"
+                    "_name": "Length"
                 },
                 "\\rho": {
                     "_sym": "\\rho",
                     "_dims": "M*L^-3",
                     "_fwk": "PHYSICAL",
-                    "name": "Density"
+                    "_name": "Density"
                 },
                 "\\mu": {
                     "_sym": "\\mu",
                     "_dims": "M*L^-1*T^-1",
                     "_fwk": "PHYSICAL",
-                    "name": "Viscosity"
+                    "_name": "Viscosity"
                 }
             },
-            "name": "Reynolds Number",
+            "_name": "Reynolds Number",
             "description": "Ratio of inertial to viscous forces"
         },
         "SIMPLE_COEFFICIENT": {
@@ -561,16 +561,16 @@ def get_coefficient_test_data() -> dict:
                     "_sym": "v",
                     "_dims": "L*T^-1",
                     "_fwk": "PHYSICAL",
-                    "name": "Velocity"
+                    "_name": "Velocity"
                 },
                 "L": {
                     "_sym": "L",
                     "_dims": "L",
                     "_fwk": "PHYSICAL",
-                    "name": "Length"
+                    "_name": "Length"
                 }
             },
-            "name": "Simple Ratio",
+            "_name": "Simple Ratio",
             "description": "Simple velocity-length ratio"
         },
         "VALID_CATEGORIES": ["COMPUTED", "DERIVED", "computed", "derived"],
@@ -590,7 +590,7 @@ def get_model_test_data() -> dict:
                 "_cat": "IN",
                 "_dims": "L*T^-1",
                 "_units": "m/s",
-                "name": "Velocity",
+                "_name": "Velocity",
                 "description": "Fluid velocity",
                 "relevant": True,
                 "_idx": 0
@@ -602,7 +602,7 @@ def get_model_test_data() -> dict:
                 "_cat": "IN",
                 "_dims": "L",
                 "_units": "m",
-                "name": "Length",
+                "_name": "Length",
                 "description": "Characteristic length",
                 "relevant": True,
                 "_idx": 1
@@ -614,7 +614,7 @@ def get_model_test_data() -> dict:
                 "_cat": "IN",
                 "_dims": "M*L^-3",
                 "_units": "kg/m^3",
-                "name": "Density",
+                "_name": "Density",
                 "description": "Fluid density",
                 "relevant": True,
                 "_idx": 2
@@ -626,7 +626,7 @@ def get_model_test_data() -> dict:
                 "_cat": "CTRL",
                 "_dims": "M*L^-1*T^-1",
                 "_units": "Pa*s",
-                "name": "Dynamic Viscosity",
+                "_name": "Dynamic Viscosity",
                 "description": "Dynamic viscosity",
                 "relevant": True,
                 "_idx": 3
@@ -638,7 +638,7 @@ def get_model_test_data() -> dict:
                 "_cat": "OUT",
                 "_dims": "M*L^-1*T^-2",
                 "_units": "Pa",
-                "name": "Pressure",
+                "_name": "Pressure",
                 "description": "Fluid pressure",
                 "relevant": True,
                 "_idx": 4
@@ -650,7 +650,7 @@ def get_model_test_data() -> dict:
                 "_cat": "IN",
                 "_dims": "L",
                 "_units": "m",
-                "name": "Diameter",
+                "_name": "Diameter",
                 "description": "Pipe diameter",
                 "relevant": False,  # Not relevant for basic analysis
                 "_idx": 5
@@ -662,7 +662,7 @@ def get_model_test_data() -> dict:
                 "_cat": "IN",
                 "_dims": "L*T^-2",
                 "_units": "m/s^2",
-                "name": "Gravity",
+                "_name": "Gravity",
                 "description": "Gravitational acceleration",
                 "relevant": True,
                 "_idx": 6
@@ -674,7 +674,7 @@ def get_model_test_data() -> dict:
                 "_cat": "CTRL",
                 "_dims": "L^2*T^-1",
                 "_units": "m^2/s",
-                "name": "Kinematic Viscosity",
+                "_name": "Kinematic Viscosity",
                 "description": "Kinematic viscosity",
                 "relevant": True,
                 "_idx": 7
@@ -760,7 +760,7 @@ def get_simulation_test_data() -> dict:
                 "_fwk": "CUSTOM",
                 "description": "Mass",
                 "_unit": "kg",
-                "name": "Mass"
+                "_name": "Mass"
             },
             {
                 "_idx": 1,
@@ -768,7 +768,7 @@ def get_simulation_test_data() -> dict:
                 "_fwk": "CUSTOM",
                 "description": "Length",
                 "_unit": "m",
-                "name": "Length"
+                "_name": "Length"
             },
             {
                 "_idx": 2,
@@ -776,7 +776,7 @@ def get_simulation_test_data() -> dict:
                 "_fwk": "CUSTOM",
                 "description": "Time",
                 "_unit": "s",
-                "name": "Time"
+                "_name": "Time"
             },
         ],
         "CHANNEL_FLOW_VARIABLES": {
@@ -784,7 +784,7 @@ def get_simulation_test_data() -> dict:
                 "_sym": "U",
                 "_alias": "U",
                 "_fwk": "CUSTOM",
-                "name": "Wall Velocity",
+                "_name": "Wall Velocity",
                 "relevant": True,
                 "description": "Velocity of the fluid wall",
                 "_idx": 3,
@@ -809,7 +809,7 @@ def get_simulation_test_data() -> dict:
                 "_sym": "\\mu_{1}",
                 "_alias": "mu_1",
                 "_fwk": "CUSTOM",
-                "name": "Fluid Viscosity",
+                "_name": "Fluid Viscosity",
                 "description": "Dynamic viscosity of fluid",
                 "relevant": True,
                 "_idx": 0,
@@ -834,7 +834,7 @@ def get_simulation_test_data() -> dict:
                 "_sym": "y_{2}",
                 "_alias": "y_2",
                 "_fwk": "CUSTOM",
-                "name": "Distance from Wall",
+                "_name": "Distance from Wall",
                 "description": "Distance from wall to measurement point",
                 "relevant": True,
                 "_idx": 1,
@@ -859,7 +859,7 @@ def get_simulation_test_data() -> dict:
                 "_sym": "d",
                 "_alias": "d",
                 "_fwk": "CUSTOM",
-                "name": "Channel Diameter",
+                "_name": "Channel Diameter",
                 "relevant": True,
                 "description": "Diameter of the channel",
                 "_idx": 2,
@@ -884,7 +884,7 @@ def get_simulation_test_data() -> dict:
                 "_sym": "P",
                 "_alias": "P",
                 "_fwk": "CUSTOM",
-                "name": "Pressure Drop",
+                "_name": "Pressure Drop",
                 "relevant": True,
                 "description": "Pressure drop across channel",
                 "_idx": 4,
@@ -909,7 +909,7 @@ def get_simulation_test_data() -> dict:
                 "_sym": "v",
                 "_alias": "v",
                 "_fwk": "CUSTOM",
-                "name": "Kinematic Viscosity",
+                "_name": "Kinematic Viscosity",
                 "relevant": True,
                 "description": "Kinematic viscosity of fluid",
                 "_idx": 5,

@@ -78,7 +78,7 @@ class Dimension(Foundation):
         return self._unit
 
     @unit.setter
-    @validate_type(str)
+    @validate_type(str, allow_none=False)
     @validate_emptiness()
     def unit(self, val: str) -> None:
         """*unit* Set the unit with validation.

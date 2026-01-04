@@ -76,9 +76,8 @@ class TestDimension(unittest.TestCase):
         """Test unit validation with invalid values."""
         dim = Dimension()
         for invalid_unit in self.test_data["INVALID_UNIT_DATA"]:
-            with pytest.raises(ValueError) as excinfo:
+            with pytest.raises(ValueError):
                 dim.unit = invalid_unit
-            assert "Unit must be a non-empty string" in str(excinfo.value)
 
     def test_to_dict(self) -> None:
         """Test converting Dimension to dictionary."""

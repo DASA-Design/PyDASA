@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 Module framework.py
 ===========================================
@@ -31,6 +31,7 @@ from pydasa.validations.decorators import validate_emptiness
 # pydasa FDU class
 from pydasa.dimensional.fundamental import Dimension
 # global variables for setup
+from pydasa.core.setup import Framework
 from pydasa.core.setup import PYDASA_CFG
 from pydasa.core.setup import FDU_FWK_DT
 # important regex patterns
@@ -124,13 +125,14 @@ class Schema(Foundation):
             ValueError: If the FDU framework is not properly defined.
         """
         # if the framework is supported, configure the default
-        if self.fwk in FDU_FWK_DT and self.fwk != "CUSTOM":
+        if self.fwk in FDU_FWK_DT and self.fwk != Framework.CUSTOM.value:
             self.fdu_lt = self._setup_default_framework()
 
         # if the framework is user-defined, use the provided list[dict]
-        elif self.fwk == "CUSTOM":
+        elif self.fwk == Framework.CUSTOM.value:
             if not self._fdu_lt:
-                raise ValueError("Custom framework requires '_fdu_lt' to define FDUs")
+                _msg = "Custom framework requires '_fdu_lt' to define FDUs"
+                raise ValueError(_msg)
 
             # Check if _fdu_lt contains Dimension objects (already created)
             if all(isinstance(val, Dimension) for val in self._fdu_lt):
@@ -163,7 +165,7 @@ class Schema(Foundation):
         """
         # detecting custom framework
         ans = []
-        if self.fwk == "CUSTOM":
+        if self.fwk == Framework.CUSTOM.value:
             # Create custom FDU set
             for idx, data in enumerate(fdus):
                 data = dict(data)
@@ -172,7 +174,7 @@ class Schema(Foundation):
                     _sym=data.get("_sym", ""),
                     _fwk=self._fwk,
                     _unit=data.get("_unit", ""),
-                    _name=data.get("name", ""),
+                    _name=data.get("_name", ""),
                     description=data.get("description", ""))
 
                 ans.append(fdu)

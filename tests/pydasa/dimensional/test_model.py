@@ -22,9 +22,9 @@ import numpy as np
 
 # Import the module to test
 from pydasa.dimensional.model import DimMatrix
-from pydasa.core.parameter import Variable
+from pydasa.elements.parameter import Variable
 from pydasa.dimensional.framework import DimSchema
-from pydasa.buckingham.vashchy import Coefficient
+from pydasa.dimensional.buckingham import Coefficient
 
 # Import test data
 from tests.pydasa.data.test_data import get_model_test_data

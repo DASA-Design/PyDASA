@@ -13,8 +13,8 @@ import numpy as np
 from typing import Any, cast
 
 # import the module to test
-from pydasa.buckingham.vashchy import Coefficient
-from pydasa.core.parameter import Variable
+from pydasa.dimensional.buckingham import Coefficient
+from pydasa.elements.parameter import Variable
 from pydasa.dimensional.framework import DimSchema
 
 # import the data to test
@@ -101,7 +101,7 @@ class TestCoefficient(unittest.TestCase):
             _cat="COMPUTED",
             _variables=simple_vars,
             _dim_col=[1, 1, 1, -1],  # v*L*rho/mu
-            name="Reynolds Number",
+            _name="Reynolds Number",
             description="Test coefficient with fixture variables"
         )
 
@@ -453,7 +453,7 @@ class TestCoefficient(unittest.TestCase):
         assert "must be equal" in str(excinfo.value)
 
     # ========================================================================
-    # Validation method tests
+    # Foundation method tests
     # ========================================================================
 
     def test_validate_sequence_valid_single_type(self) -> None:
@@ -506,7 +506,7 @@ class TestCoefficient(unittest.TestCase):
             _sym="\\Pi_{1}",
             _variables=simple_vars,
             _dim_col=[1, -1],
-            name="Test")
+            _name="Test")
 
         coef.clear()
 

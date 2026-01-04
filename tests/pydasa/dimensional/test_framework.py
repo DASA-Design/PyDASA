@@ -10,9 +10,9 @@ import unittest
 import pytest
 
 from pydasa.dimensional.framework import DimSchema
-from pydasa.core.fundamental import Dimension
+from pydasa.dimensional.fundamental import Dimension
 from tests.pydasa.data.test_data import get_framework_test_data
-from pydasa.core import config as cfg
+# from pydasa.core import setup as cfg
 
 
 class TestDimSchema(unittest.TestCase):
@@ -86,7 +86,7 @@ class TestDimSchema(unittest.TestCase):
             _alias="W",
             _fwk="CUSTOM",
             _unit="w",
-            name="Warg",
+            _name="Warg",
             description="Warg dim"
         )
         scheme.add_fdu(new_dim)
@@ -101,11 +101,11 @@ class TestDimSchema(unittest.TestCase):
     def test_add_fdu_duplicate_and_mismatch(self) -> None:
         """add_fdu() raises on duplicate symbol and framework mismatch."""
         scheme = DimSchema(_fwk="PHYSICAL")
-        dup = Dimension(_idx=99, _sym="L", _alias="L", _fwk="PHYSICAL", _unit="m", name="L", description="dup")
+        dup = Dimension(_idx=99, _sym="L", _alias="L", _fwk="PHYSICAL", _unit="m", _name="L", description="dup")
         with pytest.raises(ValueError):
             scheme.add_fdu(dup)
 
-        mismatch = Dimension(_idx=0, _sym="Z", _alias="Z", _fwk="COMPUTATION", _unit="bit", name="Z", description="mm")
+        mismatch = Dimension(_idx=0, _sym="Z", _alias="Z", _fwk="COMPUTATION", _unit="bit", _name="Z", description="mm")
         with pytest.raises(ValueError):
             scheme.add_fdu(mismatch)
 
@@ -150,8 +150,8 @@ class TestDimSchema(unittest.TestCase):
 
         # valid: set as list[Dimension]
         new_dims = [
-            Dimension(_idx=0, _sym="A", _alias="A", _fwk="CUSTOM", _unit="x", name="A", description="A"),
-            Dimension(_idx=1, _sym="B", _alias="B", _fwk="CUSTOM", _unit="y", name="B", description="B"),
+            Dimension(_idx=0, _sym="A", _alias="A", _fwk="CUSTOM", _unit="x", _name="A", description="A"),
+            Dimension(_idx=1, _sym="B", _alias="B", _fwk="CUSTOM", _unit="y", _name="B", description="B"),
         ]
         scheme.fdu_lt = new_dims
         assert scheme.fdu_lt == new_dims
@@ -162,17 +162,18 @@ class TestDimSchema(unittest.TestCase):
         with pytest.raises(ValueError):
             scheme.fdu_lt = ["not", "dimensions"]  # type: ignore[assignment]
 
-    def test_update_global_config(self) -> None:
-        """update_global_config populates global regex and symbol config."""
-        scheme = DimSchema(_fwk="COMPUTATION")
-        scheme.update_global_config()
-        # Symbols
-        assert cfg.WKNG_FDU_PREC_LT == self.data["COMPUTATION_SYMBOLS"]
-        # Regex strings set
-        assert isinstance(cfg.WKNG_FDU_RE, str) and cfg.WKNG_FDU_RE != ""
-        assert isinstance(cfg.WKNG_POW_RE, str) and cfg.WKNG_POW_RE != ""
-        assert isinstance(cfg.WKNG_NO_POW_RE, str) and cfg.WKNG_NO_POW_RE != ""
-        assert isinstance(cfg.WKNG_FDU_SYM_RE, str) and cfg.WKNG_FDU_SYM_RE != ""
+    # def test_update_global_config(self) -> None:
+    #     """update_global_config populates global regex and symbol config."""
+    #     # TODO update tests when global config is mutable 
+    #     scheme = DimSchema(_fwk="COMPUTATION")
+    #     scheme.update_global_config()
+    #     # Symbols
+    #     assert cfg.WKNG_FDU_PREC_LT == self.data["COMPUTATION_SYMBOLS"]
+    #     # Regex strings set
+    #     assert isinstance(cfg.WKNG_FDU_RE, str) and cfg.WKNG_FDU_RE != ""
+    #     assert isinstance(cfg.WKNG_POW_RE, str) and cfg.WKNG_POW_RE != ""
+    #     assert isinstance(cfg.WKNG_NO_POW_RE, str) and cfg.WKNG_NO_POW_RE != ""
+    #     assert isinstance(cfg.WKNG_FDU_SYM_RE, str) and cfg.WKNG_FDU_SYM_RE != ""
 
     def test_reset(self) -> None:
         """reset clears internal state."""

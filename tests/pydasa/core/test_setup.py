@@ -181,11 +181,11 @@ class TestPyDASAConfig(unittest.TestCase):
         # This test documents the current behavior.
 
     def test_support_fwk_loaded(self) -> None:
-        """Test that support_fwk attribute is loaded from configuration file."""
+        """Test that SPT_FDU_FWKS attribute is loaded from configuration file."""
         cfg = PyDASAConfig.get_instance()
 
-        assert hasattr(cfg, "support_fwk")
-        assert isinstance(cfg.support_fwk, dict)
+        assert hasattr(cfg, "SPT_FDU_FWKS")
+        assert isinstance(cfg.SPT_FDU_FWKS, dict)
         # The dict should be populated from the config file
         # At minimum, it should not be empty if config file exists
 
@@ -242,15 +242,12 @@ class TestPyDASAConfig(unittest.TestCase):
             cfg.new_attribute = "test"  # type: ignore
 
         with pytest.raises((AttributeError, Exception)):
-            cfg.support_fwk = {}  # type: ignore
+            cfg.SPT_FDU_FWKS = {}  # type: ignore
 
     def test_config_loaded_in_post_init(self) -> None:
         """Test that configuration is loaded properly in __post_init__."""
         cfg = PyDASAConfig.get_instance()
 
-        # Verify support_fwk was loaded (should be dict from config file)
-        assert hasattr(cfg, "support_fwk")
-        assert isinstance(cfg.support_fwk, dict)
-
-        # The config file should have been loaded via __post_init__
-        # The exact contents depend on the config file, but it should be a dict
+        # Verify SPT_FDU_FWKS was loaded (should be dict from config file)
+        assert hasattr(cfg, "SPT_FDU_FWKS")
+        assert isinstance(cfg.SPT_FDU_FWKS, dict)

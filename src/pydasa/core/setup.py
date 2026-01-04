@@ -181,8 +181,8 @@ class PyDASAConfig:
     _instance: ClassVar["PyDASAConfig | None"] = None
     """Singleton instance of PyDASAConfig."""
 
-    # :attr: support_fwk
-    support_fwk: dict = field(default_factory=dict)
+    # :attr: SPT_FDU_FWKS
+    SPT_FDU_FWKS: dict = field(default_factory=dict)
     """Supported Fundamental Dimensional Units (FDUs) frameworks and their configurations."""
 
     def __post_init__(self):
@@ -193,7 +193,7 @@ class PyDASAConfig:
         cfg_data = load(fp)
 
         # Since the dataclass is frozen, use object.__setattr__ to set attributes
-        object.__setattr__(self, "support_fwk", cfg_data.get("frameworks", {}))
+        object.__setattr__(self, "SPT_FDU_FWKS", cfg_data.get("frameworks", {}))
 
     @classmethod
     def get_instance(cls) -> "PyDASAConfig":

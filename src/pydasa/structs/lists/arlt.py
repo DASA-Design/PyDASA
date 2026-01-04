@@ -17,7 +17,7 @@ classes:
 # native python modules
 # dataclass imports
 from dataclasses import dataclass, field
-# data type inports
+# data type imports
 from typing import List, Optional, Callable, Generic, Iterator, Any
 # code inspection imports
 import inspect

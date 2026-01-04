@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Module measurement.py
+Module units.py
 ===========================================
 
 This module provides the Measurement class for handling physical measurements with units, values, and validation.

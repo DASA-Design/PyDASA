@@ -7,24 +7,24 @@ from .analysis.scenario import DimSensitivity
 from .analysis.simulation import MonteCarloSim
 
 # exposing data pi-theorem packages
-from .buckingham.vashchy import Coefficient
+from .dimensional.buckingham import Coefficient
 
 # exposing core packages
 # TODO measurement still in development
-from .core.fundamental import Dimension
+from .dimensional.fundamental import Dimension
 # from .pydasa.core.measurement import Unit
-from .core.parameter import Variable
+from .elements.parameter import Variable
 
 # expose datastructures, its for internal use only but docs need it
 # lists
-from .datastruct.lists.arlt import ArrayList
-from .datastruct.lists.sllt import SingleLinkedList
-from .datastruct.lists.ndlt import Node, SLNode, DLNode
-# from .datastruct.lists.dllt import DoubleLinkedList
+from .structs.lists.arlt import ArrayList
+from .structs.lists.sllt import SingleLinkedList
+from .structs.lists.ndlt import Node, SLNode, DLNode
+# from .structs.lists.dllt import DoubleLinkedList
 
 # tables
-from .datastruct.tables.htme import MapEntry
-from .datastruct.tables.scht import Bucket, SCHashTable
+from .structs.tables.htme import MapEntry
+from .structs.tables.scht import Bucket, SCHashTable
 
 # exposing dimensional packages
 # TODO domain still in development
@@ -34,13 +34,13 @@ from .dimensional.model import DimMatrix
 
 # exposing data handling packages
 # TODO phenomena still in development
-from .handlers.influence import SensitivityHandler
+from .tasks.influence import SensitivityHandler
 # from .pydasa.handlers.phenomena import DimSolver
-from .handlers.practical import MonteCarloHandler
+from .tasks.practical import MonteCarloHandler
 
 # exposing utility packages
 # most utils are private
-from .data.io import load, save
+from .core.io import load, save
 # importing queue factory function
 # from .utils.queues import Queue
 # from .utils.helpers import gfactorial

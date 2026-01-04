@@ -726,9 +726,9 @@ class MonteCarloHandler(Foundation):
             _idx=data.get("idx", -1),
             _sym=data.get("sym", ""),
             _alias=data.get("alias", ""),
-            _fwk=data.get("fwk", "CUSTOM"),
+            _fwk=data.get("fwk", ""),
             _cat=data.get("cat", "NUM"),
-            _experiments=data.get("experiments", 1000)
+            _experiments=data.get("experiments", -1)
         )
 
         # Set variables

@@ -17,7 +17,7 @@ Classes:
 # dataclass imports
 from __future__ import annotations
 from dataclasses import dataclass, field, fields
-# data type inports
+# data type imports
 from typing import Optional, List, Dict, Any, Callable
 import re
 # numerical imports

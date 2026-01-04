@@ -18,8 +18,10 @@ Functions:
     **validate_custom**: Custom validation logic
 """
 
+# native python modules
 from functools import wraps
-from typing import Callable, Any, Union, Optional   # , Tuple
+from enum import Enum
+from typing import Callable, Any, Union, Type, Optional   # , Tuple
 import re
 
 
@@ -112,13 +114,13 @@ def validate_emptiness(strip: bool = True) -> Callable:
     return decorator        # return the decorator
 
 
-def validate_choices(choices: Union[dict, set, list, tuple],
+def validate_choices(choices: Union[dict, set, list, tuple, Type[Enum]],
                      allow_none: bool = False,
                      case_sensitive: bool = False) -> Callable:
     """*validate_choices()* Decorator to validate value is in allowed set of choices.
 
     Args:
-        choices (Union[dict, set, list, tuple]): Dictionary, set, list, or tuple of allowed values.
+        choices (Union[dict, set, list, tuple, Type[Enum]]): Dictionary, set, list, tuple, or Enum type of allowed values.
         allow_none (bool, optional): Whether None values are allowed. Defaults to False.
         case_sensitive (bool, optional): Whether string comparison is case-sensitive. Defaults to False.
 
@@ -143,11 +145,21 @@ def validate_choices(choices: Union[dict, set, list, tuple],
         def status(self, val: str) -> None:
             self._status = val
     """
-    # Convert choices to set for O(1) lookup
+    # Convert choices to set for O(1) lookup - extract enum names when needed
     if isinstance(choices, dict):
         valid_choices = set(choices.keys())
+    elif isinstance(choices, type) and issubclass(choices, Enum):
+        # Enum class passed directly (e.g., Framework)
+        valid_choices = {member.name for member in choices}
     else:
-        valid_choices = set(choices)
+        # Handle collections: check if they contain Enum members
+        first_elem = next(iter(choices), None) if choices else None
+        if first_elem and isinstance(first_elem, Enum):
+            # Collection of Enum members (e.g., tuple of Framework members)
+            valid_choices = {member.name for member in choices}
+        else:
+            # Plain collection of strings or other values
+            valid_choices = set(choices)
 
     def decorator(func: Callable) -> Callable:
         @wraps(func)
@@ -159,19 +171,28 @@ def validate_choices(choices: Union[dict, set, list, tuple],
                     raise ValueError(_msg)
                 return func(self, value)
 
+            # Extract the actual value to check
+            # If value is an Enum member, use its name
+            if isinstance(value, Enum):
+                actual_value = value.name
+            else:
+                actual_value = value
+
             # if case-insensitive, adjust value and choices
             if case_sensitive:
-                check_val = value
+                check_val = actual_value
                 compare_set = valid_choices
             # otherwise, use upper-case for comparison
             else:
-                check_val = str(value).upper()
+                check_val = str(actual_value).upper()
                 compare_set = {str(c).upper() for c in valid_choices}
 
             # if value not in choices, raise error
             if check_val not in compare_set:
                 _msg = f"Invalid {func.__name__}: {value}. "
-                _msg += f"Must be one of: {', '.join(str(c) for c in valid_choices)}."
+                # Format choices nicely - if Enum members, use their name/value only
+                choice_strs = [c.name if isinstance(c, Enum) else str(c) for c in valid_choices]
+                _msg += f"Must be one of: {', '.join(choice_strs)}."
                 raise ValueError(_msg)
 
             # otherwise, call the original function

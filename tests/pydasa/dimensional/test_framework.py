@@ -15,7 +15,7 @@ from tests.pydasa.data.test_data import get_framework_test_data
 # from pydasa.core import setup as cfg
 
 
-class TestDimSchema(unittest.TestCase):
+class TestSchema(unittest.TestCase):
     """Test cases for Schema class."""
 
     @pytest.fixture(autouse=True)

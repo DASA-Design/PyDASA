@@ -16,8 +16,8 @@ Classes:
 """
 
 # native python modules
-from __future__ import annotations
 # dataclass imports
+from __future__ import annotations
 from dataclasses import dataclass, field, fields
 # data type imports
 from typing import List, Dict, Optional, Any, Sequence, Mapping, cast
@@ -25,28 +25,18 @@ from typing import List, Dict, Optional, Any, Sequence, Mapping, cast
 # custom modules
 # core basic foundation class
 from pydasa.core.basic import Foundation
+# global variables for setup
+from pydasa.core.setup import PYDASA_CFG
+from pydasa.core.setup import FDU_FWK_DT
 # pydasa FDU class
 from pydasa.dimensional.fundamental import Dimension
-# file i/o operations
-from pydasa.core.io import load     # , save
-# constants for default frameworks folder + file
-from pydasa.core.constants import DFLT_CFG_FOLDER, DFLT_CFG_FILE
-
-
-# Import global variables
-from pydasa.core.setup import FDU_FWK_DT
-
-from pydasa.core.constants import DFLT_FDU_FWK_DT
-from pydasa.core.constants import DFLT_FDU_PREC_LT
-
-
-# from pydasa.core.constants import (
-#     PHY_FDU_PREC_DT,
-#     COMPU_FDU_PREC_DT,
-#     SOFT_FDU_PREC_DT,
-# )
-
+# important regex patterns
 from pydasa.utils.patterns import DFLT_POW_RE
+
+
+# from pydasa.core.constants import DFLT_FDU_FWK_DT
+# from pydasa.core.constants import DFLT_FDU_PREC_LT
+
 from pydasa.utils import patterns as pat
 
 # Import the 'cfg' module to allow global variable editing
@@ -138,7 +128,7 @@ class Schema(Foundation):
         """
         # if the framework is supported, configure the default
         if self.fwk in FDU_FWK_DT and self.fwk != "CUSTOM":
-            self.fdu_lt = self._setup_fdu_framework()
+            self.fdu_lt = self._setup_default_framework()
 
         # if the framework is user-defined, use the provided list[dict]
         elif self.fwk == "CUSTOM":
@@ -191,8 +181,8 @@ class Schema(Foundation):
                 ans.append(fdu)
         return ans
 
-    def _setup_fdu_framework(self) -> List[Dimension]:
-        """*_setup_fdu_framework()* Returns the default FDU precedence list for the specified framework.
+    def _setup_default_framework(self) -> List[Dimension]:
+        """*_setup_default_framework()* Returns the default FDU precedence list for the specified framework.
 
         Returns:
             List[str]: Default FDUs precedence list based on the framework map.
@@ -204,16 +194,19 @@ class Schema(Foundation):
             # "COMPUTATION": COMPU_FDU_PREC_DT,
             # "SOFTWARE": SOFT_FDU_PREC_DT,
         }
+        _frk_map = PYDASA_CFG.get_instance().SPT_FDU_FWKS
         ans = []
         # select FDU framework
         if self.fwk in _frk_map:
+            # Get the fdus dictionary from the framework config
+            fdus_dict = _frk_map[self.fwk].get("fdus", {})
             # Create standard FDU set
-            for idx, (sym, data) in enumerate(_frk_map[self.fwk].items()):
+            for idx, (sym, data) in enumerate(fdus_dict.items()):
                 fdu = Dimension(
                     _idx=idx,
                     _sym=sym,
                     _fwk=self._fwk,
-                    _unit=data.get("_unit", ""),
+                    _unit=data.get("unit", ""),
                     _name=data.get("name", ""),
                     description=data.get("description", ""))
 
@@ -277,21 +270,21 @@ class Schema(Foundation):
         # Generate regex for dimensions in symbolic expressions
         self._fdu_sym_regex = rf"[{_fdu_chars}]"
 
-    def update_global_config(self) -> None:
-        """*update_global_config()* Updates global config variables with current framework settings.
+    # def update_global_config(self) -> None:
+    #     """*update_global_config()* Updates global config variables with current framework settings.
 
-        Makes the current framework's settings available globally for all PyDASA components.
-        """
-        # Get FDU symbols in precedence order
-        # fdu_symbols = [fdu.sym for fdu in self._fdu_lt]
+    #     Makes the current framework's settings available globally for all PyDASA components.
+    #     """
+    #     # Get FDU symbols in precedence order
+    #     # fdu_symbols = [fdu.sym for fdu in self._fdu_lt]
 
-        # Update global configuration
-        # FIXME check after migration
-        pat.WKNG_FDU_PREC_LT = self.fdu_symbols
-        pat.WKNG_FDU_RE = self._fdu_regex
-        pat.WKNG_POW_RE = self._fdu_pow_regex
-        pat.WKNG_NO_POW_RE = self._fdu_no_pow_regex
-        pat.WKNG_FDU_SYM_RE = self._fdu_sym_regex
+    #     # Update global configuration
+    #     # FIXME check after migration
+    #     pat.WKNG_FDU_PREC_LT = self.fdu_symbols
+    #     pat.WKNG_FDU_RE = self._fdu_regex
+    #     pat.WKNG_POW_RE = self._fdu_pow_regex
+    #     pat.WKNG_NO_POW_RE = self._fdu_no_pow_regex
+    #     pat.WKNG_FDU_SYM_RE = self._fdu_sym_regex
 
     # propierties getters and setters
 

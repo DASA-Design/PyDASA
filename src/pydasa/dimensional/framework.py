@@ -34,15 +34,6 @@ from pydasa.dimensional.fundamental import Dimension
 from pydasa.utils.patterns import DFLT_POW_RE
 
 
-# from pydasa.core.constants import DFLT_FDU_FWK_DT
-# from pydasa.core.constants import DFLT_FDU_PREC_LT
-
-from pydasa.utils import patterns as pat
-
-# Import the 'cfg' module to allow global variable editing
-# from pydasa.core import config as cfg
-
-
 @dataclass
 class Schema(Foundation):
     """**Schema** Manages dimensional frameworks and FDUs for *PyDASA*.
@@ -270,21 +261,21 @@ class Schema(Foundation):
         # Generate regex for dimensions in symbolic expressions
         self._fdu_sym_regex = rf"[{_fdu_chars}]"
 
-    # def update_global_config(self) -> None:
-    #     """*update_global_config()* Updates global config variables with current framework settings.
+    def update_global_config(self) -> None:
+        """*update_global_config()* Updates global config variables with current framework settings.
 
-    #     Makes the current framework's settings available globally for all PyDASA components.
-    #     """
-    #     # Get FDU symbols in precedence order
-    #     # fdu_symbols = [fdu.sym for fdu in self._fdu_lt]
-
-    #     # Update global configuration
-    #     # FIXME check after migration
-    #     pat.WKNG_FDU_PREC_LT = self.fdu_symbols
-    #     pat.WKNG_FDU_RE = self._fdu_regex
-    #     pat.WKNG_POW_RE = self._fdu_pow_regex
-    #     pat.WKNG_NO_POW_RE = self._fdu_no_pow_regex
-    #     pat.WKNG_FDU_SYM_RE = self._fdu_sym_regex
+        Makes the current framework's settings available globally for all PyDASA components.
+        """
+        # Get FDU symbols in precedence order
+        # fdu_symbols = [fdu.sym for fdu in self._fdu_lt]
+        # Update global configuration
+        # # FIXME check after migration
+        # pat.WKNG_FDU_PREC_LT = self.fdu_symbols
+        # pat.WKNG_FDU_RE = self._fdu_regex
+        # pat.WKNG_POW_RE = self._fdu_pow_regex
+        # pat.WKNG_NO_POW_RE = self._fdu_no_pow_regex
+        # pat.WKNG_FDU_SYM_RE = self._fdu_sym_regex
+        pass
 
     # propierties getters and setters
 
@@ -622,80 +613,3 @@ class Schema(Foundation):
         framework = cls(**mapped_data)
 
         return framework
-
-    # def validate_dimensional_expression(self, expression: str) -> bool:
-    # TODO old code, to be removed in the future
-    #     """*validate_dimensional_expression()* Check if a dimensional expression is valid.
-
-    #     Args:
-    #         expression (str): Dimensional expression to validate.
-
-    #     Returns:
-    #         bool: True if the expression is valid, False otherwise.
-    #     """
-    #     import re
-
-    #     if not expression or not self._fdu_regex:
-    #         return False
-
-    #     return bool(re.match(self._fdu_regex, expression))
-
-    # def parse_dimensional_expression(self, expression: str) -> Dict[str, int]:
-    #     """*parse_dimensional_expression()* Parse a dimensional expression into a dictionary.
-
-    #     Args:
-    #         expression (str): Dimensional expression to parse.
-
-    #     Returns:
-    #         Dict[str, int]: Dictionary mapping FDU symbols to exponents.
-
-    #     Raises:
-    #         ValueError: If the expression is invalid.
-    #     """
-    #     if not self.validate_dimensional_expression(expression):
-    #         raise ValueError(f"Invalid dimensional expression: {expression}")
-
-    #     # Initialize result with zeros for all FDUs
-    #     result = {fdu.sym: 0 for fdu in self._fdu_lt}
-
-    #     # Split by multiplication operator
-    #     terms = expression.split('*')
-
-    #     # Process each term
-    #     for term in terms:
-    #         # Extract symbol and exponent
-    #         if '^' in term:
-    #             symbol, exponent_str = term.split('^')
-    #             exponent = int(exponent_str)
-    #         else:
-    #             symbol = term
-    #             exponent = 1
-
-    #         # Update result
-    #         result[symbol] = exponent
-
-    #     return result
-
-    # def format_dimensional_expression(self, dimensions: Dict[str, int]) -> str:
-    #     """*format_dimensional_expression()* Format a dictionary of dimensions into an expression.
-
-    #     Args:
-    #         dimensions (Dict[str, int]): Dictionary mapping FDU symbols to exponents.
-
-    #     Returns:
-    #         str: Formatted dimensional expression.
-    #     """
-    #     # Sort by FDU precedence
-    #     terms = []
-
-    #     # Process dimensions in precedence order
-    #     for fdu in self._fdu_lt:
-    #         exponent = dimensions.get(fdu.sym, 0)
-    #         if exponent != 0:
-    #             if exponent == 1:
-    #                 terms.append(fdu.sym)
-    #             else:
-    #                 terms.append(f"{fdu.sym}^{exponent}")
-
-    #     # Join terms with multiplication operator
-    #     return '*'.join(terms) if terms else "1"

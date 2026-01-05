@@ -23,19 +23,13 @@ from dataclasses import dataclass, field, fields
 from typing import List, Dict, Optional, Any, Sequence, Mapping, cast
 
 # custom modules
-# core basic foundation class
-from pydasa.core.basic import Foundation
-# import validation decorators
 from pydasa.validations.decorators import validate_type
 from pydasa.validations.decorators import validate_emptiness
-# pydasa FDU class
-from pydasa.dimensional.fundamental import Dimension
-# global variables for setup
+from pydasa.core.basic import Foundation
 from pydasa.core.setup import Framework
-from pydasa.core.setup import PYDASA_CFG
-from pydasa.core.setup import FDU_FWK_DT
-# important regex patterns
+from pydasa.dimensional.fundamental import Dimension
 from pydasa.validations.patterns import DFLT_POW_RE
+from pydasa.core.setup import PYDASA_CFG
 
 
 @dataclass
@@ -141,7 +135,7 @@ class Schema(Foundation):
             ValueError: If the FDU framework is not properly defined.
         """
         # if the framework is supported, configure the default
-        if self.fwk in FDU_FWK_DT and self.fwk != Framework.CUSTOM.value:
+        if self.fwk in PYDASA_CFG.get_instance().frameworks and self.fwk != Framework.CUSTOM.value:
             self.fdu_lt = self._setup_default_framework()
 
         # if the framework is user-defined, use the provided list[dict]
@@ -166,7 +160,8 @@ class Schema(Foundation):
         # otherwise, raise an error
         else:
             _msg = f"Invalid Framework: {self.fwk}. "
-            _msg += f"Valid options: {', '.join(FDU_FWK_DT.keys())}."
+            _fwk = PYDASA_CFG.get_instance().frameworks
+            _msg += f"Valid options: {', '.join(_fwk)}."
             raise ValueError(_msg)
 
     def _setup_custom_framework(self,

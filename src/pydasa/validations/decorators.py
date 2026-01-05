@@ -131,11 +131,11 @@ def validate_choices(choices: Union[dict, set, list, tuple, Type[Enum]],
         Callable: Decorated function with choice validation.
 
     Example:
-        from pydasa.core.config import FDU_FWK_DT
+        from pydasa.core.setup import Framework
 
         @fwk.setter
         @validate_type(str)
-        @validate_choices(FDU_FWK_DT)
+        @validate_choices(Framework.values())
         def fwk(self, val: str) -> None:
             self._fwk = val.upper()
 
@@ -380,7 +380,7 @@ def validate_pattern(pattern: Optional[Union[str, list, tuple]] = None,
             self._code = val
 
         # Symbol validation (alphanumeric OR LaTeX)
-        from pydasa.utils.patterns import LATEX_RE
+        from pydasa.validations.patterns import LATEX_RE
 
         @sym.setter
         @validate_type(str)

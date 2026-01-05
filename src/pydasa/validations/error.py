@@ -98,8 +98,3 @@ def inspect_var(var: Any) -> str:
     finally:
         # Clean up frame references to avoid reference cycles
         del frame
-    # FIXME old code, keep until we know the new version works
-    # frame = inspect.currentframe().f_back
-    # for name, value in frame.f_locals.items():
-    #     if value is var:
-    #         return name

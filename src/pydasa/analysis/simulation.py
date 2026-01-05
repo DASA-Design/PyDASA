@@ -261,8 +261,8 @@ class MonteCarlo(Foundation):
     # Initialization
     # ========================================================================
 
-    def _validate_distributions(self, value: Dict[str, Dict[str, Any]], field_name: str) -> None:
-        """Custom validator to ensure all distributions have callable 'func'.
+    def _validate_dist(self, value: Dict[str, Dict[str, Any]], field_name: str) -> None:
+        """*_validate_dist()* Custom validator to ensure all distributions have callable 'func'.
 
         Args:
             value: The distributions dictionary to validate.
@@ -767,27 +767,6 @@ class MonteCarlo(Foundation):
         for k, v in cache_updates.items():
             self._simul_cache[k][idx, 0] = v
 
-        # # if value is a float, store directly
-        # if isinstance(val, float):
-
-        #     # if cache location is invalid, raise error
-        #     if self._validate_cache_locations(var_sym, idx) is False:
-        #         _msg = f"Invalid cache location for: {var_sym}[{idx}]"
-        #         raise ValueError(_msg)
-
-        #     self._simul_cache[var_sym][idx, 0] = val
-        # # if value is a dict, update multiple cache entries
-        # elif isinstance(val, Dict):
-        #     if any([not self._validate_cache_locations(k, idx) for k in val.keys()]):
-        #         _msg = f"Invalid cache location at index {idx}. "
-        #         invalid_vars = [
-        #             k for k in val.keys() if not self._validate_cache_locations(k, idx)
-        #         ]
-        #         _msg += f"Invalid Cache Variables: {invalid_vars}"
-        #         raise ValueError(_msg)
-        #     for k, v in val.items():
-        #         self._simul_cache[k][idx, 0] = v
-
     # ========================================================================
     # Results Extraction
     # ========================================================================
@@ -907,7 +886,8 @@ class MonteCarlo(Foundation):
         return self._distributions.copy()
 
     @distributions.setter
-    @validate_custom(lambda self, val: self._validate_distributions(val, 'distributions'))
+    @validate_custom(lambda self, val: self._validate_dist(val,
+                                                           "distributions"))
     def distributions(self, val: Dict[str, Dict[str, Any]]) -> None:
         """*distributions* Set the variable distributions.
 

@@ -457,10 +457,10 @@ def validate_pattern(pattern: Optional[Union[str, list, tuple]] = None,
 
 
 def validate_custom(validator_func: Callable[[Any, Any], None]) -> Callable:
-    """*validate_custom()* Decorator for custom validation logic.
+    """*validate_custom()* Decorator for custom validation logic. Allows implementing custom validation logic by providing a validator function.
 
-    Allows implementing custom validation logic by providing a validator function.
     The validator function should raise ValueError if validation fails.
+    NOTE: this is too abstract and should be used sparingly.
 
     Args:
         validator_func (Callable[[Any, Any], None]): Function(self, value) that raises ValueError if invalid.

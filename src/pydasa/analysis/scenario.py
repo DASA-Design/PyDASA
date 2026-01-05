@@ -447,7 +447,7 @@ class Sensitivity(Foundation):
         return self._sym_func
 
     @sym_func.setter
-    @validate_custom(lambda self, val: self._validate_callable(val, 'sym_func'))
+    @validate_custom(lambda self, val: self._validate_callable(val, "sym_func"))
     def sym_func(self, val: Callable) -> None:
         """*sym_func* Set the symbolic function.
 

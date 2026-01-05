@@ -456,38 +456,39 @@ def validate_pattern(pattern: Optional[Union[str, list, tuple]] = None,
     return decorator        # return the decorator
 
 
-# def validate_custom(validator_func: Callable[[Any, Any], None]) -> Callable:
-#     """Decorator for custom validation logic.
+def validate_custom(validator_func: Callable[[Any, Any], None]) -> Callable:
+    """*validate_custom()* Decorator for custom validation logic.
 
-#     Allows implementing custom validation logic by providing a validator function.
-#     The validator function should raise ValueError if validation fails.
+    Allows implementing custom validation logic by providing a validator function.
+    The validator function should raise ValueError if validation fails.
 
-#     Args:
-#         validator_func (Callable[[Any, Any], None]): Function(self, value) that raises ValueError if invalid.
+    Args:
+        validator_func (Callable[[Any, Any], None]): Function(self, value) that raises ValueError if invalid.
 
-#     Raises:
-#         ValueError: If custom validator function raises ValueError.
+    Raises:
+        ValueError: If custom validator function raises ValueError.
 
-#     Returns:
-#         Callable: Decorated function with custom validation.
+    Returns:
+        Callable: Decorated function with custom validation.
 
-#     Example:
-#         def check_range_consistency(self, value):
-#             '''Ensure minimum does not exceed maximum.'''
-#             if value is not None and self._max is not None and value > self._max:
-#                 raise ValueError(f"min {value} > max {self._max}")
+    Example:
+        def check_range_consistency(self, value):
+            '''Ensure minimum does not exceed maximum.'''
+            if value is not None and self._max is not None and value > self._max:
+                raise ValueError(f"min {value} > max {self._max}")
 
-#         @min.setter
-#         @validate_type(int, float)
-#         @validate_custom(check_range_consistency)
-#         def min(self, val: float) -> None:
-#             self._min = val
-#     """
-#     def decorator(func: Callable) -> Callable:
-#         @wraps(func)
-#         def wrapper(self, value: Any) -> Any:
-#             # Run custom validator
-#             validator_func(self, value)
-#             return func(self, value)
-#         return wrapper
-#     return decorator
+        @min.setter
+        @validate_type(int, float)
+        @validate_custom(check_range_consistency)
+        def min(self, val: float) -> None:
+            self._min = val
+    """
+    def decorator(func: Callable) -> Callable:
+        @wraps(func)
+        def wrapper(self, value: Any) -> Any:
+            # Run custom validator
+            validator_func(self, value)
+            # otherwise, call the original function
+            return func(self, value)
+        return wrapper      # return the wrapper
+    return decorator        # return the decorator

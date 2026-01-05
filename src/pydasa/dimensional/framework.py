@@ -25,6 +25,7 @@ from typing import List, Dict, Optional, Any, Sequence, Mapping, cast
 # custom modules
 from pydasa.validations.decorators import validate_type
 from pydasa.validations.decorators import validate_emptiness
+from pydasa.validations.decorators import validate_custom
 from pydasa.core.basic import Foundation
 from pydasa.core.setup import Framework
 from pydasa.dimensional.fundamental import Dimension
@@ -296,6 +297,26 @@ class Schema(Foundation):
         # pat.WKNG_FDU_SYM_RE = self._fdu_sym_regex
         pass
 
+    # Custom validators for decorators
+
+    def _validate_fdu_list(self, value: List[Dimension]) -> None:
+        """*_validate_fdu_list()* Custom validator for fdu_lt property.
+
+        Args:
+            value (List[Dimension]): List of FDUs to validate.
+
+        Raises:
+            ValueError: If list is empty or contains non-Dimension objects.
+        """
+        if not value:
+            _msg = "FDUs list must be non-empty. "
+            _msg += f"Provided: {value}"
+            raise ValueError(_msg)
+        if not all(isinstance(i, Dimension) for i in value):
+            _msg = "FDUs list must contain only Dimension objects. "
+            _msg += f"Provided: {value}"
+            raise ValueError(_msg)
+
     # propierties getters and setters
 
     @property
@@ -308,6 +329,8 @@ class Schema(Foundation):
         return self._fdu_lt.copy()
 
     @fdu_lt.setter
+    @validate_type(list, allow_none=False)
+    @validate_custom(lambda self, val: self._validate_fdu_list(val))
     def fdu_lt(self, val: List[Dimension]) -> None:
         """*fdu_lt* Set the FDUs in precedence order.
 
@@ -317,10 +340,6 @@ class Schema(Foundation):
         Raises:
             ValueError: If the FDUs list is empty or invalid.
         """
-        if not val or not all(isinstance(i, Dimension) for i in val):
-            _msg = "FDUs list must be a non-empty list of Dimensions. "
-            _msg += f"Provided: {val}"
-            raise ValueError(_msg)
         self._fdu_lt = val
 
     @property

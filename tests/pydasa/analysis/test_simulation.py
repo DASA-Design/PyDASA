@@ -7,10 +7,10 @@ Unit tests for MonteCarlo class in PyDASA.
 
 This module provides test cases for Monte Carlo simulation functionality
 following the complete dimensional analysis workflow:
-1. Create dimensional framework and schema
-2. Define variables with distributions
-3. Create and solve dimensional matrix
-4. Run Monte Carlo simulations on each coefficient
+    1. Create dimensional framework and schema
+    2. Define variables with distributions
+    3. Create and solve dimensional matrix
+    4. Run Monte Carlo simulations on each coefficient
 """
 
 # Import testing packages

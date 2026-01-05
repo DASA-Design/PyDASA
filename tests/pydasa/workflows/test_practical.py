@@ -97,7 +97,7 @@ class TestMonteCarloSimulation(unittest.TestCase):
         # Test default category
         assert handler._cat == "NUM"
         # Test default experiments
-        assert handler._experiments == 1000
+        assert handler._experiments == -1
         # Test empty collections
         assert len(handler._variables) == 0
         assert len(handler._coefficients) == 0
@@ -225,7 +225,7 @@ class TestMonteCarloSimulation(unittest.TestCase):
         assert handler.cat == "SYM"
 
         # Test experiments property
-        assert handler.experiments == 1000
+        assert handler.experiments == -1
         handler.experiments = 2000
         assert handler.experiments == 2000
 
@@ -298,6 +298,7 @@ class TestMonteCarloSimulation(unittest.TestCase):
         """*test_shared_cache_initialization()* tests that shared cache is properly initialized."""
         handler = MonteCarloSimulation(
             _fwk="CUSTOM",
+            _experiments=100,
             _variables=self.test_variables,
             _coefficients=self.test_coefficients
         )
@@ -359,6 +360,7 @@ class TestMonteCarloSimulation(unittest.TestCase):
         """*test_cache_modification_visible_everywhere()* tests cache changes are visible to all simulations."""
         handler = MonteCarloSimulation(
             _fwk="CUSTOM",
+            _experiments=100,
             _variables=self.test_variables,
             _coefficients=self.test_coefficients
         )

@@ -317,6 +317,10 @@ class MonteCarloSimulation(Foundation):
 
     def _init_shared_cache(self) -> None:
         """*_init_shared_cache()* Initialize shared cache for all variables."""
+        # Only initialize if experiments is positive
+        if self._experiments < 0:
+            return
+
         # Initialize cache for each variable once
         for var_sym in self._variables.keys():
             self._shared_cache[var_sym] = np.full((self._experiments, 1),

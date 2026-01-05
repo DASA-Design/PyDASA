@@ -119,18 +119,36 @@ class AnalysisEngine(Foundation):
             self.description = "Solves dimensional analysis using the Buckingham Pi-Theorem."
 
         # Initialize schema with default PHYSICAL framework
-        self._schema = Schema(_fwk=Frameworks.PHYSICAL.value)
+        # The setter will handle conversion if _schema was set to a string/dict in __init__
+        # Ensure _schema is a Schema object
+        # Handle the case where _schema might be set to a string, dict, or None during initialization
+        if not isinstance(self._schema, Schema):
+            if self._schema in (None, Frameworks.PHYSICAL.value):
+                # Default to PHYSICAL framework
+                self._schema = Schema(_fwk=Frameworks.PHYSICAL.value)
+            elif isinstance(self._schema, str):
+                # Convert string to Schema
+                self._schema = Schema(_fwk=self._schema.upper())
+            elif isinstance(self._schema, dict):
+                # Convert dict to Schema
+                self._schema = Schema.from_dict(self._schema)
+            # else:
+            #     # Fallback to default
+            #     self._schema = Schema(_fwk=Frameworks.PHYSICAL.value)
 
-        # Convert default schema string to Schema object
-        # if isinstance(self._schema, str):
-        # self._schema = Schema(_fwk=self._schema)
-        if self._schema is not Frameworks.PHYSICAL.value:
-            if isinstance(self._schema, str):
-                self.schema = Schema(self._schema)
+        # # Initialize schema with default PHYSICAL framework
+        # self._schema = Schema(_fwk=Frameworks.PHYSICAL.value)
 
-        # Initialize with default PHYSICAL framework if not already set
-        if not hasattr(self, "_schema") or self._schema is None:
-            self._schema = Schema(_fwk=Frameworks.PHYSICAL.value)
+        # # Convert default schema string to Schema object
+        # # if isinstance(self._schema, str):
+        # # self._schema = Schema(_fwk=self._schema)
+        # if self._schema is not Frameworks.PHYSICAL.value:
+        #     if isinstance(self._schema, str):
+        #         self.schema = Schema(self._schema)
+
+        # # Initialize with default PHYSICAL framework if not already set
+        # if not hasattr(self, "_schema") or self._schema is None:
+        #     self._schema = Schema(_fwk=Frameworks.PHYSICAL.value)
 
     # ========================================================================
     # Validation Methods
@@ -395,26 +413,25 @@ class AnalysisEngine(Foundation):
             _msg = f"Failed to solve dimensional matrix: {str(e)}"
             raise RuntimeError(_msg) from e
 
-    def run_analysis(self) -> Dict[str, Coefficient]:
-        """*run_analysis()* Execute complete dimensional analysis workflow.
-
-        Convenience method that runs the entire workflow: create matrix and solve.
-
-        Args:
-            **kwargs: Optional keyword arguments for Matrix constructor.
+    def run_analysis(self) -> Dict[str, Any]:
+        """*run_analysis()* Execute complete dimensional analysis workflow. Convenience method that runs the entire workflow: create matrix and solve.
 
         Returns:
-            Dict[str, Coefficient]: Dictionary of generated dimensionless coefficients.
+            Dict[str, Any]: Dictionary of generated dimensionless coefficient in native python format
 
         Raises:
             ValueError: If variables are not set.
         """
-        if isinstance(self._model, Matrix):
+        # Step 1: Create matrix if not already created
+        if self._model is None:
+            self.create_matrix()
 
-            # Create + Solve matrix
-            coefficients = self.solve()
-            results = {k: v.to_dict() for k, v in coefficients.items()}
-            return results # pyright: ignore[reportReturnType]
+        # Step 2: Solve and return coefficients
+        # return self.solve()
+        # Create + Solve matrix
+        coefficients = self.solve()
+        results = {k: v.to_dict() for k, v in coefficients.items()}
+        return results
 
     # ========================================================================
     # Utility Methods

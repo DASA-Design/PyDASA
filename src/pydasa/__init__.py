@@ -1,49 +1,42 @@
 # -*- coding: utf-8 -*-
 # expose imports
-# exposing analytics packages
-# TODO conversion still in development
-# from .pydasa.analysis.conversion import UnitConverter
+# exposing analytics modules
 from .analysis.scenario import Sensitivity
 from .analysis.simulation import MonteCarlo
 
-# exposing data pi-theorem packages
+# TODO conversion still in development
+# from .context.conversion import UnitStandarizer
+# from .context.system import MeasureSystem
+# from .context.measurements import Unit
+
+# exposing pi-theorem/dimensional analysis modules
 from .dimensional.buckingham import Coefficient
-
-# exposing core packages
-# TODO measurement still in development
 from .dimensional.fundamental import Dimension
-# from .pydasa.core.measurement import Unit
-from .elements.parameter import Variable
+from .dimensional.framework import Schema
+from .dimensional.model import Matrix
 
-# expose datastructures, its for internal use only but docs need it
+# exposing core modules
+# exposing basic elements/variables modules
+from .elements.parameter import Variable
+# exposing parser/io modules
+from .core.io import load, save
+
+# exposing custom data structure modules
+# TODO measurement still in development
 # lists
 from .structs.lists.arlt import ArrayList
 from .structs.lists.sllt import SingleLinkedList
 from .structs.lists.ndlt import Node, SLNode, DLNode
 # from .structs.lists.dllt import DoubleLinkedList
-
 # tables
 from .structs.tables.htme import MapEntry
 from .structs.tables.scht import Bucket, SCHashTable
 
-# exposing dimensional packages
-# TODO domain still in development
-# from .pydasa.dimensional.domain import MeasurementSys
-from .dimensional.framework import Schema
-from .dimensional.model import Matrix
-
-# exposing data handling packages
-# TODO phenomena still in development
-from .tasks.influence import SensitivityHandler
-# from .pydasa.handlers.phenomena import DimSolver
-from .tasks.practical import MonteCarloHandler
-
-# exposing utility packages
-# most utils are private
-from .core.io import load, save
-# importing queue factory function
-# from .utils.queues import Queue
-# from .utils.helpers import gfactorial
+# exposing validation, error and decorator modules
+# exposing workflow modules
+from .workflows.influence import SensitivityAnalysis
+from .workflows.practical import MonteCarloSimulation
+# from .workflows.phenomena import Solver
 
 # asserting all imports
 # assert UnitConverter
@@ -67,9 +60,9 @@ assert SCHashTable
 assert Schema
 assert Matrix
 
-assert SensitivityHandler
+assert SensitivityAnalysis
 # assert DimSolver
-assert MonteCarloHandler
+assert MonteCarloSimulation
 
 assert load
 assert save
@@ -83,7 +76,7 @@ __all__ = [
     "Schema",
     "Matrix",
     "Sensitivity",
-    "SensitivityHandler",
+    "SensitivityAnalysis",
     "MonteCarlo",
-    "MonteCarloHandler",
+    "MonteCarloSimulation",
 ]

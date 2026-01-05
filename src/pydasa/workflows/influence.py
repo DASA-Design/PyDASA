@@ -3,12 +3,12 @@
 Module influence.py
 ===========================================
 
-Module for **SensitivityHandler** to manage sensitivity analysis in *PyDASA*
+Module for **SensitivityAnalysis** to manage sensitivity analysis in *PyDASA*
 
-This module provides the SensitivityHandler class for coordinating multiple sensitivity analyses and generating reports on which variables have the most significant impact on dimensionless coefficients.
+This module provides the SensitivityAnalysis class for coordinating multiple sensitivity analyses and generating reports on which variables have the most significant impact on dimensionless coefficients.
 
 Classes:
-    **SensitivityHandler**: Manages sensitivity analyses for multiple coefficients, processes results, and generates reports on variable impacts.
+    **SensitivityAnalysis**: Manages sensitivity analyses for multiple coefficients, processes results, and generates reports on variable impacts.
 
 *IMPORTANT:* Based on the theory from:
 
@@ -36,12 +36,12 @@ from pydasa.serialization.parser import latex_to_python
 from pydasa.core.setup import Framework
 from pydasa.core.setup import AnaliticMode
 from pydasa.core.setup import PYDASA_CFG
-from pydasa.validations.patterns import LATEX_RE
+# from pydasa.validations.patterns import LATEX_RE
 
 
 @dataclass
-class SensitivityHandler(Foundation):
-    """**SensitivityHandler** class for managing multiple sensitivity analyses in *PyDASA*.
+class SensitivityAnalysis(Foundation):
+    """**SensitivityAnalysis** class for managing multiple sensitivity analyses in *PyDASA*.
 
     Coordinates sensitivity analyses for multiple coefficients, processes their results, and generates comprehensive reports on variable impacts.
 
@@ -430,14 +430,14 @@ class SensitivityHandler(Foundation):
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> SensitivityHandler:
+    def from_dict(cls, data: Dict[str, Any]) -> SensitivityAnalysis:
         """*from_dict()* Create sensitivity handler from dictionary representation.
 
         Args:
             data (Dict[str, Any]): Dictionary representation of sensitivity handler.
 
         Returns:
-            SensitivityHandler: New sensitivity handler instance.
+            SensitivityAnalysis: New sensitivity handler instance.
         """
         # Create variables and coefficients from dicts
         variables = []

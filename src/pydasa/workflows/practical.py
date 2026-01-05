@@ -3,12 +3,12 @@
 Module practical.py
 ===========================================
 
-Module for **MonteCarloHandler** to manage the Monte Carlo experiments in *PyDASA*.
+Module for **MonteCarloSimulation** to manage the Monte Carlo experiments in *PyDASA*.
 
 This module provides classes for managing Monte Carlo simulations for sensitivity analysis of dimensionless coefficients.
 
 Classes:
-    **MonteCarloHandler**: Manages Monte Carlo simulations analysis, including configuration and execution of the experiments.
+    **MonteCarloSimulation**: Manages Monte Carlo simulations analysis, including configuration and execution of the experiments.
 
 *IMPORTANT:* Based on the theory from:
 
@@ -46,8 +46,8 @@ from pydasa.core.setup import PYDASA_CFG
 
 
 @dataclass
-class MonteCarloHandler(Foundation):
-    """**MonteCarloHandler** class for managing Monte Carlo simulations in *PyDASA*.
+class MonteCarloSimulation(Foundation):
+    """**MonteCarloSimulation** class for managing Monte Carlo simulations in *PyDASA*.
 
     Manages the creation, configuration, and execution of Monte Carlo simulations of dimensionless coefficients.
 
@@ -712,14 +712,14 @@ class MonteCarloHandler(Foundation):
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> MonteCarloHandler:
-        """*from_dict()* Create a MonteCarloHandler instance from a dictionary.
+    def from_dict(cls, data: Dict[str, Any]) -> MonteCarloSimulation:
+        """*from_dict()* Create a MonteCarloSimulation instance from a dictionary.
 
         Args:
             data (Dict[str, Any]): Dictionary containing the handler's state.
 
         Returns:
-            MonteCarloHandler: New instance of MonteCarloHandler.
+            MonteCarloSimulation: New instance of MonteCarloSimulation.
         """
         # Create instance with basic attributes
         instance = cls(

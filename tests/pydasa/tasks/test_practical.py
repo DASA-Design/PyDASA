@@ -3,7 +3,7 @@
 Module test_practical.py
 ===========================================
 
-Tests for **MonteCarloHandler** in *PyDASA*.
+Tests for **MonteCarloSimulation** in *PyDASA*.
 
 This module provides unit tests for managing Monte Carlo simulations.
 """
@@ -13,7 +13,7 @@ import pytest
 import numpy as np
 
 # import the module to test
-from pydasa.tasks.practical import MonteCarloHandler
+from pydasa.workflows.practical import MonteCarloSimulation
 
 # import required classes
 from pydasa.elements.parameter import Variable
@@ -24,12 +24,12 @@ from pydasa.dimensional.framework import Schema
 from tests.pydasa.data.test_data import get_simulation_test_data
 
 # asserting module imports
-assert MonteCarloHandler
+assert MonteCarloSimulation
 assert get_simulation_test_data
 
 
-class TestMonteCarloHandler(unittest.TestCase):
-    """**TestMonteCarloHandler** implements unit tests for Monte Carlo handler.
+class TestMonteCarloSimulation(unittest.TestCase):
+    """**TestMonteCarloSimulation** implements unit tests for Monte Carlo handler.
 
     Args:
         unittest (TestCase): unittest.TestCase class for Python unit testing.
@@ -90,7 +90,7 @@ class TestMonteCarloHandler(unittest.TestCase):
     def test_default_handler(self) -> None:
         """*test_default_handler()* tests creating handler with defaults."""
         # Create handler with defaults
-        handler = MonteCarloHandler()
+        handler = MonteCarloSimulation()
 
         # Test if handler is not None
         assert handler is not None
@@ -105,12 +105,12 @@ class TestMonteCarloHandler(unittest.TestCase):
         assert len(handler._simulations) == 0
         assert len(handler._results) == 0
         # Test if handler is instance
-        assert isinstance(handler, MonteCarloHandler)
+        assert isinstance(handler, MonteCarloSimulation)
 
     def test_custom_handler(self) -> None:
         """*test_custom_handler()* tests creating handler with custom values."""
         # Create handler with custom data
-        handler = MonteCarloHandler(
+        handler = MonteCarloSimulation(
             _idx=0,
             _fwk="CUSTOM",
             _cat="NUM",
@@ -138,7 +138,7 @@ class TestMonteCarloHandler(unittest.TestCase):
     def test_config_distributions(self) -> None:
         """*test_config_distributions()* tests distribution configuration."""
         # Create handler
-        handler = MonteCarloHandler(
+        handler = MonteCarloSimulation(
             _variables=self.test_variables,
             _coefficients=self.test_coefficients
         )
@@ -158,7 +158,7 @@ class TestMonteCarloHandler(unittest.TestCase):
     def test_config_simulations(self) -> None:
         """*test_config_simulations()* tests simulation configuration."""
         # Create handler
-        handler = MonteCarloHandler(
+        handler = MonteCarloSimulation(
             _fwk="CUSTOM",
             _variables=self.test_variables,
             _coefficients=self.test_coefficients
@@ -178,7 +178,7 @@ class TestMonteCarloHandler(unittest.TestCase):
     def test_validate_dict(self) -> None:
         """*test_validate_dict()* tests dictionary validation."""
         # Create handler
-        handler = MonteCarloHandler()
+        handler = MonteCarloSimulation()
 
         # Test valid dictionary
         valid_dict = {"key1": Variable(), "key2": Variable()}
@@ -197,7 +197,7 @@ class TestMonteCarloHandler(unittest.TestCase):
     def test_clear(self) -> None:
         """*test_clear()* tests clearing handler state."""
         # Create handler with data
-        handler = MonteCarloHandler(
+        handler = MonteCarloSimulation(
             _variables=self.test_variables,
             _coefficients=self.test_coefficients
         )
@@ -217,7 +217,7 @@ class TestMonteCarloHandler(unittest.TestCase):
     def test_properties(self) -> None:
         """*test_properties()* tests property getters and setters."""
         # Create handler
-        handler = MonteCarloHandler()
+        handler = MonteCarloSimulation()
 
         # Test cat property
         assert handler.cat == "NUM"
@@ -237,7 +237,7 @@ class TestMonteCarloHandler(unittest.TestCase):
     def test_get_simulation(self) -> None:
         """*test_get_simulation()* tests getting simulation by name."""
         # Create handler
-        handler = MonteCarloHandler(
+        handler = MonteCarloSimulation(
             _fwk="CUSTOM",
             _variables=self.test_variables,
             _coefficients=self.test_coefficients
@@ -258,7 +258,7 @@ class TestMonteCarloHandler(unittest.TestCase):
     def test_get_distribution(self) -> None:
         """*test_get_distribution()* tests getting distribution by name."""
         # Create handler
-        handler = MonteCarloHandler(_variables=self.test_variables)
+        handler = MonteCarloSimulation(_variables=self.test_variables)
 
         # Configure distributions
         handler._config_distributions()
@@ -275,7 +275,7 @@ class TestMonteCarloHandler(unittest.TestCase):
     def test_to_dict(self) -> None:
         """*test_to_dict()* tests converting handler to dictionary."""
         # Create handler
-        handler = MonteCarloHandler(
+        handler = MonteCarloSimulation(
             _idx=0,
             _fwk="CUSTOM",
             _name="Test",
@@ -296,7 +296,7 @@ class TestMonteCarloHandler(unittest.TestCase):
 
     def test_shared_cache_initialization(self) -> None:
         """*test_shared_cache_initialization()* tests that shared cache is properly initialized."""
-        handler = MonteCarloHandler(
+        handler = MonteCarloSimulation(
             _fwk="CUSTOM",
             _variables=self.test_variables,
             _coefficients=self.test_coefficients
@@ -314,7 +314,7 @@ class TestMonteCarloHandler(unittest.TestCase):
 
     def test_simulations_share_same_cache(self) -> None:
         """*test_simulations_share_same_cache()* tests all simulations reference same cache object."""
-        handler = MonteCarloHandler(
+        handler = MonteCarloSimulation(
             _fwk="CUSTOM",
             _variables=self.test_variables,
             _coefficients=self.test_coefficients
@@ -330,7 +330,7 @@ class TestMonteCarloHandler(unittest.TestCase):
 
     def test_cache_values_consistent_across_coefficients(self) -> None:
         """*test_cache_values_consistent_across_coefficients()* tests same variable has identical values across coefficients."""
-        handler = MonteCarloHandler(
+        handler = MonteCarloSimulation(
             _fwk="CUSTOM",
             _variables=self.test_variables,
             _coefficients=self.test_coefficients,
@@ -357,7 +357,7 @@ class TestMonteCarloHandler(unittest.TestCase):
 
     def test_cache_modification_visible_everywhere(self) -> None:
         """*test_cache_modification_visible_everywhere()* tests cache changes are visible to all simulations."""
-        handler = MonteCarloHandler(
+        handler = MonteCarloSimulation(
             _fwk="CUSTOM",
             _variables=self.test_variables,
             _coefficients=self.test_coefficients

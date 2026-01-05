@@ -33,6 +33,9 @@ from pydasa.core.basic import Foundation
 # Import related classes
 from pydasa.dimensional.buckingham import Coefficient
 # from pydasa.core.parameter import Variable
+from pydasa.core.setup import Framework
+from pydasa.core.setup import AnaliticMode
+
 
 # Import utils
 from pydasa.serialization.parser import parse_latex
@@ -40,8 +43,8 @@ from pydasa.serialization.parser import create_latex_mapping
 from pydasa.serialization.parser import latex_to_python
 
 # Import configuration
-# Import the 'cfg' module to allow global variable editing
-from pydasa.core import setup as cfg
+from pydasa.core.setup import PYDASA_CFG
+from pydasa.validations.patterns import LATEX_RE
 
 
 @dataclass
@@ -84,7 +87,7 @@ class Sensitivity(Foundation):
 
     # Category attribute
     # :attr: _cat
-    _cat: str = "SYM"
+    _cat: str = AnaliticMode.SYM.value
     """Category of sensitivity analysis (SYM, NUM)."""
 
     # Expression properties
@@ -390,11 +393,10 @@ class Sensitivity(Foundation):
         Raises:
             ValueError: If category is invalid.
         """
-        if val.upper() not in cfg.SENS_ANSYS_DT:
-            raise ValueError(
-                f"Invalid category: {val}. "
-                f"Must be one of: {', '.join(cfg.SENS_ANSYS_DT.keys())}"
-            )
+        if val.upper() not in PYDASA_CFG.analitic_modes:
+            _msg = f"Invalid category: {val}. "
+            _msg += f"Must be one of: {', '.join(PYDASA_CFG.analitic_modes)}"
+            raise ValueError(_msg)
         self._cat = val.upper()
 
     @property
@@ -417,7 +419,7 @@ class Sensitivity(Foundation):
             ValueError: If expression is invalid.
         """
         # Regular expression to match valid LaTeX strings or alphanumeric strings
-        if not (val.isalnum() or re.match(cfg.LATEX_RE, val)):
+        if not (val.isalnum() or re.match(LATEX_RE, val)):
             _msg = "LaTeX expression must be a valid string. "
             _msg += f"Provided: '{val}' "
             _msg += "Examples: 'V', 'd', '\\Pi_{0}', '\\rho'."
@@ -496,12 +498,12 @@ class Sensitivity(Foundation):
         self._idx = -1
         self._sym = "SANSYS_\\Pi_{}"
         self._alias = ""
-        self._fwk = "PHYSICAL"
+        self._fwk = Framework.PHYSICAL.value
         self.name = ""
         self.description = ""
 
         # Reset sensitivity-specific attributes
-        self._cat = "SYM"
+        self._cat = AnaliticMode.SYM.value
         self._pi_expr = None
         self._sym_func = None
         self._exe_func = None
@@ -553,12 +555,12 @@ class Sensitivity(Foundation):
         """
         # Create basic instance
         instance = cls(
-            name=data.get("name", ""),
+            _name=data.get("name", ""),
             description=data.get("description", ""),
             _idx=data.get("idx", -1),
             _sym=data.get("sym", ""),
-            _cat=data.get("cat", "SYM"),
-            _fwk=data.get("fwk", "PHYSICAL"),
+            _cat=data.get("cat", AnaliticMode.SYM.value),
+            _fwk=data.get("fwk", Framework.PHYSICAL.value),
             _alias=data.get("alias", ""),
             _pi_expr=data.get("pi_expr", None),
             _variables=data.get("variables", {}),

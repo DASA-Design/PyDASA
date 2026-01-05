@@ -122,9 +122,7 @@ class ConceptualSpecs(Foundation):
         Raises:
             ValueError: If category is invalid.
         """
-        # # _param_keys = cfg.PARAMS_CAT_DT.keys()
-        # _param_keys =
-        # if val.upper() not in _param_keys:
+        # if val.upper() not in PYDASA_CFG.parameter_cardinality:
         #     _msg = f"Invalid category: {val}. "
         #     _msg += "Category must be one of the following: "
         #     _msg += f"{', '.join(_param_keys)}."

@@ -54,7 +54,10 @@ assert DFLT_CFG_FILE
 
 
 class Framework(str, Enum):
-    """**Framework** Enum for Fundamental Dimensional Units (FDUs) frameworks.
+    """**Framework** Enum for Fundamental Dimensional Units (FDUs) frameworks in *PyDASA*.
+
+    Purpose:
+        - Defines the dimensional frameworks supported in *PyDASA*.
 
     Args:
         str (class): Python native str class.
@@ -87,7 +90,11 @@ class Framework(str, Enum):
 
 
 class VarCardinality(str, Enum):
-    """**VarCardinality** Enum for Variable cardinality.
+    """**VarCardinality** Enum for Variable cardinality in *PyDASA*.
+
+    Purpose:
+        - Defines the variable categories supported in *PyDASA*.
+        - Used to classify variables in the dimensional matrix.
 
     Args:
         str (class): Python native str class.
@@ -116,7 +123,12 @@ class VarCardinality(str, Enum):
 
 
 class CoefCardinality(str, Enum):
-    """**CoefCardinality** Enum for Dimensionless Coefficient cardinality.
+    """**CoefCardinality** Enum for Dimensionless Coefficient/Numbers/Groups (DC/DN/DG) cardinality in *PyDASA*.
+
+    Purpose:
+        - Defines the categories of dimensionless coefficients supported in *PyDASA*.
+        - Used to classify dimensionless coefficients in formulas and equations.
+        - Helps in organizing and managing dimensionless coefficients in the analysis.
 
     Args:
         str (class): Python native str class.
@@ -143,7 +155,11 @@ class CoefCardinality(str, Enum):
 
 
 class AnaliticMode(str, Enum):
-    """**AnaliticMode** Enum for analysis modes (e.g. sensitivity analysis, Monte Carlo simulation).
+    """**AnaliticMode** Enum for analysis modes (e.g. sensitivity analysis, Monte Carlo simulation) in *PyDASA*.
+
+    Purpose:
+        - Defines the analysis modes supported in *PyDASA*.
+        - Used to specify the type of analysis to be performed on variables, coefficients, or functions.
 
     Args:
         str (class): Python native str class.
@@ -259,37 +275,6 @@ Singleton instance of PyDASAConfig for accessing global configuration.
 # =============================================================================
 # These dict exports maintain compatibility with existing code that expects
 # dictionary-based configuration access.
-
-
-# TODO find a way to integrate this in otherp files
-PARAMS_CAT_DT: dict[str, str] = {e.value: e.description for e in VarCardinality}
-"""
-Supported Variables categories in *PyDASA*.
-
-Purpose:
-    - Defines the variable categories supported in *PyDASA*.
-    - Used to classify variables in the dimensional matrix.
-
-Note:
-    DEPRECATED: Use VarCardinality enum directly for type-safe access.
-    Example: VarCardinality.IN instead of PARAMS_CAT_DT["IN"]
-"""
-
-
-# TODO find a way to integrate this in otherp files
-DC_CAT_DT: dict[str, str] = {e.value: e.description for e in CoefCardinality}
-"""
-Supported categories of Dimensionless Coefficients (DN) in *PyDASA*.
-
-Purpose:
-    - Defines the categories of dimensionless coefficients supported in *PyDASA*.
-    - Used to classify dimensionless coefficients in formulas and equations.
-    - Helps in organizing and managing dimensionless coefficients in the analysis.
-
-Note:
-    DEPRECATED: Use CoefCardinality enum directly for type-safe access.
-    Example: CoefCardinality.COMPUTED instead of DC_CAT_DT["COMPUTED"]
-"""
 
 
 # TODO find a way to integrate this in otherp files

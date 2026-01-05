@@ -28,31 +28,3 @@ DFLT_CFG_FILE: str = "default.json"
 """
 *PyDASA* default configuration folder and file names.
 """
-
-# Default Fundamental Dimensional Units (FDU) framework
-# :attr: DFLT_FDU_FWK_DT
-DFLT_FDU_FWK_DT: dict = dict()
-"""
-Fundamental Dimensional Units (FDUs) in default framework for *PyDASA*.
-procesess (e.g., Mass [M], Length [L], Time [T]).
-
-Purpose:
-    - Defines the default dimensional framework used in *PyDASA*.
-    - Used to initialize entities without a specified framework.
-    - Basis for dimensional analysis precedence list in *PyDASA*.
-    - Validates parameter and variable dimensions in *PyDASA*.
-    - Default is the Physical FDUs framework.
-    - Can be customized for specific applications or domains.
-"""
-
-
-# Default Fundamental Dimensional Units (FDU) precedence list
-# :attr: DFLT_FDU_PREC_LT
-DFLT_FDU_PREC_LT: list = list(DFLT_FDU_FWK_DT.keys())
-"""
-Fundamental Dimensional Units (FDUs) in precedence order for the dimensional matrix (e.g., 'M*L^-1*T^-2').
-
-Purpose:
-    - Defines the row order in the dimensional matrix.
-    - Validates parameter and variable dimensions in *PyDASA*.
-"""

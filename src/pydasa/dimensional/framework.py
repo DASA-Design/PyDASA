@@ -56,47 +56,63 @@ class Schema(Foundation):
         _fdu_sym_regex (str): Regex pattern for matching FDUs in symbolic expressions. (e.g., 'M^(1)*L^(-1)*T^(-2)' to 'L**(-1)*M**(1)*T**(-2)').
     """
 
-    # TODO integrate _fdu_lt and _fdu_map into a single attribute
     # FDUs storage
+    # Default Fundamental Dimensional Units (FDU) precedence list
     # FDU precedence list, linked to WKNG_FDU_PREC_LT, full object list.
     # :attr: _fdu_lt
     _fdu_lt: List[Dimension] = field(default_factory=list[Dimension])
-    """List of Fundamental Dimensional Units in precedence order."""
+    """List Fundamental Dimensional Units (FDUs) objects in precedence order."""
 
-    # FDU framework
+    # Default Fundamental Dimensional Units (FDU) framework
     # FDU map, linked to WKNG_FDU_PREC_LT, symbol to Dimension object.
     # :attr: _fwk
     _fdu_map: Dict[str, Dimension] = field(default_factory=dict)
-    """Dictionary mapping FDU symbols to Dimension objects."""
+    """Dictionary mapping FDU symbols to Dimension objects in *PyDASA*. procesess (e.g., Mass [M], Length [L], Time [T]).
+
+    Purpose:
+        - Defines the default dimensional framework used in *PyDASA*.
+        - Used to initialize entities without a specified framework.
+        - Basis for dimensional analysis precedence list in *PyDASA*.
+        - Validates parameter and variable dimensions in *PyDASA*.
+        - Default is the Physical FDUs framework.
+        - Can be customized for specific applications or domains.
+    """
 
     # FDU symbol list, linked to WKNG_FDU_PREC_LT, string symbol list.
     # :attr: _fdu_symbols
     _fdu_symbols: List[str] = field(default_factory=list)
-    """List of FDU symbols in the framework."""
+    """List of FDU symbols in the framework for the dimensional matrix (e.g., 'M*L^-1*T^-2').
+
+    Purpose:
+        - Defines the row order in the dimensional matrix.
+        - Validates parameter and variable dimensions in *PyDASA*."""
 
     # Regex patterns
-    # FDUs matching regex pattern, linked to WKNG_FDU_RE.
+    # Default/Working FDU Pattern, WKNG_FDU_RE
     # :attr: _fdu_regex
     _fdu_regex: str = ""
-    """Regex pattern for matching dimensional expressions."""
+    """Regex pattern for matching dimensional expressions.
+
+    Default/Working regex pattern to match FDUs in *PyDASA* (e.g., 'M*L^-1*T^-2' to 'M^(1)*L^(-1)*T^(-2)')."""
 
     # FDU power regex pattern, linked to WKNG_POW_RE.
     # :attr: _fdu_pow_regex
     _fdu_pow_regex: str = DFLT_POW_RE
-    """Regex pattern for matching dimensions with exponents."""
+    """Regex pattern for matching FDUs with exponents (e.g., 'M*L^-1*T^-2' to 'M^(1)*L^(-1)*T^(-2)')"""
 
     # FDU no power regex pattern, linked to WKNG_NO_POW_RE.
     # :attr: _fdu_no_pow_regex
     _fdu_no_pow_regex: str = ""
-    """Regex pattern for matching dimensions without exponents
+    """Regex pattern for matching dimensions without exponents.
 
-    NOTE: This pattern doesn't change under any circumstances.
-    """
+    Default/Working regex to match FDUs without exponents (e.g., 'T*D' instead of 'T^2*D^-1')."""
 
     # FDU symbolic regex pattern, linked to WKNG_FDU_SYM_RE.
     # :attr: _fdu_sym_regex
     _fdu_sym_regex: str = ""
-    """Regex pattern for matching FDUs in symbolic expressions."""
+    """Regex pattern for matching FDUs in symbolic expressions.
+
+    Default/Working regex to match FDU symbols in *PyDASA* (e.g., 'T^(1)*D^(-1)' to 'D**(-1)*T**(2)')."""
 
     def __post_init__(self) -> None:
         """*__post_init__()* Initializes the framework and sets up regex patterns.
@@ -255,19 +271,19 @@ class Schema(Foundation):
 
         # Get FDU symbols in precedence order
         # fdu_symbols = [fdu.sym for fdu in self._fdu_lt]
-        _fdu_chars = ''.join(self.fdu_symbols)
+        _fdu_str = ''.join(self.fdu_symbols)
 
         # Generate main regex for dimensional expressions
-        self._fdu_regex = rf"^[{_fdu_chars}](\^-?\d+)?(\*[{_fdu_chars}](?:\^-?\d+)?)*$"
+        self._fdu_regex = rf"^[{_fdu_str}](\^-?\d+)?(\*[{_fdu_str}](?:\^-?\d+)?)*$"
 
         # Use default regex for exponents
         self._fdu_pow_regex = DFLT_POW_RE
 
         # Generate regex for dimensions without exponents
-        self._fdu_no_pow_regex = rf"[{_fdu_chars}](?!\^)"
+        self._fdu_no_pow_regex = rf"[{_fdu_str}](?!\^)"
 
         # Generate regex for dimensions in symbolic expressions
-        self._fdu_sym_regex = rf"[{_fdu_chars}]"
+        self._fdu_sym_regex = rf"[{_fdu_str}]"
 
     def update_global_config(self) -> None:
         """*update_global_config()* Updates global config variables with current framework settings.

@@ -17,7 +17,7 @@ Classes:
 
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Union, Tuple
 # import re
 
 # Import validation base classes
@@ -109,12 +109,13 @@ class SensitivityAnalysis(Foundation):
         if not self.description:
             self.description = f"Manages sensitivity analyses for [{self._coefficients.keys()}] coefficients."
 
-    def _validate_dict(self, dt: dict, exp_type: List[type]) -> bool:
+    def _validate_dict(self, dt: dict,
+                       exp_type: Union[type, List[type], Tuple[type, ...]]) -> bool:
         """*_validate_dict()* Validates a dictionary with expected value types.
 
         Args:
             dt (dict): Dictionary to validate.
-            exp_type (List[type]): Expected types for dictionary values.
+            exp_type (Union[type, List[type], Tuple[type, ...]]): Expected type(s) for dictionary values.
 
         Raises:
             ValueError: If the object is not a dictionary.
@@ -128,14 +129,23 @@ class SensitivityAnalysis(Foundation):
             _msg = f"{inspect_var(dt)} must be a dictionary. "
             _msg += f"Provided: {type(dt)}"
             raise ValueError(_msg)
+        
         if len(dt) == 0:
             _msg = f"{inspect_var(dt)} cannot be empty. "
             _msg += f"Provided: {dt}"
             raise ValueError(_msg)
-        if not all(isinstance(v, exp_type) for v in dt.values()):
+        
+        # Convert exp_type to tuple for isinstance()
+        if isinstance(exp_type, (list, tuple)):
+            type_tuple = tuple(exp_type)
+        else:
+            type_tuple = (exp_type,)
+        
+        if not all(isinstance(v, type_tuple) for v in dt.values()):
             _msg = f"{inspect_var(dt)} must contain {exp_type} values."
             _msg += f" Provided: {[type(v).__name__ for v in dt.values()]}"
             raise ValueError(_msg)
+        
         return True
 
     def _create_analyses(self) -> None:
@@ -424,8 +434,12 @@ class SensitivityAnalysis(Foundation):
             "sym": self._sym,
             "fwk": self._fwk,
             "cat": self._cat,
-            "variables": [var.to_dict() for var in self._variables],
-            "coefficients": [coef.to_dict() for coef in self._coefficients],
+            "variables": [
+                var.to_dict() for var in self._variables.values()
+            ],
+            "coefficients": [
+                coef.to_dict() for coef in self._coefficients.values()
+            ],
             "results": self._results
         }
 
@@ -440,13 +454,17 @@ class SensitivityAnalysis(Foundation):
             SensitivityAnalysis: New sensitivity handler instance.
         """
         # Create variables and coefficients from dicts
-        variables = []
+        variables = {}
         if "variables" in data:
-            variables = [Variable.from_dict(var) for var in data["variables"]]
+            variables = {
+                var.name: Variable.from_dict(var) for var in data["variables"]
+            }
 
-        coefficients = []
+        coefficients = {}
         if "coefficients" in data:
-            coefficients = [Coefficient.from_dict(coef) for coef in data["coefficients"]]
+            coefficients = {
+                coef.name: Coefficient.from_dict(coef) for coef in data["coefficients"]
+            }
 
         # Remove list items from data
         handler_data = data.copy()

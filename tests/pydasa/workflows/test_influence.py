@@ -289,7 +289,7 @@ class TestSensitivityAnalysis(unittest.TestCase):
 
         # Test default cat property
         assert handler.cat == "SYM"
-        
+
         # Test cat setter
         handler.cat = "NUM"
         assert handler.cat == "NUM"

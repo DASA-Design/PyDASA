@@ -12,4 +12,4 @@ Classes:
 
     # H.Gorter, *Dimensionalanalyse: Eine Theoririe der physikalischen Dimensionen mit Anwendungen*
 """
-# TODO add DimProblem class for PyDASA library
+# TODO add Solver class for PyDASA library

@@ -153,11 +153,11 @@ class Sensitivity(Foundation):
 
     def _validate_callable(self, value: Any, field_name: str) -> None:
         """Custom validator to ensure value is callable.
-        
+
         Args:
             value: The value to validate.
             field_name: Name of the field being validated.
-            
+
         Raises:
             ValueError: If value is not callable.
         """

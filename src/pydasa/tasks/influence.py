@@ -3,12 +3,12 @@
 Module influence.py
 ===========================================
 
-Module for **SensitivityAnalysis** to manage sensitivity analysis in *PyDASA*
+Module for **SensitivityHandler** to manage sensitivity analysis in *PyDASA*
 
-This module provides the SensitivityAnalysis class for coordinating multiple sensitivity analyses and generating reports on which variables have the most significant impact on dimensionless coefficients.
+This module provides the SensitivityHandler class for coordinating multiple sensitivity analyses and generating reports on which variables have the most significant impact on dimensionless coefficients.
 
 Classes:
-    **SensitivityAnalysis**: Manages sensitivity analyses for multiple coefficients, processes results, and generates reports on variable impacts.
+    **SensitivityHandler**: Manages sensitivity analyses for multiple coefficients, processes results, and generates reports on variable impacts.
 
 *IMPORTANT:* Based on the theory from:
 
@@ -17,7 +17,7 @@ Classes:
 
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import List, Dict, Any, Union, Tuple
+from typing import List, Dict, Any
 # import re
 
 # Import validation base classes
@@ -32,10 +32,6 @@ from pydasa.analysis.scenario import Sensitivity
 from pydasa.validations.error import inspect_var
 from pydasa.serialization.parser import latex_to_python
 
-# Import validation decorators
-from pydasa.validations.decorators import validate_type
-from pydasa.validations.decorators import validate_choices
-from pydasa.validations.decorators import validate_emptiness
 # Import global configuration
 from pydasa.core.setup import Framework
 from pydasa.core.setup import AnaliticMode
@@ -44,8 +40,8 @@ from pydasa.core.setup import PYDASA_CFG
 
 
 @dataclass
-class SensitivityAnalysis(Foundation):
-    """**SensitivityAnalysis** class for managing multiple sensitivity analyses in *PyDASA*.
+class SensitivityHandler(Foundation):
+    """**SensitivityHandler** class for managing multiple sensitivity analyses in *PyDASA*.
 
     Coordinates sensitivity analyses for multiple coefficients, processes their results, and generates comprehensive reports on variable impacts.
 
@@ -113,13 +109,12 @@ class SensitivityAnalysis(Foundation):
         if not self.description:
             self.description = f"Manages sensitivity analyses for [{self._coefficients.keys()}] coefficients."
 
-    def _validate_dict(self, dt: dict,
-                       exp_type: Union[type, List[type], Tuple[type, ...]]) -> bool:
+    def _validate_dict(self, dt: dict, exp_type: List[type]) -> bool:
         """*_validate_dict()* Validates a dictionary with expected value types.
 
         Args:
             dt (dict): Dictionary to validate.
-            exp_type (Union[type, List[type], Tuple[type, ...]]): Expected type(s) for dictionary values.
+            exp_type (List[type]): Expected types for dictionary values.
 
         Raises:
             ValueError: If the object is not a dictionary.
@@ -133,23 +128,14 @@ class SensitivityAnalysis(Foundation):
             _msg = f"{inspect_var(dt)} must be a dictionary. "
             _msg += f"Provided: {type(dt)}"
             raise ValueError(_msg)
-
         if len(dt) == 0:
             _msg = f"{inspect_var(dt)} cannot be empty. "
             _msg += f"Provided: {dt}"
             raise ValueError(_msg)
-
-        # Convert exp_type to tuple for isinstance()
-        if isinstance(exp_type, (list, tuple)):
-            type_tuple = tuple(exp_type)
-        else:
-            type_tuple = (exp_type,)
-
-        if not all(isinstance(v, type_tuple) for v in dt.values()):
+        if not all(isinstance(v, exp_type) for v in dt.values()):
             _msg = f"{inspect_var(dt)} must contain {exp_type} values."
             _msg += f" Provided: {[type(v).__name__ for v in dt.values()]}"
             raise ValueError(_msg)
-
         return True
 
     def _create_analyses(self) -> None:
@@ -323,7 +309,6 @@ class SensitivityAnalysis(Foundation):
         return self._cat
 
     @cat.setter
-    @validate_choices(PYDASA_CFG.analitic_modes, case_sensitive=False)
     def cat(self, val: str) -> None:
         """*cat* Set the analysis category.
 
@@ -333,6 +318,10 @@ class SensitivityAnalysis(Foundation):
         Raises:
             ValueError: If category is invalid.
         """
+        if val.upper() not in PYDASA_CFG.analitic_modes:
+            _msg = f"Invalid category: {val}. "
+            _msg += f"Must be one of: {', '.join(PYDASA_CFG.analitic_modes)}"
+            raise ValueError(_msg)
         self._cat = val.upper()
 
     @property
@@ -345,8 +334,6 @@ class SensitivityAnalysis(Foundation):
         return self._variables.copy()
 
     @variables.setter
-    @validate_type(dict, allow_none=False)
-    @validate_emptiness()
     def variables(self, val: Dict[str, Variable]) -> None:
         """*variables* Set the dictionary of variables.
 
@@ -356,14 +343,11 @@ class SensitivityAnalysis(Foundation):
         Raises:
             ValueError: If dictionary is invalid.
         """
-        # Validate dictionary values are Variable instances
-        if not all(isinstance(v, Variable) for v in val.values()):
-            _msg = "All dictionary values must be Variable instances"
-            raise ValueError(_msg)
+        if self._validate_dict(val, (Variable,)):
+            self._variables = val
 
-        self._variables = val
-        # Clear existing analyses
-        self._analyses.clear()
+            # Clear existing analyses
+            self._analyses.clear()
 
     @property
     def coefficients(self) -> Dict[str, Coefficient]:
@@ -375,8 +359,6 @@ class SensitivityAnalysis(Foundation):
         return self._coefficients.copy()
 
     @coefficients.setter
-    @validate_type(dict, allow_none=False)
-    @validate_emptiness()
     def coefficients(self, val: Dict[str, Coefficient]) -> None:
         """*coefficients* Set the dictionary of coefficients.
 
@@ -386,14 +368,11 @@ class SensitivityAnalysis(Foundation):
         Raises:
             ValueError: If dictionary is invalid.
         """
-        # Validate dictionary values are Coefficient instances
-        if not all(isinstance(v, Coefficient) for v in val.values()):
-            _msg = "All dictionary values must be Coefficient instances"
-            raise ValueError(_msg)
+        if self._validate_dict(val, (Coefficient,)):
+            self._coefficients = val
 
-        self._coefficients = val
-        # Clear existing analyses
-        self._analyses.clear()
+            # Clear existing analyses
+            self._analyses.clear()
 
     @property
     def analyses(self) -> Dict[str, Sensitivity]:
@@ -445,37 +424,29 @@ class SensitivityAnalysis(Foundation):
             "sym": self._sym,
             "fwk": self._fwk,
             "cat": self._cat,
-            "variables": [
-                var.to_dict() for var in self._variables.values()
-            ],
-            "coefficients": [
-                coef.to_dict() for coef in self._coefficients.values()
-            ],
+            "variables": [var.to_dict() for var in self._variables],
+            "coefficients": [coef.to_dict() for coef in self._coefficients],
             "results": self._results
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> SensitivityAnalysis:
+    def from_dict(cls, data: Dict[str, Any]) -> SensitivityHandler:
         """*from_dict()* Create sensitivity handler from dictionary representation.
 
         Args:
             data (Dict[str, Any]): Dictionary representation of sensitivity handler.
 
         Returns:
-            SensitivityAnalysis: New sensitivity handler instance.
+            SensitivityHandler: New sensitivity handler instance.
         """
         # Create variables and coefficients from dicts
-        variables = {}
+        variables = []
         if "variables" in data:
-            variables = {
-                var.name: Variable.from_dict(var) for var in data["variables"]
-            }
+            variables = [Variable.from_dict(var) for var in data["variables"]]
 
-        coefficients = {}
+        coefficients = []
         if "coefficients" in data:
-            coefficients = {
-                coef.name: Coefficient.from_dict(coef) for coef in data["coefficients"]
-            }
+            coefficients = [Coefficient.from_dict(coef) for coef in data["coefficients"]]
 
         # Remove list items from data
         handler_data = data.copy()

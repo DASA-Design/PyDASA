@@ -18,7 +18,6 @@ Classes:
 from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Optional, List, Dict, Any, Callable
-import re
 
 # Third-party modules
 import numpy as np
@@ -29,6 +28,9 @@ from SALib.analyze.fast import analyze
 
 # Import validation base classes
 from pydasa.core.basic import Foundation
+
+# Import validation decorators
+from pydasa.validations.decorators import validate_choices, validate_pattern, validate_custom
 
 # Import related classes
 from pydasa.dimensional.buckingham import Coefficient
@@ -104,15 +106,15 @@ class Sensitivity(Foundation):
     """Executable function for numerical evaluation."""
 
     # :attr: _variables
-    _variables: Dict[str: Any] = field(default_factory=dict)
+    _variables: Dict[str, Any] = field(default_factory=dict)
     """Variable symbols in the expression."""
 
     # :attr: _symbols
-    _symbols: Dict[str: Any] = field(default_factory=dict)
+    _symbols: Dict[str, Any] = field(default_factory=dict)
     """Python symbols for the variables."""
 
     # :attr: _aliases
-    _aliases: Dict[str: Any] = field(default_factory=dict)
+    _aliases: Dict[str, Any] = field(default_factory=dict)
     """Variable aliases for use in code."""
 
     # :attr: _latex_to_py
@@ -148,6 +150,19 @@ class Sensitivity(Foundation):
     # :attr: results
     results: Dict[str, Any] = field(default_factory=dict)
     """Analysis results."""
+
+    def _validate_callable(self, value: Any, field_name: str) -> None:
+        """Custom validator to ensure value is callable.
+        
+        Args:
+            value: The value to validate.
+            field_name: Name of the field being validated.
+            
+        Raises:
+            ValueError: If value is not callable.
+        """
+        if not callable(value):
+            raise ValueError(f"Sympy function must be callable. Provided: {type(value)}")
 
     def __post_init__(self) -> None:
         """*__post_init__()* Initializes the sensitivity analysis. Validates basic properties, sets default values, and processes the expression if provided.
@@ -369,7 +384,7 @@ class Sensitivity(Foundation):
             return self.results
 
         except Exception as e:
-            _msg = f"Error calculating sensitivity for {problem}: {str(e)}"
+            _msg = f"Error calculating sensitivity: {str(e)}"
             raise ValueError(_msg)
 
     # Property getters and setters
@@ -384,6 +399,7 @@ class Sensitivity(Foundation):
         return self._cat
 
     @cat.setter
+    @validate_choices(PYDASA_CFG.analitic_modes, case_sensitive=False)
     def cat(self, val: str) -> None:
         """*cat* Set the analysis category.
 
@@ -393,10 +409,6 @@ class Sensitivity(Foundation):
         Raises:
             ValueError: If category is invalid.
         """
-        if val.upper() not in PYDASA_CFG.analitic_modes:
-            _msg = f"Invalid category: {val}. "
-            _msg += f"Must be one of: {', '.join(PYDASA_CFG.analitic_modes)}"
-            raise ValueError(_msg)
         self._cat = val.upper()
 
     @property
@@ -409,6 +421,7 @@ class Sensitivity(Foundation):
         return self._pi_expr
 
     @pi_expr.setter
+    @validate_pattern(LATEX_RE, allow_alnum=True)
     def pi_expr(self, val: str) -> None:
         """*pi_expr* Set the expression to analyze.
 
@@ -418,12 +431,6 @@ class Sensitivity(Foundation):
         Raises:
             ValueError: If expression is invalid.
         """
-        # Regular expression to match valid LaTeX strings or alphanumeric strings
-        if not (val.isalnum() or re.match(LATEX_RE, val)):
-            _msg = "LaTeX expression must be a valid string. "
-            _msg += f"Provided: '{val}' "
-            _msg += "Examples: 'V', 'd', '\\Pi_{0}', '\\rho'."
-            raise ValueError(_msg)
         # Update expression
         self._pi_expr = val
 
@@ -440,6 +447,7 @@ class Sensitivity(Foundation):
         return self._sym_func
 
     @sym_func.setter
+    @validate_custom(lambda self, val: self._validate_callable(val, 'sym_func'))
     def sym_func(self, val: Callable) -> None:
         """*sym_func* Set the symbolic function.
 
@@ -449,10 +457,6 @@ class Sensitivity(Foundation):
         Raises:
             ValueError: If function is not callable.
         """
-        if not callable(val):
-            _msg = "Sympy function must be callable. "
-            _msg += f"Provided: {type(val)}"
-            raise ValueError(_msg)
         self._sym_func = val
 
     @property

@@ -30,7 +30,7 @@ from pydasa.analysis.scenario import Sensitivity
 
 # Import utils
 from pydasa.validations.error import inspect_var
-from pydasa.utils.latex import latex_to_python
+from pydasa.serialization.parser import latex_to_python
 
 # Import global configuration
 # Import the 'cfg' module to allow global variable editing

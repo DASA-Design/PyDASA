@@ -11,8 +11,6 @@ Contains:
     - Default and working pattern sets for dimensional analysis
 """
 
-DFLT_FDU_PREC_LT: dict = {}
-
 # LaTeX Patterns
 # Allow valid LaTeX strings starting with a backslash or alphanumeric strings
 LATEX_RE: str = r"\\?[a-zA-Z]+(?:_\{\d+\})?"

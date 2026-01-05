@@ -35,7 +35,7 @@ from pydasa.core.setup import Framework
 from pydasa.core.setup import PYDASA_CFG
 from pydasa.core.setup import FDU_FWK_DT
 # important regex patterns
-from pydasa.utils.patterns import DFLT_POW_RE
+from pydasa.validations.patterns import DFLT_POW_RE
 
 
 @dataclass

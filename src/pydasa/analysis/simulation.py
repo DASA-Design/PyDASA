@@ -36,10 +36,10 @@ from pydasa.dimensional.buckingham import Coefficient
 from pydasa.elements.parameter import Variable
 
 # Import utils
-from pydasa.utils.latex import parse_latex, create_latex_mapping
+from pydasa.serialization.parser import parse_latex, create_latex_mapping
 
 # Import configuration
-from pydasa.utils.latex import latex_to_python
+from pydasa.serialization.parser import latex_to_python
 
 # # Type aliases
 # SymbolDict = Dict[str, sp.Symbol]

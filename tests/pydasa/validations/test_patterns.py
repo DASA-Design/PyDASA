@@ -9,7 +9,7 @@ Tests for regex patterns used in validation and parsing in PyDASA.
 import unittest
 import pytest
 import re
-from pydasa.utils import patterns
+from pydasa.serialization import patterns
 from tests.pydasa.data.test_data import get_config_test_data
 
 

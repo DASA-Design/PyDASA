@@ -26,7 +26,7 @@ from abc import ABC
 # import global variables
 from pydasa.core.setup import Framework
 from pydasa.core.setup import PYDASA_CFG
-from pydasa.utils.patterns import LATEX_RE
+from pydasa.validations.patterns import LATEX_RE
 
 # import validation decorators
 from pydasa.validations.decorators import validate_type

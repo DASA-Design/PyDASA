@@ -29,7 +29,7 @@ from pydasa.elements.specs import SymbolicSpecs
 from pydasa.elements.specs import NumericalSpecs
 from pydasa.elements.specs import StatisticalSpecs
 # pattern interpreter imports
-from pydasa.utils.latex import latex_to_python
+from pydasa.serialization.parser import latex_to_python
 
 
 @dataclass

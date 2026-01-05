@@ -35,9 +35,9 @@ from pydasa.dimensional.buckingham import Coefficient
 # from pydasa.core.parameter import Variable
 
 # Import utils
-from pydasa.utils.latex import parse_latex
-from pydasa.utils.latex import create_latex_mapping
-from pydasa.utils.latex import latex_to_python
+from pydasa.serialization.parser import parse_latex
+from pydasa.serialization.parser import create_latex_mapping
+from pydasa.serialization.parser import latex_to_python
 
 # Import configuration
 # Import the 'cfg' module to allow global variable editing

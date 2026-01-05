@@ -16,7 +16,7 @@ from sympy.parsing.latex import parse_latex
 from sympy import Symbol, symbols
 
 # import global variables
-from pydasa.utils.patterns import LATEX_RE
+from pydasa.validations.patterns import LATEX_RE
 
 # Global vars for special Latex symbos and functions to ignore
 IGNORE_EXPR = {

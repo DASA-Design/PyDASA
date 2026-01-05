@@ -34,7 +34,7 @@ from pydasa.core.setup import PYDASA_CFG
 # generic error handling and type checking
 from pydasa.validations.error import inspect_var
 # pattern interpreter imports
-from pydasa.utils.latex import latex_to_python
+from pydasa.serialization.parser import latex_to_python
 # import validation decorators
 from pydasa.validations.decorators import validate_type
 # from pydasa.validations.decorators import validate_emptiness

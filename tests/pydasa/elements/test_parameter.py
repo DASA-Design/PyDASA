@@ -22,7 +22,7 @@ from pydasa.elements.parameter import Variable
 from tests.pydasa.data.test_data import get_variable_test_data
 
 
-class TestVariableIntegration(unittest.TestCase):
+class TestVariable(unittest.TestCase):
     """Integration test cases for Variable class composition."""
 
     @pytest.fixture(autouse=True)

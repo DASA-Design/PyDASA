@@ -4,12 +4,20 @@ Test Module for patterns.py
 ===========================================
 
 Tests for regex patterns used in validation and parsing in PyDASA.
+
+This module tests:
+    - LATEX_RE: LaTeX symbol pattern
+    - DFLT_POW_RE: Power/exponent pattern
+
+Note:
+    FDU framework patterns have been moved to core/setup.py.
+    See core/setup.py for framework-specific dimensional patterns.
 """
 
 import unittest
 import pytest
 import re
-from pydasa.serialization import patterns
+from pydasa.validations import patterns as pat
 from tests.pydasa.data.test_data import get_config_test_data
 
 
@@ -24,164 +32,90 @@ class TestPatterns(unittest.TestCase):
     # LaTeX Pattern Tests
     def test_latex_re_exists(self) -> None:
         """Test that LATEX_RE exists and is a string."""
-        assert hasattr(patterns, 'LATEX_RE')
-        assert isinstance(patterns.LATEX_RE, str)
+        assert hasattr(pat, 'LATEX_RE')
+        assert isinstance(pat.LATEX_RE, str)
 
     def test_latex_re_matches_valid(self) -> None:
         """Test that LATEX_RE matches valid LaTeX symbols."""
-        pattern = re.compile(patterns.LATEX_RE)
+        pattern = re.compile(pat.LATEX_RE)
         for case in self.test_data["VALID_LATEX"]:
             assert pattern.search(case) is not None, f"Failed to match: {case}"
 
     def test_latex_re_pattern_structure(self) -> None:
         """Test that LATEX_RE has proper structure."""
-        assert len(patterns.LATEX_RE) > 0
+        assert len(pat.LATEX_RE) > 0
         # Should compile without errors
-        pattern = re.compile(patterns.LATEX_RE)
+        pattern = re.compile(pat.LATEX_RE)
         assert pattern is not None
 
-    # Default FDU Pattern Tests
-    def test_dflt_fdu_re_exists(self) -> None:
-        """Test that DFLT_FDU_RE exists and is a string."""
-        assert hasattr(patterns, 'DFLT_FDU_RE')
-        assert isinstance(patterns.DFLT_FDU_RE, str)
+    def test_latex_re_matches_alphanumeric(self) -> None:
+        """Test that LATEX_RE matches simple alphanumeric symbols."""
+        pattern = re.compile(pat.LATEX_RE)
+        test_cases = ["x", "y", "abc", "V", "rho"]
+        for case in test_cases:
+            assert pattern.search(case), f"Failed to match: {case}"
 
-    def test_dflt_fdu_re_matches_valid(self) -> None:
-        """Test that DFLT_FDU_RE matches valid dimension strings."""
-        pattern = re.compile(patterns.DFLT_FDU_RE)
-        for case in self.test_data["VALID_DIMENSIONS"]:
-            assert pattern.match(case), f"Failed to match: {case}"
+    def test_latex_re_matches_backslash_commands(self) -> None:
+        """Test that LATEX_RE matches LaTeX backslash commands."""
+        pattern = re.compile(pat.LATEX_RE)
+        test_cases = ["\\alpha", "\\beta", "\\gamma", "\\Pi", "\\mu"]
+        for case in test_cases:
+            assert pattern.search(case), f"Failed to match: {case}"
 
-    def test_dflt_fdu_re_rejects_invalid(self) -> None:
-        """Test that DFLT_FDU_RE rejects invalid dimension strings."""
-        pattern = re.compile(patterns.DFLT_FDU_RE)
-        for case in self.test_data["INVALID_DIMENSIONS"]:
-            assert not pattern.match(case), f"Should not match: {case}"
-
-    def test_dflt_fdu_re_physical_dimensions(self) -> None:
-        """Test that DFLT_FDU_RE matches common physical dimensions."""
-        pattern = re.compile(patterns.DFLT_FDU_RE)
-        for dims in self.test_data["PHYSICAL_DIMS"]:
-            assert pattern.match(dims), f"Failed to match physical dimension: {dims}"
+    def test_latex_re_matches_subscripts(self) -> None:
+        """Test that LATEX_RE matches LaTeX symbols with subscripts."""
+        pattern = re.compile(pat.LATEX_RE)
+        test_cases = ["\\alpha_{1}", "\\beta_{12}", "x_{i}", "\\Pi_{0}"]
+        for case in test_cases:
+            assert pattern.search(case), f"Failed to match: {case}"
 
     # Power Pattern Tests
     def test_dflt_pow_re_exists(self) -> None:
         """Test that DFLT_POW_RE exists and is a string."""
-        assert hasattr(patterns, 'DFLT_POW_RE')
-        assert isinstance(patterns.DFLT_POW_RE, str)
+        assert hasattr(pat, 'DFLT_POW_RE')
+        assert isinstance(pat.DFLT_POW_RE, str)
 
-    def test_dflt_pow_re_matches_numbers(self) -> None:
-        """Test that DFLT_POW_RE matches integer exponents."""
-        pattern = re.compile(patterns.DFLT_POW_RE)
-        test_cases = ["1", "-1", "2", "-2", "10", "-10", "0"]
+    def test_dflt_pow_re_matches_positive(self) -> None:
+        """Test that DFLT_POW_RE matches positive integers."""
+        pattern = re.compile(pat.DFLT_POW_RE)
+        test_cases = ["1", "2", "10", "100", "0"]
         for case in test_cases:
             assert pattern.search(case), f"Failed to match: {case}"
 
-    # No Power Pattern Tests
-    def test_dflt_no_pow_re_exists(self) -> None:
-        """Test that DFLT_NO_POW_RE exists and is a string."""
-        assert hasattr(patterns, 'DFLT_NO_POW_RE')
-        assert isinstance(patterns.DFLT_NO_POW_RE, str)
+    def test_dflt_pow_re_matches_negative(self) -> None:
+        """Test that DFLT_POW_RE matches negative integers."""
+        pattern = re.compile(pat.DFLT_POW_RE)
+        test_cases = ["-1", "-2", "-10", "-100"]
+        for case in test_cases:
+            assert pattern.search(case), f"Failed to match: {case}"
 
-    def test_dflt_no_pow_re_matches_fdus(self) -> None:
-        """Test that DFLT_NO_POW_RE matches FDUs without exponents."""
-        pattern = re.compile(patterns.DFLT_NO_POW_RE)
-        # Should match single FDU letters from physical framework
-        for fdu in ["L", "M", "T", "K", "I", "N", "C"]:
-            assert pattern.search(fdu), f"Failed to match: {fdu}"
-
-    # Symbolic Pattern Tests
-    def test_dflt_fdu_sym_re_exists(self) -> None:
-        """Test that DFLT_FDU_SYM_RE exists and is a string."""
-        assert hasattr(patterns, 'DFLT_FDU_SYM_RE')
-        assert isinstance(patterns.DFLT_FDU_SYM_RE, str)
-
-    def test_dflt_fdu_sym_re_matches_symbols(self) -> None:
-        """Test that DFLT_FDU_SYM_RE matches FDU symbols."""
-        pattern = re.compile(patterns.DFLT_FDU_SYM_RE)
-        # Should match single FDU letters
-        for fdu in ["L", "M", "T", "K", "I", "N", "C"]:
-            assert pattern.search(fdu), f"Failed to match: {fdu}"
-
-    # Working Precedence List Tests
-    def test_wkng_fdu_prec_lt_exists(self) -> None:
-        """Test that WKNG_FDU_PREC_LT exists and is a list."""
-        assert hasattr(patterns, 'WKNG_FDU_PREC_LT')
-        assert isinstance(patterns.WKNG_FDU_PREC_LT, list)
-
-    # def test_wkng_fdu_prec_lt_matches_default(self) -> None:
-    #     """Test that WKNG_FDU_PREC_LT initially matches default."""
-    #     from pydasa.dimensional.constants import DFLT_FDU_PREC_LT
-    #     # Should be a copy, not the same object
-    #     assert patterns.WKNG_FDU_PREC_LT == DFLT_FDU_PREC_LT
-    #     assert patterns.WKNG_FDU_PREC_LT is not DFLT_FDU_PREC_LT
-
-    # def test_wkng_fdu_prec_lt_is_mutable(self) -> None:
-    #     """Test that WKNG_FDU_PREC_LT can be modified."""
-    #     # Should be a list that can be modified
-    #     original_length = len(patterns.WKNG_FDU_PREC_LT)
-    #     assert original_length > 0
-
-    # Working Pattern Tests
-    def test_wkng_fdu_re_exists(self) -> None:
-        """Test that WKNG_FDU_RE exists and is a string."""
-        assert hasattr(patterns, 'WKNG_FDU_RE')
-        assert isinstance(patterns.WKNG_FDU_RE, str)
-
-    def test_wkng_fdu_re_matches_default(self) -> None:
-        """Test that WKNG_FDU_RE initially matches default."""
-        assert patterns.WKNG_FDU_RE == patterns.DFLT_FDU_RE
-
-    def test_wkng_pow_re_exists(self) -> None:
-        """Test that WKNG_POW_RE exists and is a string."""
-        assert hasattr(patterns, 'WKNG_POW_RE')
-        assert isinstance(patterns.WKNG_POW_RE, str)
-
-    def test_wkng_pow_re_matches_default(self) -> None:
-        """Test that WKNG_POW_RE initially matches default."""
-        assert patterns.WKNG_POW_RE == patterns.DFLT_POW_RE
-
-    def test_wkng_no_pow_re_exists(self) -> None:
-        """Test that WKNG_NO_POW_RE exists and is a string."""
-        assert hasattr(patterns, 'WKNG_NO_POW_RE')
-        assert isinstance(patterns.WKNG_NO_POW_RE, str)
-
-    def test_wkng_no_pow_re_matches_default(self) -> None:
-        """Test that WKNG_NO_POW_RE initially matches default."""
-        assert patterns.WKNG_NO_POW_RE == patterns.DFLT_NO_POW_RE
-
-    def test_wkng_fdu_sym_re_exists(self) -> None:
-        """Test that WKNG_FDU_SYM_RE exists and is a string."""
-        assert hasattr(patterns, 'WKNG_FDU_SYM_RE')
-        assert isinstance(patterns.WKNG_FDU_SYM_RE, str)
-
-    def test_wkng_fdu_sym_re_matches_default(self) -> None:
-        """Test that WKNG_FDU_SYM_RE initially matches default."""
-        assert patterns.WKNG_FDU_SYM_RE == patterns.DFLT_FDU_SYM_RE
+    def test_dflt_pow_re_compiles(self) -> None:
+        """Test that DFLT_POW_RE compiles without errors."""
+        try:
+            pattern = re.compile(pat.DFLT_POW_RE)
+            assert pattern is not None
+        except re.error as e:
+            pytest.fail(f"DFLT_POW_RE failed to compile: {e}")
 
     # Cross-Pattern Tests
+    def test_all_patterns_exist(self) -> None:
+        """Test that all expected pattern variables exist."""
+        expected_patterns = ['LATEX_RE', 'DFLT_POW_RE']
+        for pattern_name in expected_patterns:
+            assert hasattr(pat, pattern_name), f"Missing pattern: {pattern_name}"
+
     def test_all_patterns_are_strings(self) -> None:
         """Test that all pattern variables are strings."""
-        string_patterns = [
-            'LATEX_RE', 'DFLT_FDU_RE', 'DFLT_POW_RE',
-            'DFLT_NO_POW_RE', 'DFLT_FDU_SYM_RE',
-            'WKNG_FDU_RE', 'WKNG_POW_RE',
-            'WKNG_NO_POW_RE', 'WKNG_FDU_SYM_RE'
-        ]
-        for pattern_name in string_patterns:
-            assert hasattr(patterns, pattern_name)
-            assert isinstance(getattr(patterns, pattern_name), str)
+        pattern_names = ['LATEX_RE', 'DFLT_POW_RE']
+        for pattern_name in pattern_names:
+            pattern_value = getattr(pat, pattern_name)
+            assert isinstance(pattern_value, str), f"{pattern_name} is not a string"
 
     def test_all_patterns_compile(self) -> None:
         """Test that all regex patterns compile without errors."""
-        pattern_names = [
-            'LATEX_RE', 'DFLT_FDU_RE', 'DFLT_POW_RE',
-            'DFLT_NO_POW_RE', 'DFLT_FDU_SYM_RE',
-            'WKNG_FDU_RE', 'WKNG_POW_RE',
-            'WKNG_NO_POW_RE', 'WKNG_FDU_SYM_RE'
-        ]
+        pattern_names = ['LATEX_RE', 'DFLT_POW_RE']
         for pattern_name in pattern_names:
-            pattern_str = getattr(patterns, pattern_name)
+            pattern_str = getattr(pat, pattern_name)
             try:
                 compiled = re.compile(pattern_str)
                 assert compiled is not None
@@ -190,12 +124,13 @@ class TestPatterns(unittest.TestCase):
 
     def test_patterns_are_not_empty(self) -> None:
         """Test that all patterns are non-empty strings."""
-        pattern_names = [
-            'LATEX_RE', 'DFLT_FDU_RE', 'DFLT_POW_RE',
-            'DFLT_NO_POW_RE', 'DFLT_FDU_SYM_RE',
-            'WKNG_FDU_RE', 'WKNG_POW_RE',
-            'WKNG_NO_POW_RE', 'WKNG_FDU_SYM_RE'
-        ]
+        pattern_names = ['LATEX_RE', 'DFLT_POW_RE']
         for pattern_name in pattern_names:
-            pattern_str = getattr(patterns, pattern_name)
+            pattern_str = getattr(pat, pattern_name)
             assert len(pattern_str) > 0, f"Pattern {pattern_name} is empty"
+
+    def test_patterns_have_docstrings(self) -> None:
+        # NOTE unnecessary but didnt know you could do this
+        """Test that pattern module has proper documentation."""
+        assert pat.__doc__ is not None
+        assert len(pat.__doc__) > 0

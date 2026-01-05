@@ -31,6 +31,9 @@ import sympy as sp
 # Import validation base classes
 from pydasa.core.basic import Foundation
 
+# Import validation decorators
+from pydasa.validations.decorators import validate_range, validate_type, validate_custom
+
 # Import related classes
 from pydasa.dimensional.buckingham import Coefficient
 from pydasa.elements.parameter import Variable
@@ -258,6 +261,23 @@ class MonteCarlo(Foundation):
     # Initialization
     # ========================================================================
 
+    def _validate_distributions(self, value: Dict[str, Dict[str, Any]], field_name: str) -> None:
+        """Custom validator to ensure all distributions have callable 'func'.
+
+        Args:
+            value: The distributions dictionary to validate.
+            field_name: Name of the field being validated.
+
+        Raises:
+            ValueError: If distributions don't have callable 'func' functions.
+        """
+        if not all(callable(v["func"]) for v in value.values()):
+            inv = [k for k, v in value.items() if not callable(v["func"])]
+            raise ValueError(
+                f"All distributions must have callable 'func' functions. "
+                f"Invalid entries: {inv}"
+            )
+
     def __post_init__(self) -> None:
         """*__post_init__()* Initializes the Monte Carlo simulation."""
         # Initialize from base class
@@ -289,10 +309,10 @@ class MonteCarlo(Foundation):
             # Parse the expression
             self._parse_expression(self._pi_expr)
 
-        # Preallocate full array space with NaN
+        # Preallocate full array space with NaN only if experiments > 0
         n_sym = len(self._symbols)
-        if n_sym > 0:
-            # Only allocate if we have variables
+        if n_sym > 0 and self._experiments > 0:
+            # Only allocate if we have variables and valid experiment count
             if self.inputs.size == 0:  # Check size, not None
                 self.inputs = np.full((self._experiments, n_sym),
                                       np.nan,
@@ -302,8 +322,8 @@ class MonteCarlo(Foundation):
                                         np.nan,
                                         dtype=np.float64)
 
-        # Only initialize cache if not already provided
-        if not self._simul_cache:
+        # Only initialize cache if not already provided and experiments > 0
+        if not self._simul_cache and self._experiments > 0:
             # Create local cache only if no external cache provided
             for var in self._variables.keys():
                 self._simul_cache[var] = np.full((self._experiments, 1),
@@ -711,7 +731,7 @@ class MonteCarlo(Foundation):
         # Check if cache location is valid
         if self._validate_cache_locations(var_sym, idx):
             # Retrieve cached data
-            cache_data = self._simul_cache[var_sym][idx]
+            cache_data = self._simul_cache[var_sym][idx, 0]
             # if value is not NaN (valid location, but no data yet)
             if not np.isnan(cache_data):
                 # cast to float the computed value
@@ -865,6 +885,7 @@ class MonteCarlo(Foundation):
         return self._experiments
 
     @experiments.setter
+    @validate_range(min_value=1)
     def experiments(self, val: int) -> None:
         """*experiments* Set the number of simulation runs.
 
@@ -874,9 +895,6 @@ class MonteCarlo(Foundation):
         Raises:
             ValueError: If the number of experiments is not positive.
         """
-        if val < 1:
-            _msg = f"Number of experiments must be positive. Got: {val}"
-            raise ValueError(_msg)
         self._experiments = val
 
     @property
@@ -889,6 +907,7 @@ class MonteCarlo(Foundation):
         return self._distributions.copy()
 
     @distributions.setter
+    @validate_custom(lambda self, val: self._validate_distributions(val, 'distributions'))
     def distributions(self, val: Dict[str, Dict[str, Any]]) -> None:
         """*distributions* Set the variable distributions.
 
@@ -898,11 +917,6 @@ class MonteCarlo(Foundation):
         Raises:
             ValueError: If the distributions are invalid.
         """
-        if not all(callable(v["func"]) for v in val.values()):
-            _msg = "All distributions must have callable 'func' functions."
-            inv = [k for k, v in val.items() if not callable(v["func"])]
-            _msg += f" Invalid entries: {inv}"
-            raise ValueError(_msg)
         self._distributions = val
 
     @property
@@ -915,15 +929,13 @@ class MonteCarlo(Foundation):
         return self._dependencies
 
     @dependencies.setter
+    @validate_type(dict)
     def dependencies(self, val: Dict[str, List[str]]) -> None:
         """*dependencies* Set variable dependencies.
 
         Args:
             val (Dict[str, List[str]]): New variable dependencies.
         """
-        if not isinstance(val, dict):
-            _msg = f"Dependencies must be dict, got {type(val)}"
-            raise TypeError(_msg)
         self._dependencies = val
 
     # Individual statistics properties

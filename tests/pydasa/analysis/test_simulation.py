@@ -48,7 +48,7 @@ assert Schema
 assert get_simulation_test_data
 
 # Number of experiments for simulations
-N_EXP: int = 50
+N_EXP: int = 100
 
 
 # ============================================================================
@@ -188,23 +188,15 @@ class TestMonteCarlo(unittest.TestCase):
 
     def _setup_distribution_specs(self) -> None:
         """*_setup_distribution_specs()* creates distribution specifications."""
-        U_var = self.variables["U"]
-        mu_var = self.variables["\\mu_{1}"]
-
-        self.dist_specs = {
-            "U": {
-                "depends": U_var.depends,
-                "dtype": U_var.dist_type,
-                "params": U_var.dist_params,
-                "func": U_var.dist_func
-            },
-            "\\mu_{1}": {
-                "depends": mu_var.depends,
-                "dtype": mu_var.dist_type,
-                "params": mu_var.dist_params,
-                "func": mu_var.dist_func
+        # Create distribution specs for all variables
+        self.dist_specs = {}
+        for var_sym, var_obj in self.variables.items():
+            self.dist_specs[var_sym] = {
+                "depends": var_obj.depends,
+                "dtype": var_obj.dist_type,
+                "params": var_obj.dist_params,
+                "func": var_obj.dist_func
             }
-        }
 
     # ========================================================================
     # Dimensional Model Tests
@@ -455,16 +447,18 @@ class TestMonteCarlo(unittest.TestCase):
 
     def test_run_simulation_with_dependencies(self) -> None:
         """*test_run_simulation_with_dependencies()* tests simulation with dependent variables."""
-        # Find a coefficient that uses both U and mu_1
+        # Find a coefficient that uses mu_1 (which depends on U)
+        # Since U and mu_1 have the same dimensions, they get separate coefficients
+        # We test with mu_1's coefficient since mu_1 depends on U
         target_coef = None
         for pi_sym, coef in self.coefficients.items():
             vars_in_coef = list(coef.var_dims.keys())
-            if "U" in vars_in_coef and "\\mu_{1}" in vars_in_coef:
+            if "\\mu_{1}" in vars_in_coef:
                 target_coef = coef
                 break
 
         if target_coef is None:
-            pytest.skip("No coefficient found with both U and mu_1")
+            pytest.skip("No coefficient found with mu_1 (dependent variable)")
 
         mc_sim = MonteCarlo(
             _coefficient=target_coef,
@@ -472,21 +466,26 @@ class TestMonteCarlo(unittest.TestCase):
             _experiments=N_EXP
         )
 
-        # Set distributions
+        # Set distributions for variables in coefficient
         vars_in_coef = list(target_coef.var_dims.keys())
         mc_sim._distributions = {
             k: v for k, v in self.dist_specs.items()
             if k in vars_in_coef
         }
 
+        # Also need distribution for U since mu_1 depends on it
+        if "U" not in mc_sim._distributions and "U" in self.dist_specs:
+            mc_sim._distributions["U"] = self.dist_specs["U"]
+
         # Set dependencies
         mc_sim._dependencies = {
             k: v.depends for k, v in self.variables.items()
-            if k in vars_in_coef
+            if k in vars_in_coef or k == "U"  # Include U as it's a dependency
         }
 
         # Skip if missing distributions
-        if not all(v in mc_sim._distributions for v in vars_in_coef):
+        required_vars = vars_in_coef + ["U"]  # U is required for mu_1
+        if not all(v in mc_sim._distributions for v in required_vars):
             pytest.skip("Missing required distributions")
 
         mc_sim.run()
@@ -665,7 +664,7 @@ class TestMonteCarlo(unittest.TestCase):
         coef = list(self.coefficients.values())[0]
         mc_sim = MonteCarlo(_coefficient=coef)
 
-        assert mc_sim.experiments == 1000
+        assert mc_sim.experiments == -1  # Default value
 
         mc_sim.experiments = 500
         assert mc_sim.experiments == 500

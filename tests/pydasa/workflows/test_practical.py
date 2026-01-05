@@ -232,7 +232,7 @@ class TestMonteCarloSimulation(unittest.TestCase):
         # Test invalid experiments
         with pytest.raises(ValueError) as excinfo:
             handler.experiments = 0
-        assert "must be positive" in str(excinfo.value)
+        assert "must be >= 1" in str(excinfo.value)
 
     def test_get_simulation(self) -> None:
         """*test_get_simulation()* tests getting simulation by name."""

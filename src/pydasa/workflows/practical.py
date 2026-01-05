@@ -37,6 +37,12 @@ from pydasa.analysis.simulation import MonteCarlo
 from pydasa.validations.error import inspect_var
 from pydasa.serialization.parser import latex_to_python
 
+# Import validation decorators
+from pydasa.validations.decorators import validate_type
+from pydasa.validations.decorators import validate_custom
+from pydasa.validations.decorators import validate_range
+from pydasa.validations.decorators import validate_choices
+
 # Import global configuration
 # from pydasa.core.parameter import Variable
 # from pydasa.core.setup import Framework
@@ -559,6 +565,8 @@ class MonteCarloSimulation(Foundation):
         return self._cat
 
     @cat.setter
+    @validate_type(str)
+    @validate_choices(PYDASA_CFG.analitic_modes)
     def cat(self, val: str) -> None:
         """*cat* Set the analysis category.
 
@@ -568,12 +576,7 @@ class MonteCarloSimulation(Foundation):
         Raises:
             ValueError: If category is invalid.
         """
-        val_upper = val.upper()
-        if val_upper not in PYDASA_CFG.analitic_modes:
-            _msg = f"Invalid category: {val}. "
-            _msg += f"Must be one of: {', '.join(PYDASA_CFG.analitic_modes)}"
-            raise ValueError(_msg)
-        self._cat = val_upper
+        self._cat = val.upper()
 
     @property
     def variables(self) -> Dict[str, Variable]:
@@ -585,6 +588,8 @@ class MonteCarloSimulation(Foundation):
         return self._variables.copy()
 
     @variables.setter
+    @validate_type(dict)
+    @validate_custom(lambda self, val: self._validate_dict(val, Variable))
     def variables(self, val: Dict[str, Variable]) -> None:
         """*variables* Set the list of variables.
 
@@ -594,13 +599,12 @@ class MonteCarloSimulation(Foundation):
         Raises:
             ValueError: If dictionary is invalid.
         """
-        if self._validate_dict(val, Variable):
-            self._variables = val
+        self._variables = val
 
-            # Clear existing analyses since variables changed
-            self._simulations.clear()
-            self._distributions.clear()
-            self._results.clear()
+        # Clear existing analyses since variables changed
+        self._simulations.clear()
+        self._distributions.clear()
+        self._results.clear()
 
     @property
     def coefficients(self) -> Dict[str, Coefficient]:
@@ -612,6 +616,8 @@ class MonteCarloSimulation(Foundation):
         return self._coefficients.copy()
 
     @coefficients.setter
+    @validate_type(dict)
+    @validate_custom(lambda self, val: self._validate_dict(val, Coefficient))
     def coefficients(self, val: Dict[str, Coefficient]) -> None:
         """*coefficients* Set the dictionary of coefficients.
 
@@ -621,12 +627,11 @@ class MonteCarloSimulation(Foundation):
         Raises:
             ValueError: If dictionary is invalid.
         """
-        if self._validate_dict(val, Coefficient):
-            self._coefficients = val
+        self._coefficients = val
 
-            # Clear existing analyses since coefficients changed
-            self._simulations.clear()
-            self._results.clear()
+        # Clear existing analyses since coefficients changed
+        self._simulations.clear()
+        self._results.clear()
 
     @property
     def experiments(self) -> int:
@@ -638,6 +643,8 @@ class MonteCarloSimulation(Foundation):
         return self._experiments
 
     @experiments.setter
+    @validate_type(int)
+    @validate_range(min_value=1)
     def experiments(self, val: int) -> None:
         """*experiments* Set the number of experiments.
 
@@ -647,9 +654,6 @@ class MonteCarloSimulation(Foundation):
         Raises:
             ValueError: If value is not positive.
         """
-        if val < 1:
-            _msg = f"Number of experiments must be positive. Got: {val}"
-            raise ValueError(_msg)
         self._experiments = val
 
     @property

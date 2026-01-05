@@ -79,7 +79,7 @@ class AnalysisEngine(Foundation):
     """Dictionary of all dimensional variables in the problem."""
 
     # :attr: _schema
-    _schema: Optional[FDUs] = Frameworks.PHYSICAL.value
+    _schema: Optional[FDUs] = None
     """Dimensional framework schema (manages FDUs). Always a Schema object after initialization."""
 
     # :attr: _model

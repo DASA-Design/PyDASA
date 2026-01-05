@@ -32,6 +32,10 @@ from pydasa.analysis.scenario import Sensitivity
 from pydasa.validations.error import inspect_var
 from pydasa.serialization.parser import latex_to_python
 
+# Import validation decorators
+from pydasa.validations.decorators import validate_type
+from pydasa.validations.decorators import validate_choices
+from pydasa.validations.decorators import validate_emptiness
 # Import global configuration
 from pydasa.core.setup import Framework
 from pydasa.core.setup import AnaliticMode
@@ -319,6 +323,7 @@ class SensitivityAnalysis(Foundation):
         return self._cat
 
     @cat.setter
+    @validate_choices(PYDASA_CFG.analitic_modes, case_sensitive=False)
     def cat(self, val: str) -> None:
         """*cat* Set the analysis category.
 
@@ -328,10 +333,6 @@ class SensitivityAnalysis(Foundation):
         Raises:
             ValueError: If category is invalid.
         """
-        if val.upper() not in PYDASA_CFG.analitic_modes:
-            _msg = f"Invalid category: {val}. "
-            _msg += f"Must be one of: {', '.join(PYDASA_CFG.analitic_modes)}"
-            raise ValueError(_msg)
         self._cat = val.upper()
 
     @property
@@ -344,6 +345,8 @@ class SensitivityAnalysis(Foundation):
         return self._variables.copy()
 
     @variables.setter
+    @validate_type(dict, allow_none=False)
+    @validate_emptiness()
     def variables(self, val: Dict[str, Variable]) -> None:
         """*variables* Set the dictionary of variables.
 
@@ -353,11 +356,14 @@ class SensitivityAnalysis(Foundation):
         Raises:
             ValueError: If dictionary is invalid.
         """
-        if self._validate_dict(val, (Variable,)):
-            self._variables = val
+        # Validate dictionary values are Variable instances
+        if not all(isinstance(v, Variable) for v in val.values()):
+            _msg = "All dictionary values must be Variable instances"
+            raise ValueError(_msg)
 
-            # Clear existing analyses
-            self._analyses.clear()
+        self._variables = val
+        # Clear existing analyses
+        self._analyses.clear()
 
     @property
     def coefficients(self) -> Dict[str, Coefficient]:
@@ -369,6 +375,8 @@ class SensitivityAnalysis(Foundation):
         return self._coefficients.copy()
 
     @coefficients.setter
+    @validate_type(dict, allow_none=False)
+    @validate_emptiness()
     def coefficients(self, val: Dict[str, Coefficient]) -> None:
         """*coefficients* Set the dictionary of coefficients.
 
@@ -378,11 +386,14 @@ class SensitivityAnalysis(Foundation):
         Raises:
             ValueError: If dictionary is invalid.
         """
-        if self._validate_dict(val, (Coefficient,)):
-            self._coefficients = val
+        # Validate dictionary values are Coefficient instances
+        if not all(isinstance(v, Coefficient) for v in val.values()):
+            _msg = f"All dictionary values must be Coefficient instances"
+            raise ValueError(_msg)
 
-            # Clear existing analyses
-            self._analyses.clear()
+        self._coefficients = val
+        # Clear existing analyses
+        self._analyses.clear()
 
     @property
     def analyses(self) -> Dict[str, Sensitivity]:

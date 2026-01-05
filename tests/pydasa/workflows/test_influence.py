@@ -309,7 +309,7 @@ class TestSensitivityAnalysis(unittest.TestCase):
         # Test invalid type
         with pytest.raises(ValueError) as excinfo:
             handler.variables = "not a dict"  # type: ignore
-        assert "must be a dictionary" in str(excinfo.value)
+        assert "must be dict" in str(excinfo.value)
 
     def test_properties_coefficients(self) -> None:
         """*test_properties_coefficients()* tests coefficients property getter and setter."""
@@ -326,7 +326,7 @@ class TestSensitivityAnalysis(unittest.TestCase):
         # Test invalid type
         with pytest.raises(ValueError) as excinfo:
             handler.coefficients = "not a dict"  # type: ignore
-        assert "must be a dictionary" in str(excinfo.value)
+        assert "must be dict" in str(excinfo.value)
 
     def test_properties_analyses(self) -> None:
         """*test_properties_analyses()* tests analyses property getter (read-only)."""

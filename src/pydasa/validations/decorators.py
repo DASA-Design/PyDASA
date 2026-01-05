@@ -78,13 +78,16 @@ def validate_type(*expected_types: type, allow_none: bool = True) -> Callable:
 
 
 def validate_emptiness(strip: bool = True) -> Callable:
-    """*validate_emptiness()* Decorator to ensure string values are non-empty.
+    """*validate_emptiness()* Decorator to ensure values are non-empty.
+
+    Handles strings, dictionaries, lists, tuples, and other collections.
+    For strings, optionally strips whitespace before checking.
 
     Args:
-        strip (bool, optional): Whether to strip whitespace before checking. Defaults to True.
+        strip (bool, optional): Whether to strip whitespace before checking strings. Defaults to True.
 
     Raises:
-        ValueError: If string is empty or contains only whitespace.
+        ValueError: If string is empty/whitespace-only, or if collection has no elements.
 
     Returns:
         Callable: Decorated function with non-empty validation.
@@ -95,19 +98,32 @@ def validate_emptiness(strip: bool = True) -> Callable:
         @validate_emptiness()
         def unit(self, val: str) -> None:
             self._unit = val
+
+        @variables.setter
+        @validate_type(dict)
+        @validate_emptiness()
+        def variables(self, val: dict) -> None:
+            self._variables = val
     """
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         def wrapper(self, value: Any) -> Any:
-            # if value is a string, check for emptiness
+            # if value is not None, check for emptiness
             if value is not None:
-                # check value: True if stripping whitespace, False otherwise
-                check_val = value.strip() if strip else value
-                # if check value is empty, raise error
-                if not check_val:
-                    _msg = f"{func.__name__} must be a non-empty string. "
-                    _msg += f"Provided: {repr(value)}."
-                    raise ValueError(_msg)
+                # Handle strings separately to allow strip functionality
+                if isinstance(value, str):
+                    check_val = value.strip() if strip else value
+                    if not check_val:
+                        _msg = f"{func.__name__} must be a non-empty string. "
+                        _msg += f"Provided: {repr(value)}."
+                        raise ValueError(_msg)
+                # Handle collections (dict, list, tuple, set, etc.)
+                elif hasattr(value, '__len__'):
+                    if len(value) == 0:
+                        type_name = type(value).__name__
+                        _msg = f"{func.__name__} must be a non-empty {type_name}. "
+                        _msg += f"Provided: {repr(value)}."
+                        raise ValueError(_msg)
             # otherwise, call the original function
             return func(self, value)
         return wrapper      # return the wrapper

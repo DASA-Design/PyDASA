@@ -12,9 +12,6 @@ The three main types of FDUs are:
 
 The fourth FDU framework is:
     4. Custom FDUs: user-defined FDUs that can be specified as needed.
-
-*IMPORTANT* Based on:
-    # H.Gorter, *Dimensionalanalyse: Eine Theoririe der physikalischen Dimensionen mit Anwendungen*
 """
 # python native modules
 

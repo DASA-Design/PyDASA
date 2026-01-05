@@ -154,7 +154,7 @@ class TestAnalysisEngine(unittest.TestCase):
 
         # Test schema converted
         assert isinstance(engine.schema, Schema)
-        assert engine.schema._fwk == "CUSTOM"
+        assert engine.schema._fwk == "PHYSICAL"
 
     def test_schema_object_assignment(self) -> None:
         """*test_schema_object_assignment()* tests setting schema from Schema object."""
@@ -255,17 +255,17 @@ class TestAnalysisEngine(unittest.TestCase):
         engine.schema = self.dim_schema
 
         # Run complete workflow
-        try:
-            result = engine.run_analysis()
+        # try:
+        result = engine.run_analysis()
 
-            # Test workflow completed
-            assert engine.matrix is not None
-            assert isinstance(result, dict)
-            # Test solve state updated
-            assert engine.is_solved is True
-        except Exception as e:
-            # If Matrix.solve() not fully implemented, that's okay for now
-            pytest.skip(f"Matrix solving not fully implemented: {str(e)}")
+        # Test workflow completed
+        assert engine.matrix is not None
+        assert isinstance(result, dict)
+        # Test solve state updated
+        assert engine.is_solved is True
+        # except Exception as e:
+        #     # If Matrix.solve() not fully implemented, that's okay for now
+        #     pytest.skip(f"Matrix solving not fully implemented: {str(e)}")
 
     def test_reset(self) -> None:
         """*test_reset()* tests resetting engine state."""

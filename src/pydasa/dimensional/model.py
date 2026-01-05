@@ -254,9 +254,9 @@ class Matrix(Foundation):
         # Initialize base class
         super().__post_init__()
 
-        # Update global configuration from framework
-        if self._schema:
-            self._schema.update_global_config()
+        # # Update global configuration from framework
+        # if self._schema:
+        #     self._schema.update_global_config()
 
         # Process variables if provided
         if self._variables:
@@ -304,9 +304,6 @@ class Matrix(Foundation):
                 _msg = f"Invalid CUSTOM FDUs: {_w_fdus}. "
                 _msg += f"Must be subset of: {_fwk.fdu_symbols}."
                 raise ValueError(_msg)
-
-            # Update framework and global configuration
-            self._schema.update_global_config()
 
     def _update_variable_stats(self) -> None:
         """*_update_variable_stats()* Update variable statistics.
@@ -771,7 +768,6 @@ class Matrix(Foundation):
 
         # Update framework and global configuration
         self._schema = val
-        self._schema.update_global_config()
 
         # Prepare for analysis with new framework
         if self._variables:

@@ -281,24 +281,6 @@ class Schema(Foundation):
         # Generate regex for dimensions in symbolic expressions
         self._fdu_sym_regex = rf"[{_fdu_str}]"
 
-    def update_global_config(self) -> None:
-        """*update_global_config()* Updates global config variables with current framework settings.
-
-        Makes the current framework's settings available globally for all PyDASA components.
-        """
-        # Get FDU symbols in precedence order
-        # fdu_symbols = [fdu.sym for fdu in self._fdu_lt]
-        # Update global configuration
-        # # FIXME check after migration
-        # pat.WKNG_FDU_PREC_LT = self.fdu_symbols
-        # pat.WKNG_FDU_RE = self._fdu_regex
-        # pat.WKNG_POW_RE = self._fdu_pow_regex
-        # pat.WKNG_NO_POW_RE = self._fdu_no_pow_regex
-        # pat.WKNG_FDU_SYM_RE = self._fdu_sym_regex
-        pass
-
-    # Custom validators for decorators
-
     def _validate_fdu_list(self, value: List[Dimension]) -> None:
         """*_validate_fdu_list()* Custom validator for fdu_lt property.
 

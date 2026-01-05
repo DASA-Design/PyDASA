@@ -32,7 +32,6 @@ class TestVariable(unittest.TestCase):
 
         # resseting config due to singletton patterm fix later
         self.test_scheme = Schema(_fwk="PHYSICAL")
-        self.test_scheme.update_global_config()
 
     # Initialization tests - verify all 4 perspectives initialize correctly
     def test_default_initialization(self) -> None:
@@ -65,9 +64,8 @@ class TestVariable(unittest.TestCase):
         ]
 
         for data in variable_types:
-            # Update dimensional scheme for each framework type
-            scheme = Schema(_fwk=data["_fwk"])
-            scheme.update_global_config()
+            # Update dimensional sha for each framework type
+            sha = Schema(_fwk=data["_fwk"])
 
             var = Variable(
                 _idx=data["_idx"],
@@ -78,6 +76,7 @@ class TestVariable(unittest.TestCase):
                 _dims=data["_dims"],
                 _units=data["_units"],
                 _name=data["_name"],
+                _schema=sha,
                 description=data["description"])
 
             # Verify Foundation attributes

@@ -161,19 +161,6 @@ class TestSchema(unittest.TestCase):
         with pytest.raises(ValueError):
             scheme.fdu_lt = ["not", "dimensions"]  # type: ignore[assignment]
 
-    def test_update_global_config(self) -> None:
-        """update_global_config populates global regex and symbol config."""
-        # TODO update tests when global config is mutable
-        scheme = Schema(_fwk="COMPUTATION")
-        scheme.update_global_config()
-        # # Symbols
-        # assert cfg.WKNG_FDU_PREC_LT == self.data["COMPUTATION_SYMBOLS"]
-        # # Regex strings set
-        # assert isinstance(cfg.WKNG_FDU_RE, str) and cfg.WKNG_FDU_RE != ""
-        # assert isinstance(cfg.WKNG_POW_RE, str) and cfg.WKNG_POW_RE != ""
-        # assert isinstance(cfg.WKNG_NO_POW_RE, str) and cfg.WKNG_NO_POW_RE != ""
-        # assert isinstance(cfg.WKNG_FDU_SYM_RE, str) and cfg.WKNG_FDU_SYM_RE != ""
-
     def test_reset(self) -> None:
         """reset clears internal state."""
         scheme = Schema(_fwk="PHYSICAL")

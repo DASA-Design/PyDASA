@@ -54,11 +54,12 @@ class TestDimMatrix(unittest.TestCase):
 
         # Setup dimensional framework
         self.test_framework = Schema(_fwk="PHYSICAL")
-        self.test_framework.update_global_config()
 
         # Create test variables from test data
         self.test_variables = {}
         for var_sym, var_data in self.test_data["TEST_VARIABLES"].items():
+            # td = {"_framework": self.test_framework}
+            # var_data.update(td)
             self.test_variables[var_sym] = Variable(**var_data)
 
     # ========================================================================
@@ -144,7 +145,6 @@ class TestDimMatrix(unittest.TestCase):
     def test_initialization_with_custom_framework(self) -> None:
         """Test creating Matrix with custom framework."""
         comp_framework = Schema(_fwk="COMPUTATION")
-        comp_framework.update_global_config()
 
         model = Matrix(_name="Computation Model",
                        _schema=comp_framework)

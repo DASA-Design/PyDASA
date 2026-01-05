@@ -117,7 +117,6 @@ class TestMonteCarlo(unittest.TestCase):
 
         # Create and configure dimensional schema
         self.dim_schema = Schema(_fdu_lt=self.fdu_list, _fwk="CUSTOM")
-        self.dim_schema.update_global_config()
 
     def _setup_channel_flow_variables(self) -> None:
         """*_setup_channel_flow_variables()* creates variables for planar channel flow."""

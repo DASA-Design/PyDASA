@@ -37,7 +37,6 @@ class TestCoefficient(unittest.TestCase):
 
         # Setup dimensional scheme
         self.test_scheme = Schema(_fwk="PHYSICAL")
-        self.test_scheme.update_global_config()
 
         # Create test variables from test data
         self.test_variables = {}

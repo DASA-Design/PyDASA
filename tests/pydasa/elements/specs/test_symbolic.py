@@ -26,7 +26,6 @@ class TestSymbolicSpecs(unittest.TestCase):
 
         # resseting config due to singletton patterm fix later
         self.test_scheme = Schema(_fwk="PHYSICAL")
-        self.test_scheme.update_global_config()
 
     # Dimensions property tests
     def test_dims_getter(self) -> None:
@@ -40,7 +39,6 @@ class TestSymbolicSpecs(unittest.TestCase):
 
         # resseting config due to singletton patterm fix later
         self.test_scheme = Schema(_fwk="PHYSICAL")
-        self.test_scheme.update_global_config()
 
         for dims in self.test_data["VALID_DIMENSIONS"]:
             spec.dims = dims

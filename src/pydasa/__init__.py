@@ -1,10 +1,16 @@
 # -*- coding: utf-8 -*-
+"""
+PyDASA Package
+===========================================
+Main package initializer for PyDASA library, exposing core functionalities, data structures, dimensional analysis tools, unit conversion utilities, and workflow management components.
+"""
 # expose imports
 # exposing analytics modules
 from .analysis.scenario import Sensitivity
 from .analysis.simulation import MonteCarlo
 
 # TODO conversion still in development
+# exposing unit conversion modules
 # from .context.conversion import UnitStandarizer
 # from .context.system import MeasureSystem
 # from .context.measurements import Unit
@@ -39,44 +45,55 @@ from .workflows.practical import MonteCarloSimulation
 # from .workflows.phenomena import Solver
 
 # asserting all imports
-# assert UnitConverter
+# asserting analytics modules
 assert Sensitivity
 assert MonteCarlo
+
+# asserting unit conversion modules
+# assert UnitStandarizer
+# assert MeasureSystem
+# assert Unit
+# asserting pi-theorem/dimensional analysis modules
 assert Coefficient
 assert Dimension
-# assert Unit
+assert Schema
+assert Matrix
+# asserting elements/variables modules
 assert Variable
-
+# asserting parser/io modules
+assert load
+assert save
+# asserting custom data structure modules
+# lists
 assert ArrayList
 assert SingleLinkedList
 assert Node
 assert SLNode
 assert DLNode
+# tables
 assert MapEntry
 assert Bucket
 assert SCHashTable
-
-# assert MeasurementSys
-assert Schema
-assert Matrix
-
+# asserting workflow modules
 assert SensitivityAnalysis
-# assert DimSolver
 assert MonteCarloSimulation
+# assert Solver
 
-assert load
-assert save
-# assert Queue
-# assert gfactorial
-
-# Optionally, define __all__ for wildcard imports
+# Define __all__ for wildcard imports
 __all__ = [
+    "Sensitivity",
+    "MonteCarlo",
+    # "UnitStandarizer",
+    # "MeasureSystem",
+    # "Unit",
+    "Coefficient",
     "Dimension",
-    "Variable",
     "Schema",
     "Matrix",
-    "Sensitivity",
+    "Variable",
+    "load",
+    "save",
     "SensitivityAnalysis",
-    "MonteCarlo",
     "MonteCarloSimulation",
+    # "Solver",
 ]

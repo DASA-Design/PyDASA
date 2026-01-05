@@ -40,10 +40,6 @@ from pydasa.validations.decorators import validate_type
 # from pydasa.validations.decorators import validate_emptiness
 from pydasa.validations.decorators import validate_choices
 
-# # Import global configuration
-# # import the 'cfg' module to allow global variable edition
-# from pydasa.core import setup as cfg
-
 
 @dataclass
 class Coefficient(Foundation):

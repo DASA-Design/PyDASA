@@ -38,8 +38,11 @@ from pydasa.validations.error import inspect_var
 from pydasa.serialization.parser import latex_to_python
 
 # Import global configuration
-# Import the 'cfg' module to allow global variable editing
-from pydasa.core import setup as cfg
+# from pydasa.core.parameter import Variable
+# from pydasa.core.setup import Framework
+from pydasa.core.setup import AnaliticMode
+# Import configuration
+from pydasa.core.setup import PYDASA_CFG
 
 
 @dataclass
@@ -65,7 +68,7 @@ class MonteCarloHandler(Foundation):
         _variables (Dict[str, Variable]): all available parameters/variables in the model (*Variable*).
         _coefficients (Dict[str, Coefficient]): all available coefficients in the model (*Coefficient*).
         _distributions (Dict[str, Dict[str, Any]]): all distribution functions used in the simulations.
-        _experiments (int): Number of simulation to run. Default is 1000.
+        _experiments (int): Number of simulation to run. Default is -1.
 
         # Simulation Results
         _simulations (Dict[str, MonteCarlo]): all Monte Carlo simulations performed.
@@ -75,7 +78,7 @@ class MonteCarloHandler(Foundation):
 
     # Identification and Classification
     # :attr: _cat
-    _cat: str = "NUM"
+    _cat: str = AnaliticMode.NUM.value
     """Category of sensitivity analysis (SYM, NUM)."""
 
     # Variable management
@@ -93,7 +96,7 @@ class MonteCarloHandler(Foundation):
     """Variable sampling distributions and specifications for simulations (specific name, parameters, and function)."""
 
     # :attr: _experiments
-    _experiments: int = 1000
+    _experiments: int = -1
     """Number of simulation to run."""
 
     # Simulation Management
@@ -562,10 +565,9 @@ class MonteCarloHandler(Foundation):
             ValueError: If category is invalid.
         """
         val_upper = val.upper()
-        if val_upper not in cfg.SENS_ANSYS_DT:
-            available = ", ".join(cfg.SENS_ANSYS_DT.keys())
+        if val_upper not in PYDASA_CFG.analitic_modes:
             _msg = f"Invalid category: {val}. "
-            _msg += f"Must be one of: {available}"
+            _msg += f"Must be one of: {', '.join(PYDASA_CFG.analitic_modes)}"
             raise ValueError(_msg)
         self._cat = val_upper
 
@@ -727,7 +729,7 @@ class MonteCarloHandler(Foundation):
             _sym=data.get("sym", ""),
             _alias=data.get("alias", ""),
             _fwk=data.get("fwk", ""),
-            _cat=data.get("cat", "NUM"),
+            _cat=data.get("cat", AnaliticMode.NUM.value),
             _experiments=data.get("experiments", -1)
         )
 

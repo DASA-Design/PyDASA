@@ -12,7 +12,6 @@ import pytest
 from pydasa.dimensional.framework import Schema
 from pydasa.dimensional.fundamental import Dimension
 from tests.pydasa.data.test_data import get_framework_test_data
-# from pydasa.core import setup as cfg
 
 
 class TestSchema(unittest.TestCase):

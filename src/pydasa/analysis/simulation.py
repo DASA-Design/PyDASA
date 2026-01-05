@@ -81,7 +81,7 @@ class MonteCarlo(Foundation):
         _py_to_latex (Dict[str, str]): Mapping from Python to LaTeX variable names.
 
         # Simulation Configuration
-        _experiments (int): Number of simulation experiments to run. Default is 1000.
+        _experiments (int): Number of simulation experiments to run. Default is -1.
         _distributions (Dict[str, Dict[str, Any]]): Variable sampling distributions.
         _simul_cache (Dict[str, NDArray[np.float64]]): Working sampled values cache.
 
@@ -184,7 +184,7 @@ class MonteCarlo(Foundation):
     # ========================================================================
 
     # :attr: _experiments
-    _experiments: int = 1000
+    _experiments: int = -1
     """Number of simulation iterations to run."""
 
     # :attr: _distributions
@@ -1080,7 +1080,7 @@ class MonteCarlo(Foundation):
         self._variables = {}
         self._latex_to_py = {}
         self._py_to_latex = {}
-        self._experiments = 1000
+        self._experiments = -1
         self._distributions = {}
 
         # reset results, inputs and intermediate values
@@ -1139,7 +1139,7 @@ class MonteCarlo(Foundation):
             _alias=data.get("alias", ""),
             _cat=data.get("cat", "NUM"),
             _pi_expr=data.get("pi_expr", None),
-            _experiments=data.get("iterations", 1000),
+            _experiments=data.get("iterations", -1),
         )
 
         # The to_dict() method stores them at the top level

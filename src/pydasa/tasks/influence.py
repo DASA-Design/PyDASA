@@ -33,8 +33,10 @@ from pydasa.validations.error import inspect_var
 from pydasa.serialization.parser import latex_to_python
 
 # Import global configuration
-# Import the 'cfg' module to allow global variable editing
-from pydasa.core import setup as cfg
+from pydasa.core.setup import Framework
+from pydasa.core.setup import AnaliticMode
+from pydasa.core.setup import PYDASA_CFG
+from pydasa.validations.patterns import LATEX_RE
 
 
 @dataclass
@@ -64,7 +66,7 @@ class SensitivityHandler(Foundation):
 
     # Category attribute
     # :attr: _cat
-    _cat: str = "SYM"
+    _cat: str = AnaliticMode.SYM.value
     """Category of sensitivity analysis (SYM, NUM)."""
 
     # Variable management
@@ -316,11 +318,10 @@ class SensitivityHandler(Foundation):
         Raises:
             ValueError: If category is invalid.
         """
-        if val.upper() not in cfg.SENS_ANSYS_DT:
-            raise ValueError(
-                f"Invalid category: {val}. "
-                f"Must be one of: {', '.join(cfg.SENS_ANSYS_DT.keys())}"
-            )
+        if val.upper() not in PYDASA_CFG.analitic_modes:
+            _msg = f"Invalid category: {val}. "
+            _msg += f"Must be one of: {', '.join(PYDASA_CFG.analitic_modes)}"
+            raise ValueError(_msg)
         self._cat = val.upper()
 
     @property
@@ -399,12 +400,12 @@ class SensitivityHandler(Foundation):
         # Reset base class attributes
         self._idx = -1
         self._sym = "SENS_Pi_{-1}"
-        self._fwk = "PHYSICAL"
+        self._fwk = Framework.PHYSICAL.value
         self.name = ""
         self.description = ""
 
         # Reset handler-specific attributes
-        self._cat = "SYM"
+        self._cat = AnaliticMode.SYM.value
         self._variables = {}
         self._coefficients = {}
         self._analyses = {}
@@ -417,7 +418,7 @@ class SensitivityHandler(Foundation):
             Dict[str, Any]: Dictionary representation of sensitivity handler.
         """
         return {
-            "name": self.name,
+            "name": self._name,
             "description": self.description,
             "idx": self._idx,
             "sym": self._sym,

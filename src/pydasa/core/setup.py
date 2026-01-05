@@ -267,22 +267,3 @@ PYDASA_CFG: PyDASAConfig = PyDASAConfig()
 """
 Singleton instance of PyDASAConfig for accessing global configuration.
 """
-
-
-# =============================================================================
-# Backward Compatibility Layer
-# FIXME Remove in future releases!!!
-# =============================================================================
-# These dict exports maintain compatibility with existing code that expects
-# dictionary-based configuration access.
-
-
-# TODO find a way to integrate this in otherp files
-SENS_ANSYS_DT: dict[str, str] = {e.value: e.description for e in AnaliticMode}
-"""
-Supported Sensitivity Analysis modes in *PyDASA*.
-
-Note:
-    DEPRECATED: Use AnaliticMode enum directly for type-safe access.
-    Example: AnaliticMode.SYM instead of SENS_ANSYS_DT["SYM"]
-"""

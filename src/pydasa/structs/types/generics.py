@@ -14,12 +14,9 @@ Module for default generic dataclass and global constants for use by all *PyDASA
 # python native modules
 from typing import TypeVar
 
-# # custom modules
-# from sympy.parsing.latex import parse_latex
-# from sympy import symbols
+# custom modules
 
-# # import global variables
-# from pydasa.utils.config import LATEX_RE
+# import global variables
 
 # Type for the element stored in the dataclass
 # :data: T: TypeVar

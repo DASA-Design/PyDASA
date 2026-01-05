@@ -16,15 +16,10 @@ Module for default global variables and comparison functions for use by all *PyD
 # python native modules
 from dataclasses import dataclass
 from typing import Any
-# TODO check if i need later this imports!
-# import re
 
-# # custom modules
-# from sympy.parsing.latex import parse_latex
-# from sympy import symbols
+# custom modules
 
-# # import global variables
-# from pydasa.utils.config import LATEX_RE
+# import global variables
 
 # valid data types for the node
 # :data: VLD_DTYPE_LT

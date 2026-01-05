@@ -59,7 +59,7 @@ class Coefficient(Foundation):
         _idx (int): Index/precedence in the dimensional matrix.
         _sym (str): Symbol representation (LaTeX or alphanumeric).
         _alias (str): Python-compatible alias for use in code.
-        _fwk (str): Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
+        _fwk (str): Frameworks context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
         _cat (str): Category (COMPUTED, DERIVED).
         relevance (bool): Flag indicating if coefficient is relevant for analysis.
 

@@ -32,7 +32,7 @@ from pydasa.elements.parameter import Variable
 from pydasa.dimensional.framework import Schema
 from pydasa.dimensional.buckingham import Coefficient
 # import global variables
-from pydasa.core.setup import Framework
+from pydasa.core.setup import Frameworks
 from pydasa.core.setup import VarCardinality
 from pydasa.core.setup import PYDASA_CFG
 
@@ -59,7 +59,7 @@ class Matrix(Foundation):
         _idx (int): Index/precedence of the dimensional model.
         _sym (str): Symbol representation (LaTeX or alphanumeric).
         _alias (str): Python-compatible alias for use in code.
-        _fwk (str): Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
+        _fwk (str): Frameworks context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
 
         # FDU Schema Management
         _schema (Schema): Dimensional framework managing FDUs.
@@ -113,11 +113,11 @@ class Matrix(Foundation):
     """Python-compatible alias for use in code."""
 
     # :attr: _fwk
-    _fwk: str = Framework.PHYSICAL.value
-    """Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM)."""
+    _fwk: str = Frameworks.PHYSICAL.value
+    """Frameworks context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM)."""
 
     # ========================================================================
-    # Framework Management
+    # Frameworks Management
     # ========================================================================
 
     # :attr: _schema
@@ -297,7 +297,7 @@ class Matrix(Foundation):
         self.working_fdus = self._extract_fdus()
 
         # Handle CUSTOM framework
-        if self._fwk == Framework.CUSTOM.value and self.working_fdus:
+        if self._fwk == Frameworks.CUSTOM.value and self.working_fdus:
             _fwk = self._schema
             _w_fdus = self.working_fdus
             if not all(fdu in _fwk.fdu_symbols for fdu in _w_fdus):

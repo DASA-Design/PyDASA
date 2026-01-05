@@ -6,7 +6,7 @@ Test Module for core/setup.py
 Tests for configuration Enums and singleton in PyDASA.
 
 This module tests:
-    - Framework, VarCardinality, CoefCardinality, AnaliticMode Enums
+    - Frameworks, VarCardinality, CoefCardinality, AnaliticMode Enums
     - PyDASAConfig singleton pattern
 """
 
@@ -18,7 +18,7 @@ import pytest
 
 # import the module to test
 from pydasa.core import setup
-from pydasa.core.setup import Framework
+from pydasa.core.setup import Frameworks
 from pydasa.core.setup import VarCardinality
 from pydasa.core.setup import CoefCardinality
 from pydasa.core.setup import AnaliticMode
@@ -29,7 +29,7 @@ from tests.pydasa.data.test_data import get_config_test_data
 
 # asserting module imports
 assert setup
-assert Framework
+assert Frameworks
 assert VarCardinality
 assert CoefCardinality
 assert AnaliticMode
@@ -37,7 +37,7 @@ assert PyDASAConfig
 assert get_config_test_data
 
 # Type alias for all Enums in setup.py
-PyDASAEnum = Union[Framework, VarCardinality, CoefCardinality, AnaliticMode]
+PyDASAEnum = Union[Frameworks, VarCardinality, CoefCardinality, AnaliticMode]
 
 
 # =============================================================================
@@ -70,7 +70,7 @@ def run_enum_tests(test_instance: unittest.TestCase,
 
 
 class TestFramework(unittest.TestCase):
-    """**TestFramework** implements unit tests for the Framework Enum in setup.py.
+    """**TestFramework** implements unit tests for the Frameworks Enum in setup.py.
 
     Args:
         unittest (TestCase): unittest.TestCase class for unit testing in Python.
@@ -78,13 +78,13 @@ class TestFramework(unittest.TestCase):
 
     @pytest.fixture(autouse=True)
     def inject_fixtures(self) -> None:
-        """*inject_fixtures()* injects global test parameters for Framework as a fixture."""
+        """*inject_fixtures()* injects global test parameters for Frameworks as a fixture."""
         self.test_data = get_config_test_data()
-        self.enum_class = Framework
+        self.enum_class = Frameworks
         self.expected_values = self.test_data["FRAMEWORK_KEYS"]
 
     def test_framework_enum(self) -> None:
-        """Test Framework enum with all common checks."""
+        """Test Frameworks enum with all common checks."""
         run_enum_tests(self, self.enum_class, self.expected_values)
 
 
@@ -190,13 +190,13 @@ class TestPyDASAConfig(unittest.TestCase):
         # At minimum, it should not be empty if config file exists
 
     def test_frameworks_property(self) -> None:
-        """Test frameworks property returns correct Framework enum members."""
+        """Test frameworks property returns correct Frameworks enum members."""
         cfg = PyDASAConfig.get_instance()
         frameworks = cfg.frameworks
 
         assert isinstance(frameworks, tuple)
         assert len(frameworks) == 4
-        assert all(isinstance(f, Framework) for f in frameworks)
+        assert all(isinstance(f, Frameworks) for f in frameworks)
         framework_values = [f.value for f in frameworks]
         assert set(framework_values) == {"PHYSICAL", "COMPUTATION", "SOFTWARE", "CUSTOM"}
 

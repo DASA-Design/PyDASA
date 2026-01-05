@@ -37,7 +37,7 @@ from pydasa.validations.decorators import validate_type
 from pydasa.validations.decorators import validate_choices
 from pydasa.validations.decorators import validate_emptiness
 # Import global configuration
-from pydasa.core.setup import Framework
+from pydasa.core.setup import Frameworks
 from pydasa.core.setup import AnaliticMode
 from pydasa.core.setup import PYDASA_CFG
 # from pydasa.validations.patterns import LATEX_RE
@@ -56,7 +56,7 @@ class SensitivityAnalysis(Foundation):
         _idx (int): Index/precedence of the sensitivity handler.
         _sym (str): Symbol representation (LaTeX or alphanumeric).
         _alias (str): Python-compatible alias for use in code.
-        _fwk (str): Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
+        _fwk (str): Frameworks context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
         _cat (str): Category of analysis (SYM, NUM, HYB).
 
         # Analysis Components
@@ -421,7 +421,7 @@ class SensitivityAnalysis(Foundation):
         # Reset base class attributes
         self._idx = -1
         self._sym = "SENS_Pi_{-1}"
-        self._fwk = Framework.PHYSICAL.value
+        self._fwk = Frameworks.PHYSICAL.value
         self.name = ""
         self.description = ""
 

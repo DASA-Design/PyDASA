@@ -201,7 +201,7 @@ class TestDimMatrix(unittest.TestCase):
         assert "must be in non-empty dictionary" in str(excinfo.value)
 
     # ========================================================================
-    # Framework management tests
+    # Frameworks management tests
     # ========================================================================
 
     def test_framework_property_getter(self) -> None:

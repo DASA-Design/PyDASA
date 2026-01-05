@@ -35,7 +35,7 @@ from pydasa.validations.decorators import validate_choices, validate_pattern, va
 # Import related classes
 from pydasa.dimensional.buckingham import Coefficient
 # from pydasa.core.parameter import Variable
-from pydasa.core.setup import Framework
+from pydasa.core.setup import Frameworks
 from pydasa.core.setup import AnaliticMode
 
 
@@ -66,7 +66,7 @@ class Sensitivity(Foundation):
         _idx (int): Index/precedence of the sensitivity analysis.
         _sym (str): Symbol representation (LaTeX or alphanumeric).
         _alias (str): Python-compatible alias for use in code.
-        _fwk (str): Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
+        _fwk (str): Frameworks context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
         _cat (str): Category of analysis (SYM, NUM).
 
         # Expression Management
@@ -502,7 +502,7 @@ class Sensitivity(Foundation):
         self._idx = -1
         self._sym = "SANSYS_\\Pi_{}"
         self._alias = ""
-        self._fwk = Framework.PHYSICAL.value
+        self._fwk = Frameworks.PHYSICAL.value
         self.name = ""
         self.description = ""
 
@@ -564,7 +564,7 @@ class Sensitivity(Foundation):
             _idx=data.get("idx", -1),
             _sym=data.get("sym", ""),
             _cat=data.get("cat", AnaliticMode.SYM.value),
-            _fwk=data.get("fwk", Framework.PHYSICAL.value),
+            _fwk=data.get("fwk", Frameworks.PHYSICAL.value),
             _alias=data.get("alias", ""),
             _pi_expr=data.get("pi_expr", None),
             _variables=data.get("variables", {}),

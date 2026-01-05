@@ -11,7 +11,7 @@ This module tests:
 
 Note:
     FDU framework configuration has been moved to core/setup.py.
-    See core/setup.py for Framework, VarCardinality, CoefCardinality, and AnaliticMode enums.
+    See core/setup.py for Frameworks, VarCardinality, CoefCardinality, and AnaliticMode enums.
 """
 
 import unittest

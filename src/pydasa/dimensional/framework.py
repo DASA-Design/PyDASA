@@ -27,7 +27,7 @@ from pydasa.validations.decorators import validate_type
 from pydasa.validations.decorators import validate_emptiness
 from pydasa.validations.decorators import validate_custom
 from pydasa.core.basic import Foundation
-from pydasa.core.setup import Framework
+from pydasa.core.setup import Frameworks
 from pydasa.dimensional.fundamental import Dimension
 from pydasa.validations.patterns import DFLT_POW_RE
 from pydasa.core.setup import PYDASA_CFG
@@ -136,11 +136,11 @@ class Schema(Foundation):
             ValueError: If the FDU framework is not properly defined.
         """
         # if the framework is supported, configure the default
-        if self.fwk in PYDASA_CFG.get_instance().frameworks and self.fwk != Framework.CUSTOM.value:
+        if self.fwk in PYDASA_CFG.get_instance().frameworks and self.fwk != Frameworks.CUSTOM.value:
             self.fdu_lt = self._setup_default_framework()
 
         # if the framework is user-defined, use the provided list[dict]
-        elif self.fwk == Framework.CUSTOM.value:
+        elif self.fwk == Frameworks.CUSTOM.value:
             if not self._fdu_lt:
                 _msg = "Custom framework requires '_fdu_lt' to define FDUs"
                 raise ValueError(_msg)
@@ -160,7 +160,7 @@ class Schema(Foundation):
 
         # otherwise, raise an error
         else:
-            _msg = f"Invalid Framework: {self.fwk}. "
+            _msg = f"Invalid Frameworks: {self.fwk}. "
             _fwk = PYDASA_CFG.get_instance().frameworks
             _msg += f"Valid options: {', '.join(_fwk)}."
             raise ValueError(_msg)
@@ -177,7 +177,7 @@ class Schema(Foundation):
         """
         # detecting custom framework
         ans = []
-        if self.fwk == Framework.CUSTOM.value:
+        if self.fwk == Frameworks.CUSTOM.value:
             # Create custom FDU set
             for idx, data in enumerate(fdus):
                 data = dict(data)

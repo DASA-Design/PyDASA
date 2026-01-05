@@ -25,7 +25,7 @@ from typing import Optional, List
 # custom modules
 from pydasa.core.basic import Foundation
 from pydasa.dimensional.framework import Schema
-from pydasa.core.setup import Framework
+from pydasa.core.setup import Frameworks
 from pydasa.core.setup import VarCardinality
 from pydasa.core.setup import PYDASA_CFG
 from pydasa.validations.decorators import validate_choices
@@ -48,7 +48,7 @@ class ConceptualSpecs(Foundation):
             _idx (int): Index/precedence in the dimensional matrix.
             _sym (str): Symbol representation (LaTeX or alphanumeric).
             _alias (str): Python-compatible alias for use in code.
-            _fwk (str): Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
+            _fwk (str): Frameworks context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
         # From ConceptualSpecs
             _schema (Optional[Schema]): Reference to the dimensional framework schema.
             _cat (str): Category of the variable (INPUT, OUTPUT, CONTROL).
@@ -82,7 +82,7 @@ class ConceptualSpecs(Foundation):
         super().__post_init__()
 
         # If no schema provided, create default or use global
-        if self._schema is None and self._fwk != Framework.CUSTOM.value:
+        if self._schema is None and self._fwk != Frameworks.CUSTOM.value:
             self._schema = Schema(_fwk=self._fwk)
 
     def _validate_in_list(self, value: str, prec_lt: List[str]) -> bool:

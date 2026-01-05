@@ -24,7 +24,7 @@ from typing import Optional
 from abc import ABC
 
 # import global variables
-from pydasa.core.setup import Framework
+from pydasa.core.setup import Frameworks
 from pydasa.core.setup import PYDASA_CFG
 from pydasa.validations.patterns import LATEX_RE
 
@@ -43,7 +43,7 @@ class SymBasis(ABC):
     Attributes:
         _sym (str): Symbol representation.
         _alias (str): Python-compatible alias for use in code.
-        _fwk (str): Framework context.
+        _fwk (str): Frameworks context.
     """
 
     # :attr: _sym
@@ -51,8 +51,8 @@ class SymBasis(ABC):
     """Symbol representation (LaTeX or alphanumeric)."""
 
     # :attr: _fwk
-    _fwk: str = Framework.PHYSICAL.value
-    """Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM)."""
+    _fwk: str = Frameworks.PHYSICAL.value
+    """Frameworks context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM)."""
 
     # :attr: _alias
     _alias: str = ""
@@ -99,7 +99,7 @@ class SymBasis(ABC):
         """*fwk* Get the framework.
 
         Returns:
-            str: Framework value.
+            str: Frameworks value.
         """
         return self._fwk
 
@@ -110,7 +110,7 @@ class SymBasis(ABC):
         """*fwk* Set the framework with validation.
 
         Args:
-            val (str): Framework value.
+            val (str): Frameworks value.
 
         Raises:
             ValueError: If framework is not supported.
@@ -148,7 +148,7 @@ class SymBasis(ABC):
         # Reset symbol attributes
         self._sym = ""
         self._alias = ""
-        self._fwk = Framework.PHYSICAL.value
+        self._fwk = Frameworks.PHYSICAL.value
 
 
 @dataclass

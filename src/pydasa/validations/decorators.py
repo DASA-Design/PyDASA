@@ -147,11 +147,11 @@ def validate_choices(choices: Union[dict, set, list, tuple, Type[Enum]],
         Callable: Decorated function with choice validation.
 
     Example:
-        from pydasa.core.setup import Framework
+        from pydasa.core.setup import Frameworks
 
         @fwk.setter
         @validate_type(str)
-        @validate_choices(Framework.values())
+        @validate_choices(Frameworks.values())
         def fwk(self, val: str) -> None:
             self._fwk = val.upper()
 
@@ -165,13 +165,13 @@ def validate_choices(choices: Union[dict, set, list, tuple, Type[Enum]],
     if isinstance(choices, dict):
         valid_choices = set(choices.keys())
     elif isinstance(choices, type) and issubclass(choices, Enum):
-        # Enum class passed directly (e.g., Framework)
+        # Enum class passed directly (e.g., Frameworks)
         valid_choices = {member.name for member in choices}
     else:
         # Handle collections: check if they contain Enum members
         first_elem = next(iter(choices), None) if choices else None
         if first_elem and isinstance(first_elem, Enum):
-            # Collection of Enum members (e.g., tuple of Framework members)
+            # Collection of Enum members (e.g., tuple of Frameworks members)
             valid_choices = {member.name for member in choices}
         else:
             # Plain collection of strings or other values

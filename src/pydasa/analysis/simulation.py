@@ -67,7 +67,7 @@ class MonteCarlo(Foundation):
         _idx (int): Index/precedence of the simulation.
         _sym (str): Symbol representation (LaTeX or alphanumeric).
         _alias (str): Python-compatible alias for use in code.
-        _fwk (str): Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
+        _fwk (str): Frameworks context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
         _cat (str): Category of analysis (SYM, NUM, HYB).
 
         # Coefficient and Expression Management
@@ -129,7 +129,7 @@ class MonteCarlo(Foundation):
 
     # :attr: _fwk
     _fwk: str = "PHYSICAL"
-    """Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM)."""
+    """Frameworks context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM)."""
 
     # :attr: _cat
     _cat: str = "NUM"

@@ -53,8 +53,8 @@ assert DFLT_CFG_FILE
 # =============================================================================
 
 
-class Framework(str, Enum):
-    """**Framework** Enum for Fundamental Dimensional Units (FDUs) frameworks in *PyDASA*.
+class Frameworks(str, Enum):
+    """**Frameworks** Enum for Fundamental Dimensional Units (FDUs) frameworks in *PyDASA*.
 
     Purpose:
         - Defines the dimensional frameworks supported in *PyDASA*.
@@ -64,7 +64,7 @@ class Framework(str, Enum):
         Enum (class): Python native Enum class.
 
     Returns:
-        Framework: Enum member representing the FDU framework.
+        Frameworks: Enum member representing the FDU framework.
     """
 
     PHYSICAL = "PHYSICAL"
@@ -81,10 +81,10 @@ class Framework(str, Enum):
         """
 
         descriptions = {
-            Framework.PHYSICAL: "Traditional physical dimensional framework (e.g., Length, Mass, Time).",
-            Framework.COMPUTATION: "Computer science dimensional framework (e.g., Time, Space, Complexity).",
-            Framework.SOFTWARE: "Software architecture dimensional framework (e.g., Time, Data, Connectivity).",
-            Framework.CUSTOM: "User-defined dimensional framework for specific use cases.",
+            Frameworks.PHYSICAL: "Traditional physical dimensional framework (e.g., Length, Mass, Time).",
+            Frameworks.COMPUTATION: "Computer science dimensional framework (e.g., Time, Space, Complexity).",
+            Frameworks.SOFTWARE: "Software architecture dimensional framework (e.g., Time, Data, Connectivity).",
+            Frameworks.CUSTOM: "User-defined dimensional framework for specific use cases.",
         }
         return descriptions[self]
 
@@ -225,13 +225,13 @@ class PyDASAConfig:
         return cls._instance
 
     @property
-    def frameworks(self) -> tuple[Framework, ...]:
+    def frameworks(self) -> tuple[Frameworks, ...]:
         """*frameworks* Get supported frameworks.
 
         Returns:
-            tuple[Framework, ...]: Tuple of supported Frameworks.
+            tuple[Frameworks, ...]: Tuple of supported Frameworks.
         """
-        return tuple(Framework)
+        return tuple(Frameworks)
 
     @property
     def parameter_cardinality(self) -> tuple[VarCardinality, ...]:

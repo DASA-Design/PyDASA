@@ -73,7 +73,7 @@ class Dimension(Foundation):
         """*unit* Get the framework.
 
         Returns:
-            str: Framework value
+            str: Frameworks value
         """
         return self._unit
 

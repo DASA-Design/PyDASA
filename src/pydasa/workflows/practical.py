@@ -45,7 +45,7 @@ from pydasa.validations.decorators import validate_choices
 
 # Import global configuration
 # from pydasa.core.parameter import Variable
-# from pydasa.core.setup import Framework
+# from pydasa.core.setup import Frameworks
 from pydasa.core.setup import AnaliticMode
 # Import configuration
 from pydasa.core.setup import PYDASA_CFG
@@ -67,7 +67,7 @@ class MonteCarloSimulation(Foundation):
         _idx (int): Index/precedence of the sensitivity handler.
         _sym (str): Symbol representation (LaTeX or alphanumeric).
         _alias (str): Python-compatible alias for use in code.
-        _fwk (str): Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
+        _fwk (str): Frameworks context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
         _cat (str): Category of analysis (SYM, NUM).
 
         # Simulation Components

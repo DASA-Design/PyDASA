@@ -37,7 +37,7 @@ from pydasa.validations.decorators import validate_type
 from pydasa.validations.decorators import validate_custom
 
 # Import global configuration
-from pydasa.core.setup import Framework, PYDASA_CFG
+from pydasa.core.setup import Frameworks, PYDASA_CFG
 
 # custom type hinting
 Variables = Union[Dict[str, Variable], Dict[str, Any]]
@@ -59,7 +59,7 @@ class AnalysisEngine(Foundation):
         _idx (int): Index/precedence of the problem.
         _sym (str): Symbol representation (LaTeX or alphanumeric).
         _alias (str): Python-compatible alias for use in code.
-        _fwk (str): Framework context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
+        _fwk (str): Frameworks context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
 
         # Problem Components
         _variables (Dict[str, Variable]): All dimensional variables in the problem.
@@ -75,12 +75,12 @@ class AnalysisEngine(Foundation):
 
     # Problem components
     # :attr: _variables
-    _variables: Optional[Variables] = field(default_factory=dict)
-    """Dictionary of all dimensional variables in the problem (can be Variable objects or dicts)."""
+    _variables: Dict[str, Variable] = field(default_factory=dict)
+    """Dictionary of all dimensional variables in the problem."""
 
     # :attr: _schema
-    _schema: Optional[FDUs] = Framework.PHYSICAL.value
-    """Dimensional framework schema (manages FDUs). Can be str, dict, or Schema object."""
+    _schema: Optional[FDUs] = Frameworks.PHYSICAL.value
+    """Dimensional framework schema (manages FDUs). Always a Schema object after initialization."""
 
     # :attr: _model
     _model: Optional[Matrix] = None
@@ -88,8 +88,8 @@ class AnalysisEngine(Foundation):
 
     # Generated results
     # :attr: _coefficients
-    _coefficients: Optional[Coefficients] = field(default_factory=dict)
-    """Dictionary of generated dimensionless coefficients (can be Coefficient objects or dicts)."""
+    _coefficients: Dict[str, Coefficient] = field(default_factory=dict)
+    """Dictionary of generated dimensionless coefficients."""
 
     # Workflow state
     # :attr: _is_solved
@@ -118,16 +118,19 @@ class AnalysisEngine(Foundation):
         if not self.description:
             self.description = "Solves dimensional analysis using the Buckingham Pi-Theorem."
 
+        # Initialize schema with default PHYSICAL framework
+        self._schema = Schema(_fwk=Frameworks.PHYSICAL.value)
+
         # Convert default schema string to Schema object
         # if isinstance(self._schema, str):
             # self._schema = Schema(_fwk=self._schema)
-        elif self._schema is not Framework.PHYSICAL.value:
+        if self._schema is not Frameworks.PHYSICAL.value:
             if isinstance(self._schema, str):
                 self.schema = Schema(self._schema)
 
         # Initialize with default PHYSICAL framework if not already set
         if not hasattr(self, "_schema") or self._schema is None:
-            self._schema = Schema(_fwk=Framework.PHYSICAL.value)
+            self._schema = Schema(_fwk=Frameworks.PHYSICAL.value)
 
     # ========================================================================
     # Validation Methods
@@ -188,13 +191,13 @@ class AnalysisEngine(Foundation):
     # ========================================================================
 
     @property
-    def variables(self) -> Optional[Dict[str, Variable]]:
+    def variables(self) -> Dict[str, Variable]:
         """*variables* Get the dictionary of variables.
 
         Returns:
             Dict[str, Variable]: Dictionary of variables.
         """
-        return self._variables
+        return self._variables.copy()
 
     @variables.setter
     @validate_type(dict, Variable, allow_none=False)
@@ -236,18 +239,16 @@ class AnalysisEngine(Foundation):
 
     @schema.setter
     @validate_type(str, dict, Schema, allow_none=False)
-    def schema(self, val: Optional[FDUs]) -> None:
+    def schema(self, val: Union[str, dict, Schema]) -> None:
         """*schema* Set the dimensional framework schema.
 
         Args:
-            val (Optional[FDUs]): Dimensional framework schema (str, dict, or Schema object).
+            val (Union[str, dict, Schema]): Dimensional framework schema.
 
         Raises:
             ValueError: If string is not a valid framework name or dict is invalid.
+            TypeError: If val is not a valid type.
         """
-        # # if schema is none, setup the default PHYSICAL framework
-        # if val is None:
-        #     self._schema = Schema(_fwk=Framework.PHYSICAL.value)
         # if schema is a string, convert to Schema
         if isinstance(val, str):
             self._schema = Schema(_fwk=val.upper())
@@ -260,7 +261,7 @@ class AnalysisEngine(Foundation):
         else:
             _msg = "Input must be type 'str', 'dict', or 'Schema'. "
             _msg += f"Provided: {type(val).__name__}"
-            raise ValueError(_msg)
+            raise TypeError(_msg)
 
     @property
     def matrix(self) -> Optional[Matrix]:
@@ -284,13 +285,13 @@ class AnalysisEngine(Foundation):
             self._is_solved = False  # Reset solve state
 
     @property
-    def coefficients(self) -> Optional[Dict[str, Coefficient]]:
+    def coefficients(self) -> Dict[str, Coefficient]:
         """*coefficients* Get the generated coefficients.
 
         Returns:
-            Optional[Dict[str, Coefficient]]: Dictionary of coefficients.
+            Dict[str, Coefficient]: Dictionary of coefficients.
         """
-        return self._coefficients
+        return self._coefficients.copy()
 
     @coefficients.setter
     @validate_type(dict, Coefficient, allow_none=False)
@@ -381,14 +382,14 @@ class AnalysisEngine(Foundation):
 
         try:
             # Solve the matrix (generate coefficients)
-            # self._model.create_matrix()
+            self._model.create_matrix()
             self._model.solve_matrix()
             # self._model.solve()
 
             # Extract generated coefficients from matrix
             self._coefficients = self._model.coefficients
             self._is_solved = True
-            return self._coefficients
+            return self._coefficients.copy()
 
         except Exception as e:
             _msg = f"Failed to solve dimensional matrix: {str(e)}"
@@ -408,12 +409,12 @@ class AnalysisEngine(Foundation):
         Raises:
             ValueError: If variables are not set.
         """
-        # Step 1: Create matrix
         if isinstance(self._model, Matrix):
-            self.create_matrix()
 
-        # Step 2: Solve
-        return self.solve()
+            # Create + Solve matrix
+            coefficients = self.solve()
+            results = {k: v.to_dict() for k, v in coefficients.items()}
+            return results # pyright: ignore[reportReturnType]
 
     # ========================================================================
     # Utility Methods
@@ -434,7 +435,7 @@ class AnalysisEngine(Foundation):
         Resets all solver properties to their initial state, including variables.
         """
         self._variables.clear()
-        self._schema = None
+        self._schema = Schema(_fwk=Frameworks.PHYSICAL.value)
         self.reset()
 
     def to_dict(self) -> Dict[str, Any]:
@@ -444,15 +445,19 @@ class AnalysisEngine(Foundation):
             Dict[str, Any]: Dictionary representation of solver state.
         """
         return {
-            'name': self.name,
-            'description': self.description,
-            'idx': self._idx,
-            'sym': self._sym,
-            'alias': self._alias,
-            'fwk': self._fwk,
-            'variables': {k: v.to_dict() for k, v in self._variables.items()},
-            'coefficients': {k: v.to_dict() for k, v in self._coefficients.items()},
-            'is_solved': self._is_solved,
+            "name": self.name,
+            "description": self.description,
+            "idx": self._idx,
+            "sym": self._sym,
+            "alias": self._alias,
+            "fwk": self._fwk,
+            "variables": {
+                k: v.to_dict() for k, v in self._variables.items()
+            },
+            "coefficients": {
+                k: v.to_dict() for k, v in self._coefficients.items()
+            },
+            "is_solved": self._is_solved,
         }
 
     @classmethod
@@ -460,35 +465,35 @@ class AnalysisEngine(Foundation):
         """*from_dict()* Create a AnalysisEngine instance from a dictionary.
 
         Args:
-            data (Dict[str, Any]): Dictionary containing the solver's state.
+            data (Dict[str, Any]): Dictionary containing the solver"s state.
 
         Returns:
             AnalysisEngine: New instance of AnalysisEngine.
         """
         # Create instance with basic attributes
         instance = cls(
-            _name=data.get('name', ''),
-            description=data.get('description', ''),
-            _idx=data.get('idx', -1),
-            _sym=data.get('sym', ''),
-            _alias=data.get('alias', ''),
-            _fwk=data.get('fwk', ''),
+            _name=data.get("name", ""),
+            description=data.get("description", ""),
+            _idx=data.get("idx", -1),
+            _sym=data.get("sym", ""),
+            _alias=data.get("alias", ""),
+            _fwk=data.get("fwk", ""),
         )
 
         # Set variables
-        vars_data = data.get('variables', {})
+        vars_data = data.get("variables", {})
         if vars_data:
             vars_dict = {k: Variable.from_dict(v) for k, v in vars_data.items()}
             instance.variables = vars_dict
 
         # Set coefficients
-        coefs_data = data.get('coefficients', {})
+        coefs_data = data.get("coefficients", {})
         if coefs_data:
             coefs_dict = {k: Coefficient.from_dict(v) for k, v in coefs_data.items()}
             instance._coefficients = coefs_dict
 
         # Set state flags
-        instance._is_solved = data.get('is_solved', False)
+        instance._is_solved = data.get("is_solved", False)
 
         return instance
 
@@ -499,8 +504,8 @@ class AnalysisEngine(Foundation):
             str: String representation.
         """
         status = "solved" if self._is_solved else "not solved"
-        coef_count = len(self._coefficients) if self._is_solved else 0
-        
+        coef_count = len(self._coefficients)
+
         return (f"AnalysisEngine(name={self.name!r}, "
                 f"variables={len(self._variables)}, "
                 f"coefficients={coef_count}, "

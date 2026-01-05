@@ -260,19 +260,6 @@ Singleton instance of PyDASAConfig for accessing global configuration.
 # These dict exports maintain compatibility with existing code that expects
 # dictionary-based configuration access.
 
-# TODO find a way to integrate this in otherp files
-FDU_FWK_DT: dict[str, str] = {e.value: e.description for e in Framework}
-"""
-Supported Fundamental Dimensional Units (FDUs) Frameworks in *PyDASA*.
-
-Purpose:
-    - Defines the dimensional frameworks supported in *PyDASA*.
-
-Note:
-    DEPRECATED: Use Framework enum directly for type-safe access.
-    Example: Framework.PHYSICAL instead of FDU_FWK_DT["PHYSICAL"]
-"""
-
 
 # TODO find a way to integrate this in otherp files
 PARAMS_CAT_DT: dict[str, str] = {e.value: e.description for e in VarCardinality}

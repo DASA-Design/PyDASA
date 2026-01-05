@@ -187,7 +187,7 @@ class TestCoefficient(unittest.TestCase):
         coef = Coefficient()
         with pytest.raises(ValueError) as excinfo:
             coef.variables = cast(Any, ["v", "L"])
-        assert "must be a dict" in str(excinfo.value)
+        assert "must be dict" in str(excinfo.value)
 
     def test_variables_setter_invalid_keys(self) -> None:
         """Test variables property setter with invalid keys."""
@@ -229,7 +229,7 @@ class TestCoefficient(unittest.TestCase):
         coef = Coefficient()
         with pytest.raises(ValueError) as excinfo:
             coef.dim_col = cast(Any, "not a list")
-        assert "must be a list" in str(excinfo.value)
+        assert "must be list" in str(excinfo.value)
 
     def test_dim_col_setter_invalid_elements(self) -> None:
         """Test dim_col property setter with invalid elements."""
@@ -339,7 +339,7 @@ class TestCoefficient(unittest.TestCase):
 
         with pytest.raises(ValueError) as excinfo:
             coef.mean = 15.0
-        assert "must be between" in str(excinfo.value)
+        assert "cannot be greater than maximum" in str(excinfo.value)
 
     def test_step_setter_valid(self) -> None:
         """Test step property setter with valid value."""

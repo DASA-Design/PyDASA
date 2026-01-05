@@ -37,7 +37,8 @@ from pydasa.validations.error import inspect_var
 from pydasa.serialization.parser import latex_to_python
 # import validation decorators
 from pydasa.validations.decorators import validate_type
-# from pydasa.validations.decorators import validate_emptiness
+from pydasa.validations.decorators import validate_custom
+from pydasa.validations.decorators import validate_range
 from pydasa.validations.decorators import validate_choices
 
 
@@ -280,6 +281,63 @@ class Coefficient(Foundation):
             denom_str = "*".join(denominator)
             return f"\\frac{{{num_str}}}{{{denom_str}}}", parameters
 
+    # Custom validators for decorators
+
+    def _validate_variables_dict(self, value: Dict[str, Variable]) -> None:
+        """*_validate_variables_dict()* Custom validator for variables property.
+
+        Args:
+            value (Dict[str, Variable]): Variables dictionary to validate.
+
+        Raises:
+            ValueError: If dict has invalid keys or values.
+        """
+        if len(value) > 0:
+            self._validate_sequence(list(value.keys()), (str,))
+            self._validate_sequence(list(value.values()), (Variable,))
+
+    def _validate_dim_col_list(self, value: List) -> None:
+        """*_validate_dim_col_list()* Custom validator for dim_col property.
+
+        Args:
+            value (List): Dimensional column list to validate.
+
+        Raises:
+            ValueError: If list has invalid elements.
+        """
+        if len(value) > 0:
+            self._validate_sequence(value, (int, float))
+
+    def _validate_pivot_list(self, value: Optional[List[int]]) -> None:
+        """*_validate_pivot_list()* Custom validator for pivot_lt property.
+
+        Args:
+            value (Optional[List[int]]): Pivot list to validate.
+
+        Raises:
+            ValueError: If non-empty list has invalid elements.
+        """
+        if value is not None and len(value) > 0:
+            self._validate_sequence(value, (int,))
+
+    def _validate_step_value(self, value: Optional[float]) -> None:
+        """*_validate_step_value()* Custom validator for step property.
+
+        Args:
+            value (Optional[float]): Step value to validate.
+
+        Raises:
+            ValueError: If step is zero or exceeds range.
+        """
+        if value == 0:
+            raise ValueError("Step cannot be zero.")
+
+        if value is not None and self._min is not None and self._max is not None:
+            range_size = self._max - self._min
+            if value >= range_size:
+                _msg = f"Step {value} must be less than range: {range_size}."
+                raise ValueError(_msg)
+
     # Property getters and setters
 
     @property
@@ -314,6 +372,8 @@ class Coefficient(Foundation):
         return self._variables
 
     @variables.setter
+    @validate_type(dict, allow_none=False)
+    @validate_custom(lambda self, val: self._validate_variables_dict(val))
     def variables(self, val: Dict[str, Variable]) -> None:
         """*variables* Set the variable symbols list.
 
@@ -323,17 +383,6 @@ class Coefficient(Foundation):
         Raises:
             ValueError: If variables list is invalid.
         """
-        # Validate type
-        if not isinstance(val, dict):
-            _msg = f"Variables must be a dict, got {type(val).__name__}"
-            raise ValueError(_msg)
-
-        # check non-empty dictt
-        if len(val) > 0:
-            self._validate_sequence(list(val.keys()), (str,))
-            self._validate_sequence(list(val.values()), (Variable,))
-
-        # If validation passes, assign
         self._variables = val
 
     @property
@@ -346,6 +395,8 @@ class Coefficient(Foundation):
         return self._dim_col
 
     @dim_col.setter
+    @validate_type(list, allow_none=False)
+    @validate_custom(lambda self, val: self._validate_dim_col_list(val))
     def dim_col(self, val: Union[List[int], List[float]]) -> None:
         """*dim_col* Set the dimensional column.
 
@@ -354,17 +405,7 @@ class Coefficient(Foundation):
         Raises:
             ValueError: If dimensional column is invalid.
         """
-        # Validate type first
-        if not isinstance(val, list):
-            _msg = "Dimensions must be a list with int or float values. "
-            _msg += f"Provided: {type(val).__name__}"
-            raise ValueError(_msg)
-
-        # Validate sequence if not empty
-        if len(val) > 0:
-            self._validate_sequence(val, (int, float))
-
-        # If validation passes, assign (convert to integers)
+        # Convert to integers
         self._dim_col = [int(x) for x in val]
 
     @property
@@ -377,6 +418,7 @@ class Coefficient(Foundation):
         return self._pivot_lt
 
     @pivot_lt.setter
+    @validate_custom(lambda self, val: self._validate_pivot_list(val))
     def pivot_lt(self, val: List[int]) -> None:
         """*pivot_lt* Set the pivot indices list.
 
@@ -386,13 +428,6 @@ class Coefficient(Foundation):
         Raises:
             ValueError: If pivot list is invalid.
         """
-        # Handle None and empty list (both allowed)
-        if val is None or len(val) == 0:
-            self._pivot_lt = val
-            return
-
-        # Validate non-empty list
-        self._validate_sequence(val, (int,))
         self._pivot_lt = val
 
     @property
@@ -430,6 +465,7 @@ class Coefficient(Foundation):
 
     @min.setter
     @validate_type(int, float)
+    @validate_range(max_attr='_max')
     def min(self, val: Optional[float]) -> None:
         """*min* Sets minimum range value.
 
@@ -440,10 +476,6 @@ class Coefficient(Foundation):
             ValueError: If value is not a number.
             ValueError: If value is greater than max.
         """
-        if val is not None and self._max is not None and val > self._max:
-            _msg = f"Minimum {val} cannot be greater than maximum {self._max}."
-            raise ValueError(_msg)
-
         self._min = val
 
         # Update range if all values are available
@@ -465,6 +497,7 @@ class Coefficient(Foundation):
 
     @max.setter
     @validate_type(int, float)
+    @validate_range(min_attr='_min')
     def max(self, val: Optional[float]) -> None:
         """*max* Sets the maximum range value.
 
@@ -475,11 +508,6 @@ class Coefficient(Foundation):
             ValueError: If value is not a number.
             ValueError: If value is less than min.
         """
-        # Check if both values exist before comparing
-        if val is not None and self._min is not None and val < self._min:
-            _msg = f"Maximum {val} cannot be less than minimum {self._min}."
-            raise ValueError(_msg)
-
         self._max = val
 
         # Update range if all values are available
@@ -501,6 +529,7 @@ class Coefficient(Foundation):
 
     @mean.setter
     @validate_type(int, float)
+    @validate_range(min_attr='_min', max_attr='_max')
     def mean(self, val: Optional[float]) -> None:
         """*mean* Sets the average value.
 
@@ -511,15 +540,6 @@ class Coefficient(Foundation):
             ValueError: If value is not a number.
             ValueError: If value is outside min-max range.
         """
-        # Only validate range if val is not None
-        if val is not None:
-            low = (self._min is not None and val < self._min)
-            high = (self._max is not None and val > self._max)
-            if low or high:
-                _msg = f"Mean {val} "
-                _msg += f"must be between {self._min} and {self._max}."
-                raise ValueError(_msg)
-
         self._mean = val
 
     @property
@@ -554,6 +574,7 @@ class Coefficient(Foundation):
 
     @step.setter
     @validate_type(int, float)
+    @validate_custom(lambda self, val: self._validate_step_value(val))
     def step(self, val: Optional[float]) -> None:
         """*step* Set standardized step size.
 
@@ -565,16 +586,6 @@ class Coefficient(Foundation):
             ValueError: If step is zero.
             ValueError: If step is greater than range.
         """
-        if val == 0:
-            raise ValueError("Step cannot be zero.")
-
-        # Validate step against range (only if min/max are set)
-        if val is not None and self._min is not None and self._max is not None:
-            range_size = self._max - self._min
-            if val >= range_size:
-                _msg = f"Step {val} must be less than range: {range_size}."
-                raise ValueError(_msg)
-
         self._step = val
 
         # Update range if all values are available
@@ -604,6 +615,7 @@ class Coefficient(Foundation):
         return np.array([], dtype=float)
 
     @data.setter
+    @validate_type(np.ndarray, list, allow_none=False)
     def data(self, val: Union[np.ndarray, list]) -> None:
         """*data* Set the data array.
 
@@ -613,16 +625,9 @@ class Coefficient(Foundation):
         Raises:
             ValueError: If data cannot be converted to numpy array.
         """
-        if not isinstance(val, (np.ndarray, list,)):
-            _msg = "Data must be a numpy array. "
-            _msg += f"Provided: {type(val).__name__}"
-            raise ValueError(_msg)
-
         # Convert list to numpy array if needed
         if isinstance(val, list):
             self._data = np.array(val, dtype=float)
-
-        # otherwise, let it be
         else:
             self._data = val
 

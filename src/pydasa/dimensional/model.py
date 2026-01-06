@@ -421,9 +421,23 @@ class Matrix(Foundation):
 
         Raises:
             ValueError: If no relevant variables exist.
+            ValueError: If variables have invalid or missing dimensional columns.
         """
         if not self._relevant_lt:
             raise ValueError("No relevant variables to create matrix from.")
+
+        # Validate that all variables have dimensional columns
+        invalid_vars = []
+        for var in self._relevant_lt.values():
+            if not var._dim_col or len(var._dim_col) == 0:
+                invalid_vars.append(f"{var._sym} (dims='{var._dims}')")
+
+        if invalid_vars:
+            _msg = "Variables with missing or empty dimensional columns detected:\n"
+            _msg += "\n".join(f"  - {v}" for v in invalid_vars)
+            _msg += "\n\nEnsure all relevant variables have valid '_dims' "
+            _msg += "properties (e.g., 'L', 'M*L*T^-2', etc.) and not 'n.a.'"
+            raise ValueError(_msg)
 
         # Get dimensions
         n_fdu = len(self._schema.fdu_symbols)

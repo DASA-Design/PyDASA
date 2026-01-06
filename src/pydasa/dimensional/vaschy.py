@@ -269,15 +269,21 @@ class Schema(Foundation):
         # fdu_symbols = [fdu.sym for fdu in self._fdu_lt]
         _fdu_str = ''.join(self.fdu_symbols)
 
+        # NOTE: OG REGEX!
+        # DFLT_FDU_RE: str = rf"^[{''.join(DFLT_FDU_PREC_LT)}](\^-?\d+)?(\*[{''.join(DFLT_FDU_PREC_LT)}](?:\^-?\d+)?)*$"
         # Generate main regex for dimensional expressions
         self._fdu_regex = rf"^[{_fdu_str}](\^-?\d+)?(\*[{_fdu_str}](?:\^-?\d+)?)*$"
 
         # Use default regex for exponents
         self._fdu_pow_regex = DFLT_POW_RE
 
+        # NOTE: OG REGEX!
+        # DFLT_NO_POW_RE: str = rf"[{''.join(DFLT_FDU_PREC_LT)}](?!\^)"
         # Generate regex for dimensions without exponents
         self._fdu_no_pow_regex = rf"[{_fdu_str}](?!\^)"
 
+        # NOTE: OG REGEX!
+        # DFLT_FDU_SYM_RE: str = rf"[{''.join(DFLT_FDU_PREC_LT)}]"
         # Generate regex for dimensions in symbolic expressions
         self._fdu_sym_regex = rf"[{_fdu_str}]"
 

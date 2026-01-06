@@ -17,7 +17,7 @@ from pydasa.workflows.influence import SensitivityAnalysis
 # import required classes
 from pydasa.elements.parameter import Variable
 from pydasa.dimensional.buckingham import Coefficient
-from pydasa.dimensional.framework import Schema
+from pydasa.dimensional.vaschy import Schema
 
 # import test data
 from tests.pydasa.data.test_data import get_simulation_test_data

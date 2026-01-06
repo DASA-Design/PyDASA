@@ -15,7 +15,7 @@ from typing import Any, cast
 # import the module to test
 from pydasa.dimensional.buckingham import Coefficient
 from pydasa.elements.parameter import Variable
-from pydasa.dimensional.framework import Schema
+from pydasa.dimensional.vaschy import Schema
 
 # import the data to test
 from tests.pydasa.data.test_data import get_coefficient_test_data

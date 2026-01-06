@@ -17,7 +17,7 @@ Individual perspective tests are in the specs/ subdirectory:
 import unittest
 import pytest
 
-from pydasa.dimensional.framework import Schema
+from pydasa.dimensional.vaschy import Schema
 from pydasa.elements.parameter import Variable
 from tests.pydasa.data.test_data import get_variable_test_data
 

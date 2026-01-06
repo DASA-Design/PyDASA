@@ -26,7 +26,7 @@ from pydasa.core.basic import Foundation
 from pydasa.elements.parameter import Variable
 from pydasa.dimensional.buckingham import Coefficient
 from pydasa.dimensional.model import Matrix
-from pydasa.dimensional.framework import Schema
+from pydasa.dimensional.vaschy import Schema
 
 # Import utils
 from pydasa.validations.error import inspect_var

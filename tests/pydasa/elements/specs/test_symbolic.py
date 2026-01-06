@@ -9,7 +9,7 @@ Tests for the **SymbolicSpecs** class in *PyDASA*.
 import unittest
 import pytest
 
-from pydasa.dimensional.framework import Schema
+from pydasa.dimensional.vaschy import Schema
 from pydasa.elements.parameter import Variable
 # from pydasa.elements.specs.symbolic import SymbolicSpecs
 

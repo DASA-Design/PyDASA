@@ -27,7 +27,7 @@ import numpy as np
 # Import core PyDASA modules
 # from pydasa.core.fundamental import Dimension
 from pydasa.elements.parameter import Variable
-from pydasa.dimensional.framework import Schema
+from pydasa.dimensional.vaschy import Schema
 from pydasa.dimensional.model import Matrix
 
 # Import the module to test

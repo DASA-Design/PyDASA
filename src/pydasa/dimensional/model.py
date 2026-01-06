@@ -29,7 +29,7 @@ from numpy.typing import NDArray
 # basic-core and dimensional analysis imports
 from pydasa.core.basic import Foundation
 from pydasa.elements.parameter import Variable
-from pydasa.dimensional.framework import Schema
+from pydasa.dimensional.vaschy import Schema
 from pydasa.dimensional.buckingham import Coefficient
 # import global variables
 from pydasa.core.setup import Frameworks

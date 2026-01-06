@@ -18,7 +18,7 @@ from pydasa.workflows.phenomena import AnalysisEngine
 from pydasa.elements.parameter import Variable
 from pydasa.dimensional.buckingham import Coefficient
 from pydasa.dimensional.model import Matrix
-from pydasa.dimensional.framework import Schema
+from pydasa.dimensional.vaschy import Schema
 
 # import test data
 from tests.pydasa.data.test_data import get_simulation_test_data, get_model_test_data

@@ -29,7 +29,7 @@ from pydasa.validations.decorators import validate_emptiness
 
 # Type checking imports (not at runtime to avoid circular imports)
 if TYPE_CHECKING:
-    from pydasa.dimensional.framework import Schema
+    from pydasa.dimensional.vaschy import Schema
 
 
 @dataclass

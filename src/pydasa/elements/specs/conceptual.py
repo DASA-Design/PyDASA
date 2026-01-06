@@ -24,7 +24,7 @@ from typing import Optional, List
 
 # custom modules
 from pydasa.core.basic import Foundation
-from pydasa.dimensional.framework import Schema
+from pydasa.dimensional.vaschy import Schema
 from pydasa.core.setup import Frameworks
 from pydasa.core.setup import VarCardinality
 from pydasa.core.setup import PYDASA_CFG

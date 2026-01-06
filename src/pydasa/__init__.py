@@ -18,7 +18,7 @@ from .analysis.simulation import MonteCarlo
 # exposing pi-theorem/dimensional analysis modules
 from .dimensional.buckingham import Coefficient
 from .dimensional.fundamental import Dimension
-from .dimensional.framework import Schema
+from .dimensional.vaschy import Schema
 from .dimensional.model import Matrix
 
 # exposing core modules

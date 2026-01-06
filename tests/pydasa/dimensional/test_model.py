@@ -23,7 +23,7 @@ import numpy as np
 # Import the module to test
 from pydasa.dimensional.model import Matrix
 from pydasa.elements.parameter import Variable
-from pydasa.dimensional.framework import Schema
+from pydasa.dimensional.vaschy import Schema
 from pydasa.dimensional.buckingham import Coefficient
 
 # Import test data

@@ -35,11 +35,11 @@ def test_config_file_exists():
     """Test that the default configuration file is included in the package."""
     import pydasa.core.setup
     from pydasa.core.constants import DFLT_CFG_FOLDER, DFLT_CFG_FILE
-    
+
     # Get the module directory
     module_dir = Path(pydasa.core.setup.__file__).parent
     config_file = module_dir / DFLT_CFG_FOLDER / DFLT_CFG_FILE
-    
+
     assert config_file.exists(), f"Configuration file not found: {config_file}"
     assert config_file.is_file(), f"Configuration path is not a file: {config_file}"
 
@@ -47,7 +47,7 @@ def test_config_file_exists():
 def test_config_loads_successfully():
     """Test that the configuration can be loaded without errors."""
     from pydasa.core.setup import PYDASA_CFG
-    
+
     assert PYDASA_CFG is not None
     assert hasattr(PYDASA_CFG, 'SPT_FDU_FWKS')
 
@@ -55,22 +55,22 @@ def test_config_loads_successfully():
 def test_main_exports():
     """Test that main package exports are accessible."""
     import pydasa
-    
+
     # Check analytics modules
     assert hasattr(pydasa, 'Sensitivity')
     assert hasattr(pydasa, 'MonteCarlo')
-    
+
     # Check dimensional analysis modules
     assert hasattr(pydasa, 'Coefficient')
     assert hasattr(pydasa, 'Dimension')
     assert hasattr(pydasa, 'Schema')
     assert hasattr(pydasa, 'Matrix')
-    
+
     # Check core modules
     assert hasattr(pydasa, 'Variable')
     assert hasattr(pydasa, 'load')
     assert hasattr(pydasa, 'save')
-    
+
     # Check workflow modules
     assert hasattr(pydasa, 'SensitivityAnalysis')
     assert hasattr(pydasa, 'MonteCarloSimulation')

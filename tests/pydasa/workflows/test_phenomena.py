@@ -52,7 +52,11 @@ class TestAnalysisEngine(unittest.TestCase):
         # Setup variables
         self.test_variables = {}
         for sym, var_data in self.test_data["CHANNEL_FLOW_VARIABLES"].items():
-            self.test_variables[sym] = Variable(**var_data)
+            var = Variable(**var_data)
+            # Set schema and prepare dimensions for CUSTOM framework variables
+            var._schema = self.dim_schema
+            var._prepare_dims()
+            self.test_variables[sym] = var
 
         # Setup mock coefficients (for testing)
         self.test_coefficients = {

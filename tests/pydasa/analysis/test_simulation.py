@@ -144,7 +144,11 @@ class TestMonteCarlo(unittest.TestCase):
                 config["_dist_func"] = lambda: dist_uniform(0.0, 1.0)
 
             # Create Variable object
-            self.variables[var_sym] = Variable(**config)
+            var = Variable(**config)
+            # Set schema and prepare dimensions for CUSTOM framework variables
+            var._schema = self.dim_schema
+            var._prepare_dims()
+            self.variables[var_sym] = var
 
     def _setup_dimensional_model(self) -> None:
         """*_setup_dimensional_model()* creates and solves dimensional model."""

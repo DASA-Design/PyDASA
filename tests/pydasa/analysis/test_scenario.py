@@ -100,6 +100,9 @@ class TestSensitivity(unittest.TestCase):
         self.variables = {}
         for var_sym, var_config in var_data.items():
             var = Variable(**var_config)
+            # Set schema and prepare dimensions for CUSTOM framework variables
+            var._schema = self.dim_schema
+            var._prepare_dims()
             self.variables[var_sym] = var
 
     def _setup_dimensional_model(self) -> None:

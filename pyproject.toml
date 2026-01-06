@@ -59,6 +59,9 @@ package-dir = {"" = "src"}
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+pydasa = ["core/cfg/*.json"]
+
 [tool.setuptools.dynamic]
 version = {attr = "pydasa._version.__version__"}
 

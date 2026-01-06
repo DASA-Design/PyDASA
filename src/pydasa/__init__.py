@@ -4,6 +4,9 @@ PyDASA Package
 ===========================================
 Main package initializer for PyDASA library, exposing core functionalities, data structures, dimensional analysis tools, unit conversion utilities, and workflow management components.
 """
+# expose version
+from ._version import __version__
+
 # expose imports
 # exposing analytics modules
 from .analysis.scenario import Sensitivity
@@ -81,6 +84,7 @@ assert MonteCarloSimulation
 
 # Define __all__ for wildcard imports
 __all__ = [
+    "__version__",
     "Sensitivity",
     "MonteCarlo",
     # "UnitStandarizer",

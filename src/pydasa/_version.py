@@ -3,4 +3,4 @@
 # PATCH: for bug fixes and minor improvements, third-party library updates, etc.
 # MINOR: for new features and enhancements, backward-compatible changes
 # MAYOR: for incompatible API changes
-__version__ = "1.0.0"
+__version__ = "0.2.99"

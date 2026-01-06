@@ -74,6 +74,7 @@ hvcs = "github"
 commit_message = "chore(release): {version} [skip ci]"
 tag_format = "v{version}"
 major_on_zero = false
+allow_zero_version = true
 
 [tool.semantic_release.branches.main]
 match = "main"

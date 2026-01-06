@@ -152,4 +152,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.0.1] - Unreleased
 ### Added
 - Distribution files: `pydasa-0.0.1-py3-none-any.whl`, `pydasa-0.0.1.tar.gz`
-

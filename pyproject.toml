@@ -73,6 +73,7 @@ build_command = "python -m build"
 hvcs = "github"
 commit_message = "chore(release): {version} [skip ci]"
 tag_format = "v{version}"
+major_on_zero = false
 
 [tool.semantic_release.branches.main]
 match = "main"

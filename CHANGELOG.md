@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.2] - 2026-01-06
+### Fixed
+- Package now includes `core/cfg/*.json` configuration files in distribution
+- `__version__` attribute is now properly exposed in the main `pydasa` module
+- Resolved `FileNotFoundError` when importing pydasa after installation
+
+### Added
+- Added `[tool.setuptools.package-data]` configuration to include non-Python files
+- Comprehensive test suite in `tests/test_package.py` to verify package initialization
+- Tests for version accessibility, configuration file inclusion, and main exports
+
+### Changed
+- Configured semantic release with `major_on_zero = false` to keep versions in 0.x range
+- Updated `__all__` list to include `__version__` for proper wildcard imports
+
+## [0.3.1] - 2026-01-06
+### Changed
+- Version reset from 1.0.x to 0.3.1 to maintain pre-release versioning
+- Configured semantic release to prevent automatic major version bumps
+
+## [0.3.0] - Previous
+### Added
+- Initial stable release with core functionality
+
 ## [0.2.99] - Unreleased
 ### Added
 - Distribution files: `pydasa-0.2.99-py3-none-any.whl`, `pydasa-0.2.99.tar.gz`

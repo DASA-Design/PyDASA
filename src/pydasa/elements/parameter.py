@@ -126,6 +126,7 @@ class Variable(ConceptualSpecs, SymbolicSpecs, NumericalSpecs, StatisticalSpecs)
         if not self._alias:
             self._alias = latex_to_python(self._sym)
 
+        # TODO reassert this code later, seems redundant
         # Set up range array if all required values are provided
         if all([self._std_min, self._std_max, self._step]):
             self._std_range = np.arange(self._std_min,

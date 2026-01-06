@@ -127,6 +127,7 @@ class NumericalSpecs:
 
         self._min = val
 
+        # TODO reassert this code later, seems redundant with _prepare_dims()
         # Update range if all values are available
         if all([self._min is not None,
                 self._max is not None,
@@ -163,6 +164,7 @@ class NumericalSpecs:
 
         self._max = val
 
+        # TODO reassert this code later, seems redundant with _prepare_dims()
         # Update range if all values are available
         if all([self._min is not None,
                 self._max is not None,
@@ -259,6 +261,7 @@ class NumericalSpecs:
 
         self._std_min = val
 
+        # TODO reassert this code later, seems redundant with _prepare_dims()
         # Update range if all values are available
         if all([self._std_min is not None,
                 self._std_max is not None,
@@ -295,6 +298,7 @@ class NumericalSpecs:
 
         self._std_max = val
 
+        # TODO reassert this code later, seems redundant with _prepare_dims()
         # Update range if all values are available
         if all([self._std_min is not None,
                 self._std_max is not None,
@@ -404,6 +408,7 @@ class NumericalSpecs:
 
         self._step = val
 
+        # TODO reassert this code later, seems redundant with _prepare_dims()
         # Update range if all values are available
         if all([self._std_min is not None,
                 self._std_max is not None,
@@ -431,6 +436,7 @@ class NumericalSpecs:
         Raises:
             ValueError: If value is not a numpy array.
         """
+        # TODO reassert this code later, seems redundant with _prepare_dims()
         if val is None:
             # Generate range from min, max, step
             if all([self._std_min is not None,

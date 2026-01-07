@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.6] - 2026-01-07
+### Fixed
+- Downgrade sphinx-autodoc-typehints to 2.5.0 for Sphinx 8 compatibility
+
+## [0.4.5] - 2026-01-07
+### Fixed
+- Downgrade isort to 6.1.0 for pylint compatibility
+
+## [0.4.4] - 2026-01-07
+### Fixed
+- Downgrade isort to 6.1.2 for pylint compatibility
+
+### Changed
+- Update CHANGELOG for version 0.4.3 release
+
 ## [0.4.3] - 2026-01-07
 ### Fixed
 - Downgrade astroid and pylint for sphinx-autoapi compatibility

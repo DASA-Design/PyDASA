@@ -56,7 +56,7 @@ platformdirs==4.5.1
 pluggy==1.6.0
 pydantic==2.12.5
 pydantic_core==2.41.5
-pydasa==0.3.3
+pydasa==0.4.7
 pydata-sphinx-theme==0.16.1
 Pygments==2.19.2
 pylint==3.3.4

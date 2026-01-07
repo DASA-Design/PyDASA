@@ -3,7 +3,7 @@ alabaster==1.0.0
 annotated-types==0.7.0
 antlr4-python3-runtime==4.11.0
 anyio==4.12.0
-astroid==4.0.2
+astroid==3.3.8
 autoapi==2.0.1
 babel==2.17.0
 beautifulsoup4==4.14.2
@@ -59,7 +59,7 @@ pydantic_core==2.41.5
 pydasa==0.3.3
 pydata-sphinx-theme==0.16.1
 Pygments==2.19.2
-pylint==4.0.4
+pylint==3.3.4
 pyparsing==3.3.1
 pyproject_hooks==1.2.0
 pytest==9.0.1

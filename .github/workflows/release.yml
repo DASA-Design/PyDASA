@@ -5,6 +5,8 @@ on:
     branches:
       - main
       - dev  # Temporary: test on dev branch
+    tags:
+      - 'v*'  # Trigger on version tags
 
 permissions:
   contents: write

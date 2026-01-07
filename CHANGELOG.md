@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.4] - 2026-01-07
+### Fixed
+- Downgrade Sphinx to 8.1.3 for myst-parser compatibility
+
+### Changed
+- Update Python version to 3.11 in Read the Docs configuration
+- Configure Read the Docs for automated documentation builds
+- Add PyPI publishing workflow with GitHub Actions
+
+## [0.3.3] - 2026-01-07
+### Added
+- First public release published to PyPI
+- Configure automated PyPI publishing via GitHub Actions
+- Add Read the Docs integration with .readthedocs.yaml
+- Include CHANGELOG.md in documentation via myst-parser
+
+### Changed
+- Update documentation structure with public folder integration
+- Configure linkify-it-py for markdown link rendering in docs
+
 ## [0.3.2] - 2026-01-06
 ### Fixed
 - Package now includes `core/cfg/*.json` configuration files in distribution

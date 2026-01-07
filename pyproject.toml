@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = "GPL-3.0-or-later"
 authors = [
-    {name = "@SFAM", email = "your_email@example.com"}
+    {name = "@SFAM", email = "sa-artea@uniandes.edu.co"}
 ]
 classifiers = [
     "Programming Language :: Python :: 3.10",

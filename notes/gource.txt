@@ -1,0 +1,60 @@
+﻿========================= GOURCE VISUALIZATION =========================
+
+Gource: Git repository visualization tool
+Website: https://github.com/acaudwell/Gource
+
+
+========================= Basic Commands =========================
+
+# Simple visualization
+gource
+
+# With title and settings
+gource --title "PyDASA Development" --seconds-per-day 1 --auto-skip-seconds 0.5 --highlight-users --stop-at-end
+
+# High quality full HD
+gource --1920x1080 --stop-at-end --key --highlight-users
+
+
+========================= Export to MP4 Video =========================
+
+Prerequisites:
+    - ffmpeg installed (winget install Gyan.FFmpeg)
+
+# Standard quality video
+gource --title "PyDASA Development" --seconds-per-day 2 --auto-skip-seconds 1 --1920x1080 --hide mouse,filenames --highlight-users --stop-at-end --output-ppm-stream - | ffmpeg -y -r 60 -f image2pipe -vcodec ppm -i - -vcodec libx264 -preset medium -pix_fmt yuv420p -crf 23 -threads 0 -bf 0 pydasa_development.mp4
+
+# Quick preview (lower quality, faster)
+gource --seconds-per-day 0.5 --1280x720 --output-ppm-stream - | ffmpeg -y -r 30 -f image2pipe -vcodec ppm -i - -vcodec libx264 -preset ultrafast -crf 28 pydasa_quick.mp4
+
+# High quality (larger file, slower)
+gource --seconds-per-day 3 --1920x1080 --output-ppm-stream - | ffmpeg -y -r 60 -f image2pipe -vcodec ppm -i - -vcodec libx264 -preset slow -crf 18 pydasa_hq.mp4
+
+
+========================= Useful Options =========================
+
+--title "Your Title"              # Set visualization title
+--seconds-per-day 2               # Speed (lower = faster)
+--auto-skip-seconds 1             # Skip inactive periods
+--1920x1080                       # Resolution
+--hide mouse,filenames            # Clean view
+--highlight-users                 # Highlight user activity
+--stop-at-end                     # Stop instead of loop
+--key                             # Show date/time legend
+--start-date "2026-01-01"         # Filter by date range
+--file-filter "src/|docs/"        # Focus on specific directories
+
+
+========================= PATH Setup (Windows) =========================
+
+# Add Gource to PATH permanently
+[Environment]::SetEnvironmentVariable(
+    "Path",
+    [Environment]::GetEnvironmentVariable("Path", "User") + ";C:\Program Files\Gource",
+    "User"
+)
+
+# Then restart PowerShell
+
+# Or use alias for current session
+Set-Alias gource "C:\Program Files\Gource\gource.exe"

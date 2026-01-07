@@ -1,0 +1,74 @@
+﻿========================= DEVELOPMENT WORKFLOW =========================
+
+# Install in editable mode (for development/testing)
+pip install -e .
+pip install -e ".[dev]"  # if you have dev dependencies
+
+# Run tests with coverage
+pytest --cov=pydasa --cov-report=html tests/
+
+# Clean coverage cache
+del .coverage
+rmdir /s /q htmlcov
+
+
+============= Virtual Environments ============
+
+python -m venv venv
+.\venv\Scripts\activate
+deactivate
+
+pip freeze > requirements.txt
+pip install -r requirements.txt
+python .\main.py
+
+
+============ Coverage =================
+
+commands:
+    pytest --cov=pydasa --cov-report=html tests/
+
+-- for the pyproject.toml file ---
+
+# [tool.coverage.run]
+# source = ["pydasa"]
+# omit = [
+#     "*/tests/*",
+#     "*/test_*.py",
+#     "main.py",
+#     "setup.py"
+# ]
+
+# [tool.coverage.report]
+# exclude_lines = [
+#     "pragma: no cover",
+#     "def __repr__",
+#     "if __name__ == .__main__.:",
+# ]
+
+
+========================= DISTRIBUTION (Release Only) =========================
+
+# 1. Clean old builds
+Remove-Item -Recurse -Force dist, build, src\pydasa.egg-info
+
+# 2. Build package
+python -m build
+
+# Or the old way
+python setup.py bdist_wheel sdist
+
+# 3. Test on TestPyPI (optional but recommended)
+python -m twine upload --repository testpypi dist/*
+
+# 4. Upload to PyPI
+python -m twine upload dist/*
+
+# 5. Install from PyPI
+pip install pydasa
+
+# 6. Verify installation
+python -c "import pydasa; print(pydasa.__version__)"
+
+# Install from built wheel (for testing the distribution)
+pip install dist/pydasa-0.1.0-py3-none-any.whl

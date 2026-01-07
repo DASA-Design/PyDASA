@@ -47,12 +47,10 @@ jobs:
           semantic-release publish
       
       - name: Publish to PyPI
-        if: env.PYPI_API_TOKEN != ''
+        if: secrets.PYPI_API_TOKEN != ''
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}
           skip-existing: true
-        env:
-          PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
 

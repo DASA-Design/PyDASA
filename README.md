@@ -2,24 +2,53 @@
 
 Library to solve software architecture and physical problems with dimensionless analysis and the Pi-Theorem
 
-## Requirements
+## Epic User Story
 
-I need an object oriented design option to include the following requirements in its specifications
+**As a** researcher, engineer, or software architect analyzing complex systems,
 
-- to manage for fundamental dimensions (traditional and extendable to software architecture)
-- to manage dimensional parameters and variables, recognizing parameters as ageneralizaction of input, aoutput and control variables, it has to have a name, a symbol, a range (min, max, step) and dimensions.
-- to manage manage the data for meassurements and metrics in the real world and software architecture. it need to manage imperial and metrics units and be related with the dimensional parameters.
-- to manage dimensionless coefficients or numbers (they ar synonym) with their name, symbol, formula, and relation to their dimensional parameters.
-- to classify the dimensionless coefficients based on non repeatable and repetead dimensional parameters.
-- to create algorithmically the dimensionless coefficients with a four-step method described as follows:
-  * To create a complete  and mutually independent parameters (variables and constants) thought to be relevant for the process and that can influence the phenomena, this is called a relevance list.
-  * To shape this relevance list into a matrixial form divided into two parts. The square core matrix; and the residual matrix. The former contains the fundamental dimensions in the rows (i.e.: L, M, and T, or A, D, and, T) and the most critical dimensional variables as columns (i.e.: ρ, L, and V) and the latter contains the rest of the independently significant variables as columns; in particular, the variable we want to predict as the first one.
-  * To linearly transform the core matrix into a unity matrix (ones as diagonal values, and the remaining elements are zero).
-  * To divide the variables of the residual matrix by the variables of the unity matrix with the exponents indicated by the unit values of the residual matrix to generate DC/DN.
-- to check the principle of similitude for traditional problems and extendable into software architecture.
-- to calculate the dimensionless coefficient range (min, max) and the influence of their dimensional parameters in their behaviour.
-- to simulate the dimensionless formula with its coeffcients and have a detailed behavioural data.
-- to plot or graph possible dimensionless charts using the behaviour of dimensionless coefficients and the dimensional parameters.
+**I want** a comprehensive dimensional analysis library implementing the Buckingham Pi theorem,
+
+**So that** I can systematically discover dimensionless relationships, validate models, and understand system behavior across physical, computational, and software architecture domains.
+
+### Core Capabilities
+
+#### Dimensional Framework Management
+- **Manage fundamental dimensions** beyond traditional physical units (L, M, T) .to include computational (T, S, N) and software architecture domains (T, D, E, C, A).
+- **Switch between frameworks** for different problem domains.
+
+#### Parameter and Variable Management
+- **Define dimensional parameters** with complete specifications:
+   - Symbolic representation (name, LaTeX symbol).
+   - Dimensional formula (e.g., "L*T^-1" for velocity).
+   - Numerical ranges (min, max, mean, step)
+   - Classification (input, output, control).
+   - Statistical distributions and dependencies.
+
+#### Unit System Integration
+- **Handle measurements** across unit systems (imperial, metric, custom).
+- **Convert between units** while maintaining dimensional consistency.
+- **Relate measurements** to dimensional parameters.
+
+#### Dimensionless Coefficient Discovery
+- **Generate dimensionless numbers** using the Buckingham Pi theorem:
+   1. **Build relevance list:** Identify mutually independent parameters influencing the phenomenon.
+   2. **Construct dimensional matrix:** Arrange FDUs (rows) and variables (columns) into core and residual matrices.
+   3. **Transform to identity matrix:** Apply linear transformations to the core matrix.
+   4. **Generate Pi coefficients:** Combine residual and unity matrices to produce dimensionless groups.
+- **Classify coefficients** by repeating vs. non-repeating parameters.
+- **Manage metadata:** names, symbols, formulas, and parameter relationships.
+
+#### Analysis and Simulation
+- **Verify similitude principles** for model scaling and validation.
+- **Calculate coefficient ranges** and parameter influence.
+- **Run Monte Carlo simulations** to quantify uncertainty propagation.
+- **Perform sensitivity analysis** to identify dominant parameters.
+- **Generate behavioral data** for dimensionless relationships.
+
+#### Data Export and Visualization Integration
+- **Export data formats** compatible with pandas, matplotlib, seaborn.
+- **Structure results** for integration with visualization libraries.
+- **Provide standardized outputs** for dimensionless charts and parameter influence plots.
 
 ## Emoji
 
@@ -36,10 +65,24 @@ I need an object oriented design option to include the following requirements in
 - **Imports:** Fixed 7 files (analysis, workflows, dimensional modules) to use new paths
 - **Code Quality:** Fixed syntax errors, enhanced Enum validation, fixed frozen dataclass issues
 - **Tests:** Updated test_basic.py and test_setup.py, all 16 core tests passing, structure aligned with src
-- **Decorator Migration:** 100% complete - all core classes migrated to decorator-based validation (463 tests passing)
-  - Elements: Variable, Coefficient, Basic, Fundamental, Measurement, Parameter
-  - Workflows: SensitivityAnalysis (21/21 tests ✓), MonteCarloSimulation (14/14 tests ✓)
-- **Validation System:** Enhanced @validate_emptiness to handle dictionaries, lists, and all collections (not just strings)
+- **Decorator Migration:** 100\% complete - all core classes migrated to decorator-based validation (463+ tests passing)
+   - Elements: Variable, Coefficient, Basic, Fundamental, Measurement, Parameter
+   - Workflows: SensitivityAnalysis (21/21 tests ✓), MonteCarloSimulation (14/14 tests ✓), AnalysisEngine (27/27 tests ✓)
+   - **Validation System:** Enhanced @validate_emptiness to handle dictionaries, lists, and all collections (not just strings)
+   - **Package Configuration (v0.3.2):**
+   - Added package-data to include JSON config files in distribution
+   - Exposed `__version__` attribute in main module (7/7 package tests passing)
+   - Configured semantic versioning for 0.x releases (major_on_zero=false)
+   - Updated CHANGELOG.md with recent changes
+   - **Dimensional Analysis Fix:**
+   - Fixed empty dimensional columns bug in CUSTOM framework variables
+   - Added validation in Matrix.create_matrix() to detect missing dimensions
+   - Fixed 5 test files (test_phenomena.py, test_scenario.py, test_simulation.py, test_practical.py, test_influence.py)
+   - All variables now properly initialize with schema and parse dimensions (130/130 tests passing)
+   - **Documentation Structure:**
+   - Integrated public folder subpages into main index.rst
+   - Reorganized navigation: Getting Started, User Guide, Design & Architecture, API Reference, Examples, Development, Project
+   - Documentation builds successfully with Sphinx
 
 ### 🔶 In Progress
 
@@ -51,7 +94,7 @@ I need an object oriented design option to include the following requirements in
 - **context/**: Unit conversion system (conversion.py, system.py, units.py)
 - **structs/**: Complete test coverage for lists, tables, tools modules
 - **Tests**: Coverage for context, structs modules
-- **Docs**: API documentation, migration guide, examples
+- **Docs**: Fill in stub content for documentation pages (basics.rst, architecture.rst, requirements.rst, etc.)
 
 ## Src Path Structure
 

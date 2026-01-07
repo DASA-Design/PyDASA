@@ -1,33 +1,30 @@
-﻿Design & Architecture
-=====================
+﻿Examples
+========
 
-Technical documentation about PyDASA's design and architecture.
+Practical examples demonstrating PyDASA capabilities.
 
 .. toctree::
     :maxdepth: 2
 
-    architecture
-    requirements
+    basics
+    customization
+    sensitivity
+    montecarlo
 
 Overview
 --------
 
-This section provides detailed information about:
+Learn PyDASA through practical examples:
 
-* System architecture and design patterns
-* Requirements and specifications
-* Design decisions and rationale
+* Basic dimensional analysis
+* Custom frameworks and configurations
+* Sensitivity analysis workflows
+* Monte Carlo simulations
 
 Contents
 --------
 
-* :doc:`architecture` - System architecture overview
-* :doc:`requirements` - Project requirements and specifications
-
-For Developers
---------------
-
-If you're interested in contributing to PyDASA or understanding its
-internal structure, start with the :doc:`architecture` document.
-
-See also the :doc:`../development/index` section for contribution guidelines.
+* :doc:`basics` - Getting started with basic examples
+* :doc:`customization` - Customizing dimensional frameworks
+* :doc:`sensitivity` - Sensitivity analysis examples
+* :doc:`montecarlo` - Monte Carlo simulation examples

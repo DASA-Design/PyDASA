@@ -8,19 +8,18 @@ PyDASA
 
 **Python Dimensional Analysis for Scientific Applications**
 
-    .. grid:: 2
-        :gutter: 3    'sphinx_design',  # For grid cards like NumPy
-
+.. grid:: 2
+    :gutter: 3
 
     .. grid-item-card:: 🚀 Getting Started
-        :link: getting_started/installation
+        :link: public/context/installation
         :link-type: doc
 
         New to PyDASA? Check out the getting started guide for installation
         and quick start examples.
 
     .. grid-item-card:: 📖 User Guide
-        :link: user_guide/index
+        :link: public/features/index
         :link-type: doc
 
         The user guide provides in-depth information on dimensional analysis
@@ -34,7 +33,7 @@ PyDASA
         modules, classes, and functions.
 
     .. grid-item-card:: 💡 Examples
-        :link: examples/index
+        :link: public/examples/index
         :link-type: doc
 
         Practical examples and tutorials demonstrating PyDASA capabilities
@@ -75,14 +74,21 @@ Quick Example
     :caption: Getting Started
     :hidden:
 
-    getting_started/index
+    public/context/index
 
 .. toctree::
     :maxdepth: 2
     :caption: User Guide
     :hidden:
 
-    user_guide/index
+    public/features/index
+
+.. toctree::
+    :maxdepth: 2
+    :caption: Design & Architecture
+    :hidden:
+    
+    public/design/index
 
 .. toctree::
     :maxdepth: 2
@@ -96,11 +102,18 @@ Quick Example
     :caption: Examples
     :hidden:
 
-    examples/index
+    public/examples/index
 
 .. toctree::
     :maxdepth: 2
     :caption: Development
     :hidden:
 
-    development/index
+    public/development/index
+
+.. toctree::
+    :maxdepth: 2
+    :caption: Project
+    :hidden:
+
+    public/project/changelog

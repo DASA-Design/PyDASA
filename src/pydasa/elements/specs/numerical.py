@@ -43,11 +43,13 @@ class NumericalSpecs:
     Attributes:
         # From NumericalSpecs:
         # Value ranges (original units)
+            _metric (Optional[float]): Specific value in original units.
             _min (Optional[float]): Minimum value in original units.
             _max (Optional[float]): Maximum value in original units.
             _mean (Optional[float]): Mean value in original units.
             _dev (Optional[float]): Standard deviation in original units.
         # Value ranges (standardized units)
+            _std_metric (Optional[str]): Specific metric system for standardized units.
             _std_min (Optional[float]): Minimum value in standard units.
             _std_max (Optional[float]): Maximum value in standard units.
             _std_mean (Optional[float]): Mean value in standard units.
@@ -57,6 +59,10 @@ class NumericalSpecs:
     """
 
     # Value ranges (original units)
+    # :attr: _metric
+    _metric: Optional[float] = None
+    """Specific value in original units."""
+
     # :attr: _min
     _min: Optional[float] = None
     """Minimum value in original units."""
@@ -74,6 +80,10 @@ class NumericalSpecs:
     """Standard deviation in original units."""
 
     # Value ranges (standardized units)
+    # :attr: _std_metric
+    _std_metric: Optional[float] = None
+    """Specific metric system for standardized units."""
+
     # :attr: _std_min
     _std_min: Optional[float] = None
     """Minimum value in standard units."""
@@ -99,6 +109,27 @@ class NumericalSpecs:
     """Range array for analysis."""
 
     # Value Ranges (Original Units)
+    @property
+    def metric(self) -> Optional[float]:
+        """*metric* Get specific metric system for original units.
+
+        Returns:
+            Optional[str]: Specific metric system for original units.
+        """
+        return self._metric
+
+    @metric.setter
+    @validate_type(int, float)
+    def metric(self, val: Optional[float]) -> None:
+        """*metric* Sets specific metric system for original units.
+
+        Args:
+            val (Optional[float]): Specific metric system for original units.
+
+        Raises:
+            ValueError: If value not a valid number.
+        """
+        self._metric = val
 
     @property
     def min(self) -> Optional[float]:
@@ -229,6 +260,27 @@ class NumericalSpecs:
         self._dev = val
 
     # Value Ranges (Standardized Units)
+
+    @property
+    def std_metric(self) -> Optional[float]:
+        """*std_metric* Get specific metric system for standardized units.
+
+        Returns:
+            Optional[str]: Specific metric system for standardized units.
+        """
+        return self._std_metric
+
+    @std_metric.setter
+    @validate_type(int, float)
+    def std_metric(self, val: Optional[float]) -> None:
+        """*std_metric* Sets specific metric system for standardized units.
+
+        Args:
+            val (Optional[float]): Specific metric system for standardized units.
+        Raises:
+            ValueError: If value not a valid number.
+        """
+        self._std_metric = val
 
     @property
     def std_min(self) -> Optional[float]:

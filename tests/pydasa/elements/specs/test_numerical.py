@@ -18,6 +18,32 @@ from pydasa.elements.parameter import Variable
 class TestNumericalSpecs(unittest.TestCase):
     """Test cases for **NumericalSpecs** class via **Variable**."""
 
+    # Metric tests
+    def test_metric_getter(self) -> None:
+        """Test metric property getter."""
+        spec = Variable()
+        spec.metric = 5.0
+        assert spec.metric == 5.0
+
+    def test_metric_setter_valid(self) -> None:
+        """Test metric property setter with valid value."""
+        spec = Variable()
+        spec.metric = 5.0
+        assert spec.metric == 5.0
+
+    def test_metric_setter_invalid_type(self) -> None:
+        """Test metric property setter with invalid type."""
+        spec = Variable()
+        with pytest.raises(ValueError) as excinfo:
+            spec.metric = cast(Any, "not a number")
+        assert "metric must be" in str(excinfo.value)
+
+    def test_metric_none(self) -> None:
+        """Test metric property with None value."""
+        spec = Variable()
+        spec.metric = None
+        assert spec.metric is None
+
     # Original units range tests (min, max, mean, dev)
     def test_min_getter(self) -> None:
         """Test min property getter."""
@@ -122,6 +148,32 @@ class TestNumericalSpecs(unittest.TestCase):
         with pytest.raises(ValueError) as excinfo:
             spec.mean = -5.0
         assert "must be between" in str(excinfo.value)
+
+    # Standardized metric tests
+    def test_std_metric_getter(self) -> None:
+        """Test std_metric property getter."""
+        spec = Variable()
+        spec.std_metric = 50.0
+        assert spec.std_metric == 50.0
+
+    def test_std_metric_setter_valid(self) -> None:
+        """Test std_metric property setter with valid value."""
+        spec = Variable()
+        spec.std_metric = 50.0
+        assert spec.std_metric == 50.0
+
+    def test_std_metric_setter_invalid_type(self) -> None:
+        """Test std_metric property setter with invalid type."""
+        spec = Variable()
+        with pytest.raises(ValueError) as excinfo:
+            spec.std_metric = cast(Any, "not a number")
+        assert "std_metric must be" in str(excinfo.value)
+
+    def test_std_metric_none(self) -> None:
+        """Test std_metric property with None value."""
+        spec = Variable()
+        spec.std_metric = None
+        assert spec.std_metric is None
 
     # Standardized unit range tests (std_* units, min, max, mean, dev)
     def test_std_min_getter(self) -> None:

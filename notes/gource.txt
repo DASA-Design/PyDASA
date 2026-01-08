@@ -22,7 +22,7 @@ Prerequisites:
     - ffmpeg installed (winget install Gyan.FFmpeg)
 
 # Standard quality video
-gource --title "PyDASA Development" --seconds-per-day 2 --auto-skip-seconds 1 --1920x1080 --hide mouse,filenames --highlight-users --stop-at-end --output-ppm-stream - | ffmpeg -y -r 60 -f image2pipe -vcodec ppm -i - -vcodec libx264 -preset medium -pix_fmt yuv420p -crf 23 -threads 0 -bf 0 pydasa_development.mp4
+gource --title "PyDASA Development" --seconds-per-day 1 --auto-skip-seconds 1 --1920x1080 --hide mouse,filenames --highlight-users --stop-at-end --output-ppm-stream - | ffmpeg -y -r 60 -f image2pipe -vcodec ppm -i - -vcodec libx264 -preset medium -pix_fmt yuv420p -crf 23 -threads 0 -bf 0 pydasa_development.mp4
 
 # Quick preview (lower quality, faster)
 gource --seconds-per-day 0.5 --1280x720 --output-ppm-stream - | ffmpeg -y -r 30 -f image2pipe -vcodec ppm -i - -vcodec libx264 -preset ultrafast -crf 28 pydasa_quick.mp4

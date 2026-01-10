@@ -231,8 +231,8 @@ def get_variable_test_data() -> dict:
             "_units": "m/s",
             "_name": "Velocity",
             "description": "velocity of fluid",
-            "_metric": 2.5,
-            "_std_metric": 2.5
+            "_setpoint": 2.5,
+            "_std_setpoint": 2.5
         },
         "COMPUTATION_VARIABLE": {
             "_idx": 1,
@@ -244,8 +244,8 @@ def get_variable_test_data() -> dict:
             "_units": "s",
             "_name": "Time",
             "description": "computation time",
-            "_metric": 1.0,
-            "_std_metric": 1.0
+            "_setpoint": 1.0,
+            "_std_setpoint": 1.0
         },
         "SOFTWARE_VARIABLE": {
             "_idx": 2,
@@ -257,8 +257,8 @@ def get_variable_test_data() -> dict:
             "_units": "req",
             "_name": "Events",
             "description": "software events",
-            "_metric": 100.0,
-            "_std_metric": 100.0
+            "_setpoint": 100.0,
+            "_std_setpoint": 100.0
         },
         "VALID_CATEGORIES": ["IN", "OUT", "CTRL", "in", "out", "ctrl"],
         "INVALID_CATEGORIES": ["INVALID", "input", "output", ""],

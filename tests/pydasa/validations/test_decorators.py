@@ -175,7 +175,7 @@ class TestValidationDecorators(unittest.TestCase):
 
             @value.setter
             @validate_type(int, float)
-            @validate_range(min_attr='_min', max_attr='_max')
+            @validate_range(min_attr="_min", max_attr="_max")
             def value(self, val):
                 self._value = val
 

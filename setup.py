@@ -41,10 +41,9 @@ setup(
     long_description=read_long_description(),
     long_description_content_type="text/markdown",
     url="https://github.com/DASA-Design/PyDASA",
-    # TODO update author information, beware of the email address!!!
     author="@SFAM",
-    author_email="your_email@example.com",
-    # TODO check classifiers!!!
+    author_email="sa-artea@uniandes.edu.co",
+    # NOTE keep check classifiers!!!
     # license="GPL-3.0",
     classifiers=[
         "Programming Language :: Python :: 3.10",

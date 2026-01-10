@@ -35,7 +35,7 @@ def mem_slot(cls: Type[T]) -> Type[T]:
         Type[T]: A dataclass with slots.
     """
     # TODO check validity of this decorator
-    # TODO integrate with the dataclass decorator
+    # TODO integrate with the dataclass decorator?
     if not isinstance(cls, type):
         raise TypeError(f"Invalid class: {cls}, class must be a type")
 

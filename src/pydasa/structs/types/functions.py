@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# FIXME old code, remove when tests are finished
 """
 Module default.py
 ===========================================

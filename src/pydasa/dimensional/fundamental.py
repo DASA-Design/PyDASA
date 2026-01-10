@@ -21,6 +21,7 @@ from dataclasses import dataclass
 
 # custom modules
 from pydasa.core.basic import Foundation
+from pydasa.core.setup import Frameworks   # , PYDASA_CFG
 
 # generic error handling and type checking
 from pydasa.validations.error import handle_error as error
@@ -121,7 +122,7 @@ class Dimension(Foundation):
             _idx=data.get("idx", -1),
             _sym=data.get("sym", ""),
             _alias=data.get("alias", ""),
-            _fwk=data.get("fwk", "PHYSICAL"),
+            _fwk=data.get("fwk", Frameworks.PHYSICAL.value),
             _unit=data.get("unit", ""),
             _name=data.get("_name", ""),
             description=data.get("description", "")

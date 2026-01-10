@@ -198,13 +198,7 @@ class Schema(Foundation):
         Returns:
             List[str]: Default FDUs precedence list based on the framework map.
         """
-        # fp =
         # map for easy access to the FDUs
-        _frk_map = {
-            # "PHYSICAL": PHY_FDU_PREC_DT,
-            # "COMPUTATION": COMPU_FDU_PREC_DT,
-            # "SOFTWARE": SOFT_FDU_PREC_DT,
-        }
         _frk_map = PYDASA_CFG.get_instance().SPT_FDU_FWKS
         ans = []
         # select FDU framework

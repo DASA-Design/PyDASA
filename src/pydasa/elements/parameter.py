@@ -126,12 +126,15 @@ class Variable(ConceptualSpecs, SymbolicSpecs, NumericalSpecs, StatisticalSpecs)
         if not self._alias:
             self._alias = latex_to_python(self._sym)
 
-        # TODO reassert this code later, seems redundant
-        # Set up range array if all required values are provided
-        if all([self._std_min, self._std_max, self._step]):
-            self._std_range = np.arange(self._std_min,
-                                        self._std_max,
-                                        self._step)
+        std_min = self._std_min
+        std_max = self._std_max
+        step = self._step
+
+        # if all([self._std_min is not None,
+        #         self._std_max is not None,
+        #         self._step is not None]):
+        if std_min is not None and std_max is not None and step is not None:
+            self._std_range = np.arange(std_min, std_max, step)
 
     # NOTE: All methods below are inherited from spec classes:
     # - All properties (cat, dims, units, min, max, etc.) are inherited from respective specs

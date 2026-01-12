@@ -3,7 +3,7 @@
 Test Module for specs/numerical.py
 ===========================================
 
-Tests for the **NumericalSpecs** class in *PyDASA*.
+Tests for the **BoundsSpecs**, **StandardizedSpecs**, and **NumericalSpecs** classes in *PyDASA*.
 """
 
 import unittest
@@ -12,37 +12,31 @@ import numpy as np
 from typing import Any, cast
 
 from pydasa.elements.parameter import Variable
-# from pydasa.elements.specs.numerical import NumericalSpecs
+# from pydasa.elements.specs.numerical import BoundsSpecs, StandardizedSpecs, NumericalSpecs
 
 
-class TestNumericalSpecs(unittest.TestCase):
-    """Test cases for **NumericalSpecs** class via **Variable**."""
+class TestBoundsSpecs(unittest.TestCase):
+    """Test cases for **BoundsSpecs** class via **Variable**."""
 
-    # Metric tests
-    def test_metric_getter(self) -> None:
-        """Test metric property getter."""
+    # Setpoint tests
+    def test_setpoint_getter(self) -> None:
+        """Test setpoint property getter."""
         spec = Variable()
-        spec.metric = 5.0
-        assert spec.metric == 5.0
+        spec.setpoint = 5.0
+        assert spec.setpoint == 5.0
 
-    def test_metric_setter_valid(self) -> None:
-        """Test metric property setter with valid value."""
+    def test_setpoint_setter_valid(self) -> None:
+        """Test setpoint property setter with valid value."""
         spec = Variable()
-        spec.metric = 5.0
-        assert spec.metric == 5.0
+        spec.setpoint = 5.0
+        assert spec.setpoint == 5.0
 
-    def test_metric_setter_invalid_type(self) -> None:
-        """Test metric property setter with invalid type."""
+    def test_setpoint_setter_invalid_type(self) -> None:
+        """Test setpoint property setter with invalid type."""
         spec = Variable()
         with pytest.raises(ValueError) as excinfo:
-            spec.metric = cast(Any, "not a number")
-        assert "metric must be" in str(excinfo.value)
-
-    def test_metric_none(self) -> None:
-        """Test metric property with None value."""
-        spec = Variable()
-        spec.metric = None
-        assert spec.metric is None
+            spec.setpoint = cast(Any, "not a number")
+        assert "setpoint must be int or float" in str(excinfo.value)
 
     # Original units range tests (min, max, mean, dev)
     def test_min_getter(self) -> None:
@@ -142,38 +136,36 @@ class TestNumericalSpecs(unittest.TestCase):
         # Test mean > max raises error
         with pytest.raises(ValueError) as excinfo:
             spec.mean = 15.0
-        assert "must be between" in str(excinfo.value)
+        assert "cannot be greater than maximum" in str(excinfo.value)
 
         # Test mean < min raises error
         with pytest.raises(ValueError) as excinfo:
             spec.mean = -5.0
-        assert "must be between" in str(excinfo.value)
+        assert "cannot be less than minimum" in str(excinfo.value)
 
-    # Standardized metric tests
-    def test_std_metric_getter(self) -> None:
-        """Test std_metric property getter."""
+
+class TestStandardizedSpecs(unittest.TestCase):
+    """Test cases for **StandardizedSpecs** class via **Variable**."""
+
+    # Standardized setpoint tests
+    def test_std_setpoint_getter(self) -> None:
+        """Test std_setpoint property getter."""
         spec = Variable()
-        spec.std_metric = 50.0
-        assert spec.std_metric == 50.0
+        spec.std_setpoint = 50.0
+        assert spec.std_setpoint == 50.0
 
-    def test_std_metric_setter_valid(self) -> None:
-        """Test std_metric property setter with valid value."""
+    def test_std_setpoint_setter_valid(self) -> None:
+        """Test std_setpoint property setter with valid value."""
         spec = Variable()
-        spec.std_metric = 50.0
-        assert spec.std_metric == 50.0
+        spec.std_setpoint = 50.0
+        assert spec.std_setpoint == 50.0
 
-    def test_std_metric_setter_invalid_type(self) -> None:
-        """Test std_metric property setter with invalid type."""
+    def test_std_setpoint_setter_invalid_type(self) -> None:
+        """Test std_setpoint property setter with invalid type."""
         spec = Variable()
         with pytest.raises(ValueError) as excinfo:
-            spec.std_metric = cast(Any, "not a number")
-        assert "std_metric must be" in str(excinfo.value)
-
-    def test_std_metric_none(self) -> None:
-        """Test std_metric property with None value."""
-        spec = Variable()
-        spec.std_metric = None
-        assert spec.std_metric is None
+            spec.std_setpoint = cast(Any, "not a number")
+        assert "std_setpoint must be int or float" in str(excinfo.value)
 
     # Standardized unit range tests (std_* units, min, max, mean, dev)
     def test_std_min_getter(self) -> None:
@@ -194,7 +186,7 @@ class TestNumericalSpecs(unittest.TestCase):
         spec = Variable()
         with pytest.raises(ValueError) as excinfo:
             spec.std_min = cast(Any, "not a number")
-        assert "Standardized minimum must be a number" in str(excinfo.value)
+        assert "std_min must be int or float" in str(excinfo.value)
 
     def test_std_max_getter(self) -> None:
         """Test std_max property getter."""
@@ -214,7 +206,7 @@ class TestNumericalSpecs(unittest.TestCase):
         spec = Variable()
         with pytest.raises(ValueError) as excinfo:
             spec.std_max = cast(Any, "not a number")
-        assert "Standardized maximum must be a number" in str(excinfo.value)
+        assert "std_max must be int or float" in str(excinfo.value)
 
     def test_std_min_max_relationship(self) -> None:
         """Test std_min and std_max relationship validation."""
@@ -256,7 +248,7 @@ class TestNumericalSpecs(unittest.TestCase):
         spec = Variable()
         with pytest.raises(ValueError) as excinfo:
             spec.std_mean = cast(Any, "not a number")
-        assert "Standardized mean must be a number" in str(excinfo.value)
+        assert "std_mean must be int or float" in str(excinfo.value)
 
     def test_std_mean_setter_out_of_range(self) -> None:
         """Test std_mean property setter with value outside range."""
@@ -267,12 +259,12 @@ class TestNumericalSpecs(unittest.TestCase):
         # Test std_mean > std_max raises error
         with pytest.raises(ValueError) as excinfo:
             spec.std_mean = 150.0
-        assert "must be between" in str(excinfo.value)
+        assert "cannot be greater than maximum" in str(excinfo.value)
 
         # Test std_mean < std_min raises error
         with pytest.raises(ValueError) as excinfo:
             spec.std_mean = -50.0
-        assert "must be between" in str(excinfo.value)
+        assert "cannot be less than minimum" in str(excinfo.value)
 
     def test_std_dev_getter(self) -> None:
         """Test std_dev property getter."""
@@ -291,16 +283,23 @@ class TestNumericalSpecs(unittest.TestCase):
         spec = Variable()
         with pytest.raises(ValueError) as excinfo:
             spec.std_dev = cast(Any, "not a number")
-        assert "Standardized standard deviation must be a number" in str(excinfo.value)
+        assert "std_dev must be int or float" in str(excinfo.value)
 
     def test_std_dev_negative(self) -> None:
         """Test std_dev property setter with negative value."""
         spec = Variable()
         with pytest.raises(ValueError) as excinfo:
             spec.std_dev = -5.0
-        assert "cannot be negative" in str(excinfo.value)
+        assert "std_dev must be >= 0" in str(excinfo.value)
 
-    # Step and range tests
+
+class TestNumericalSpecs(unittest.TestCase):
+    """Test cases for **NumericalSpecs** class via **Variable**.
+
+    Tests the combined functionality of BoundsSpecs, StandardizedSpecs, and discretization.
+    """
+
+    # Step and range tests (now part of NumericalSpecs)
     def test_step_getter(self) -> None:
         """Test step property getter."""
         spec = Variable()
@@ -322,14 +321,14 @@ class TestNumericalSpecs(unittest.TestCase):
         spec = Variable()
         with pytest.raises(ValueError) as excinfo:
             spec.step = cast(Any, "not a number")
-        assert "Step must be a number" in str(excinfo.value)
+        assert "step must be int or float" in str(excinfo.value)
 
     def test_step_setter_zero(self) -> None:
         """Test step property setter with zero value."""
         spec = Variable()
         with pytest.raises(ValueError) as excinfo:
             spec.step = 0.0
-        assert "Step cannot be zero" in str(excinfo.value)
+        assert "step must be > 0" in str(excinfo.value)
 
     def test_step_setter_too_large(self) -> None:
         """Test step property setter with value larger than range."""
@@ -339,38 +338,62 @@ class TestNumericalSpecs(unittest.TestCase):
 
         with pytest.raises(ValueError) as excinfo:
             spec.step = 15.0
-        assert "must be less than range" in str(excinfo.value)
+        assert "cannot be greater than maximum" in str(excinfo.value)
 
-    def test_std_range_getter(self) -> None:
-        """Test std_range property getter."""
+    def test_data_getter(self) -> None:
+        """Test data property getter."""
         spec = Variable()
         spec.std_min = 0.0
         spec.std_max = 10.0
         spec.step = 2.0
+        spec.generate_data()
 
-        assert isinstance(spec.std_range, np.ndarray)
-        assert len(spec.std_range) > 0
+        assert isinstance(spec.data, np.ndarray)
+        assert len(spec.data) > 0
 
-    def test_std_range_automatic_generation(self) -> None:
-        """Test automatic std_range generation."""
+    def test_data_automatic_generation(self) -> None:
+        """Test automatic data generation."""
         spec = Variable()
         spec.std_min = 0.0
         spec.std_max = 10.0
         spec.step = 2.0
+        spec.generate_data()
 
         expected_range = np.arange(0.0, 10.0, 2.0)
-        assert np.array_equal(spec.std_range, expected_range)
+        assert np.array_equal(spec.data, expected_range)
 
-    def test_std_range_setter_valid(self) -> None:
-        """Test std_range property setter with valid array."""
+    def test_data_setter_valid(self) -> None:
+        """Test data property setter with valid array."""
         spec = Variable()
         custom_range = np.array([0.0, 1.0, 2.0, 3.0])
-        spec.std_range = custom_range
-        assert np.array_equal(spec.std_range, custom_range)
+        spec.data = custom_range
+        assert np.array_equal(spec.data, custom_range)
 
-    def test_std_range_setter_invalid_type(self) -> None:
-        """Test std_range property setter with invalid type."""
+    def test_data_setter_invalid_type(self) -> None:
+        """Test data property setter with invalid type."""
         spec = Variable()
         with pytest.raises(ValueError) as excinfo:
-            spec.std_range = cast(Any, [0, 1, 2, 3])
-        assert "Range must be a numpy array" in str(excinfo.value)
+            spec.data = cast(Any, "not a valid type")
+        assert "data must be" in str(excinfo.value)
+
+    def test_clear(self) -> None:
+        """Test clear() method resets all numerical attributes."""
+        spec = Variable()
+        spec.min = 0.0
+        spec.max = 10.0
+        spec.mean = 5.0
+        spec.std_min = 0.0
+        spec.std_max = 100.0
+        spec.std_mean = 50.0
+        spec.step = 1.0
+
+        spec.clear()
+
+        assert spec.min is None
+        assert spec.max is None
+        assert spec.mean is None
+        assert spec.std_min is None
+        assert spec.std_max is None
+        assert spec.std_mean is None
+        assert spec.step is None
+        assert len(spec.data) == 0

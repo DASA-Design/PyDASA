@@ -9,7 +9,9 @@ This module defines the NumericalSpecs class representing the computational
 value ranges and discretization properties of a variable.
 
 Classes:
-    **NumericalSpecs**: Numerical variable specifications
+    **BoundsSpecs**: Value bounds in original units
+    **StandardizedSpecs**: Standardized value specifications with discretization
+    **NumericalSpecs**: Numerical variable specifications (combines BoundsSpecs and StandardizedSpecs)
 
 *IMPORTANT:* Based on the theory from:
 
@@ -26,41 +28,27 @@ import numpy as np
 
 # custom modules
 from pydasa.validations.decorators import validate_type
+from pydasa.validations.decorators import validate_range
 
 
 @dataclass
-class NumericalSpecs:
-    """Numerical perspective: computational value ranges. Answers the question: "What VALUES can this variable take?"
+class BoundsSpecs:
+    """Value bounds in original units: min, max, mean, deviation, setpoint.
 
-    This perspective focuses on:
-        - Concrete bounds (minimum, maximum)
-        - Central tendency (mean value)
-        - Variation (standard deviation)
-        - Discretization for simulations (step size, range arrays)
-        - Unit conversions (original ↔ standardized)
-        - Variable dependencies (calculated variables)
+    This class represents the value ranges and statistical measures
+    in the original (non-standardized) units of a variable.
 
     Attributes:
-        # From NumericalSpecs:
-        # Value ranges (original units)
-            _metric (Optional[float]): Specific value in original units.
-            _min (Optional[float]): Minimum value in original units.
-            _max (Optional[float]): Maximum value in original units.
-            _mean (Optional[float]): Mean value in original units.
-            _dev (Optional[float]): Standard deviation in original units.
-        # Value ranges (standardized units)
-            _std_metric (Optional[str]): Specific metric system for standardized units.
-            _std_min (Optional[float]): Minimum value in standard units.
-            _std_max (Optional[float]): Maximum value in standard units.
-            _std_mean (Optional[float]): Mean value in standard units.
-            _std_dev (Optional[float]): Standard deviation in standard units.
-            _step (Optional[float]): Step size for simulations.
-            _std_range (np.ndarray): Range for numerical analysis in standardized units and discretization.
+        _setpoint (Optional[float]): Specific value/point in original units.
+        _min (Optional[float]): Minimum value in original units.
+        _max (Optional[float]): Maximum value in original units.
+        _mean (Optional[float]): Mean value in original units.
+        _dev (Optional[float]): Standard deviation in original units.
     """
 
     # Value ranges (original units)
-    # :attr: _metric
-    _metric: Optional[float] = None
+    # :attr: _setpoint
+    _setpoint: Optional[float] = None
     """Specific value in original units."""
 
     # :attr: _min
@@ -79,57 +67,27 @@ class NumericalSpecs:
     _dev: Optional[float] = None
     """Standard deviation in original units."""
 
-    # Value ranges (standardized units)
-    # :attr: _std_metric
-    _std_metric: Optional[float] = None
-    """Specific metric system for standardized units."""
-
-    # :attr: _std_min
-    _std_min: Optional[float] = None
-    """Minimum value in standard units."""
-
-    # :attr: _std_max
-    _std_max: Optional[float] = None
-    """Maximum value in standard units."""
-
-    # :attr: _std_mean
-    _std_mean: Optional[float] = None
-    """Mean value in standard units."""
-
-    # :attr: _std_dev
-    _std_dev: Optional[float] = None
-    """Standard deviation in standard units."""
-
-    # :attr: _step
-    _step: Optional[float] = None
-    """Step size for simulations."""
-
-    # :attr: _std_range
-    _std_range: np.ndarray = field(default_factory=lambda: np.array([]))
-    """Range array for analysis."""
-
-    # Value Ranges (Original Units)
     @property
-    def metric(self) -> Optional[float]:
-        """*metric* Get specific metric system for original units.
+    def setpoint(self) -> Optional[float]:
+        """*setpoint* Get specific value/point system for original units.
 
         Returns:
-            Optional[str]: Specific metric system for original units.
+            Optional[str]: Specific value/point system for original units.
         """
-        return self._metric
+        return self._setpoint
 
-    @metric.setter
-    @validate_type(int, float)
-    def metric(self, val: Optional[float]) -> None:
-        """*metric* Sets specific metric system for original units.
+    @setpoint.setter
+    @validate_type(int, float, allow_none=False)
+    def setpoint(self, val: Optional[float]) -> None:
+        """*setpoint* Sets specific value/point system for original units.
 
         Args:
-            val (Optional[float]): Specific metric system for original units.
+            val (Optional[float]): Specific value/point system for original units.
 
         Raises:
             ValueError: If value not a valid number.
         """
-        self._metric = val
+        self._setpoint = val
 
     @property
     def min(self) -> Optional[float]:
@@ -141,7 +99,8 @@ class NumericalSpecs:
         return self._min
 
     @min.setter
-    @validate_type(int, float)
+    @validate_type(int, float, allow_none=False)
+    @validate_range(max_attr="_max")
     def min(self, val: Optional[float]) -> None:
         """*min* Sets minimum range value.
 
@@ -152,20 +111,7 @@ class NumericalSpecs:
             ValueError: If value not a valid number.
             ValueError: If value is greater than max.
         """
-        if val is not None and self._max is not None and val > self._max:
-            _msg = f"Minimum {val} cannot be greater than maximum {self._max}."
-            raise ValueError(_msg)
-
         self._min = val
-
-        # TODO reassert this code later, seems redundant with _prepare_dims()
-        # Update range if all values are available
-        if all([self._min is not None,
-                self._max is not None,
-                self._step is not None]):
-            self._range = np.arange(self._min,
-                                    self._max,
-                                    self._step)
 
     @property
     def max(self) -> Optional[float]:
@@ -177,7 +123,8 @@ class NumericalSpecs:
         return self._max
 
     @max.setter
-    @validate_type(int, float)
+    @validate_type(int, float, allow_none=False)
+    @validate_range(min_attr="_min")
     def max(self, val: Optional[float]) -> None:
         """*max* Sets the maximum range value.
 
@@ -188,21 +135,7 @@ class NumericalSpecs:
             ValueError: If value is not a valid number.
             ValueError: If value is less than min.
         """
-        # Check if both values exist before comparing
-        if val is not None and self._min is not None and val < self._min:
-            _msg = f"Maximum {val} cannot be less than minimum {self._min}."
-            raise ValueError(_msg)
-
         self._max = val
-
-        # TODO reassert this code later, seems redundant with _prepare_dims()
-        # Update range if all values are available
-        if all([self._min is not None,
-                self._max is not None,
-                self._step is not None]):
-            self._range = np.arange(self._min,
-                                    self._max,
-                                    self._step)
 
     @property
     def mean(self) -> Optional[float]:
@@ -214,7 +147,8 @@ class NumericalSpecs:
         return self._mean
 
     @mean.setter
-    @validate_type(int, float)
+    @validate_type(int, float, allow_none=False)
+    @validate_range(min_attr="_min", max_attr="_max")
     def mean(self, val: Optional[float]) -> None:
         """*mean* Sets the Variable mean value.
 
@@ -225,62 +159,102 @@ class NumericalSpecs:
             ValueError: If value not a valid number.
             ValueError: If value is outside min-max range.
         """
-        # Only validate range if val is not None
-        if val is not None:
-            low = (self._min is not None and val < self._min)
-            high = (self._max is not None and val > self._max)
-            if low or high:
-                _msg = f"Mean {val} "
-                _msg += f"must be between {self._min} and {self._max}."
-                raise ValueError(_msg)
-
         self._mean = val
 
     @property
     def dev(self) -> Optional[float]:
-        """*dev* Get the Variable standard deviation.
+        """*dev* Get the Variable standardized deviation.
 
         Returns:
-            Optional[float]: Variable standard deviation.
+            Optional[float]: Variable standardized deviation.
         """
         return self._dev
 
     @dev.setter
+    @validate_type(int, float, allow_none=False)
+    @validate_range(min_value=0, min_inclusive=True)
     def dev(self, val: Optional[float]) -> None:
-        """*dev* Sets the Variable standard deviation.
+        """*dev* Sets the Variable standardized deviation.
 
         Args:
-            val (Optional[float]): Variable standard deviation.
+            val (Optional[float]): Variable standardized deviation.
         Raises:
             ValueError: If value not a valid number.
+            ValueError: If value is negative.
         """
-        if val is not None and not isinstance(val, (int, float)):
-            raise ValueError("Standard deviation must be a number.")
+        # if val is not None and not isinstance(val, (int, float)):
+        #     raise ValueError("Standard deviation must be a number.")
 
         self._dev = val
 
-    # Value Ranges (Standardized Units)
+    def clear(self) -> None:
+        """*clear()* Reset bounds attributes to default values.
+
+        Resets all value ranges in original units.
+        """
+        self._setpoint = None
+        self._min = None
+        self._max = None
+        self._mean = None
+        self._dev = None
+
+
+@dataclass
+class StandardizedSpecs:
+    """Standardized value specifications: ranges, statistics, and discretization.
+
+    This class represents value ranges and statistical measures in standardized units,
+    plus discretization properties for numerical analysis (step size, range array).
+
+    Attributes:
+        _std_setpoint (Optional[float]): Specific value/point in standardized units.
+        _std_min (Optional[float]): Minimum value in standardized units.
+        _std_max (Optional[float]): Maximum value in standardized units.
+        _std_mean (Optional[float]): Mean value in standardized units.
+        _std_dev (Optional[float]): Standard deviation in standardized units.
+    """
+
+    # Value ranges (standardized units)
+    # :attr: _std_setpoint
+    _std_setpoint: Optional[float] = None
+    """Specific value/point system for standardized units."""
+
+    # :attr: _std_min
+    _std_min: Optional[float] = None
+    """Minimum value in standardized units."""
+
+    # :attr: _std_max
+    _std_max: Optional[float] = None
+    """Maximum value in standardized units."""
+
+    # :attr: _std_mean
+    _std_mean: Optional[float] = None
+    """Mean value in standardized units."""
+
+    # :attr: _std_dev
+    _std_dev: Optional[float] = None
+    """Standard deviation in standardized units."""
 
     @property
-    def std_metric(self) -> Optional[float]:
-        """*std_metric* Get specific metric system for standardized units.
+    def std_setpoint(self) -> Optional[float]:
+        """*std_setpoint* Get specific value/point system for standardized units.
 
         Returns:
-            Optional[str]: Specific metric system for standardized units.
+            Optional[str]: Specific value/point system for standardized units.
         """
-        return self._std_metric
+        return self._std_setpoint
 
-    @std_metric.setter
-    @validate_type(int, float)
-    def std_metric(self, val: Optional[float]) -> None:
-        """*std_metric* Sets specific metric system for standardized units.
+    @std_setpoint.setter
+    @validate_type(int, float, allow_none=False)
+    def std_setpoint(self, val: Optional[float]) -> None:
+        """*std_setpoint* Sets specific value/point system for standardized units.
 
         Args:
-            val (Optional[float]): Specific metric system for standardized units.
+            val (Optional[float]): Specific value/point system for standardized units.
         Raises:
             ValueError: If value not a valid number.
         """
-        self._std_metric = val
+        self._std_setpoint = val
 
     @property
     def std_min(self) -> Optional[float]:
@@ -292,6 +266,8 @@ class NumericalSpecs:
         return self._std_min
 
     @std_min.setter
+    @validate_type(int, float, allow_none=False)
+    @validate_range(max_attr="_std_max")
     def std_min(self, val: Optional[float]) -> None:
         """*std_min* Sets the standardized minimum range value.
 
@@ -302,25 +278,7 @@ class NumericalSpecs:
             ValueError: If value not a valid number.
             ValueError: If value is greater than std_max.
         """
-        if val is not None and not isinstance(val, (int, float)):
-            raise ValueError("Standardized minimum must be a number")
-
-        # Check if both values exist before comparing
-        if val is not None and self._std_max is not None and val > self._std_max:
-            _msg = f"Standard minimum {val} cannot be greater"
-            _msg += f" than standard maximum {self._std_max}."
-            raise ValueError(_msg)
-
         self._std_min = val
-
-        # TODO reassert this code later, seems redundant with _prepare_dims()
-        # Update range if all values are available
-        if all([self._std_min is not None,
-                self._std_max is not None,
-                self._step is not None]):
-            self._std_range = np.arange(self._std_min,
-                                        self._std_max,
-                                        self._step)
 
     @property
     def std_max(self) -> Optional[float]:
@@ -332,6 +290,8 @@ class NumericalSpecs:
         return self._std_max
 
     @std_max.setter
+    @validate_type(int, float, allow_none=False)
+    @validate_range(min_attr="_std_min")
     def std_max(self, val: Optional[float]) -> None:
         """*std_max* Sets the standardized maximum range value.
 
@@ -339,25 +299,7 @@ class NumericalSpecs:
             ValueError: If value is not a valid number.
             ValueError: If value is less than std_min.
         """
-        if val is not None and not isinstance(val, (int, float)):
-            raise ValueError("Standardized maximum must be a number")
-
-        # Check if both values exist before comparing
-        if val is not None and self._std_min is not None and val < self._std_min:
-            _msg = f"Standard maximum {val} cannot be less"
-            _msg += f" than standard minimum {self._std_min}."
-            raise ValueError(_msg)
-
         self._std_max = val
-
-        # TODO reassert this code later, seems redundant with _prepare_dims()
-        # Update range if all values are available
-        if all([self._std_min is not None,
-                self._std_max is not None,
-                self._step is not None]):
-            self._std_range = np.arange(self._std_min,
-                                        self._std_max,
-                                        self._step)
 
     @property
     def std_mean(self) -> Optional[float]:
@@ -369,6 +311,8 @@ class NumericalSpecs:
         return self._std_mean
 
     @std_mean.setter
+    @validate_type(int, float, allow_none=False)
+    @validate_range(min_attr="_std_min", max_attr="_std_max")
     def std_mean(self, val: Optional[float]) -> None:
         """*std_mean* Sets the standardized mean value.
 
@@ -379,50 +323,86 @@ class NumericalSpecs:
             ValueError: If value is not a valid number.
             ValueError: If value is outside std_min-std_max range.
         """
-        if val is not None and not isinstance(val, (int, float)):
-            raise ValueError("Standardized mean must be a number")
-
-        # Only validate range if val is not None
-        if val is not None:
-            low = (self._std_min is not None and val < self._std_min)
-            high = (self._std_max is not None and val > self._std_max)
-
-            if low or high:
-                _msg = f"Standard mean {val} "
-                _msg += f"must be between {self._std_min} and {self._std_max}."
-                raise ValueError(_msg)
-
         self._std_mean = val
 
     @property
     def std_dev(self) -> Optional[float]:
-        """*std_dev* Get standardized standard deviation.
+        """*std_dev* Get standardized standardized deviation.
 
         Returns:
-            Optional[float]: Standardized standard deviation.
+            Optional[float]: Standardized standardized deviation.
         """
         return self._std_dev
 
     @std_dev.setter
+    @validate_type(int, float, allow_none=False)
+    @validate_range(min_value=0, min_inclusive=True)
     def std_dev(self, val: Optional[float]) -> None:
-        """*std_dev* Sets the standardized standard deviation.
+        """*std_dev* Sets the standardized standardized deviation.
 
         Args:
-            val (Optional[float]): Standardized standard deviation.
+            val (Optional[float]): Standardized standardized deviation.
 
         Raises:
             ValueError: If value is not a valid number.
-            ValueError: If value is outside std_min-std_max range.
+            ValueError: If value is negative.
         """
-        if val is not None and not isinstance(val, (int, float)):
-            raise ValueError(
-                "Standardized standard deviation must be a number")
-
-        # Standard deviation should be non-negative
-        if val is not None and val < 0:
-            raise ValueError(f"Standard deviation {val} cannot be negative.")
-
         self._std_dev = val
+
+    def clear(self) -> None:
+        """*clear()* Reset standardized attributes to default values.
+
+        Resets all value ranges in standardized units.
+        """
+        self._std_setpoint = None
+        self._std_min = None
+        self._std_max = None
+        self._std_mean = None
+        self._std_dev = None
+
+
+@dataclass
+class NumericalSpecs(BoundsSpecs, StandardizedSpecs):
+    """Numerical perspective: computational value ranges. Answers the question: "What VALUES can this variable take?"
+
+    This perspective combines:
+        - BoundsSpecs: Value ranges in original units (min, max, mean, deviation, setpoint)
+        - StandardizedSpecs: Value ranges in standardized units
+        - Discretization properties (step, range array)
+
+    This perspective focuses on:
+        - Concrete bounds (minimum, maximum)
+        - Central tendency (mean value)
+        - Variation (standard deviation)
+        - Discretization for simulations (step size, range arrays)
+        - Unit conversions (original <-> standardized)
+        - Variable dependencies (calculated variables)
+
+    Attributes:
+        # From BoundsSpecs (original units):
+            _setpoint (Optional[float]): Specific value/point in original units.
+            _min (Optional[float]): Minimum value in original units.
+            _max (Optional[float]): Maximum value in original units.
+            _mean (Optional[float]): Mean value in original units.
+            _dev (Optional[float]): Standard deviation in original units.
+        # From StandardizedSpecs (standardized units):
+            _std_setpoint (Optional[float]): Specific value/point in standardized units.
+            _std_min (Optional[float]): Minimum value in standardized units.
+            _std_max (Optional[float]): Maximum value in standardized units.
+            _std_mean (Optional[float]): Mean value in standardized units.
+            _std_dev (Optional[float]): Standard deviation in standardized units.
+        # Discretization properties:
+            _step (Optional[float]): Step size for simulations.
+            _data (np.ndarray): Range for numerical analysis in standardized units.
+    """
+
+    # :attr: _step
+    _step: Optional[float] = 1e-3
+    """Step size for simulations."""
+
+    # :attr: _data
+    _data: np.ndarray = field(default_factory=lambda: np.array([]))
+    """Data range array for analysis."""
 
     @property
     def step(self) -> Optional[float]:
@@ -434,88 +414,65 @@ class NumericalSpecs:
         return self._step
 
     @step.setter
+    @validate_type(int, float, allow_none=False)
+    @validate_range(min_value=0,
+                    min_inclusive=False,
+                    min_attr="_std_min",
+                    max_attr="_std_max")
     def step(self, val: Optional[float]) -> None:
         """*step* Set standardized step size.
 
         Args:
             val (Optional[float]): Step size (always standardized).
-
-        Raises:
-            ValueError: If step is not a valid number.
-            ValueError: If step is zero.
-            ValueError: If step is greater than range.
         """
-        if val is not None and not isinstance(val, (int, float)):
-            raise ValueError("Step must be a number.")
-
-        if val == 0:
-            raise ValueError("Step cannot be zero.")
-
-        # Validate step against range (only if min/max are set)
-        if val is not None and self._std_min is not None and self._std_max is not None:
-            range_size = self._std_max - self._std_min
-            if val >= range_size:
-                _msg = f"Step {val} must be less than range: {range_size}."
-                raise ValueError(_msg)
-
         self._step = val
 
-        # TODO reassert this code later, seems redundant with _prepare_dims()
-        # Update range if all values are available
-        if all([self._std_min is not None,
-                self._std_max is not None,
-                self._step is not None]):
-            self._std_range = np.arange(self._std_min,
-                                        self._std_max,
-                                        self._step)
-
     @property
-    def std_range(self) -> np.ndarray:
-        """*std_range* Get standardized range array.
+    def data(self) -> np.ndarray:
+        """*data* Get standardized data array.
 
         Returns:
-            np.ndarray: Range array for range (always standardized).
+            np.ndarray: Data array for range (always standardized).
         """
-        return self._std_range
+        return self._data
 
-    @std_range.setter
-    def std_range(self, val: Optional[np.ndarray]) -> None:
-        """*std_range* Set standardized range array.
+    @data.setter
+    @validate_type(list, np.ndarray, allow_none=False)
+    def data(self, val: np.ndarray) -> None:
+        """*data* Set standardized data array.
 
         Args:
-            val (Optional[np.ndarray]): Data array for range (always standardized).
+            val (np.ndarray): Data array for range (always standardized).
 
         Raises:
             ValueError: If value is not a numpy array.
         """
-        # TODO reassert this code later, seems redundant with _prepare_dims()
-        if val is None:
-            # Generate range from min, max, step
-            if all([self._std_min is not None,
-                    self._std_max is not None,
-                    self._step is not None]):
-                self._std_range = np.arange(self._std_min,
-                                            self._std_max,
-                                            self._step)
+        self._data = val
 
-        # TODO check this latter, might be a hindrance
-        elif not isinstance(val, np.ndarray):
-            _msg = f"Range must be a numpy array, got {type(val)}"
-            raise ValueError(_msg)
+    def generate_data(self) -> None:
+        """*generate_data()* Generate standardized data array from min, max, using step value.
 
+        Raises:
+            ValueError: If needed values are missing.
+        """
+        # Type narrow using local variables
+        std_min = self._std_min
+        std_max = self._std_max
+        step = self._step
+
+        if std_min is not None and std_max is not None and step is not None:
+            self._data = np.arange(std_min, std_max, step)
         else:
-            self._std_range = val
+            _msg = "Cannot generate data array. Needed values are missing: "
+            _msg += f"std_min={std_min}, std_max={std_max}, step={step}."
+            raise ValueError(_msg)
 
     def clear(self) -> None:
         """*clear()* Reset numerical attributes to default values.
 
-        Resets all value ranges and step size.
+        Resets all value ranges, discretization, and step size by calling parent clear() methods.
         """
-        self._min = None
-        self._max = None
-        self._mean = None
-        self._std_min = None
-        self._std_max = None
-        self._std_mean = None
+        BoundsSpecs.clear(self)
+        StandardizedSpecs.clear(self)
         self._step = None
-        self._std_range = np.array([])
+        self._data = np.array([])

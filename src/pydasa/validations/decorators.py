@@ -472,6 +472,93 @@ def validate_pattern(pattern: Optional[Union[str, list, tuple]] = None,
     return decorator        # return the decorator
 
 
+def validate_list_types(*elm_types: type) -> Callable:
+    """*validate_list_types()* Decorator to validate list contains only specified element types. It asumes the list exists.
+
+    Args:
+        *elm_types (type): One or more expected types for list elements.
+
+    Raises:
+        ValueError: If value is not a list.
+        ValueError: If list contains elements of wrong type.
+
+    Returns:
+        Callable: Decorated function with list type validation.
+
+    Example:
+        @dim_col.setter
+        @validate_type(list, allow_none=False)
+        @validate_emptiness()
+        @validate_list_types(int, float)
+        def dim_col(self, val: List[int]) -> None:
+            self._dim_col = [int(x) for x in val]
+    """
+    def decorator(func: Callable) -> Callable:
+        @wraps(func)
+        def wrapper(self, value: Any) -> Any:
+            # if the list exists
+            if value is not None:
+                # Check all elements match expected types
+                if not all(isinstance(elem, elm_types) for elem in value):
+                    type_names = " or ".join(t.__name__ for t in elm_types)
+                    actual_types = [type(x).__name__ for x in value]
+                    _msg = f"{func.__name__} must contain only {type_names} elements. "
+                    _msg += f"Found types: {actual_types}."
+                    raise ValueError(_msg)
+
+            # otherwise, call the original function
+            return func(self, value)
+        return wrapper      # return the wrapper
+    return decorator        # return the decorator
+
+
+def validate_dict_types(key_type: type, val_type: type) -> Callable:
+    """*validate_dict_types()* Decorator to validate dict has correct key and value types. It asumes the dict exists.
+
+    Args:
+        key_type (type): Expected type for dictionary keys.
+        val_type (type): Expected type for dictionary values.
+
+    Raises:
+        ValueError: If dict keys or values have wrong types.
+
+    Returns:
+        Callable: Decorated function with dict type validation.
+
+    Example:
+        @variables.setter
+        @validate_type(dict, allow_none=False)
+        @validate_emptiness()
+        @validate_dict_types(str, Variable)
+        def variables(self, val: Dict[str, Variable]) -> None:
+            self._variables = val
+    """
+    def decorator(func: Callable) -> Callable:
+        @wraps(func)
+        def wrapper(self, value: Any) -> Any:
+
+            # if the dict exists
+            if value is not None:
+                # Check all keys match expected type
+                invalid_keys = [k for k in value.keys() if not isinstance(k, key_type)]
+                if invalid_keys:
+                    _msg = f"{func.__name__} keys must be {key_type.__name__}. "
+                    _msg += f"Found invalid keys: {invalid_keys}."
+                    raise ValueError(_msg)
+
+                # Check all values match expected type
+                invalid_values = [v for v in value.values() if not isinstance(v, val_type)]
+                if invalid_values:
+                    _msg = f"{func.__name__} values must be {val_type.__name__}. "
+                    _msg += f"Found {len(invalid_values)} invalid value(s)."
+                    raise ValueError(_msg)
+
+            # otherwise, call the original function
+            return func(self, value)
+        return wrapper      # return the wrapper
+    return decorator        # return the decorator
+
+
 def validate_custom(validator_func: Callable[[Any, Any], None]) -> Callable:
     """*validate_custom()* Decorator for custom validation logic. Allows implementing custom validation logic by providing a validator function.
 

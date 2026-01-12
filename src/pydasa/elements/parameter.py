@@ -36,8 +36,7 @@ from pydasa.serialization.parser import latex_to_python
 class Variable(ConceptualSpecs, SymbolicSpecs, NumericalSpecs, StatisticalSpecs):
     """**Variable** class for Dimensional Analysis in *PyDASA*.
 
-    A comprehensive implementation that combines Parameter and Variable functionality
-    for use in dimensional analysis calculations, simulations, and sensitivity analysis.
+    A comprehensive implementation that combines Parameter and Variable functionality for use in dimensional analysis calculations, simulations, and sensitivity analysis.
 
     This class composes four philosophical perspectives through multiple inheritance:
     - **ConceptualSpecs**: Identity and classification (what IS this variable?)

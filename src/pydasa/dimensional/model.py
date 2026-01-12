@@ -26,15 +26,19 @@ import numpy as np
 import sympy as sp
 from numpy.typing import NDArray
 
-# basic-core and dimensional analysis imports
+# dimensional analysis imports
 from pydasa.core.basic import Foundation
 from pydasa.elements.parameter import Variable
 from pydasa.dimensional.vaschy import Schema
 from pydasa.dimensional.buckingham import Coefficient
-# import global variables
 from pydasa.core.setup import Frameworks
 from pydasa.core.setup import VarCardinality
+from pydasa.core.setup import CoefCardinality
+# import global variables
 from pydasa.core.setup import PYDASA_CFG
+from pydasa.validations.patterns import PI_COEF_RE
+from pydasa.validations.patterns import PI_POW_RE
+from pydasa.validations.patterns import BASIC_OPS_RE
 
 
 # Global constants
@@ -91,7 +95,6 @@ class Matrix(Foundation):
     # ========================================================================
     # Core Identification
     # ========================================================================
-    # TODO may be I don't need it
     # :attr: _name
     _name: str = "Dimensional Matrix"
     """User-friendly name of the dimensional matrix."""
@@ -369,7 +372,7 @@ class Matrix(Foundation):
         sorted_items = sorted(vars_lt.items(),
                               key=lambda v: cat_order.index(v[1].cat))
 
-        # # FIXME IA weird lambda function, check later!!!
+        # # NOTE IA weird lambda function, check later!!!
         # sorted_items = sorted(vars_lt.items(),
         #                       key=lambda v: cat_order.index(v[1].cat) if v[1].cat in cat_order else len(cat_order))
 
@@ -512,7 +515,7 @@ class Matrix(Foundation):
             vector_np = np.array(vector).flatten().astype(float)
 
             # Create variable dictionary for this coefficient
-            # TODO is this reduntant? check later!!!
+            # NOTE check possible unnecesary code, delete if deprecated
             coef_vars = {}
             for j, val in enumerate(vector_np):
                 if j < len(var_syms) and isinstance(val, (int, float)):
@@ -525,7 +528,7 @@ class Matrix(Foundation):
                 _sym=pi_sym,
                 _alias=f"Pi_{i}",
                 _fwk=self._fwk,
-                _cat="COMPUTED",
+                _cat=CoefCardinality.COMPUTED.value,
                 _variables=self._relevant_lt,
                 _dim_col=vector_np.tolist(),
                 _pivot_lt=self._pivot_cols,
@@ -541,6 +544,7 @@ class Matrix(Foundation):
 
     def derive_coefficient(self,
                            expr: str,
+                           symbol: str = "",
                            name: str = "",
                            description: str = "",
                            idx: int = -1) -> Coefficient:
@@ -549,8 +553,17 @@ class Matrix(Foundation):
         Combines existing dimensionless coefficients using a mathematical expression. The new coefficient is marked as "DERIVED".
 
         Args:
-            expr (str): Mathematical expression using existing coefficients.
-                Examples: "\\Pi_{0} * \\Pi_{1}", "\\Pi_{0} / \\Pi_{2}^2"
+            expr (str): Mathematical expression using existing coefficients and numeric constants.
+                Supports: *, /, ** (power), +, -, and numeric constants
+                Examples:
+                    - "\\Pi_{0} * \\Pi_{1}" (multiplication: adds exponents)
+                    - "\\Pi_{0} / \\Pi_{1}" (division: subtracts exponents)
+                    - "\\Pi_{0}**(-1)" (power: multiplies exponents)
+                    - "\\Pi_{0} + \\Pi_{1}" (addition: result is dimensionless)
+                    - "\\Pi_{0} - \\Pi_{1}" (subtraction: result is dimensionless)
+                    - "2 * \\Pi_{0}" (constant multiplication: constant is dimensionless)
+                    - "0.5 * \\Pi_{1} * \\Pi_{0}**(-1)" (mixed expression with constant)
+            symbol (str): Symbol representation (LaTeX or alphanumeric) for the derived coefficient. Default to "" to keep the original (e.g., Pi_{0}).
             name (str, optional): Name for the derived coefficient. Defaults to "Derived-Pi-{idx}".
             description (str, optional): Description of the coefficient. Defaults to "Derived from: {expr}".
             idx (int, optional): Index for the coefficient. If -1, the next available index is used.
@@ -569,85 +582,198 @@ class Matrix(Foundation):
             ...     name="Reynolds Number",
             ...     description="Ratio of inertial to viscous forces"
             ... )
+            >>> # Create a coefficient with constant multiplier
+            >>> scaled = model.derive_coefficient(
+            ...     expr="2 * \\Pi_{0}",
+            ...     name="Scaled Coefficient",
+            ...     description="Twice the original coefficient"
+            ... )
         """
+        # TODO try to find a way to improve this code
         # Validate coefficients exist
         if not self._coefficients:
             _msg = "Cannot derive coefficients. No base coefficients exist yet."
             raise ValueError(_msg)
 
         # Extract coefficient symbols from expression
-        coef_pattern = r"\\Pi_\{\d+\}"
-        coef_symbols = re.findall(coef_pattern, expr)
+        _coef_symbols = re.findall(PI_COEF_RE, expr)
 
-        if not coef_symbols:
+        if not _coef_symbols:
             _msg = f"Expression '{expr}' does not contain any valid "
             _msg += "coefficient references (format: \\Pi_{{n}})."
             raise ValueError(_msg)
 
         # Validate all referenced coefficients exist
-        for sym in coef_symbols:
+        for sym in _coef_symbols:
             if sym not in self._coefficients:
                 _msg = f"Referenced coefficient {sym} does not exist."
                 raise ValueError(_msg)
 
-        # Determine next available index
+        # Get base coefficient for structure
+        _base_coef = self._coefficients[_coef_symbols[0]]
+        _new_vars = _base_coef.variables.copy()
+
+        # Validate all coefficients use same variables
+        for sym in _coef_symbols[1:]:
+            coef = self._coefficients[sym]
+            if set(coef.variables.keys()) != set(_new_vars.keys()):
+                _msg = f"Coefficient {sym} uses different variables. "
+                _msg += "Cannot derive new coefficient."
+                raise ValueError(_msg)
+
+        # Parse expression for power operations first (e.g., \Pi_{0}**(-1))
+        # Pattern to match coefficient with optional power: \Pi_{n}**(exponent)
+        # Replace powered coefficients with temporary placeholders and store transformations
+        _pow_transforms = {}
+        _n_placeholder = 0
+
+        for match in re.finditer(PI_POW_RE, expr):
+            _coef_sym = match.group(1)
+            _pow_str = match.group(2)
+
+            try:
+                power = float(_pow_str)
+            except ValueError:
+                _msg = f"Invalid power expression: {_pow_str}"
+                raise ValueError(_msg)
+
+            # Store the coefficient and power for later application
+            _phlr = f"__PHLR_{_n_placeholder}__"
+            _pow_transforms[_phlr] = (_coef_sym, power)
+            expr = expr.replace(match.group(0), _phlr, 1)
+            _n_placeholder += 1
+
+        # Parse expression for basic operations, updates in loops
+        parts = re.split(BASIC_OPS_RE, expr)
+        _cur_op = "*"       # current operation, most important in precedence
+        new_dim_col: List[int] = []  # empty list, will be populated
+        numeric_constant: Optional[float] = None  # Track numeric constants
+        is_first = True
+
+        for part in parts:
+            part = part.strip()
+
+            if part in ("*", "/", "^", "+", "-"):
+                _cur_op = part
+            elif part.startswith("__PHLR_"):
+                # Apply power transformation
+                _coef_sym, power = _pow_transforms[part]
+                coef = self._coefficients[_coef_sym]
+
+                # Calculate the powered exponents
+                powered_dims = [int(exp * power) for exp in coef._dim_col]
+
+                # Power operation: multiply all exponents by the power
+                if is_first:
+                    # First coefficient initializes the result
+                    new_dim_col = powered_dims
+                    is_first = False
+                elif _cur_op == "*":
+                    new_dim_col = [
+                        int(a + b) for a, b in zip(new_dim_col, powered_dims)
+                    ]
+                elif _cur_op == "/":
+                    new_dim_col = [
+                        int(a - b) for a, b in zip(new_dim_col, powered_dims)
+                    ]
+                elif _cur_op in ("+", "-"):
+                    # Addition/subtraction: result is dimensionless (all zeros)
+                    new_dim_col = [0] * len(powered_dims)
+            elif re.match(r"^[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?$", part):
+                # Numeric constant - dimensionless, doesn't affect dimensional formula
+                # Store the constant for later use in expression
+                constant = float(part)
+
+                # If it's the first element, initialize with zeros (dimensionless)
+                if is_first and not new_dim_col:
+                    # Get dimension count from first coefficient
+                    if _coef_symbols:
+                        _ref_coef = self._coefficients[_coef_symbols[0]]
+                        new_dim_col = [0] * len(_ref_coef._dim_col)
+                        is_first = False
+
+                # Track numeric constants for multiplication/division
+                if _cur_op == "*":
+                    if numeric_constant is None:
+                        numeric_constant = constant
+                    else:
+                        numeric_constant *= constant
+                elif _cur_op == "/":
+                    if numeric_constant is None:
+                        numeric_constant = 1.0 / constant
+                    else:
+                        numeric_constant /= constant
+                # For + and -, we can't meaningfully track as a simple multiplier
+                # Constants in multiplication/division don't affect dimensions
+            elif re.match(PI_COEF_RE, part):
+                coef = self._coefficients[part]
+
+                if is_first:
+                    # First coefficient initializes the result
+                    new_dim_col = list(coef._dim_col)
+                    is_first = False
+                elif _cur_op == "*":
+                    # Multiplication: add exponents
+                    new_dim_col = [
+                        int(a + b) for a, b in zip(new_dim_col, coef._dim_col)
+                    ]
+                elif _cur_op == "/":
+                    # Division: subtract exponents
+                    new_dim_col = [
+                        int(a - b) for a, b in zip(new_dim_col, coef._dim_col)
+                    ]
+                elif _cur_op in ("+", "-"):
+                    # Addition/subtraction: result is dimensionless (all zeros)
+                    new_dim_col = [0] * len(coef._dim_col)
+
+        # Validate that new_dim_col was properly populated
+        if not new_dim_col:
+            _msg = f"Failed to derive dimensions from expression '{expr}'. "
+            _msg += "Expression must contain valid coefficient references."
+            raise ValueError(_msg)
+
+        # Generate default name
+        # Determine next available index for coefficient
         if idx == -1:
             existing_indices = [c._idx for c in self._coefficients.values()]
             idx = max(existing_indices) + 1 if existing_indices else 0
 
-        # Generate defaults
         if name == "":
             name = f"Derived-Pi-{idx}"
 
         if description == "":
             description = f"Derived from: {expr}"
 
-        # Get base coefficient for structure
-        base_coef = self._coefficients[coef_symbols[0]]
-        new_variables = base_coef._variables.copy()
-        new_dim_col = list(base_coef._dim_col)
-
-        # Validate all coefficients use same variables
-        for sym in coef_symbols[1:]:
-            coef = self._coefficients[sym]
-            if set(coef._variables.keys()) != set(new_variables.keys()):
-                _msg = f"Coefficient {sym} uses different variables. "
-                _msg += "Cannot derive new coefficient."
-                raise ValueError(_msg)
-
-        # Parse expression for operations
-        parts = re.split(r"(\*|/|\^)", expr)
-        current_op = "*"
-
-        for part in parts:
-            part = part.strip()
-
-            if part in ("*", "/", "^"):
-                current_op = part
-            elif re.match(coef_pattern, part):
-                coef = self._coefficients[part]
-
-                if current_op == "*":
-                    # Multiplication: add exponents
-                    new_dim_col = [a + b for a, b in zip(new_dim_col, coef._dim_col)]
-                elif current_op == "/":
-                    # Division: subtract exponents
-                    new_dim_col = [a - b for a, b in zip(new_dim_col, coef._dim_col)]
+        if symbol == "":
+            symbol = f"\\Pi_{{{idx}}}"
 
         # Create derived coefficient
-        new_sym = f"\\Pi_{{{idx}}}"
+        new_sym = symbol
+        new_alias = f"Pi_dev_{idx}"
         derived_coef = Coefficient(
             _idx=idx,
             _sym=new_sym,
-            _alias=f"Pi_{idx}",
+            _alias=new_alias,
             _fwk=self._fwk,
-            _cat="DERIVED",
+            _cat=CoefCardinality.DERIVED.value,
             _name=name,
             description=description,
-            _variables=new_variables,
+            _variables=_new_vars,
             _dim_col=new_dim_col,
             _pivot_lt=self._pivot_cols
         )
+
+        # If there's a numeric constant, prepend it to the expression
+        if numeric_constant is not None and numeric_constant != 1.0:
+            # Format the constant nicely (avoid unnecessary decimals)
+            if numeric_constant == int(numeric_constant):
+                const_str = str(int(numeric_constant))
+            else:
+                const_str = str(numeric_constant)
+
+            # Prepend constant to the expression
+            if derived_coef._pi_expr:
+                derived_coef._pi_expr = f"{const_str}*{derived_coef._pi_expr}"
 
         # Add to coefficients dictionary
         self._coefficients[new_sym] = derived_coef
@@ -871,34 +997,8 @@ class Matrix(Foundation):
     # Serialization
     # ========================================================================
 
-    def to_dict(self) -> Dict[str, Any]:
-        """*to_dict()* Convert model to dictionary representation.
-
-        Returns:
-            Dict[str, Any]: Dictionary representation of the model.
-        """
-        result = {}
-
-        # Get all dataclass fields
-        for f in fields(self):
-            attr_name = f.name
-            attr_value = getattr(self, attr_name)
-
-            # Skip None values for optional fields
-            if attr_value is None:
-                continue
-
-            # Convert based on type
-            converted_value = self._convert_value(attr_value)
-
-            # Remove leading underscore from private attributes
-            clean_name = attr_name[1:] if attr_name.startswith("_") else attr_name
-            result[clean_name] = converted_value
-
-        return result
-
     def _convert_value(self, value: Any) -> Any:
-        """Convert a value to JSON-serializable format.
+        """Convert a value to native Python-serializable format.
 
         Args:
             value (Any): Value to convert.
@@ -942,56 +1042,31 @@ class Matrix(Foundation):
         # Default: return as-is
         return value
 
-    # def to_dict(self) -> Dict[str, Any]:
-    #     """*to_dict()* Convert model to dictionary representation.
+    def to_dict(self) -> Dict[str, Any]:
+        """*to_dict()* Convert model to dictionary representation.
 
-    #     Returns:
-    #         Dict[str, Any]: Dictionary representation of the model.
-    #     """
-    #     result = {}
+        Returns:
+            Dict[str, Any]: Dictionary representation of the model.
+        """
+        result = {}
 
-    #     # Get all dataclass fields
-    #     for f in fields(self):
-    #         attr_name = f.name
-    #         attr_value = getattr(self, attr_name)
+        # Get all dataclass fields
+        for f in fields(self):
+            attr_name = f.name
+            attr_value = getattr(self, attr_name)
 
-    #         # Skip numpy arrays (convert to list for JSON compatibility)
-    #         if isinstance(attr_value, np.ndarray):
-    #             attr_value = attr_value.tolist()
+            # Skip None values for optional fields
+            if attr_value is None:
+                continue
 
-    #         # Skip sympy matrices (convert to list)
-    #         if isinstance(attr_value, sp.Matrix):
-    #             attr_value = [[float(val) for val in row] for row in attr_value.tolist()]
+            # Convert based on type
+            converted_value = self._convert_value(attr_value)
 
-    #         # Handle Schema framework (convert to dict)
-    #         if isinstance(attr_value, Schema):
-    #             attr_value = attr_value.to_dict()
+            # Remove leading underscore from private attributes
+            clean_name = attr_name[1:] if attr_name.startswith("_") else attr_name
+            result[clean_name] = converted_value
 
-    #         # Handle Variable dictionaries (convert each Variable)
-    #         if isinstance(attr_value, dict) and all(isinstance(v, Variable) for v in attr_value.values()):
-    #             attr_value = {k: v.to_dict() for k, v in attr_value.items()}
-
-    #         # Handle Coefficient dictionaries (convert each Coefficient)
-    #         if isinstance(attr_value, dict) and all(isinstance(c, Coefficient) for c in attr_value.values()):
-    #             attr_value = {k: c.to_dict() for k, c in attr_value.items()}
-
-    #         # Handle Variable instance (output variable)
-    #         if isinstance(attr_value, Variable):
-    #             attr_value = attr_value.to_dict()
-
-    #         # Skip None values for optional fields
-    #         if attr_value is None:
-    #             continue
-
-    #         # Remove leading underscore from private attributes
-    #         if attr_name.startswith("_"):
-    #             clean_name = attr_name[1:]  # Remove first character
-    #         else:
-    #             clean_name = attr_name
-
-    #         result[clean_name] = attr_value
-
-    #     return result
+        return result
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "Matrix":

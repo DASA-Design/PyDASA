@@ -17,65 +17,65 @@ Classes:
 """
 
 # native python modules
-# dataclass imports
 from __future__ import annotations
 from dataclasses import dataclass, field, fields
-from typing import Optional, List, Dict, Any, Tuple, Union, Sequence
-# numerical imports
+from typing import Optional, List, Dict, Any, Union
+
+# third-party imports
 import numpy as np
 
-# custom modules
-# basic-core class imports
+# custom module imports
 from pydasa.core.basic import Foundation
 from pydasa.elements.parameter import Variable
+from pydasa.elements.specs.numerical import BoundsSpecs
 # import global variables
-from pydasa.core.setup import CoefCardinality
 from pydasa.core.setup import PYDASA_CFG
-# generic error handling and type checking
-from pydasa.validations.error import inspect_var
-# pattern interpreter imports
+from pydasa.core.setup import CoefCardinality
 from pydasa.serialization.parser import latex_to_python
-# import validation decorators
 from pydasa.validations.decorators import validate_type
-from pydasa.validations.decorators import validate_custom
 from pydasa.validations.decorators import validate_range
 from pydasa.validations.decorators import validate_choices
+from pydasa.validations.decorators import validate_list_types
+from pydasa.validations.decorators import validate_dict_types
 
 
 @dataclass
-class Coefficient(Foundation):
+class Coefficient(Foundation, BoundsSpecs):
     """**Coefficient** class for Dimensional Analysis in *PyDASA*.
 
     A comprehensive implementation that represents dimensionless coefficients
     (Pi numbers) used in the Vaschy-Buckingham Pi-theorem method.
 
-    Args:
-        Foundation: Foundation class for validation of symbols and frameworks.
+    Inherits From:
+        Foundation: Base class providing symbol validation and framework context.
+        BoundsSpecs: Provides numerical bounds and ranges (setpoint, min, max, mean, dev).
 
     Attributes:
-        # Identification and Classification
-        name (str): User-friendly name of the coefficient.
-        description (str): Brief summary of the coefficient.
-        _idx (int): Index/precedence in the dimensional matrix.
-        _sym (str): Symbol representation (LaTeX or alphanumeric).
-        _alias (str): Python-compatible alias for use in code.
-        _fwk (str): Frameworks context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
-        _cat (str): Category (COMPUTED, DERIVED).
-        relevance (bool): Flag indicating if coefficient is relevant for analysis.
+        # From Foundation (inherited):
+            name (str): User-friendly name of the dimensionless coefficient.
+            description (str): Brief summary of the dimensionless coefficient.
+            _idx (int): Index/precedence in the dimensional matrix.
+            _sym (str): Symbol representation (LaTeX or alphanumeric).
+            _alias (str): Python-compatible alias for use in code.
+            _fwk (str): Frameworks context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
 
-        # Coefficient Construction
-        _variables (Dict[str, Variable]): Variables symbols used in coefficient.
-        _dim_col (List[int]): Dimensional column for matrix operations.
-        _pivot_lt (List[int]): Pivot indices in dimensional matrix.
-        _pi_expr (str): Symbolic expression of coefficient.
-        var_dims (Dict[str, int]): Dimensional variable exponents.
+        # From BoundsSpecs (inherited):
+            _setpoint (Optional[float]): Specific value/point of interest (always in standardized units).
+            _min (Optional[float]): Minimum value (always in standardized units).
+            _max (Optional[float]): Maximum value (always in standardized units).
+            _mean (Optional[float]): Average value (always in standardized units).
+            _dev (Optional[float]): Standard deviation (always in standardized units).
 
-        # Value Ranges
-        _min (float): Minimum value of the coefficient.
-        _max (float): Maximum value of the coefficient.
-        _mean (float): Average value of the coefficient.
-        _step (float): Step size for simulations.
-        _data (np.ndarray): Array of coefficient values for analysis.
+        # Coefficient-Specific Attributes:
+            _cat (str): Category (COMPUTED, DERIVED).
+            relevance (bool): Flag indicating if coefficient is relevant for analysis.
+            _variables (Dict[str, Variable]): Variable symbols used in coefficient construction.
+            _dim_col (List[int]): Dimensional column for matrix operations.
+            _pivot_lt (List[int]): Pivot indices in dimensional matrix.
+            _pi_expr (str): Symbolic expression of the coefficient.
+            var_dims (Dict[str, int]): Dimensional variable exponents.
+            _step (Optional[float]): Step size for simulations (always in standardized units).
+            _data (np.ndarray): Array of coefficient values for analysis.
     """
 
     # Category attribute (COMPUTED, DERIVED)
@@ -105,30 +105,28 @@ class Coefficient(Foundation):
     _pi_expr: Optional[str] = None
     """Symbolic expression of coefficient."""
 
-    # Value ranges Variable
+    # Coefficient-specific numerical attributes (override BoundsSpecs)
     # :attr: _min
     _min: Optional[float] = None
-    """Minimum value of the coefficient, always in standardized units."""
+    """Standardized minimum value of the dimensionless coefficient."""
 
     # :attr: _max
     _max: Optional[float] = None
-    """Maximum value of the coefficient, always in standardized units."""
-
+    """Standardized maximum value of the dimensionless coefficient."""
     # :attr: _mean
     _mean: Optional[float] = None
-    """Average value of the coefficient, always in standardized units."""
+    """Standardized average value of the dimensionless coefficient."""
 
     # :attr: _dev
     _dev: Optional[float] = None
-    """Standard deviation of the coefficient, always in standardized units."""
-
+    """Standardized standard deviation of the dimensionless coefficient."""
     # :attr: _step
     _step: Optional[float] = 1e-3
     """Step size for simulations, always in standardized units."""
 
     # :attr: _data
     _data: np.ndarray = field(default_factory=lambda: np.array([]))
-    """Array of coefficient values for analysis."""
+    """Data array for the dimensionless coefficient for analysis."""
 
     # Flags
     # :attr: relevance
@@ -178,56 +176,12 @@ class Coefficient(Foundation):
         self.data = self._data
 
         # Set up data array if all required values are provided
-        if all([self._min, self._max, self._step]):
-            self._data = np.arange(self._min, self._max, self._step)
+        _min = self._min
+        _max = self._max
+        _step = self._step
 
-    def _validate_sequence(self, seq: Sequence,
-                           exp_type: Union[type, Tuple[type, ...]]) -> bool:
-        """*_validate_sequence()* Validates a list with expected element types.
-
-        Args:
-            seq (Sequence): Sequence to validate.
-            exp_type (Union[type, Tuple[type, ...]]): Expected type(s) for sequence elements. Can be a single type or a tuple of types.
-
-        Raises:
-            ValueError: If the object is not a sequence.
-            ValueError: If the sequence is empty.
-            ValueError: If the sequence contains elements of unexpected types.
-
-        Returns:
-            bool: True if the list is valid.
-        """
-        # Explicitly reject strings (they're sequences but not what we want)
-        if isinstance(seq, str):
-            _msg = f"{inspect_var(seq)} must be a list or tuple, not a string. "
-            _msg += f"Provided: {type(seq).__name__}"
-            raise ValueError(_msg)
-
-        if not isinstance(seq, Sequence):
-            _msg = f"{inspect_var(seq)} must be from type: '{exp_type}', "
-            _msg += f"Provided: {type(seq).__name__}"
-            raise ValueError(_msg)
-
-        if len(seq) == 0:
-            _msg = f"{inspect_var(seq)} cannot be empty. Actual sequence: {seq}"
-            raise ValueError(_msg)
-
-        # Convert list to tuple if needed for isinstance(), just in case
-        type_check = exp_type if isinstance(exp_type, tuple) else (exp_type,)
-
-        if not all(isinstance(x, type_check) for x in seq):
-
-            # Format expected types for error message
-            if isinstance(exp_type, tuple):
-                type_names = " or ".join(t.__name__ for t in exp_type)
-            else:
-                type_names = exp_type.__name__
-
-            _msg = f"{inspect_var(seq)} must contain {type_names} elements."
-            _msg += f" Provided: {[type(x).__name__ for x in seq]}"
-            raise ValueError(_msg)
-
-        return True
+        if _min is not None and _max is not None and _step is not None:
+            self._data = np.arange(_min, _max, _step)
 
     def _build_expression(self,
                           var_lt: List[str],
@@ -281,63 +235,6 @@ class Coefficient(Foundation):
             denom_str = "*".join(denominator)
             return f"\\frac{{{num_str}}}{{{denom_str}}}", parameters
 
-    # Custom validators for decorators
-
-    def _validate_variables_dict(self, value: Dict[str, Variable]) -> None:
-        """*_validate_variables_dict()* Custom validator for variables property.
-
-        Args:
-            value (Dict[str, Variable]): Variables dictionary to validate.
-
-        Raises:
-            ValueError: If dict has invalid keys or values.
-        """
-        if len(value) > 0:
-            self._validate_sequence(list(value.keys()), (str,))
-            self._validate_sequence(list(value.values()), (Variable,))
-
-    def _validate_dim_col_list(self, value: List) -> None:
-        """*_validate_dim_col_list()* Custom validator for dim_col property.
-
-        Args:
-            value (List): Dimensional column list to validate.
-
-        Raises:
-            ValueError: If list has invalid elements.
-        """
-        if len(value) > 0:
-            self._validate_sequence(value, (int, float))
-
-    def _validate_pivot_list(self, value: Optional[List[int]]) -> None:
-        """*_validate_pivot_list()* Custom validator for pivot_lt property.
-
-        Args:
-            value (Optional[List[int]]): Pivot list to validate.
-
-        Raises:
-            ValueError: If non-empty list has invalid elements.
-        """
-        if value is not None and len(value) > 0:
-            self._validate_sequence(value, (int,))
-
-    def _validate_step_value(self, value: Optional[float]) -> None:
-        """*_validate_step_value()* Custom validator for step property.
-
-        Args:
-            value (Optional[float]): Step value to validate.
-
-        Raises:
-            ValueError: If step is zero or exceeds range.
-        """
-        if value == 0:
-            raise ValueError("Step cannot be zero.")
-
-        if value is not None and self._min is not None and self._max is not None:
-            range_size = self._max - self._min
-            if value >= range_size:
-                _msg = f"Step {value} must be less than range: {range_size}."
-                raise ValueError(_msg)
-
     # Property getters and setters
 
     @property
@@ -373,7 +270,7 @@ class Coefficient(Foundation):
 
     @variables.setter
     @validate_type(dict, allow_none=False)
-    @validate_custom(lambda self, val: self._validate_variables_dict(val))
+    @validate_dict_types(str, Variable)
     def variables(self, val: Dict[str, Variable]) -> None:
         """*variables* Set the variable symbols list.
 
@@ -396,7 +293,7 @@ class Coefficient(Foundation):
 
     @dim_col.setter
     @validate_type(list, allow_none=False)
-    @validate_custom(lambda self, val: self._validate_dim_col_list(val))
+    @validate_list_types(int, float)
     def dim_col(self, val: Union[List[int], List[float]]) -> None:
         """*dim_col* Set the dimensional column.
 
@@ -418,7 +315,7 @@ class Coefficient(Foundation):
         return self._pivot_lt
 
     @pivot_lt.setter
-    @validate_custom(lambda self, val: self._validate_pivot_list(val))
+    @validate_list_types(int)
     def pivot_lt(self, val: List[int]) -> None:
         """*pivot_lt* Set the pivot indices list.
 
@@ -452,116 +349,7 @@ class Coefficient(Foundation):
         """
         self._pi_expr = val
 
-    # Value range properties
-
-    @property
-    def min(self) -> Optional[float]:
-        """*min* Get minimum range value.
-
-        Returns:
-            Optional[float]: Minimum range value.
-        """
-        return self._min
-
-    @min.setter
-    @validate_type(int, float)
-    @validate_range(max_attr='_max')
-    def min(self, val: Optional[float]) -> None:
-        """*min* Sets minimum range value.
-
-        Args:
-            val (Optional[float]): Minimum range value.
-
-        Raises:
-            ValueError: If value is not a number.
-            ValueError: If value is greater than max.
-        """
-        self._min = val
-
-        # Update range if all values are available
-        if all([self._min is not None,
-                self._max is not None,
-                self._step is not None]):
-            self._range = np.arange(self._min,
-                                    self._max,
-                                    self._step)
-
-    @property
-    def max(self) -> Optional[float]:
-        """*max* Get the maximum range value.
-
-        Returns:
-            Optional[float]: Maximum range value.
-        """
-        return self._max
-
-    @max.setter
-    @validate_type(int, float)
-    @validate_range(min_attr='_min')
-    def max(self, val: Optional[float]) -> None:
-        """*max* Sets the maximum range value.
-
-        Args:
-            val (Optional[float]): Maximum range value.
-
-        Raises:
-            ValueError: If value is not a number.
-            ValueError: If value is less than min.
-        """
-        self._max = val
-
-        # Update range if all values are available
-        if all([self._min is not None,
-                self._max is not None,
-                self._step is not None]):
-            self._range = np.arange(self._min,
-                                    self._max,
-                                    self._step)
-
-    @property
-    def mean(self) -> Optional[float]:
-        """*mean* Get the average value.
-
-        Returns:
-            Optional[float]: average value.
-        """
-        return self._mean
-
-    @mean.setter
-    @validate_type(int, float)
-    @validate_range(min_attr='_min', max_attr='_max')
-    def mean(self, val: Optional[float]) -> None:
-        """*mean* Sets the average value.
-
-        Args:
-            val (Optional[float]): average value.
-
-        Raises:
-            ValueError: If value is not a number.
-            ValueError: If value is outside min-max range.
-        """
-        self._mean = val
-
-    @property
-    def dev(self) -> Optional[float]:
-        """*dev* Get the Variable standard deviation.
-
-        Returns:
-            Optional[float]: Variable standard deviation.
-        """
-        return self._dev
-
-    @dev.setter
-    @validate_type(int, float)
-    def dev(self, val: Optional[float]) -> None:
-        """*dev* Sets the Variable standard deviation.
-
-        Args:
-            val (Optional[float]): Variable standard deviation.
-        Raises:
-            ValueError: If value not a valid number.
-        """
-        self._dev = val
+    # Value range properties specific to Coefficient
 
     @property
     def step(self) -> Optional[float]:
@@ -573,87 +361,88 @@ class Coefficient(Foundation):
         return self._step
 
     @step.setter
-    @validate_type(int, float)
-    @validate_custom(lambda self, val: self._validate_step_value(val))
+    @validate_type(int, float, allow_none=False)
+    @validate_range(min_value=0,
+                    min_inclusive=False,
+                    min_attr="_min",
+                    max_attr="_max")
     def step(self, val: Optional[float]) -> None:
         """*step* Set standardized step size.
 
         Args:
             val (Optional[float]): Step size (always standardized).
-
-        Raises:
-            ValueError: If step is not a valid number
-            ValueError: If step is zero.
-            ValueError: If step is greater than range.
         """
         self._step = val
 
-        # Update range if all values are available
-        if all([self._min is not None,
-                self._max is not None,
-                self._step is not None]):
-            self._range = np.arange(self._min,
-                                    self._max,
-                                    self._step)
-
     @property
     def data(self) -> np.ndarray:
-        """*data* Get the data array.
+        """*data* Get standardized data array.
 
         Returns:
-            np.ndarray: Data array. If not explicitly set, generates from min, max, step.
+            np.ndarray: Data array for range (always standardized).
         """
-        # If data was explicitly set, return it
-        if len(self._data) > 0:
-            return self._data
-
-        # Otherwise, generate from range parameters
-        if self._min is not None and self._max is not None and self._step != 0:
-            return np.arange(self._min, self._max, self._step)
-
-        # Default to empty array
-        return np.array([], dtype=float)
+        return self._data
 
     @data.setter
-    @validate_type(np.ndarray, list, allow_none=False)
-    def data(self, val: Union[np.ndarray, list]) -> None:
-        """*data* Set the data array.
+    @validate_type(list, np.ndarray, allow_none=False)
+    def data(self, val: np.ndarray) -> None:
+        """*data* Set standardized data array.
 
         Args:
-            val (Union[np.ndarray, list]): Data array or list.
+            val (np.ndarray): Data array for range (always standardized).
 
         Raises:
-            ValueError: If data cannot be converted to numpy array.
+            ValueError: If value is not a numpy array.
         """
-        # Convert list to numpy array if needed
-        if isinstance(val, list):
-            self._data = np.array(val, dtype=float)
+        self._data = val
+
+    def generate_data(self) -> None:
+        """*generate_data()* Generate standardized data array from min, max, using step value.
+
+        Raises:
+            ValueError: If needed values are missing.
+        """
+        # Type narrow using local variables
+        _min = self._min
+        _max = self._max
+        _step = self._step
+
+        if _min is not None and _max is not None and _step is not None:
+            self._data = np.arange(_min, _max, _step)
         else:
-            self._data = val
+            _msg = "Cannot generate data array. Needed values are missing: "
+            _msg += f"_min={_min}, _max={_max}, _step={_step}."
+            raise ValueError(_msg)
+
+    def get_data(self) -> Dict[str, List]:
+        """*get_data()* Get data array from the dimensionless coefficient and its variables.
+
+        Returns:
+            Dict[str, List]: Data dictionary with 'symbol': data_list entries.
+        """
+        ans = dict()
+        # Add variable data
+        for sym, var in self.variables.items():
+            ans[sym] = var.data
+        # Add coefficient data
+        ans[self._sym] = self.data.tolist()
+        return ans
 
     def clear(self) -> None:
         """*clear()* Reset all attributes to default values.
 
         Resets all coefficient properties to their initial state.
         """
-        # Reset base class attributes
-        self._idx = -1
-        self._sym = ""
-        self._alias = ""
-        self._fwk = "PHYSICAL"
-        self.name = ""
-        self.description = ""
+        # Reset parent class attributes (Foundation and BoundsSpecs)
+        super().clear()
 
         # Reset coefficient-specific attributes
-        self._cat = "COMPUTED"
+        self._cat = CoefCardinality.COMPUTED.value
         self._variables = {}
         self._dim_col = []
-        self._pivot_lt = None
+        self._pivot_lt = []
         self._pi_expr = None
         self.var_dims = {}
-        self._min = None
-        self._max = None
-        self._mean = None
         self._step = 1e-3
         self._data = np.array([])
         self.relevance = True

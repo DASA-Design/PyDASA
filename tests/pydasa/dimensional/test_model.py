@@ -409,6 +409,7 @@ class TestDimMatrix(unittest.TestCase):
 
             derived = model.derive_coefficient(
                 expr=expr,
+                symbol="\\Pi_{100}",
                 name="Test Derived",
                 description="Test derived coefficient"
             )
@@ -466,7 +467,7 @@ class TestDimMatrix(unittest.TestCase):
     def test_analyze_empty_model(self) -> None:
         """Test analyze fails on empty model."""
         model = Matrix()
-        
+
         with pytest.raises(ValueError):
             model.analyze()
 
@@ -585,19 +586,6 @@ class TestDimMatrix(unittest.TestCase):
         assert "n_var" in result
         assert result["name"] == "Fluid Test Model"
 
-    # def test_to_dict_json_serializable(self) -> None:
-    #     """Test to_dict result is JSON serializable."""
-    #     # TODO not priorityt, do it later!
-    #     model = self.create_test_model(self.test_framework,
-    #                                    self.test_variables)
-    #     model.analyze()
-    #     result = model.to_dict()
-
-    #     # Should not raise exception
-    #     json_str = json.dumps(result, indent=2)
-    #     assert isinstance(json_str, str)
-    #     assert len(json_str) > 0
-
     def test_from_dict_roundtrip(self) -> None:
         """Test from_dict restores model correctly."""
         model1 = self.create_test_model(self.test_framework,
@@ -697,3 +685,277 @@ class TestDimMatrix(unittest.TestCase):
         # All variables in relevant_lt should have relevant=True
         for var in model._relevant_lt.values():
             assert var.relevant is True
+
+    # ========================================================================
+    # Coefficient derivation tests
+    # ========================================================================
+
+    def test_derive_coefficient_inverse(self) -> None:
+        """Test derive_coefficient() correctly inverts a coefficient. This test checks that when inverting a Pi coefficient (raising to -1 power), the exponents are correctly negated, not squared.
+
+        For example, if π₀ = μ/(ρvD) with exponents {ρ: -1, v: -1, D: -1, μ: 1}, then 1/π₀ should give {ρ: 1, v: 1, D: 1, μ: -1} (negated exponents), NOT {ρ: -2, v: -2, D: -2, μ: 2} (squared exponents - this is the bug).
+        """
+        # Create and solve model to get Pi coefficients
+        model = self.create_test_model(self.test_framework, self.test_variables)
+        model.create_matrix()
+        model.solve_matrix()
+
+        # Get the first Pi coefficient
+        pi_keys = list(model._coefficients.keys())
+        assert len(pi_keys) > 0, "Model should generate at least one Pi coefficient"
+
+        pi_0_key = pi_keys[0]
+        pi_0 = model._coefficients[pi_0_key]
+
+        # Store original exponents
+        original_exponents = pi_0.var_dims.copy()
+
+        # Derive inverted coefficient using derive_coefficient()
+        derived = model.derive_coefficient(
+            expr=f"{pi_0_key}**(-1)",
+            symbol="\\Pi_{100}",
+            name="Inverted Coefficient",
+            description="Test inverse of Pi_0",
+            idx=100
+        )
+
+        # Check that exponents are negated (correct behavior), not squared (bug)
+        for var, original_exp in original_exponents.items():
+            expected_exp = -original_exp  # Should be negated
+            actual_exp = derived.var_dims.get(var, 0)
+
+            # This will fail if the bug exists (exponents are squared instead of negated)
+            assert actual_exp == expected_exp, (
+                f"Variable {var}: expected exponent {expected_exp} (negated), "
+                f"but got {actual_exp}. Original exponent was {original_exp}. "
+                f"Bug: exponents are being squared instead of negated when inverting."
+            )
+
+    def test_derive_coefficient_multiplication(self) -> None:
+        """Test derive_coefficient() correctly multiplies coefficients. When multiplying two Pi coefficients, their exponents should be added.
+        """
+        # Create and solve model
+        model = self.create_test_model(self.test_framework, self.test_variables)
+        model.create_matrix()
+        model.solve_matrix()
+
+        # Get at least two Pi coefficients
+        pi_keys = list(model._coefficients.keys())
+        if len(pi_keys) < 2:
+            pytest.skip("Need at least 2 Pi coefficients for multiplication test")
+
+        pi_0_key = pi_keys[0]
+        pi_1_key = pi_keys[1]
+        pi_0 = model._coefficients[pi_0_key]
+        pi_1 = model._coefficients[pi_1_key]
+
+        # Derive multiplied coefficient
+        derived = model.derive_coefficient(
+            expr=f"{pi_0_key} * {pi_1_key}",
+            symbol="\\Pi_{101}",
+            name="Multiplied Coefficient",
+            description="Test multiplication of Pi_0 and Pi_1",
+            idx=101
+        )
+
+        # Check that exponents are added correctly
+        all_vars = set(pi_0.var_dims.keys()) | set(pi_1.var_dims.keys())
+        for var in all_vars:
+            exp_0 = pi_0.var_dims.get(var, 0)
+            exp_1 = pi_1.var_dims.get(var, 0)
+            expected_exp = exp_0 + exp_1
+            actual_exp = derived.var_dims.get(var, 0)
+
+            assert actual_exp == expected_exp, (
+                f"Variable {var}: expected exponent {expected_exp} (sum of {exp_0} + {exp_1}), "
+                f"but got {actual_exp}"
+            )
+
+    def test_derive_coefficient_division(self) -> None:
+        """Test derive_coefficient() correctly divides coefficients. When dividing two Pi coefficients, their exponents should be subtracted.
+        """
+        # Create and solve model
+        model = self.create_test_model(self.test_framework, self.test_variables)
+        model.create_matrix()
+        model.solve_matrix()
+
+        # Get at least two Pi coefficients
+        pi_keys = list(model._coefficients.keys())
+        if len(pi_keys) < 2:
+            pytest.skip("Need at least 2 Pi coefficients for division test")
+
+        pi_0_key = pi_keys[0]
+        pi_1_key = pi_keys[1]
+        pi_0 = model._coefficients[pi_0_key]
+        pi_1 = model._coefficients[pi_1_key]
+
+        # Derive divided coefficient
+        derived = model.derive_coefficient(
+            expr=f"{pi_0_key} / {pi_1_key}",
+            symbol="\\Pi_{102}",
+            name="Divided Coefficient",
+            description="Test division of Pi_0 by Pi_1",
+            idx=102
+        )
+
+        # Check that exponents are subtracted correctly
+        all_vars = set(pi_0.var_dims.keys()) | set(pi_1.var_dims.keys())
+        for var in all_vars:
+            exp_0 = pi_0.var_dims.get(var, 0)
+            exp_1 = pi_1.var_dims.get(var, 0)
+            expected_exp = exp_0 - exp_1
+            actual_exp = derived.var_dims.get(var, 0)
+
+            assert actual_exp == expected_exp, (
+                f"Variable {var}: expected exponent {expected_exp} (difference of {exp_0} - {exp_1}), "
+                f"but got {actual_exp}"
+            )
+
+    def test_derive_coefficient_addition(self) -> None:
+        """Test derive_coefficient() handles addition of coefficients.When adding dimensionless Pi coefficients (π₀ + π₁), the result is dimensionless but cannot be expressed as a product of powers of the original variables. The dimensional formula should be all zeros.
+
+        NOTE: Addition of dimensionless numbers yields a dimensionless result, but the exponent algebra (adding exponents) only applies to multiplication. For addition, we expect all exponents to be zero (dimensionless).
+        """
+        # Create and solve model
+        model = self.create_test_model(self.test_framework, self.test_variables)
+        model.create_matrix()
+        model.solve_matrix()
+
+        # Get at least two Pi coefficients
+        pi_keys = list(model._coefficients.keys())
+        if len(pi_keys) < 2:
+            pytest.skip("Need at least 2 Pi coefficients for addition test")
+
+        pi_0_key = pi_keys[0]
+        pi_1_key = pi_keys[1]
+
+        # Derive added coefficient
+        derived = model.derive_coefficient(
+            expr=f"{pi_0_key} + {pi_1_key}",
+            symbol="\\Pi_{103}",
+            name="Added Coefficient",
+            description="Test addition of Pi_0 and Pi_1",
+            idx=103
+        )
+
+        # For addition of dimensionless numbers, result should be dimensionless
+        # All exponents should be 0
+        for var, exp in derived.var_dims.items():
+            assert exp == 0, (
+                f"Variable {var}: expected exponent 0 (dimensionless), "
+                f"but got {exp}. Addition of dimensionless numbers yields dimensionless result."
+            )
+
+    def test_derive_coefficient_subtraction(self) -> None:
+        """Test derive_coefficient() handles subtraction of coefficients. When subtracting dimensionless Pi coefficients (π₀ - π₁), the result is dimensionless but cannot be expressed as a product of powers of the original variables. The dimensional formula should be all zeros.
+
+        NOTE: Subtraction of dimensionless numbers yields a dimensionless result, but the exponent algebra only applies to multiplication/division. For subtraction, we expect all exponents to be zero (dimensionless).
+        """
+        # Create and solve model
+        model = self.create_test_model(self.test_framework, self.test_variables)
+        model.create_matrix()
+        model.solve_matrix()
+
+        # Get at least two Pi coefficients
+        pi_keys = list(model._coefficients.keys())
+        if len(pi_keys) < 2:
+            pytest.skip("Need at least 2 Pi coefficients for subtraction test")
+
+        pi_0_key = pi_keys[0]
+        pi_1_key = pi_keys[1]
+
+        # Derive subtracted coefficient
+        derived = model.derive_coefficient(
+            expr=f"{pi_0_key} - {pi_1_key}",
+            symbol="\\Pi_{104}",
+            name="Subtracted Coefficient",
+            description="Test subtraction of Pi_0 and Pi_1",
+            idx=104
+        )
+
+        # For subtraction of dimensionless numbers, result should be dimensionless
+        # All exponents should be 0
+        for var, exp in derived.var_dims.items():
+            assert exp == 0, (
+                f"Variable {var}: expected exponent 0 (dimensionless), "
+                f"but got {exp}. Subtraction of dimensionless numbers yields dimensionless result."
+            )
+    def test_derive_coefficient_with_constant(self) -> None:
+        """Test derive_coefficient() handles expressions with numeric constants.
+        
+        Numeric constants are dimensionless and don't affect the dimensional formula.
+        For example, 2*Pi_0 has the same dimensional structure as Pi_0.
+        """
+        # Create and solve model
+        model = self.create_test_model(self.test_framework, self.test_variables)
+        model.create_matrix()
+        model.solve_matrix()
+
+        # Get at least one Pi coefficient
+        pi_keys = list(model._coefficients.keys())
+        if len(pi_keys) < 1:
+            pytest.skip("Need at least 1 Pi coefficient for constant test")
+
+        pi_0_key = pi_keys[0]
+        pi_0 = model._coefficients[pi_0_key]
+
+        # Derive coefficient with constant multiplier
+        derived = model.derive_coefficient(
+            expr=f"2 * {pi_0_key}",
+            symbol="\\Pi_{105}",
+            name="Scaled Coefficient",
+            description="Test constant multiplication with Pi_0",
+            idx=105
+        )
+
+        # Constants don't affect dimensions - result should have same dimensions as Pi_0
+        for var in pi_0.var_dims.keys():
+            exp_0 = pi_0.var_dims.get(var, 0)
+            actual_exp = derived.var_dims.get(var, 0)
+
+            assert actual_exp == exp_0, (
+                f"Variable {var}: expected exponent {exp_0} (same as Pi_0), "
+                f"but got {actual_exp}. Constants are dimensionless."
+            )
+
+    def test_derive_coefficient_complex_with_constant(self) -> None:
+        """Test derive_coefficient() handles complex expressions with constants.
+        
+        Test expressions like 2*Pi_1*Pi_0^(-1) where constants are mixed with operations.
+        """
+        # Create and solve model
+        model = self.create_test_model(self.test_framework, self.test_variables)
+        model.create_matrix()
+        model.solve_matrix()
+
+        # Get at least two Pi coefficients
+        pi_keys = list(model._coefficients.keys())
+        if len(pi_keys) < 2:
+            pytest.skip("Need at least 2 Pi coefficients for complex constant test")
+
+        pi_0_key = pi_keys[0]
+        pi_1_key = pi_keys[1]
+        pi_0 = model._coefficients[pi_0_key]
+        pi_1 = model._coefficients[pi_1_key]
+
+        # Derive coefficient with complex expression: 2 * Pi_1 * Pi_0^(-1)
+        derived = model.derive_coefficient(
+            expr=f"2 * {pi_1_key} * {pi_0_key}**(-1)",
+            symbol="\\Pi_{106}",
+            name="Complex Scaled Ratio",
+            description="Test constant with multiplication and power",
+            idx=106
+        )
+
+        # Result should be Pi_1 / Pi_0 (constant doesn't affect dimensions)
+        all_vars = set(pi_0.var_dims.keys()) | set(pi_1.var_dims.keys())
+        for var in all_vars:
+            exp_0 = pi_0.var_dims.get(var, 0)
+            exp_1 = pi_1.var_dims.get(var, 0)
+            expected_exp = exp_1 - exp_0  # Pi_1 * Pi_0^(-1) = Pi_1 / Pi_0
+            actual_exp = derived.var_dims.get(var, 0)
+
+            assert actual_exp == expected_exp, (
+                f"Variable {var}: expected exponent {expected_exp} (Pi_1/Pi_0), "
+                f"but got {actual_exp}"
+            )

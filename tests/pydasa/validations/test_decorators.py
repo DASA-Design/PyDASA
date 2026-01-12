@@ -15,6 +15,8 @@ from pydasa.validations.decorators import (
     validate_range,
     validate_index,
     validate_pattern,
+    validate_list_types,
+    validate_dict_types,
 )
 
 
@@ -380,3 +382,164 @@ class TestValidationDecorators(unittest.TestCase):
         error_msg = str(ctx.exception)
         self.assertIn("Examples:", error_msg)
         self.assertIn("\\\\alpha", error_msg)
+
+    def test_validate_list_types_valid(self):
+        """Test validate_list_types with valid element types"""
+        class TestClass:
+            @property
+            def value(self):
+                return self._value
+
+            @value.setter
+            @validate_type(list, allow_none=False)
+            @validate_emptiness()
+            @validate_list_types(int, float)
+            def value(self, val):
+                self._value = val
+
+        obj = TestClass()
+        obj.value = [1, 2, 3]
+        self.assertEqual(obj.value, [1, 2, 3])
+
+        obj.value = [1.5, 2.5, 3.5]
+        self.assertEqual(obj.value, [1.5, 2.5, 3.5])
+
+        obj.value = [1, 2.5, 3]
+        self.assertEqual(obj.value, [1, 2.5, 3])
+
+    def test_validate_list_types_invalid(self):
+        """Test validate_list_types with invalid element types"""
+        class TestClass:
+            @property
+            def value(self):
+                return self._value
+
+            @value.setter
+            @validate_type(list, allow_none=False)
+            @validate_emptiness()
+            @validate_list_types(int, float)
+            def value(self, val):
+                self._value = val
+
+        obj = TestClass()
+        with self.assertRaises(ValueError) as ctx:
+            obj.value = [1, 2, "three"]
+        self.assertIn("must contain only", str(ctx.exception))
+        self.assertIn("int or float", str(ctx.exception))
+
+    def test_validate_list_types_single_type(self):
+        """Test validate_list_types with single element type"""
+        class TestClass:
+            @property
+            def value(self):
+                return self._value
+
+            @value.setter
+            @validate_type(list, allow_none=False)
+            @validate_emptiness()
+            @validate_list_types(int)
+            def value(self, val):
+                self._value = val
+
+        obj = TestClass()
+        obj.value = [1, 2, 3]
+        self.assertEqual(obj.value, [1, 2, 3])
+
+        with self.assertRaises(ValueError) as ctx:
+            obj.value = [1, 2.5, 3]
+        self.assertIn("must contain only", str(ctx.exception))
+
+    def test_validate_dict_types_valid(self):
+        """Test validate_dict_types with valid key and value types"""
+        # Create a simple Variable-like class for testing
+        class Variable:
+            def __init__(self, name):
+                self.name = name
+
+        class TestClass:
+            @property
+            def value(self):
+                return self._value
+
+            @value.setter
+            @validate_type(dict, allow_none=False)
+            @validate_emptiness()
+            @validate_dict_types(str, Variable)
+            def value(self, val):
+                self._value = val
+
+        obj = TestClass()
+        obj.value = {"a": Variable("A"), "b": Variable("B")}
+        self.assertEqual(len(obj.value), 2)
+        self.assertIn("a", obj.value)
+
+    def test_validate_dict_types_invalid_keys(self):
+        """Test validate_dict_types with invalid key types"""
+        class Variable:
+            def __init__(self, name):
+                self.name = name
+
+        class TestClass:
+            @property
+            def value(self):
+                return self._value
+
+            @value.setter
+            @validate_type(dict, allow_none=False)
+            @validate_emptiness()
+            @validate_dict_types(str, Variable)
+            def value(self, val):
+                self._value = val
+
+        obj = TestClass()
+        with self.assertRaises(ValueError) as ctx:
+            obj.value = {1: Variable("A"), "b": Variable("B")}
+        self.assertIn("keys must be str", str(ctx.exception))
+        self.assertIn("invalid keys", str(ctx.exception))
+
+    def test_validate_dict_types_invalid_values(self):
+        """Test validate_dict_types with invalid value types"""
+        class Variable:
+            def __init__(self, name):
+                self.name = name
+
+        class TestClass:
+            @property
+            def value(self):
+                return self._value
+
+            @value.setter
+            @validate_type(dict, allow_none=False)
+            @validate_emptiness()
+            @validate_dict_types(str, Variable)
+            def value(self, val):
+                self._value = val
+
+        obj = TestClass()
+        with self.assertRaises(ValueError) as ctx:
+            obj.value = {"a": Variable("A"), "b": "not a variable"}
+        self.assertIn("values must be Variable", str(ctx.exception))
+        self.assertIn("invalid value(s)", str(ctx.exception))
+
+    def test_validate_dict_types_simple(self):
+        """Test validate_dict_types with simple types"""
+        class TestClass:
+            @property
+            def value(self):
+                return self._value
+
+            @value.setter
+            @validate_type(dict, allow_none=False)
+            @validate_emptiness()
+            @validate_dict_types(str, int)
+            def value(self, val):
+                self._value = val
+
+        obj = TestClass()
+        obj.value = {"a": 1, "b": 2, "c": 3}
+        self.assertEqual(obj.value, {"a": 1, "b": 2, "c": 3})
+
+        with self.assertRaises(ValueError) as ctx:
+            obj.value = {"a": 1, "b": "two"}
+        self.assertIn("values must be int", str(ctx.exception))
+

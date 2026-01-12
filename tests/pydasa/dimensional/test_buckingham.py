@@ -193,14 +193,14 @@ class TestCoefficient(unittest.TestCase):
         coef = Coefficient()
         with pytest.raises(ValueError) as excinfo:
             coef.variables = {123: self.test_variables["v"]}     # type: ignore
-        assert "must contain" in str(excinfo.value)
+        assert "keys must be str" in str(excinfo.value)
 
     def test_variables_setter_invalid_values(self) -> None:
         """Test variables property setter with invalid values."""
         coef = Coefficient()
         with pytest.raises(ValueError) as excinfo:
             coef.variables = {"v": "not a variable"}     # type: ignore
-        assert "must contain" in str(excinfo.value)
+        assert "values must be Variable" in str(excinfo.value)
 
     # ========================================================================
     # Dimensional column property tests
@@ -338,7 +338,7 @@ class TestCoefficient(unittest.TestCase):
 
         with pytest.raises(ValueError) as excinfo:
             coef.mean = 15.0
-        assert "cannot be greater than maximum" in str(excinfo.value)
+        assert "15.0" in str(excinfo.value) and "0.0" in str(excinfo.value) and "10.0" in str(excinfo.value)
 
     def test_step_setter_valid(self) -> None:
         """Test step property setter with valid value."""
@@ -353,7 +353,7 @@ class TestCoefficient(unittest.TestCase):
         coef = Coefficient()
         with pytest.raises(ValueError) as excinfo:
             coef.step = 0.0
-        assert "cannot be zero" in str(excinfo.value)
+        assert "must be > 0" in str(excinfo.value)
 
     # ========================================================================
     # Data array property tests
@@ -365,6 +365,7 @@ class TestCoefficient(unittest.TestCase):
         coef.min = 0.0
         coef.max = 10.0
         coef.step = 2.0
+        coef.generate_data()
 
         expected_data = np.arange(0.0, 10.0, 2.0)
         assert np.array_equal(coef.data, expected_data)
@@ -383,6 +384,65 @@ class TestCoefficient(unittest.TestCase):
         # Should return custom data, not auto-generated
         assert np.array_equal(coef.data, custom_data)
         assert not np.array_equal(coef.data, np.arange(0.0, 10.0, 2.0))
+
+    def test_get_data(self) -> None:
+        """Test get_data method returns coefficient and variable data."""
+        # Create coefficient with variables
+        simple_vars = {
+            "v": self.test_variables["v"],
+            "L": self.test_variables["L"]
+        }
+
+        coef = Coefficient(
+            _idx=0,
+            _sym="\\Pi_{0}",
+            _variables=simple_vars,
+            _dim_col=[1, -1]
+        )
+
+        # Set up data for variables
+        v_data = np.array([1.0, 2.0, 3.0])
+        L_data = np.array([0.5, 1.0, 1.5])
+        self.test_variables["v"].data = v_data
+        self.test_variables["L"].data = L_data
+
+        # Set up data for coefficient
+        coef_data = np.array([2.0, 2.0, 2.0])
+        coef.data = coef_data
+
+        # Get data dictionary
+        result = coef.get_data()
+
+        # Verify structure
+        assert isinstance(result, dict)
+        assert len(result) == 3  # Two variables + coefficient
+
+        # Verify variable data
+        assert "v" in result
+        assert "L" in result
+        assert np.array_equal(result["v"], v_data)
+        assert np.array_equal(result["L"], L_data)
+
+        # Verify coefficient data
+        assert "\\Pi_{0}" in result
+        assert result["\\Pi_{0}"] == coef_data.tolist()
+
+    def test_get_data_empty_variables(self) -> None:
+        """Test get_data with coefficient without variables."""
+        coef = Coefficient(_idx=0, _sym="\\Pi_{0}")
+
+        # Set up coefficient data only
+        coef_data = np.array([1.0, 2.0, 3.0])
+        coef.data = coef_data
+
+        # Get data dictionary
+        result = coef.get_data()
+
+        # Should only contain coefficient data
+        assert isinstance(result, dict)
+        assert len(result) == 1
+        assert "\\Pi_{0}" in result
+        assert result["\\Pi_{0}"] == coef_data.tolist()
 
     # ========================================================================
     # Expression building tests
@@ -450,44 +510,6 @@ class TestCoefficient(unittest.TestCase):
         with pytest.raises(ValueError) as excinfo:
             coef._build_expression(var_lt, dim_col)
         assert "must be equal" in str(excinfo.value)
-
-    # ========================================================================
-    # Foundation method tests
-    # ========================================================================
-
-    def test_validate_sequence_valid_single_type(self) -> None:
-        """Test _validate_sequence with valid single type."""
-        coef = Coefficient()
-        assert coef._validate_sequence([1, 2, 3], int) is True
-        assert coef._validate_sequence([1.0, 2.0], float) is True
-        assert coef._validate_sequence(["a", "b"], str) is True
-
-    def test_validate_sequence_valid_multiple_types(self) -> None:
-        """Test _validate_sequence with multiple valid types."""
-        coef = Coefficient()
-        assert coef._validate_sequence([1, 2.0, 3], (int, float)) is True
-
-    def test_validate_sequence_invalid_not_sequence(self) -> None:
-        """Test _validate_sequence with non-sequence."""
-        coef = Coefficient()
-        with pytest.raises(ValueError) as excinfo:
-            coef._validate_sequence(cast(Any, "not a sequence"), int)
-        # String is rejected with specific message
-        assert "must be a list or tuple" in str(excinfo.value)
-
-    def test_validate_sequence_invalid_empty(self) -> None:
-        """Test _validate_sequence with empty sequence."""
-        coef = Coefficient()
-        with pytest.raises(ValueError) as excinfo:
-            coef._validate_sequence([], int)
-        assert "cannot be empty" in str(excinfo.value)
-
-    def test_validate_sequence_invalid_wrong_types(self) -> None:
-        """Test _validate_sequence with wrong element types."""
-        coef = Coefficient()
-        with pytest.raises(ValueError) as excinfo:
-            coef._validate_sequence([1, "two", 3], int)
-        assert "must contain" in str(excinfo.value)
 
     # ========================================================================
     # Utility methods tests

@@ -5,6 +5,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.10] - 2026-01-12
+### Added
+- New validation decorators `validate_list_types` and `validate_dict_types` in `pydasa.validations.decorators` module
+- Comprehensive test suite for new validation decorators (8 new test cases)
+- Tests for `Coefficient.get_data()` method in test_buckingham.py
+
+### Changed
+- Refactored `Coefficient` class to use new `@validate_list_types` and `@validate_dict_types` decorators
+- Simplified `Coefficient.clear()` method to use `super().clear()` from parent classes (Foundation, BoundsSpecs)
+- Updated test assertions to match new decorator error messages
+
+### Fixed
+- Updated variable test data keys from metric to setpoint
+- Adjusted decorator validation range syntax
+
+### Improved
+- Reduced code duplication by replacing custom validation methods with reusable decorators
+- Enhanced type validation for parameterized generics (Dict[str, Variable], List[int])
+- Cleaner and more maintainable validation architecture
+
+## [0.4.9] - 2026-01-10
+### Changed
+- Updated author information and email in setup.py
+- Refactored `Dimension` class to use `Frameworks` enum
+
+### Fixed
+- Cleaned up redundant code in `Variable` class
+- Revised comments in memory.py and functions.py
+- Removed deprecated workflows/__init__.py file
+
+## [0.4.8] - 2026-01-08
+### Added
+- `metric` and `std_metric` properties to `NumericalSpecs` class
+- Comprehensive tests for new metric properties
+
+### Fixed
+- Enhanced numerical specifications with metric property support
+- Updated test data structure to support metric properties
+
 ## [0.4.7] - 2026-01-07
 ### Changed
 - Update CHANGELOG for versions 0.4.4, 0.4.5, and 0.4.6 releases

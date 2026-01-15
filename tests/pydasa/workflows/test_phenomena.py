@@ -99,9 +99,11 @@ class TestAnalysisEngine(unittest.TestCase):
     def test_custom_engine(self) -> None:
         """*test_custom_engine()* tests creating engine with custom values."""
         # Create engine with custom data
+        # CUSTOM framework requires _schema parameter with FDU definitions
         engine = AnalysisEngine(
             _idx=0,
             _fwk="CUSTOM",
+            _schema=self.test_data["FDU_LIST"],  # Provide custom FDU definitions
             _name="Test Engine",
             description="Test Dimensional Analysis Engine"
         )
@@ -217,9 +219,8 @@ class TestAnalysisEngine(unittest.TestCase):
     def test_create_matrix(self) -> None:
         """*test_create_matrix()* tests creating dimensional matrix."""
         # Create engine with variables
-        engine = AnalysisEngine(_fwk="CUSTOM")
+        engine = AnalysisEngine(_fwk="CUSTOM", _schema=self.test_data["FDU_LIST"])
         engine.variables = self.test_variables
-        engine.schema = self.dim_schema
 
         # Create matrix
         engine.create_matrix()
@@ -254,9 +255,8 @@ class TestAnalysisEngine(unittest.TestCase):
     def test_run_analysis_complete_workflow(self) -> None:
         """*test_run_analysis_complete_workflow()* tests complete analysis workflow."""
         # Create engine with minimal setup
-        engine = AnalysisEngine(_fwk="CUSTOM")
+        engine = AnalysisEngine(_fwk="CUSTOM", _schema=self.test_data["FDU_LIST"])
         engine.variables = self.test_variables
-        engine.schema = self.dim_schema
 
         # Run complete workflow
         # try:
@@ -274,7 +274,7 @@ class TestAnalysisEngine(unittest.TestCase):
     def test_reset(self) -> None:
         """*test_reset()* tests resetting engine state."""
         # Create engine with data
-        engine = AnalysisEngine(_fwk="CUSTOM")
+        engine = AnalysisEngine(_fwk="CUSTOM", _schema=self.test_data["FDU_LIST"])
         engine.variables = self.test_variables
         engine._coefficients = self.test_coefficients
         engine._is_solved = True
@@ -292,7 +292,7 @@ class TestAnalysisEngine(unittest.TestCase):
     def test_clear(self) -> None:
         """*test_clear()* tests clearing all engine data."""
         # Create engine with data
-        engine = AnalysisEngine(_fwk="CUSTOM")
+        engine = AnalysisEngine(_fwk="CUSTOM", _schema=self.test_data["FDU_LIST"])
         engine.variables = self.test_variables
         engine._coefficients = self.test_coefficients
         engine._is_solved = True
@@ -329,6 +329,7 @@ class TestAnalysisEngine(unittest.TestCase):
         engine = AnalysisEngine(
             _idx=0,
             _fwk="CUSTOM",
+            _schema=self.test_data["FDU_LIST"],
             _name="Test",
             description="Test engine"
         )
@@ -355,6 +356,7 @@ class TestAnalysisEngine(unittest.TestCase):
         engine1 = AnalysisEngine(
             _idx=0,
             _fwk="CUSTOM",
+            _schema=self.test_data["FDU_LIST"],
             _name="Test",
             description="Test engine"
         )
@@ -398,30 +400,6 @@ class TestAnalysisEngine(unittest.TestCase):
 
         # Test solved status shown
         assert "solved" in repr_str
-
-    def test_validate_dict_helper(self) -> None:
-        """*test_validate_dict_helper()* tests dictionary validation method."""
-        # Create engine
-        engine = AnalysisEngine()
-
-        # Test valid dictionary
-        valid_dict = {"key1": Variable(), "key2": Variable()}
-        assert engine._validate_dict(valid_dict, Variable)
-
-        # Test invalid type
-        with pytest.raises(ValueError) as excinfo:
-            engine._validate_dict("not a dict", Variable)   # type: ignore
-        assert "must be a dictionary" in str(excinfo.value)
-
-        # Test empty dictionary
-        with pytest.raises(ValueError) as excinfo:
-            engine._validate_dict({}, Variable)
-        assert "cannot be empty" in str(excinfo.value)
-
-        # Test wrong value types
-        with pytest.raises(ValueError) as excinfo:
-            engine._validate_dict({"key": "not_variable"}, Variable)
-        assert "must contain" in str(excinfo.value)
 
     def test_is_solved_property(self) -> None:
         """*test_is_solved_property()* tests is_solved property."""
@@ -504,3 +482,92 @@ class TestAnalysisEngine(unittest.TestCase):
         with pytest.raises(ValueError) as excinfo:
             engine.schema = 123     # type: ignore
         assert "must be str or dict or Schema" in str(excinfo.value)
+
+    def test_derive_coefficient_without_matrix(self) -> None:
+        """*test_derive_coefficient_without_matrix()* tests error when deriving without matrix."""
+        # Create engine without matrix
+        engine = AnalysisEngine()
+        engine.variables = self.test_variables
+
+        # Try to derive coefficient without creating matrix
+        with pytest.raises(ValueError) as excinfo:
+            engine.derive_coefficient(expr="\\Pi_{0}**(-1)", symbol="\\Pi_{4}")
+        assert "Matrix must be created before deriving coefficients" in str(excinfo.value)
+
+    def test_derive_coefficient_without_solving(self) -> None:
+        """*test_derive_coefficient_without_solving()* tests error when deriving without solving."""
+        # Create engine and matrix but don't solve
+        engine = AnalysisEngine(_fwk="CUSTOM", _schema=self.test_data["FDU_LIST"])
+        engine.variables = self.test_variables
+        engine.create_matrix()
+
+        # Try to derive coefficient without solving
+        with pytest.raises(ValueError) as excinfo:
+            engine.derive_coefficient(expr="\\Pi_{0}**(-1)", symbol="\\Pi_{4}")
+        assert "Matrix must be solved before deriving coefficients" in str(excinfo.value)
+
+    def test_derive_coefficient_success(self) -> None:
+        """*test_derive_coefficient_success()* tests successful coefficient derivation."""
+        # Create and solve engine
+        engine = AnalysisEngine(_fwk="CUSTOM", _schema=self.test_data["FDU_LIST"])
+        engine.variables = self.test_variables
+        engine.run_analysis()
+
+        # Derive a new coefficient (inverse of Pi_0)
+        derived = engine.derive_coefficient(
+            expr="\\Pi_{0}**(-1)",
+            symbol="\\Pi_{4}",
+            name="Derived Coefficient",
+            description="Test derived coefficient"
+        )
+
+        # Test coefficient derived
+        assert derived is not None
+        assert isinstance(derived, Coefficient)
+        assert derived.name == "Derived Coefficient"
+        assert derived.description == "Test derived coefficient"
+
+    def test_derive_coefficient_with_multiplication(self) -> None:
+        """*test_derive_coefficient_with_multiplication()* tests deriving coefficient with multiplication."""
+        # Create and solve engine
+        engine = AnalysisEngine(_fwk="CUSTOM", _schema=self.test_data["FDU_LIST"])
+        engine.variables = self.test_variables
+        engine.run_analysis()
+
+        # Get number of existing coefficients
+        n_coeffs = len(engine.coefficients)
+
+        # Only test if we have at least 2 coefficients
+        if n_coeffs >= 2:
+            # Derive a combined coefficient
+            derived = engine.derive_coefficient(
+                expr="\\Pi_{0} * \\Pi_{1}",
+                symbol="\\Pi_{4}",
+                name="Combined Coefficient"
+            )
+
+            # Test coefficient derived
+            assert derived is not None
+            assert isinstance(derived, Coefficient)
+            assert derived.name == "Combined Coefficient"
+
+    def test_derive_coefficient_delegates_to_matrix(self) -> None:
+        """*test_derive_coefficient_delegates_to_matrix()* tests that derive_coefficient delegates to Matrix."""
+        # Create and solve engine
+        engine = AnalysisEngine(_fwk="CUSTOM", _schema=self.test_data["FDU_LIST"])
+        engine.variables = self.test_variables
+        engine.run_analysis()
+
+        # Derive coefficient
+        derived = engine.derive_coefficient(
+            expr="\\Pi_{0}**(-1)",
+            symbol="\\Pi_{99}",
+            name="Test",
+            description="Test description",
+            idx=99
+        )
+
+        # Test parameters passed correctly
+        assert derived.name == "Test"
+        assert derived.description == "Test description"
+        assert derived.idx == 99

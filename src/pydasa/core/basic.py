@@ -19,6 +19,7 @@ Classes:
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional
+import inspect
 
 # indicate it is an abstract base class
 from abc import ABC
@@ -265,18 +266,28 @@ class Foundation(IdxBasis):
         self.description = ""
 
     def __str__(self) -> str:
-        """*__str__()* String representation showing all non-private attributes.
+        """*__str__()* Detailed string representation with all attributes.
+
+        Returns a comprehensive view of all non-private attributes, suitable for
+        detailed inspection and logging.
 
         Returns:
-            str: Formatted string representation.
+            str: Detailed string representation with all attributes.
         """
-        attr_list = []
-        for attr, val in vars(self).items():
+        _attr_lt = []
+        for attr, value in vars(self).items():
+            # Skip private attributes starting with "__"
             if attr.startswith("__"):
                 continue
-            attr_name = attr.lstrip("_")
-            attr_list.append(f"{attr_name}={repr(val)}")
-        return f"{self.__class__.__name__}({', '.join(attr_list)})"
+            # Format callable attributes
+            if callable(value):
+                value = f"{value.__name__}{inspect.signature(value)}"
+            # Format attribute name and value
+            _attr_name = attr.lstrip("_")
+            _attr_lt.append(f"{_attr_name}={repr(value)}")
+        # Format the string with the class name and the attributes
+        _str = f"{self.__class__.__name__}({', '.join(_attr_lt)})"
+        return _str
 
     def __repr__(self) -> str:
         """*__repr__()* Detailed string representation.
@@ -285,3 +296,25 @@ class Foundation(IdxBasis):
             str: String representation.
         """
         return self.__str__()
+
+    # def __repr__(self) -> str:
+    #     """*__repr__()* Concise string representation for debugging.
+
+    #     Returns a short, readable identifier showing only key attributes.
+
+    #     Returns:
+    #         str: Concise string representation (e.g., "Variable(sym='v', idx=0)").
+    #     """
+    #     # Show only key identifying attributes
+    #     key_parts = []
+
+    #     if hasattr(self, '_sym') and self._sym:
+    #         key_parts.append(f"sym={self._sym!r}")
+
+    #     if hasattr(self, '_idx') and self._idx != -1:
+    #         key_parts.append(f"idx={self._idx}")
+
+    #     if hasattr(self, '_name') and self._name:
+    #         key_parts.append(f"name={self._name!r}")
+
+    #     return f"{self.__class__.__name__}({', '.join(key_parts)})"

@@ -51,10 +51,33 @@ PI_POW_RE: str = r"(\\Pi_\{\d+\})\s*\*\*\s*\(([^)]+)\)"
 Regex pattern to match dimensionless coefficients with power operations in *PyDASA* (e.g., '\\Pi_{1}**(-2)').
 """
 
+# parse expression for numeric constants
+# :attr: NUM_CONST_RE
+NUM_CONST_RE: str = r"^[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?$"
+"""
+Regex pattern to match numeric constants (e.g., '3.14', '-2.5e3') in *PyDASA*.
+"""
+
 # Parse expression for basic operations
 # NOTE: OG REGEX
 # parts = re.split(r"(\*|/|\^)", expr)
-BASIC_OPS_RE = r"(\*|/|\^|\+|\-)"
+# :attr: BASIC_OPS_RE
+BASIC_OPS_RE = r"(\*|\/|\+|\-|\^)"
 """
 Regex pattern to split expressions by basic operations (*, /, ^, +, -) in *PyDASA*.
+"""
+
+# Global vars for special Latex symbos and functions to ignore
+# :attr: IGNORE_EXPR
+IGNORE_EXPR = {
+    "\\frac",
+    "\\sqrt",
+    "\\sin",
+    "\\cos",
+    "\\tan",
+    "\\log",
+    "\\exp"
+}
+"""
+Set of LaTeX expressions to ignore during parsing in *PyDASA*.
 """

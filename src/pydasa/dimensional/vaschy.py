@@ -20,7 +20,7 @@ Classes:
 from __future__ import annotations
 from dataclasses import dataclass, field, fields
 # data type imports
-from typing import List, Dict, Optional, Any, Sequence, Mapping, cast
+from typing import List, Dict, Optional, Any, cast
 
 # custom modules
 from pydasa.validations.decorators import validate_type
@@ -55,8 +55,8 @@ class Schema(Foundation):
     # Default Fundamental Dimensional Units (FDU) precedence list
     # FDU precedence list, linked to WKNG_FDU_PREC_LT, full object list.
     # :attr: _fdu_lt
-    _fdu_lt: List[Dimension] = field(default_factory=list[Dimension])
-    """List Fundamental Dimensional Units (FDUs) objects in precedence order."""
+    _fdu_lt: List[Dimension] = field(default_factory=list)
+    """Internal storage for fundamental dimension objects. Always a List[Dimension] after __post_init__."""
 
     # Default Fundamental Dimensional Units (FDU) framework
     # FDU map, linked to WKNG_FDU_PREC_LT, symbol to Dimension object.
@@ -133,30 +133,27 @@ class Schema(Foundation):
         COMPUTATION, SOFTWARE) or validates custom FDUs.
 
         Raises:
-            ValueError: If the FDU framework is not properly defined.
+            ValueError: If framework is not supported.
+            ValueError: If custom framework FDUs are not provided.
+            ValueError: If custom framework FDUs are not properly formatted.
+            ValueError: If custom framework FDUs contain invalid types.
         """
-        # if the framework is supported, configure the default
+        # if the framework is supported (PHYSICAL, COMPUTATION, SOFTWARE), configure the default
         if self.fwk in PYDASA_CFG.get_instance().frameworks and self.fwk != Frameworks.CUSTOM.value:
-            self.fdu_lt = self._setup_default_framework()
+            # If _fdu_lt is empty, set up default framework
+            if not self._fdu_lt:
+                self._fdu_lt = self._setup_default_framework()
+            # If _fdu_lt is provided, just validate/convert it
+            else:
+                self._convert_fdu_lt()
 
-        # if the framework is user-defined, use the provided list[dict]
+        # if the framework is user-defined (CUSTOM), use the provided FDUs
         elif self.fwk == Frameworks.CUSTOM.value:
             if not self._fdu_lt:
                 _msg = "Custom framework requires '_fdu_lt' to define FDUs"
                 raise ValueError(_msg)
-
-            # Check if _fdu_lt contains Dimension objects (already created)
-            if all(isinstance(val, Dimension) for val in self._fdu_lt):
-                # Already Dimension objects, just assign them
-                self.fdu_lt = self._fdu_lt
-            # Check if _fdu_lt contains dicts (need to be converted)
-            elif all(isinstance(val, dict) for val in self._fdu_lt):
-                # Convert dicts to Dimension objects
-                raw = cast(Sequence[Mapping[str, Any]], self._fdu_lt)
-                self.fdu_lt = self._setup_custom_framework(raw)
-            else:
-                _msg = "'fdu_lt' elements must be type Dimension() or dict()"
-                raise ValueError(_msg)
+            # Convert provided FDUs to List[Dimension]
+            self._convert_fdu_lt()
 
         # otherwise, raise an error
         else:
@@ -165,32 +162,56 @@ class Schema(Foundation):
             _msg += f"Valid options: {', '.join(_fwk)}."
             raise ValueError(_msg)
 
-    def _setup_custom_framework(self,
-                                fdus: Sequence[Mapping[str, Any]]) -> List[Dimension]:
-        """*_setup_custom_framework()* Initializes a custom framework with the provided FDUs.
+    def _convert_fdu_lt(self) -> None:
+        """*_convert_fdu_lt()* Converts and validates the provided FDUs list/dict into Dimension objects.
 
-        Args:
-            fdus (List[Dict]): List of dictionaries representing custom FDUs.
-
-        Returns:
-            List[Dimension]: List of Dimension objects created from the provided FDUs.
+        Raises:
+            TypeError: If elements in the list are not all Dimension or dict.
+            TypeError: If values in the dict are not all dict objects.
+            TypeError: If _fdu_lt is not a list or dict.
         """
-        # detecting custom framework
-        ans = []
-        if self.fwk == Frameworks.CUSTOM.value:
-            # Create custom FDU set
-            for idx, data in enumerate(fdus):
-                data = dict(data)
-                fdu = Dimension(
-                    _idx=idx,
-                    _sym=data.get("_sym", ""),
-                    _fwk=self._fwk,
-                    _unit=data.get("_unit", ""),
-                    _name=data.get("_name", ""),
-                    description=data.get("description", ""))
+        # if FDUs are a list
+        if isinstance(self._fdu_lt, list):
+            # if FDUs are already type Dimensions
+            if all(isinstance(d, Dimension) for d in self._fdu_lt):
+                pass    # do nothing
+            # else if FDUs are a list of dicts
+            elif all(isinstance(d, dict) for d in self._fdu_lt):
+                fdus = []
+                # iterate over the list and create the dimensions
+                for d in self._fdu_lt:
+                    if isinstance(d, dict):
+                        fdus.append(Dimension(**d))
+                self._fdu_lt = fdus
+            else:
+                _msg = "All elements in '_fdu_lt' list must be either Dimension or dict"
+                raise TypeError(_msg)
 
-                ans.append(fdu)
-        return ans
+        # # if FDUs are a dict of dicts
+        # elif isinstance(self._fdu_lt, dict):
+        #     # Check if dict values are all dicts (not Dimensions in a dict)
+        #     if all(isinstance(d, dict) for d in self._fdu_lt.values()):
+        #         fdus = []
+        #         # iterate over the dict-values and create the dimensions
+        #         for idx, (sym, val) in enumerate(self._fdu_lt.items()):
+        #             if isinstance(val, dict):
+        #                 # Use the dict key as symbol if not in the dict
+        #                 if "_sym" not in val:
+        #                     val["_sym"] = sym
+        #                 if "_idx" not in val:
+        #                     val["_idx"] = idx
+        #                 fdus.append(Dimension(**val))
+        #         self._fdu_lt = fdus
+        #     else:
+        #         _msg = "All values in '_fdu_lt' dict must be dict objects"
+        #         raise TypeError(_msg)
+
+        # otherwise, error due to invalid type
+        else:
+            _msg = f"Invalid '_fdu_lt' type: {type(self._fdu_lt).__name__}."
+            types_lt = [Dimension.__name__, dict.__name__, list.__name__]
+            _msg += f" Supported types: {types_lt}"
+            raise TypeError(_msg)
 
     def _setup_default_framework(self) -> List[Dimension]:
         """*_setup_default_framework()* Returns the default FDU precedence list for the specified framework.
@@ -199,12 +220,15 @@ class Schema(Foundation):
             List[str]: Default FDUs precedence list based on the framework map.
         """
         # map for easy access to the FDUs
-        _frk_map = PYDASA_CFG.get_instance().SPT_FDU_FWKS
+        _dflt_fwk_map = PYDASA_CFG.get_instance().SPT_FDU_FWKS
+        # Tell type checker this is definitely a Dict
+        _fwk_map: Dict[str, Any] = cast(Dict[str, Any], _dflt_fwk_map)
+        # create the FDUs list
         ans = []
         # select FDU framework
-        if self.fwk in _frk_map:
+        if self.fwk in _fwk_map:
             # Get the fdus dictionary from the framework config
-            fdus_dict = _frk_map[self.fwk].get("fdus", {})
+            fdus_dict = _fwk_map[self.fwk].get("fdus", {})
             # Create standard FDU set
             for idx, (sym, data) in enumerate(fdus_dict.items()):
                 fdu = Dimension(
@@ -214,9 +238,7 @@ class Schema(Foundation):
                     _unit=data.get("unit", ""),
                     _name=data.get("name", ""),
                     description=data.get("description", ""))
-
                 ans.append(fdu)
-            # _prec_lt = list(_frk_map[self.fwk].keys())
         return ans
 
     def _validate_fdu_precedence(self) -> None:
@@ -281,8 +303,8 @@ class Schema(Foundation):
         # Generate regex for dimensions in symbolic expressions
         self._fdu_sym_regex = rf"[{_fdu_str}]"
 
-    def _validate_fdu_list(self, value: List[Dimension]) -> None:
-        """*_validate_fdu_list()* Custom validator for fdu_lt property.
+    def _validate_fdu_lt(self, value: List[Dimension]) -> None:
+        """*_validate_fdu_lt()* Custom validator for fdu_lt property.
 
         Args:
             value (List[Dimension]): List of FDUs to validate.
@@ -308,11 +330,11 @@ class Schema(Foundation):
         Returns:
             List[Dimension]: List of FDUs.
         """
-        return self._fdu_lt.copy()
+        return self._fdu_lt
 
     @fdu_lt.setter
     @validate_type(list, allow_none=False)
-    @validate_custom(lambda self, val: self._validate_fdu_list(val))
+    @validate_custom(lambda self, val: self._validate_fdu_lt(val))
     def fdu_lt(self, val: List[Dimension]) -> None:
         """*fdu_lt* Set the FDUs in precedence order.
 

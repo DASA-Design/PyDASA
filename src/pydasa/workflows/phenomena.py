@@ -17,23 +17,24 @@ Classes:
 # Standard library imports
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Dict, Optional, Any, Union, Tuple
+from typing import Dict, Optional, Any, Union, List
 
 # Import validation base classes
 from pydasa.core.basic import Foundation
 
 # Import related classes
 from pydasa.elements.parameter import Variable
+from pydasa.dimensional.fundamental import Dimension
 from pydasa.dimensional.buckingham import Coefficient
 from pydasa.dimensional.model import Matrix
 from pydasa.dimensional.vaschy import Schema
 
 # Import utils
-from pydasa.validations.error import inspect_var
 from pydasa.serialization.parser import latex_to_python
 
 # Import validation decorators
 from pydasa.validations.decorators import validate_type
+from pydasa.validations.decorators import validate_emptiness
 # from pydasa.validations.decorators import validate_custom
 
 # Import global configuration
@@ -42,7 +43,7 @@ from pydasa.core.setup import Frameworks   # , PYDASA_CFG
 # custom type hinting
 Variables = Union[Dict[str, Variable], Dict[str, Any]]
 Coefficients = Union[Dict[str, Coefficient], Dict[str, Any]]
-FDUs = Union[str, Dict[str, Any], Schema]
+FDUs = Union[str, Dict[str, Any], List[Dict], Schema]
 
 
 @dataclass
@@ -79,8 +80,14 @@ class AnalysisEngine(Foundation):
     """Dictionary of all dimensional variables in the problem."""
 
     # :attr: _schema
-    _schema: Optional[FDUs] = None
-    """Dimensional framework schema (manages FDUs). Always a Schema object after initialization."""
+    _schema: Optional[Schema] = None
+    """Dimensional framework schema.
+    Input can be: None, List[Dict], Dict, or Schema object.
+    After __post_init__, this will always be a Schema instance.
+    - If None: Creates default Schema based on _fwk (e.g., PHYSICAL)
+    - If List[Dict] or Dict: Creates CUSTOM Schema with provided FDU definitions
+    - If Schema: Uses provided Schema object directly
+    """
 
     # :attr: _model
     _model: Optional[Matrix] = None
@@ -97,9 +104,12 @@ class AnalysisEngine(Foundation):
     """Flag indicating if dimensional matrix has been solved."""
 
     def __post_init__(self) -> None:
-        """*__post_init__()* Initializes the solver.
+        """*__post_init__()* Post-initialization processing with validation and setup.
 
-        Validates basic properties and sets up default values.
+        Raises:
+            ValueError: If framework is not supported.
+            TypeError: If schema is of incorrect type.
+            TypeError: If schema list items are not dictionaries.
         """
         # Initialize from base class
         super().__post_init__()
@@ -118,91 +128,44 @@ class AnalysisEngine(Foundation):
         if not self.description:
             self.description = "Solves dimensional analysis using the Buckingham Pi-Theorem."
 
-        # Initialize schema with default PHYSICAL framework
-        # The setter will handle conversion if _schema was set to a string/dict in __init__
-        # Ensure _schema is a Schema object
-        # Handle the case where _schema might be set to a string, dict, or None during initialization
-        if not isinstance(self._schema, Schema):
-            if self._schema in (None, Frameworks.PHYSICAL.value):
-                # Default to PHYSICAL framework
-                self._schema = Schema(_fwk=Frameworks.PHYSICAL.value)
-            elif isinstance(self._schema, str):
-                # Convert string to Schema
-                self._schema = Schema(_fwk=self._schema.upper())
-            elif isinstance(self._schema, dict):
-                # Convert dict to Schema
-                self._schema = Schema.from_dict(self._schema)
-            # else:
-            #     # Fallback to default
-            #     self._schema = Schema(_fwk=Frameworks.PHYSICAL.value)
+        # Initialize schema based on provided input and framework
+        if isinstance(self._schema, Schema):
+            # Already a Schema object, use as-is
+            pass
 
-        # # Initialize schema with default PHYSICAL framework
-        # self._schema = Schema(_fwk=Frameworks.PHYSICAL.value)
-
-        # # Convert default schema string to Schema object
-        # # if isinstance(self._schema, str):
-        # # self._schema = Schema(_fwk=self._schema)
-        # if self._schema is not Frameworks.PHYSICAL.value:
-        #     if isinstance(self._schema, str):
-        #         self.schema = Schema(self._schema)
-
-        # # Initialize with default PHYSICAL framework if not already set
-        # if not hasattr(self, "_schema") or self._schema is None:
-        #     self._schema = Schema(_fwk=Frameworks.PHYSICAL.value)
-
-    # ========================================================================
-    # Validation Methods
-    # ========================================================================
-
-    def _validate_dict(self,
-                       dt: Dict[str, Any],
-                       exp_type: Union[type, Tuple[type, ...]]) -> bool:
-        """*_validate_dict()* Validates a dictionary with expected value types.
-
-        Args:
-            dt (Dict[str, Any]): Dictionary to validate.
-            exp_type (Union[type, Tuple[type, ...]]): Expected type(s) for dictionary values.
-
-        Raises:
-            ValueError: If the object is not a dictionary.
-            ValueError: If the dictionary is empty.
-            ValueError: If the dictionary contains values of unexpected types.
-
-        Returns:
-            bool: True if the dictionary is valid.
-        """
-        # variable inspection
-        var_name = inspect_var(dt)
-
-        # Validate is dictionary
-        if not isinstance(dt, dict):
-            _msg = f"{var_name} must be a dictionary. "
-            _msg += f"Provided: {type(dt).__name__}"
-            raise ValueError(_msg)
-
-        # Validate not empty
-        if len(dt) == 0:
-            _msg = f"{var_name} cannot be empty. "
-            _msg += f"Provided: {dt}"
-            raise ValueError(_msg)
-
-        # Convert list to tuple for isinstance()
-        type_check = exp_type if isinstance(exp_type, tuple) else (exp_type,) if not isinstance(exp_type, tuple) else exp_type
-
-        # Validate value types
-        if not all(isinstance(v, type_check) for v in dt.values()):
-            # Format expected types for error message
-            if isinstance(exp_type, tuple):
-                type_names = " or ".join(t.__name__ for t in exp_type)
+        elif self._schema is None:
+            # No schema provided - create default based on framework
+            if self.fwk == Frameworks.CUSTOM.value:
+                _msg = "Custom framework requires '_schema' parameter with FDU definitions (List[Dict] or Dict)"
+                raise ValueError(_msg)
             else:
-                type_names = exp_type.__name__
+                # Create schema for standard framework (PHYSICAL, COMPUTATION, SOFTWARE)
+                self._schema = Schema(_fwk=self.fwk)
 
-            actual_types = [type(v).__name__ for v in dt.values()]
-            _msg = f"{var_name} must contain {type_names} values. "
-            _msg += f"Provided: {actual_types}"
-            raise ValueError(_msg)
+        elif isinstance(self._schema, list):
+            # List of FDU definitions provided - create CUSTOM schema
+            if not all(isinstance(item, dict) for item in self._schema):  # type: ignore
+                _msg = "When '_schema' is a list, all items must be dictionaries with FDU definitions"
+                raise TypeError(_msg)
+            fdu_list = [Dimension(**d) if isinstance(d, dict) else d for d in self._schema]  # type: ignore
+            self._schema = Schema(_fwk=Frameworks.CUSTOM.value,
+                                  _fdu_lt=fdu_list)
 
-        return True
+        elif isinstance(self._schema, dict):
+            # Single dict provided - could be from_dict or single FDU definition
+            # Try from_dict first (has specific structure)
+            if "fwk" in self._schema or "_fwk" in self._schema:
+                self._schema = Schema.from_dict(self._schema)
+            else:
+                # Single FDU definition dict - treat as CUSTOM with one dimension
+                fdu_list = [Dimension(**self._schema)]
+                self._schema = Schema(_fwk=Frameworks.CUSTOM.value,
+                                      _fdu_lt=fdu_list)
+
+        else:
+            _msg = "'_schema' must be None, List[Dict], Dict, or Schema object. "
+            _msg += f"Provided: {type(self._schema).__name__}"
+            raise TypeError(_msg)
 
     # ========================================================================
     # Property Getters and Setters
@@ -219,6 +182,7 @@ class AnalysisEngine(Foundation):
 
     @variables.setter
     @validate_type(dict, Variable, allow_none=False)
+    @validate_emptiness()
     def variables(self, val: Variables) -> None:
         """*variables* Set the dictionary of variables.
 
@@ -251,33 +215,62 @@ class AnalysisEngine(Foundation):
         """*schema* Get the dimensional framework schema.
 
         Returns:
-            Optional[Schema]: Dimensional framework schema.
+            Schema: Dimensional framework schema. Always initialized after __post_init__.
         """
+        if not isinstance(self._schema, Schema):
+            raise RuntimeError("Schema not properly initialized. This should not happen.")
         return self._schema
 
     @schema.setter
-    @validate_type(str, dict, Schema, allow_none=False)
-    def schema(self, val: Union[str, dict, Schema]) -> None:
+    @validate_type(str, dict, list, Schema, allow_none=False)
+    @validate_emptiness()
+    def schema(self, val: FDUs) -> None:
         """*schema* Set the dimensional framework schema.
 
         Args:
-            val (Union[str, dict, Schema]): Dimensional framework schema.
+            val (FDUs): Dimensional framework schema.
 
         Raises:
-            ValueError: If string is not a valid framework name or dict is invalid.
             TypeError: If val is not a valid type.
+            ValueError: If string is not a valid framework name or dict is invalid.
+            ValueError: If dict is empty.
         """
         # if schema is a string, convert to Schema
         if isinstance(val, str):
             self._schema = Schema(_fwk=val.upper())
+
+        # if schema is a list of dicts, create CUSTOM schema
+        elif isinstance(val, list):
+            if not all(isinstance(item, dict) for item in val):
+                _msg = "When schema is a list, all items must be dictionaries with FDU definitions."
+                raise TypeError(_msg)
+            fdu_list = []
+            for d in val:
+                if isinstance(d, dict):
+                    fdu_list.append(Dimension(**d))
+                else:
+                    fdu_list.append(d)
+            # fdu_list = [Dimension(**d) if isinstance(d, dict) else d for d in val]
+            self._schema = Schema(_fwk=Frameworks.CUSTOM.value,
+                                  _fdu_lt=fdu_list)
+
         # if schema is a dict, convert to Schema
         elif isinstance(val, dict):
-            self._schema = Schema.from_dict(val)
+            # Check if it's a complete Schema dict (has framework info)
+            if "fwk" in val or "_fwk" in val:
+                self._schema = Schema.from_dict(val)
+            else:
+                # Single FDU definition dict - treat as CUSTOM with one dimension
+                fdu_list = [Dimension(**val)]
+                self._schema = Schema(_fwk=Frameworks.CUSTOM.value,
+                                      _fdu_lt=fdu_list)
+
         # if schema is already a Schema, keep it
         elif isinstance(val, Schema):
             self._schema = val
+
         else:
-            _msg = "Input must be type 'str', 'dict', or 'Schema'. "
+            _msg = "Input must be type non-empty 'str', 'dict', 'list', or 'Schema'. "
             _msg += f"Provided: {type(val).__name__}"
             raise TypeError(_msg)
 
@@ -313,6 +306,7 @@ class AnalysisEngine(Foundation):
 
     @coefficients.setter
     @validate_type(dict, Coefficient, allow_none=False)
+    @validate_emptiness()
     def coefficients(self, val: Coefficients) -> None:
         """*coefficients* Set the generated coefficients.
 
@@ -321,6 +315,7 @@ class AnalysisEngine(Foundation):
 
         Raises:
             ValueError: If dictionary is invalid or contains invalid values.
+            ValueError: If dictionary is empty.
         """
         # Convert dict values to Coefficient objects if needed
         converted = {}
@@ -366,18 +361,22 @@ class AnalysisEngine(Foundation):
 
         Raises:
             ValueError: If variables are not set.
+            TypeError: If schema is not set.
         """
         if not self._variables:
             raise ValueError("Variables must be set before creating matrix.")
 
+        # After __post_init__, _schema is guaranteed to be a Schema instance
+        if not isinstance(self._schema, Schema):
+            raise TypeError("Schema must be set before creating matrix.")
+
         # Create matrix with variables
-        self._model = Matrix(
-            _idx=self.idx,
-            _fwk=self._fwk,
-            _schema=self._schema,
-            _variables=self._variables,
-            # **kwargs
-        )
+        self._model = Matrix(_idx=self.idx,
+                             _fwk=self._fwk,
+                             _schema=self._schema,
+                             _variables=self._variables,
+                             # **kwargs
+                             )
 
         self._is_solved = False     # Reset solve state
         # return self._model
@@ -433,6 +432,62 @@ class AnalysisEngine(Foundation):
         results = {k: v.to_dict() for k, v in coefficients.items()}
         return results
 
+    def derive_coefficient(self,
+                           expr: str,
+                           symbol: str = "",
+                           name: str = "",
+                           description: str = "",
+                           idx: int = -1) -> Coefficient:
+        """*derive_coefficient()* Derive a new coefficient from existing ones.
+
+        Creates a new dimensionless coefficient by algebraically combining existing
+        Pi coefficients using the expression string.
+
+        Args:
+            expr (str): Expression defining the new coefficient using existing Pi symbols. (e.g., "\\Pi_{0}**(-1)" or "\\Pi_{1} * \\Pi_{3}")
+            symbol (str, optional): Symbol representation (LaTeX or alphanumeric) for the derived coefficient. Defaults to "" to keep the original (e.g., Pi_{0}).
+            name (str, optional): User-friendly name for the derived coefficient.
+            description (str, optional): Description of the derived coefficient.
+            idx (int, optional): Index/precedence of the derived coefficient. Defaults to -1.
+
+        Returns:
+            Coefficient: The newly derived dimensionless coefficient.
+
+        Raises:
+            ValueError: If matrix is not created or solved.
+            RuntimeError: If derivation fails.
+
+        Example:
+            >>> # Derive Reynolds number from inverse of Pi_0
+            >>> Re = engine.derive_coefficient(
+            ...     expr="\\Pi_{0}**(-1)",
+            ...     name="Reynolds Number",
+            ...     description="Re = ρvD/μ"
+            ... )
+            >>> # Derive combined coefficient
+            >>> pi_combined = engine.derive_coefficient(
+            ...     expr="\\Pi_{1} * \\Pi_{3}",
+            ...     name="Combined Coefficient"
+            ... )
+        """
+        if self._model is None:
+            raise ValueError("Matrix must be created before deriving coefficients. Call create_matrix() first.")
+
+        if not self._is_solved:
+            raise ValueError("Matrix must be solved before deriving coefficients. Call solve() first.")
+
+        try:
+            # Delegate to the Matrix's derive_coefficient method
+            coef = self._model.derive_coefficient(expr,
+                                                  symbol,
+                                                  name,
+                                                  description,
+                                                  idx)
+            return coef
+        except Exception as e:
+            _msg = f"Failed to derive coefficient: {str(e)}"
+            raise RuntimeError(_msg) from e
+
     # ========================================================================
     # Utility Methods
     # ========================================================================
@@ -440,7 +495,7 @@ class AnalysisEngine(Foundation):
     def reset(self) -> None:
         """*reset()* Reset the solver state.
 
-        Clears all generated results, keeping only the input variables.
+        Resets all generated results, KEEPING only the input variables.
         """
         self._model = None
         self._coefficients.clear()
@@ -449,11 +504,17 @@ class AnalysisEngine(Foundation):
     def clear(self) -> None:
         """*clear()* Reset all attributes to default values.
 
-        Resets all solver properties to their initial state, including variables.
+        Clears all solver properties to their initial state, INCLUDING variables.
         """
+        # Clear parent class attributes (idx, sym, alias, name, description)
+        super().clear()
+
+        # Clear AnalysisEngine-specific attributes
         self._variables.clear()
         self._schema = Schema(_fwk=Frameworks.PHYSICAL.value)
-        self.reset()
+        self._model = None
+        self._coefficients.clear()
+        self._is_solved = False
 
     def to_dict(self) -> Dict[str, Any]:
         """*to_dict()* Convert solver state to dictionary.
@@ -461,6 +522,9 @@ class AnalysisEngine(Foundation):
         Returns:
             Dict[str, Any]: Dictionary representation of solver state.
         """
+        # After __post_init__, _schema is always a Schema instance
+        schema_dict = self._schema.to_dict() if isinstance(self._schema, Schema) else None
+
         return {
             "name": self.name,
             "description": self.description,
@@ -468,6 +532,7 @@ class AnalysisEngine(Foundation):
             "sym": self._sym,
             "alias": self._alias,
             "fwk": self._fwk,
+            "schema": schema_dict,
             "variables": {
                 k: v.to_dict() for k, v in self._variables.items()
             },
@@ -487,6 +552,10 @@ class AnalysisEngine(Foundation):
         Returns:
             AnalysisEngine: New instance of AnalysisEngine.
         """
+        # Get schema data if present
+        schema_data = data.get("schema")
+        _schema = Schema.from_dict(schema_data) if schema_data else None
+
         # Create instance with basic attributes
         instance = cls(
             _name=data.get("name", ""),
@@ -495,6 +564,7 @@ class AnalysisEngine(Foundation):
             _sym=data.get("sym", ""),
             _alias=data.get("alias", ""),
             _fwk=data.get("fwk", ""),
+            _schema=_schema,
         )
 
         # Set variables

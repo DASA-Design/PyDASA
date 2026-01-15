@@ -542,4 +542,3 @@ class TestValidationDecorators(unittest.TestCase):
         with self.assertRaises(ValueError) as ctx:
             obj.value = {"a": 1, "b": "two"}
         self.assertIn("values must be int", str(ctx.exception))
-

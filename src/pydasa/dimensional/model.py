@@ -21,27 +21,35 @@ from dataclasses import dataclass, field, fields
 from typing import List, Dict, Optional, Any, Union
 import re
 
-# numeric and symbolic computation
+# third-party modules for numeric and symbolic computation
 import numpy as np
 import sympy as sp
 from numpy.typing import NDArray
 
-# dimensional analysis imports
+# custom modules for dimensional analysis imports
 from pydasa.core.basic import Foundation
-from pydasa.elements.parameter import Variable
-from pydasa.dimensional.vaschy import Schema
-from pydasa.dimensional.buckingham import Coefficient
 from pydasa.core.setup import Frameworks
 from pydasa.core.setup import VarCardinality
 from pydasa.core.setup import CoefCardinality
-# import global variables
+from pydasa.elements.parameter import Variable
+from pydasa.dimensional.vaschy import Schema
+from pydasa.dimensional.buckingham import Coefficient
+# global variables for configuration
 from pydasa.core.setup import PYDASA_CFG
+from pydasa.validations.patterns import LATEX_RE
 from pydasa.validations.patterns import PI_COEF_RE
-from pydasa.validations.patterns import PI_POW_RE
-from pydasa.validations.patterns import BASIC_OPS_RE
+# useful decorators for validations
+from pydasa.validations.decorators import validate_type
+from pydasa.validations.decorators import validate_index
+from pydasa.validations.decorators import validate_choices
+from pydasa.validations.decorators import validate_pattern
+from pydasa.validations.decorators import validate_emptiness
+from pydasa.validations.decorators import validate_dict_types
+# parser functions for dimensional expressions
+from pydasa.serialization.parser import parse_dim_expr
+from pydasa.serialization.parser import format_numeric_constant
 
-
-# Global constants
+# Matrix global constants
 MAX_OUT: int = 1
 """Maximum number of output variables allowed."""
 
@@ -356,7 +364,7 @@ class Matrix(Foundation):
                           vars_lt: Dict[str, Variable]) -> Dict[str, Variable]:
         """*_sort_by_category()* Sorts variables by category.
 
-        Sorts variables in order: OUT → IN → CTRL. Updates variable indices to reflect sorted order.
+        Sorts variables in order: IN -> OUT -> CTRL. Updates variable indices to reflect sorted order.
 
         Args:
             vars_lt (Dict[str, Variable]): Dictionary of variables to sort.
@@ -589,153 +597,33 @@ class Matrix(Foundation):
             ...     description="Twice the original coefficient"
             ... )
         """
-        # TODO try to find a way to improve this code
         # Validate coefficients exist
         if not self._coefficients:
             _msg = "Cannot derive coefficients. No base coefficients exist yet."
             raise ValueError(_msg)
 
-        # Extract coefficient symbols from expression
-        _coef_symbols = re.findall(PI_COEF_RE, expr)
-
-        if not _coef_symbols:
-            _msg = f"Expression '{expr}' does not contain any valid "
-            _msg += "coefficient references (format: \\Pi_{{n}})."
-            raise ValueError(_msg)
-
-        # Validate all referenced coefficients exist
-        for sym in _coef_symbols:
-            if sym not in self._coefficients:
-                _msg = f"Referenced coefficient {sym} does not exist."
-                raise ValueError(_msg)
+        # Parse dimensional expression using parser functions
+        # TODO improve using sympy + pint later
+        _dev_col, _num_const = parse_dim_expr(expr,
+                                              self.coefficients,
+                                              dim_col_fn=lambda coef: coef._dim_col)
 
         # Get base coefficient for structure
-        _base_coef = self._coefficients[_coef_symbols[0]]
+        _coef_symbols = re.findall(PI_COEF_RE, expr)
+        _base_coef = self.coefficients[_coef_symbols[0]]
         _new_vars = _base_coef.variables.copy()
 
         # Validate all coefficients use same variables
         for sym in _coef_symbols[1:]:
-            coef = self._coefficients[sym]
+            coef = self.coefficients[sym]
             if set(coef.variables.keys()) != set(_new_vars.keys()):
                 _msg = f"Coefficient {sym} uses different variables. "
                 _msg += "Cannot derive new coefficient."
                 raise ValueError(_msg)
 
-        # Parse expression for power operations first (e.g., \Pi_{0}**(-1))
-        # Pattern to match coefficient with optional power: \Pi_{n}**(exponent)
-        # Replace powered coefficients with temporary placeholders and store transformations
-        _pow_transforms = {}
-        _n_placeholder = 0
-
-        for match in re.finditer(PI_POW_RE, expr):
-            _coef_sym = match.group(1)
-            _pow_str = match.group(2)
-
-            try:
-                power = float(_pow_str)
-            except ValueError:
-                _msg = f"Invalid power expression: {_pow_str}"
-                raise ValueError(_msg)
-
-            # Store the coefficient and power for later application
-            _phlr = f"__PHLR_{_n_placeholder}__"
-            _pow_transforms[_phlr] = (_coef_sym, power)
-            expr = expr.replace(match.group(0), _phlr, 1)
-            _n_placeholder += 1
-
-        # Parse expression for basic operations, updates in loops
-        parts = re.split(BASIC_OPS_RE, expr)
-        _cur_op = "*"       # current operation, most important in precedence
-        new_dim_col: List[int] = []  # empty list, will be populated
-        numeric_constant: Optional[float] = None  # Track numeric constants
-        is_first = True
-
-        for part in parts:
-            part = part.strip()
-
-            if part in ("*", "/", "^", "+", "-"):
-                _cur_op = part
-            elif part.startswith("__PHLR_"):
-                # Apply power transformation
-                _coef_sym, power = _pow_transforms[part]
-                coef = self._coefficients[_coef_sym]
-
-                # Calculate the powered exponents
-                powered_dims = [int(exp * power) for exp in coef._dim_col]
-
-                # Power operation: multiply all exponents by the power
-                if is_first:
-                    # First coefficient initializes the result
-                    new_dim_col = powered_dims
-                    is_first = False
-                elif _cur_op == "*":
-                    new_dim_col = [
-                        int(a + b) for a, b in zip(new_dim_col, powered_dims)
-                    ]
-                elif _cur_op == "/":
-                    new_dim_col = [
-                        int(a - b) for a, b in zip(new_dim_col, powered_dims)
-                    ]
-                elif _cur_op in ("+", "-"):
-                    # Addition/subtraction: result is dimensionless (all zeros)
-                    new_dim_col = [0] * len(powered_dims)
-            elif re.match(r"^[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?$", part):
-                # Numeric constant - dimensionless, doesn't affect dimensional formula
-                # Store the constant for later use in expression
-                constant = float(part)
-
-                # If it's the first element, initialize with zeros (dimensionless)
-                if is_first and not new_dim_col:
-                    # Get dimension count from first coefficient
-                    if _coef_symbols:
-                        _ref_coef = self._coefficients[_coef_symbols[0]]
-                        new_dim_col = [0] * len(_ref_coef._dim_col)
-                        is_first = False
-
-                # Track numeric constants for multiplication/division
-                if _cur_op == "*":
-                    if numeric_constant is None:
-                        numeric_constant = constant
-                    else:
-                        numeric_constant *= constant
-                elif _cur_op == "/":
-                    if numeric_constant is None:
-                        numeric_constant = 1.0 / constant
-                    else:
-                        numeric_constant /= constant
-                # For + and -, we can't meaningfully track as a simple multiplier
-                # Constants in multiplication/division don't affect dimensions
-            elif re.match(PI_COEF_RE, part):
-                coef = self._coefficients[part]
-
-                if is_first:
-                    # First coefficient initializes the result
-                    new_dim_col = list(coef._dim_col)
-                    is_first = False
-                elif _cur_op == "*":
-                    # Multiplication: add exponents
-                    new_dim_col = [
-                        int(a + b) for a, b in zip(new_dim_col, coef._dim_col)
-                    ]
-                elif _cur_op == "/":
-                    # Division: subtract exponents
-                    new_dim_col = [
-                        int(a - b) for a, b in zip(new_dim_col, coef._dim_col)
-                    ]
-                elif _cur_op in ("+", "-"):
-                    # Addition/subtraction: result is dimensionless (all zeros)
-                    new_dim_col = [0] * len(coef._dim_col)
-
-        # Validate that new_dim_col was properly populated
-        if not new_dim_col:
-            _msg = f"Failed to derive dimensions from expression '{expr}'. "
-            _msg += "Expression must contain valid coefficient references."
-            raise ValueError(_msg)
-
-        # Generate default name
         # Determine next available index for coefficient
         if idx == -1:
-            existing_indices = [c._idx for c in self._coefficients.values()]
+            existing_indices = [c._idx for c in self.coefficients.values()]
             idx = max(existing_indices) + 1 if existing_indices else 0
 
         if name == "":
@@ -759,19 +647,13 @@ class Matrix(Foundation):
             _name=name,
             description=description,
             _variables=_new_vars,
-            _dim_col=new_dim_col,
+            _dim_col=_dev_col,
             _pivot_lt=self._pivot_cols
         )
 
         # If there's a numeric constant, prepend it to the expression
-        if numeric_constant is not None and numeric_constant != 1.0:
-            # Format the constant nicely (avoid unnecessary decimals)
-            if numeric_constant == int(numeric_constant):
-                const_str = str(int(numeric_constant))
-            else:
-                const_str = str(numeric_constant)
-
-            # Prepend constant to the expression
+        const_str = format_numeric_constant(_num_const)
+        if const_str:
             if derived_coef._pi_expr:
                 derived_coef._pi_expr = f"{const_str}*{derived_coef._pi_expr}"
 
@@ -802,41 +684,32 @@ class Matrix(Foundation):
     def clear(self) -> None:
         """*clear()* Resets all dimensional matrix and analysis data.
 
-        Clears all computed results while preserving the framework.
+        Clears all computed results while preserving the framework (_schema).
+        Resets all attributes to the same state as __post_init__ leaves them.
 
         NOTE: Numpy arrays don't have .clear() method, so we reassign. Lists have .clear() method.
         """
-        # Clear variables
-        # Reassign numpy arrays (no .clear() method)
-        self._dim_mtx = np.array([], dtype=float)
+        # Clear parent class attributes (idx, sym, alias, name, description)
+        super().clear()
 
-        # Reassign sympy matrices
-        self._sym_mtx = sp.Matrix([])
-
-        # Clear lists (these have .clear() method)
+        # Clear Matrix-specific variables and data structures
         self._variables.clear()
         self._relevant_lt.clear()
         self._output = None
 
-        # Reset scalars
-        self._idx = -1
-        self._sym = ""
-        self._alias = ""
-        self.name = ""
-        self.description = ""
-
-        # Reset statistics
+        # Reset variable statistics to initial state
         self._n_var = 0
         self._n_relevant = 0
         self._n_in = 0
         self._n_out = 0
         self._n_ctrl = 0
 
-        # Clear matrices
-        self._dim_mtx = None
+        # Reset matrices to same state as __post_init__ leaves them
+        self._dim_mtx = np.array([], dtype=float)
         self._dim_mtx_trans = None
-        self._sym_mtx = None
+        self._sym_mtx = sp.Matrix([])
         self._rref_mtx = None
+        self._nullspace.clear()
         self._pivot_cols.clear()
 
         # Clear results
@@ -857,6 +730,9 @@ class Matrix(Foundation):
         return self._variables
 
     @variables.setter
+    @validate_type(dict, allow_none=False)
+    @validate_emptiness()
+    @validate_dict_types(str, Variable)
     def variables(self, val: Dict[str, Variable]) -> None:
         """*variables* Set the dictionary of variables.
 
@@ -867,16 +743,6 @@ class Matrix(Foundation):
             ValueError: If input is not a non-empty dictionary.
             ValueError: If any value is not a Variable instance.
         """
-        if not val or not isinstance(val, dict):
-            _msg = "Variables must be in non-empty dictionary. "
-            _msg += f"Provided input: {type(val).__name__}"
-            raise ValueError(_msg)
-
-        if not all(isinstance(v, Variable) for v in val.values()):
-            _msg = "All elements must be Variable instances"
-            _msg += f", got: {[type(v).__name__ for v in val.values()]}"
-            raise ValueError(_msg)
-
         self._variables = val
 
         # Update relevant variables and prepare for analysis
@@ -892,6 +758,7 @@ class Matrix(Foundation):
         return self._schema
 
     @framework.setter
+    @validate_type(Schema, allow_none=False)
     def framework(self, val: Schema) -> None:
         """Set the dimensional framework.
 
@@ -901,11 +768,6 @@ class Matrix(Foundation):
         Raises:
             ValueError: If input is not a Schema instance.
         """
-        if not isinstance(val, Schema):
-            _msg = "Schema must be a Schema instance. "
-            _msg += f"Got: {type(val).__name__}"
-            raise ValueError(_msg)
-
         # Update framework and global configuration
         self._schema = val
 
@@ -923,6 +785,8 @@ class Matrix(Foundation):
         return self._relevant_lt
 
     @relevant_lt.setter
+    @validate_type(dict, allow_none=False)
+    @validate_dict_types(str, Variable)
     def relevant_lt(self, val: Dict[str, Variable]) -> None:
         """*relevant_lt* Set the dictionary of relevant variables, otherwise known as 'relevance list'.
 
@@ -933,12 +797,6 @@ class Matrix(Foundation):
             ValueError: If the relevant variable dictionary is invalid.
             ValueError: If any of the dictionary variables are invalid.
         """
-        if not val or not isinstance(val, dict):
-            raise ValueError("Variables must be in non-empty dictionary.")
-
-        if not all(isinstance(v, Variable) for v in val.values()):
-            raise ValueError("All elements must be Variable instances")
-
         # Set relevant variables and prepare for analysis
         # self._relevant_lt = [p for p in val if p.relevant]
         self._relevant_lt = {
@@ -947,6 +805,98 @@ class Matrix(Foundation):
 
         # Update relevant variables and prepare for analysis
         self._prepare_analysis()
+
+    @property
+    def idx(self) -> int:
+        """*idx* Get the index/precedence value.
+
+        Returns:
+            int: Index value.
+        """
+        return self._idx
+
+    @idx.setter
+    @validate_type(int, allow_none=False)
+    @validate_index()
+    def idx(self, val: int) -> None:
+        """*idx* Set the index/precedence value.
+
+        Args:
+            val (int): Index value (must be non-negative).
+
+        Raises:
+            ValueError: If index is not a non-negative integer.
+        """
+        self._idx = val
+
+    @property
+    def sym(self) -> str:
+        """*sym* Get the symbol.
+
+        Returns:
+            str: Symbol value.
+        """
+        return self._sym
+
+    @sym.setter
+    @validate_type(str)
+    @validate_pattern(LATEX_RE, allow_alnum=True)
+    def sym(self, val: str) -> None:
+        """*sym* Set the symbol with validation.
+
+        Args:
+            val (str): Symbol value.
+
+        Raises:
+            ValueError: If symbol format is invalid.
+        """
+        self._sym = val
+
+    @property
+    def alias(self) -> str:
+        """*alias* Get the Python variable alias.
+
+        Returns:
+            str: Python variable name alias.
+        """
+        return self._alias
+
+    @alias.setter
+    @validate_type(str)
+    @validate_emptiness()
+    def alias(self, val: str) -> None:
+        """*alias* Set the Python variable alias.
+
+        Args:
+            val (str): Python variable name alias.
+
+        Raises:
+            ValueError: If alias is empty.
+        """
+        self._alias = val
+
+    @property
+    def fwk(self) -> str:
+        """*fwk* Get the framework.
+
+        Returns:
+            str: Framework value.
+        """
+        return self._fwk
+
+    @fwk.setter
+    @validate_type(str)
+    @validate_choices(PYDASA_CFG.frameworks)
+    def fwk(self, val: str) -> None:
+        """*fwk* Set the framework with validation.
+
+        Args:
+            val (str): Framework value.
+
+        Raises:
+            ValueError: If framework is not supported.
+        """
+        self._fwk = val
 
     @property
     def coefficients(self) -> Dict[str, Coefficient]:
@@ -998,7 +948,7 @@ class Matrix(Foundation):
     # ========================================================================
 
     def _convert_value(self, value: Any) -> Any:
-        """Convert a value to native Python-serializable format.
+        """*_convert_value()* transform / cast a value to native Python-serializable format like dict.
 
         Args:
             value (Any): Value to convert.

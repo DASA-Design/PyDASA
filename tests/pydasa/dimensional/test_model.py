@@ -8,7 +8,7 @@ Unit tests for Matrix class in PyDASA.
 This module provides comprehensive test coverage for the Matrix class, which implements matrix-based dimensional analysis following the Buckingham Pi theorem methodology.
 
 Classes:
-    TestDimMatrix: Test cases for Matrix class.
+    TestMatrix: Test cases for Matrix class.
 """
 
 # native python modules
@@ -37,7 +37,7 @@ assert Coefficient
 assert get_model_test_data
 
 
-class TestDimMatrix(unittest.TestCase):
+class TestMatrix(unittest.TestCase):
     """Test cases for Matrix class.
 
     This test class provides comprehensive coverage for dimensional matrix  operations including matrix creation, solving, and coefficient generation.
@@ -182,7 +182,7 @@ class TestDimMatrix(unittest.TestCase):
 
         with pytest.raises(ValueError) as excinfo:
             model.variables = ["not", "a", "dict"]  # type: ignore
-        assert "must be in non-empty dictionary" in str(excinfo.value)
+        assert "variables must be dict" in str(excinfo.value)
 
     def test_variables_setter_invalid_values(self) -> None:
         """Test variables setter with invalid variable types."""
@@ -190,7 +190,7 @@ class TestDimMatrix(unittest.TestCase):
 
         with pytest.raises(ValueError) as excinfo:
             model.variables = {"v": "not a variable"}  # type: ignore
-        assert "Variable instances" in str(excinfo.value)
+        assert "variables values must be Variable" in str(excinfo.value)
 
     def test_variables_setter_empty_dict(self) -> None:
         """Test variables setter with empty dictionary."""
@@ -198,7 +198,7 @@ class TestDimMatrix(unittest.TestCase):
 
         with pytest.raises(ValueError) as excinfo:
             model.variables = {}
-        assert "must be in non-empty dictionary" in str(excinfo.value)
+        assert "variables must be a non-empty dict" in str(excinfo.value)
 
     # ========================================================================
     # Frameworks management tests
@@ -227,7 +227,7 @@ class TestDimMatrix(unittest.TestCase):
 
         with pytest.raises(ValueError) as excinfo:
             model.framework = "not a framework"     # type: ignore
-        assert "Schema instance" in str(excinfo.value)
+        assert "framework must be Schema" in str(excinfo.value)
 
     # ========================================================================
     # Variable statistics tests
@@ -550,7 +550,7 @@ class TestDimMatrix(unittest.TestCase):
         assert len(model._relevant_lt) == 0
         assert model._n_var == 0
         assert model._n_relevant == 0
-        assert model._dim_mtx is None
+        assert isinstance(model._dim_mtx, np.ndarray) and model._dim_mtx.size == 0
         assert model._rref_mtx is None
         assert len(model._coefficients) == 0
 
@@ -880,6 +880,7 @@ class TestDimMatrix(unittest.TestCase):
                 f"Variable {var}: expected exponent 0 (dimensionless), "
                 f"but got {exp}. Subtraction of dimensionless numbers yields dimensionless result."
             )
+
     def test_derive_coefficient_with_constant(self) -> None:
         """Test derive_coefficient() handles expressions with numeric constants.
         

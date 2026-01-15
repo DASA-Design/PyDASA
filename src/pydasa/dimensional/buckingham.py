@@ -261,10 +261,10 @@ class Coefficient(Foundation, BoundsSpecs):
 
     @property
     def variables(self) -> Dict[str, Variable]:
-        """*variables* Get the variable symbols list.
+        """*variables* Get the variable symbols dictionary.
 
         Returns:
-            Dict[str, Variable]: Variables symbols list.
+            Dict[str, Variable]: Variables symbols dictionary.
         """
         return self._variables
 
@@ -272,13 +272,13 @@ class Coefficient(Foundation, BoundsSpecs):
     @validate_type(dict, allow_none=False)
     @validate_dict_types(str, Variable)
     def variables(self, val: Dict[str, Variable]) -> None:
-        """*variables* Set the variable symbols list.
+        """*variables* Set the variable symbols dictionary.
 
         Args:
-            val (Dict[str, Variable]): Variables symbols list.
+            val (Dict[str, Variable]): Variables symbols dictionary.
 
         Raises:
-            ValueError: If variables list is invalid.
+            ValueError: If variables dictionary is invalid.
         """
         self._variables = val
 

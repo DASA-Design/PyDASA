@@ -481,7 +481,7 @@ class TestAnalysisEngine(unittest.TestCase):
         # Try to set invalid schema
         with pytest.raises(ValueError) as excinfo:
             engine.schema = 123     # type: ignore
-        assert "must be str or dict or Schema" in str(excinfo.value)
+        assert "must be str or dict or list or Schema" in str(excinfo.value)
 
     def test_derive_coefficient_without_matrix(self) -> None:
         """*test_derive_coefficient_without_matrix()* tests error when deriving without matrix."""

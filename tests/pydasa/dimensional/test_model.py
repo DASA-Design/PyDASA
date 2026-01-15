@@ -204,30 +204,30 @@ class TestMatrix(unittest.TestCase):
     # Frameworks management tests
     # ========================================================================
 
-    def test_framework_property_getter(self) -> None:
+    def test_schema_property_getter(self) -> None:
         """Test framework property getter."""
         model = Matrix()
-        framework = model.framework
+        framework = model.schema
 
         assert isinstance(framework, Schema)
         assert framework._fwk == "PHYSICAL"
 
-    def test_framework_property_setter(self) -> None:
+    def test_schema_property_setter(self) -> None:
         """Test framework property setter."""
         model = Matrix()
         comp_framework = Schema(_fwk="COMPUTATION")
 
-        model.framework = comp_framework
+        model.schema = comp_framework
 
-        assert model.framework._fwk == "COMPUTATION"
+        assert model.schema._fwk == "COMPUTATION"
 
-    def test_framework_setter_invalid_type(self) -> None:
+    def test_schema_setter_invalid_type(self) -> None:
         """Test framework setter with invalid type."""
         model = Matrix()
 
         with pytest.raises(ValueError) as excinfo:
-            model.framework = "not a framework"     # type: ignore
-        assert "framework must be Schema" in str(excinfo.value)
+            model.schema = "not a framework"     # type: ignore
+        assert "schema must be Schema" in str(excinfo.value)
 
     # ========================================================================
     # Variable statistics tests

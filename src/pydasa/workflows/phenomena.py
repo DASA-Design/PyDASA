@@ -35,7 +35,7 @@ from pydasa.serialization.parser import latex_to_python
 # Import validation decorators
 from pydasa.validations.decorators import validate_type
 from pydasa.validations.decorators import validate_emptiness
-# from pydasa.validations.decorators import validate_custom
+from pydasa.validations.decorators import validate_dict_types
 
 # Import global configuration
 from pydasa.core.setup import Frameworks   # , PYDASA_CFG
@@ -81,12 +81,10 @@ class AnalysisEngine(Foundation):
 
     # :attr: _schema
     _schema: Optional[Schema] = None
-    """Dimensional framework schema.
-    Input can be: None, List[Dict], Dict, or Schema object.
-    After __post_init__, this will always be a Schema instance.
-    - If None: Creates default Schema based on _fwk (e.g., PHYSICAL)
-    - If List[Dict] or Dict: Creates CUSTOM Schema with provided FDU definitions
-    - If Schema: Uses provided Schema object directly
+    """Dimensional framework schema. Input can be: None, List[Dict], Dict, or Schema object. After __post_init__, this will always be a Schema instance.
+        - If None: Creates default Schema based on _fwk (e.g., PHYSICAL)
+        - If List[Dict] or Dict: Creates CUSTOM Schema with provided FDU definitions
+        - If Schema: Uses provided Schema object directly
     """
 
     # :attr: _model
@@ -168,6 +166,77 @@ class AnalysisEngine(Foundation):
             raise TypeError(_msg)
 
     # ========================================================================
+    # Helper Methods
+    # ========================================================================
+
+    def _convert_to_objects(self, data: dict, tgt_cls: type) -> dict:
+        """*_convert_to_objects()* Converts dictionary values to instances of the target class if they are not already.
+
+        Args:
+            data (dict): Dictionary with values to convert.
+            tgt_cls (type): Target class type for conversion.
+        Returns:
+            dict: Dictionary with values as instances of the target class.
+        """
+        # Convert dict values to Variable/Coefficient objects if needed
+        ans = dict()
+        for key, val in data.items():
+            # if value is already the target class, keep it
+            if isinstance(val, tgt_cls):
+                ans[key] = val
+            # otherwise, convert from dict
+            else:
+                ans[key] = tgt_cls.from_dict(val)
+        # return proper dict
+        return ans
+
+    def _convert_to_schema(self, val: FDUs) -> Schema:
+        """*_convert_to_schema()* Converts input to a Schema object.
+
+        Args:
+            val (FDUs): Dimensional framework schema. Can be str, dict, list of dicts, or Schema object.
+
+        Raises:
+            TypeError: If val is not a valid type.
+            TypeError: If dict is invalid.
+
+        Returns:
+            Schema: Converted Schema object.
+        """
+        # if schema is already a Schema, return it
+        if isinstance(val, Schema):
+            return val
+
+        # if schema is a string, convert to Schema
+        elif isinstance(val, str):
+            return Schema(_fwk=val.upper())
+
+        # if schema is a list of dicts, create CUSTOM schema
+        elif isinstance(val, list):
+            if not all(isinstance(item, dict) for item in val):
+                _msg = "When schema is a list, all items must be dictionaries with FDU definitions."
+                raise TypeError(_msg)
+            fdu_list = [
+                Dimension(**d) if isinstance(d, dict) else d for d in val
+            ]
+            return Schema(_fwk=Frameworks.CUSTOM.value, _fdu_lt=fdu_list)
+
+        # if schema is a dict, convert to Schema
+        elif isinstance(val, dict):
+            # Check if it's a complete Schema dict (has framework info)
+            if "fwk" in val or "_fwk" in val:
+                return Schema.from_dict(val)
+            else:
+                # Single FDU definition dict - treat as CUSTOM with one dimension
+                fdu_list = [Dimension(**val)]
+                return Schema(_fwk=Frameworks.CUSTOM.value, _fdu_lt=fdu_list)
+
+        else:
+            _msg = "Input must be type non-empty 'str', 'dict', 'list', or 'Schema'. "
+            _msg += f"Provided: {type(val).__name__}"
+            raise TypeError(_msg)
+
+    # ========================================================================
     # Property Getters and Setters
     # ========================================================================
 
@@ -183,6 +252,7 @@ class AnalysisEngine(Foundation):
     @variables.setter
     @validate_type(dict, Variable, allow_none=False)
     @validate_emptiness()
+    @validate_dict_types(str, (Variable, dict))
     def variables(self, val: Variables) -> None:
         """*variables* Set the dictionary of variables.
 
@@ -192,22 +262,8 @@ class AnalysisEngine(Foundation):
         Raises:
             ValueError: If dictionary is invalid or contains invalid values.
         """
-        # Convert dict values to Variable objects if needed
-        converted = {}
-        for key, value in val.items():
-            # if value is already a Variable, keep it
-            if isinstance(value, Variable):
-                converted[key] = value
-            # if value is a dict, convert to Variable
-            elif isinstance(value, dict):
-                # Convert dict to Variable
-                converted[key] = Variable.from_dict(value)
-            else:
-                _msg = f"Input '{key}' must be type 'Variable' or 'dict'. "
-                _msg += f"Provided: {type(value).__name__}"
-                raise ValueError(_msg)
-
-        self._variables = converted
+        # convert dict values to Variable objects if needed
+        self._variables = self._convert_to_objects(val, Variable)
         self._is_solved = False  # Reset solve state
 
     @property
@@ -228,51 +284,14 @@ class AnalysisEngine(Foundation):
         """*schema* Set the dimensional framework schema.
 
         Args:
-            val (FDUs): Dimensional framework schema.
+            val (FDUs): Dimensional framework schema. Can be str, dict, list of dicts, or Schema object.
 
         Raises:
             TypeError: If val is not a valid type.
-            ValueError: If string is not a valid framework name or dict is invalid.
-            ValueError: If dict is empty.
+            TypeError: If dict is invalid.
         """
-        # if schema is a string, convert to Schema
-        if isinstance(val, str):
-            self._schema = Schema(_fwk=val.upper())
-
-        # if schema is a list of dicts, create CUSTOM schema
-        elif isinstance(val, list):
-            if not all(isinstance(item, dict) for item in val):
-                _msg = "When schema is a list, all items must be dictionaries with FDU definitions."
-                raise TypeError(_msg)
-            fdu_list = []
-            for d in val:
-                if isinstance(d, dict):
-                    fdu_list.append(Dimension(**d))
-                else:
-                    fdu_list.append(d)
-            # fdu_list = [Dimension(**d) if isinstance(d, dict) else d for d in val]
-            self._schema = Schema(_fwk=Frameworks.CUSTOM.value,
-                                  _fdu_lt=fdu_list)
-
-        # if schema is a dict, convert to Schema
-        elif isinstance(val, dict):
-            # Check if it's a complete Schema dict (has framework info)
-            if "fwk" in val or "_fwk" in val:
-                self._schema = Schema.from_dict(val)
-            else:
-                # Single FDU definition dict - treat as CUSTOM with one dimension
-                fdu_list = [Dimension(**val)]
-                self._schema = Schema(_fwk=Frameworks.CUSTOM.value,
-                                      _fdu_lt=fdu_list)
-
-        # if schema is already a Schema, keep it
-        elif isinstance(val, Schema):
-            self._schema = val
-
-        else:
-            _msg = "Input must be type non-empty 'str', 'dict', 'list', or 'Schema'. "
-            _msg += f"Provided: {type(val).__name__}"
-            raise TypeError(_msg)
+        # Convert input to Schema object using helper method
+        self._schema = self._convert_to_schema(val)
 
     @property
     def matrix(self) -> Optional[Matrix]:
@@ -307,6 +326,7 @@ class AnalysisEngine(Foundation):
     @coefficients.setter
     @validate_type(dict, Coefficient, allow_none=False)
     @validate_emptiness()
+    @validate_dict_types(str, (Coefficient, dict))
     def coefficients(self, val: Coefficients) -> None:
         """*coefficients* Set the generated coefficients.
 
@@ -318,21 +338,7 @@ class AnalysisEngine(Foundation):
             ValueError: If dictionary is empty.
         """
         # Convert dict values to Coefficient objects if needed
-        converted = {}
-        for key, value in val.items():
-            # if value is already a Coefficient, keep it
-            if isinstance(value, Coefficient):
-                converted[key] = value
-            # if value is a dict, convert to Coefficient
-            elif isinstance(value, dict):
-                # Convert dict to Coefficient
-                converted[key] = Coefficient.from_dict(value)
-            else:
-                _msg = f"Input '{key}' must be type 'Coefficient' or 'dict'. "
-                _msg += f"Provided: {type(value).__name__}"
-                raise ValueError(_msg)
-
-        self._coefficients = converted
+        self._coefficients = self._convert_to_objects(val, Coefficient)
         self._is_solved = False  # Reset solve state
 
     @property

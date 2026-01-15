@@ -214,7 +214,7 @@ class TestAnalysisEngine(unittest.TestCase):
         # Try to set invalid variables
         with pytest.raises(ValueError) as excinfo:
             engine.variables = {"key": "invalid_string"}
-        assert "must be type 'Variable' or 'dict'" in str(excinfo.value)
+        assert "values must be Variable or dict" in str(excinfo.value)
 
     def test_create_matrix(self) -> None:
         """*test_create_matrix()* tests creating dimensional matrix."""

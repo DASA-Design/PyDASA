@@ -74,7 +74,7 @@ class Matrix(Foundation):
         _fwk (str): Frameworks context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
 
         # FDU Schema Management
-        _schema (Schema): Dimensional framework managing FDUs.
+        _schema (Schema): Dimensional domain managing FDUs.
         working_fdus (List[str]): Active FDUs used in current analysis.
 
         # Variable Management
@@ -133,7 +133,7 @@ class Matrix(Foundation):
 
     # :attr: _schema
     _schema: Schema = field(default_factory=Schema)
-    """Dimensional framework managing Fundamental Dimensional Units (FDUs)."""
+    """Dimensional domain managing Fundamental Dimensional Units (FDUs)."""
 
     # :attr: working_fdus
     working_fdus: List[str] = field(default_factory=list)
@@ -264,10 +264,6 @@ class Matrix(Foundation):
         """
         # Initialize base class
         super().__post_init__()
-
-        # # Update global configuration from framework
-        # if self._schema:
-        #     self._schema.update_global_config()
 
         # Process variables if provided
         if self._variables:
@@ -749,21 +745,21 @@ class Matrix(Foundation):
         self._prepare_analysis()
 
     @property
-    def framework(self) -> Schema:
-        """*framework* Get the dimensional framework.
+    def schema(self) -> Schema:
+        """*schema* Get the dimensional schema.
 
         Returns:
-            Schema: Current dimensional framework.
+            Schema: Current dimensional schema.
         """
         return self._schema
 
-    @framework.setter
+    @schema.setter
     @validate_type(Schema, allow_none=False)
-    def framework(self, val: Schema) -> None:
-        """Set the dimensional framework.
+    def schema(self, val: Schema) -> None:
+        """*schema* Set the dimensional schema.
 
         Args:
-            val (Schema): New dimensional framework.
+            val (Schema): New dimensional schema.
 
         Raises:
             ValueError: If input is not a Schema instance.

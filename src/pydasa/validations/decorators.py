@@ -21,7 +21,7 @@ Functions:
 # native python modules
 from functools import wraps
 from enum import Enum
-from typing import Callable, Any, Union, Type, Optional   # , Tuple
+from typing import Callable, Any, Union, Type, Optional, Tuple
 import re
 
 
@@ -512,12 +512,13 @@ def validate_list_types(*elm_types: type) -> Callable:
     return decorator        # return the decorator
 
 
-def validate_dict_types(key_type: type, val_type: type) -> Callable:
+def validate_dict_types(key_type: type,
+                        val_types: type | Tuple[type, ...]) -> Callable:
     """*validate_dict_types()* Decorator to validate dict has correct key and value types. It asumes the dict exists.
 
     Args:
         key_type (type): Expected type for dictionary keys.
-        val_type (type): Expected type for dictionary values.
+        val_types (type | Tuple[type, ...]): Expected types for dictionary values. At least one type must be provided.
 
     Raises:
         ValueError: If dict keys or values have wrong types.
@@ -529,10 +530,16 @@ def validate_dict_types(key_type: type, val_type: type) -> Callable:
         @variables.setter
         @validate_type(dict, allow_none=False)
         @validate_emptiness()
-        @validate_dict_types(str, Variable)
+        @validate_dict_types(str, (Variable, dict))
         def variables(self, val: Dict[str, Variable]) -> None:
             self._variables = val
     """
+    # Normalize val_types to always be a tuple
+    if isinstance(val_types, type):
+        std_types: Tuple[type, ...] = (val_types,)
+    else:
+        std_types = val_types
+
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         def wrapper(self, value: Any) -> Any:
@@ -540,16 +547,26 @@ def validate_dict_types(key_type: type, val_type: type) -> Callable:
             # if the dict exists
             if value is not None:
                 # Check all keys match expected type
-                invalid_keys = [k for k in value.keys() if not isinstance(k, key_type)]
+                invalid_keys = [
+                    k for k in value.keys() if not isinstance(k, key_type)
+                ]
                 if invalid_keys:
                     _msg = f"{func.__name__} keys must be {key_type.__name__}. "
                     _msg += f"Found invalid keys: {invalid_keys}."
                     raise ValueError(_msg)
 
                 # Check all values match expected type
-                invalid_values = [v for v in value.values() if not isinstance(v, val_type)]
+                invalid_values = [
+                    v for v in value.values() if not isinstance(v, std_types)
+                ]
                 if invalid_values:
-                    _msg = f"{func.__name__} values must be {val_type.__name__}. "
+                    # Build human-readable type names
+                    if len(std_types) == 1:
+                        type_names = std_types[0].__name__
+                    else:
+                        type_names = " or ".join(t.__name__ for t in std_types)
+
+                    _msg = f"{func.__name__} values must be {type_names}. "
                     _msg += f"Found {len(invalid_values)} invalid value(s)."
                     raise ValueError(_msg)
 

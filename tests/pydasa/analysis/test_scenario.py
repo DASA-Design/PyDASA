@@ -22,6 +22,7 @@ from typing import Dict, Any
 
 # Import numpy for numerical operations
 import numpy as np
+import sympy as sp
 
 # Import core PyDASA modules
 from pydasa.elements.parameter import Variable
@@ -342,32 +343,33 @@ class TestSensitivity(unittest.TestCase):
         """*test_sym_func_getter()* tests sym_func property getter."""
         sens = Sensitivity(_pi_expr="U")
         assert sens.sym_func is not None
-        assert callable(sens._sym_func) or hasattr(sens._sym_func, 'free_symbols')
+        # sym_func should be a SymPy expression
+        assert isinstance(sens._sym_func, sp.Expr)
+        assert hasattr(sens._sym_func, 'free_symbols')
 
     def test_sym_func_setter_valid(self) -> None:
-        """*test_sym_func_setter_valid()* tests sym_func setter with valid callable."""
+        """*test_sym_func_setter_valid()* tests sym_func setter with valid SymPy expression."""
         sens = Sensitivity(_fwk="CUSTOM")
 
-        # Create a simple callable
-        def test_func(x: float) -> float:
-            return x + 1
+        # Create a simple SymPy expression
+        x = sp.Symbol('x')
+        test_expr = x + 1
 
-        sens.sym_func = test_func
-        assert sens.sym_func == test_func
+        sens.sym_func = test_expr
+        assert sens.sym_func == test_expr
 
     def test_sym_func_setter_invalid(self) -> None:
-        """*test_sym_func_setter_invalid()* tests sym_func setter with non-callable."""
+        """*test_sym_func_setter_invalid()* tests sym_func setter with non-Expr types."""
         sens = Sensitivity(_fwk="CUSTOM")
 
-        with pytest.raises(ValueError) as excinfo:
-            sens.sym_func = "not_a_callable"    # type: ignore
+        # Should raise ValueError for non-SymPy expression types
+        with pytest.raises((ValueError, TypeError)):
+            sens.sym_func = "not_an_expression"    # type: ignore
 
-        assert "must be callable" in str(excinfo.value)
-
-        with pytest.raises(ValueError):
+        with pytest.raises((ValueError, TypeError)):
             sens.sym_func = 123    # type: ignore
 
-        with pytest.raises(ValueError):
+        with pytest.raises((ValueError, TypeError)):
             sens.sym_func = None    # type: ignore
 
     # ========================================================================
@@ -382,7 +384,7 @@ class TestSensitivity(unittest.TestCase):
 
             assert sens._pi_expr == coef._pi_expr
             assert sens._sym_func is not None
-            assert sens._variables is not None
+            assert sens._var_names is not None
 
     def test_variable_extraction_from_expression(self) -> None:
         """*test_variable_extraction_from_expression()* tests extracting variables."""
@@ -393,8 +395,8 @@ class TestSensitivity(unittest.TestCase):
 
             sens = Sensitivity(_pi_expr=coef._pi_expr, _fwk="CUSTOM")
 
-            assert sens._variables is not None
-            assert len(sens._variables) > 0
+            assert sens._var_names is not None
+            assert len(sens._var_names) > 0
 
     def test_latex_to_python_mapping(self) -> None:
         """*test_latex_to_python_mapping()* tests LaTeX to Python symbol mapping."""
@@ -698,8 +700,8 @@ class TestSensitivity(unittest.TestCase):
         aliases = sens.aliases
         assert aliases is not None
 
-    def test_exe_func_property_readonly(self) -> None:
-        """*test_exe_func_property_readonly()* tests exe_func property is read-only."""
+    def test_exe_func_property_getter(self) -> None:
+        """*test_exe_func_property_getter()* tests exe_func property getter."""
         sens = Sensitivity(_pi_expr="U/d", _fwk="CUSTOM")
 
         vals = {"U": 10.0, "d": 2.0}
@@ -708,3 +710,193 @@ class TestSensitivity(unittest.TestCase):
         exe_func = sens.exe_func
         # exe_func can be None or a callable/dict
         assert exe_func is None or callable(exe_func) or isinstance(exe_func, dict)
+
+    def test_exe_func_property_setter_callable(self) -> None:
+        """*test_exe_func_property_setter_callable()* tests exe_func setter with callable."""
+        sens = Sensitivity(_fwk="CUSTOM")
+
+        # Create a simple callable
+        def test_func(x: float, y: float) -> float:
+            return x / y
+
+        sens.exe_func = test_func
+        assert sens.exe_func == test_func
+        assert callable(sens.exe_func)
+
+    def test_exe_func_property_setter_dict(self) -> None:
+        """*test_exe_func_property_setter_dict()* tests exe_func setter with dict of callables."""
+        sens = Sensitivity(_fwk="CUSTOM")
+
+        # Create a dict of callables
+        def func1(x: float) -> float:
+            return x + 1
+
+        def func2(x: float) -> float:
+            return x * 2
+
+        test_funcs = {
+            "func1": func1,
+            "func2": func2
+        }
+
+        sens.exe_func = test_funcs
+        assert sens.exe_func == test_funcs
+        assert isinstance(sens.exe_func, dict)
+
+    def test_exe_func_property_setter_invalid(self) -> None:
+        """*test_exe_func_property_setter_invalid()* tests exe_func setter with invalid values."""
+        sens = Sensitivity(_fwk="CUSTOM")
+
+        # Should fail with non-callable, non-dict types
+        with pytest.raises(TypeError):
+            sens.exe_func = "not_a_callable"    # type: ignore
+
+        with pytest.raises(TypeError):
+            sens.exe_func = 123    # type: ignore
+
+        # Should fail with dict containing non-callables
+        with pytest.raises(TypeError):
+            sens.exe_func = {"key": "not_callable"}    # type: ignore
+
+    def test_var_names_property(self) -> None:
+        """*test_var_names_property()* tests var_names property getter."""
+        sens = Sensitivity(_pi_expr="U/d", _fwk="CUSTOM")
+
+        var_names = sens.var_names
+        assert var_names is not None
+        assert isinstance(var_names, list)
+        assert len(var_names) == 2
+        # Should be sorted
+        assert "U" in var_names or "d" in var_names
+
+    def test_schema_property_setter(self) -> None:
+        """*test_schema_property_setter()* tests schema property setter."""
+        sens = Sensitivity(_fwk="CUSTOM")
+
+        # Create a new schema
+        new_schema = Schema(_fwk="PHYSICAL")
+
+        sens.schema = new_schema
+        assert sens.schema == new_schema
+        assert sens.schema._fwk == "PHYSICAL"
+
+    def test_schema_property_setter_invalid(self) -> None:
+        """*test_schema_property_setter_invalid()* tests schema setter with invalid values."""
+        sens = Sensitivity(_fwk="CUSTOM")
+
+        # Should fail with non-Schema types
+        with pytest.raises((ValueError, TypeError)):
+            sens.schema = "not_a_schema"    # type: ignore
+
+        with pytest.raises((ValueError, TypeError)):
+            sens.schema = None    # type: ignore
+
+    def test_variables_property_setter(self) -> None:
+        """*test_variables_property_setter()* tests variables property setter."""
+        sens = Sensitivity(_fwk="CUSTOM")
+
+        # Create variables
+        var1 = Variable(_sym="x", _fwk="CUSTOM", _dims="L", _units="m")
+        var2 = Variable(_sym="y", _fwk="CUSTOM", _dims="T", _units="s")
+
+        test_vars = {"x": var1, "y": var2}
+
+        sens.variables = test_vars
+        assert sens.variables == test_vars
+        assert len(sens.variables) == 2
+
+    def test_variables_property_setter_invalid(self) -> None:
+        """*test_variables_property_setter_invalid()* tests variables setter with invalid values."""
+        sens = Sensitivity(_fwk="CUSTOM")
+
+        # Should fail with non-dict types
+        with pytest.raises((ValueError, TypeError)):
+            sens.variables = "not_a_dict"    # type: ignore
+
+        with pytest.raises((ValueError, TypeError)):
+            sens.variables = [1, 2, 3]    # type: ignore
+
+        # Should fail with dict having wrong value types
+        with pytest.raises((ValueError, TypeError)):
+            sens.variables = {"key": "not_a_variable"}    # type: ignore
+
+    # ========================================================================
+    # Validation Method Tests
+    # ========================================================================
+
+    def test_validate_sympy_expr_valid(self) -> None:
+        """*test_validate_sympy_expr_valid()* tests _validate_sympy_expr with valid expression."""
+        sens = Sensitivity(_fwk="CUSTOM")
+
+        # Create a valid SymPy expression
+        x = sp.Symbol('x')
+        expr = x + 1
+
+        # Should not raise any exception
+        try:
+            sens._validate_sympy_expr(expr, "test_field")
+        except ValueError:
+            pytest.fail("_validate_sympy_expr raised ValueError unexpectedly")
+
+    def test_validate_sympy_expr_invalid(self) -> None:
+        """*test_validate_sympy_expr_invalid()* tests _validate_sympy_expr with invalid values."""
+        sens = Sensitivity(_fwk="CUSTOM")
+
+        # Should raise ValueError for non-SymPy expressions
+        with pytest.raises(ValueError) as excinfo:
+            sens._validate_sympy_expr("not_an_expr", "test_field")
+
+        assert "must be a SymPy expression" in str(excinfo.value)
+
+        with pytest.raises(ValueError):
+            sens._validate_sympy_expr(123, "test_field")
+
+        with pytest.raises(ValueError):
+            sens._validate_sympy_expr(None, "test_field")
+
+    def test_validate_analysis_ready_success(self) -> None:
+        """*test_validate_analysis_ready_success()* tests _validate_analysis_ready when ready."""
+        sens = Sensitivity(_pi_expr="U/d", _fwk="CUSTOM")
+
+        # Should not raise any exception
+        try:
+            sens._validate_analysis_ready()
+        except ValueError:
+            pytest.fail("_validate_analysis_ready raised ValueError unexpectedly")
+
+    def test_validate_analysis_ready_missing_variables(self) -> None:
+        """*test_validate_analysis_ready_missing_variables()* tests validation fails without variables."""
+        sens = Sensitivity(_fwk="CUSTOM")
+
+        # Should fail because no expression has been parsed
+        with pytest.raises(ValueError) as excinfo:
+            sens._validate_analysis_ready()
+
+        assert "No variables found" in str(excinfo.value)
+
+    def test_validate_analysis_ready_missing_aliases(self) -> None:
+        """*test_validate_analysis_ready_missing_aliases()* tests validation fails without aliases."""
+        sens = Sensitivity(_fwk="CUSTOM")
+
+        # Manually set var_names but not aliases to trigger specific error
+        sens._var_names = ["x", "y"]
+
+        with pytest.raises(ValueError) as excinfo:
+            sens._validate_analysis_ready()
+
+        assert "No Python aliases found" in str(excinfo.value)
+
+    def test_validate_analysis_ready_missing_sym_func(self) -> None:
+        """*test_validate_analysis_ready_missing_sym_func()* tests validation fails without sym_func."""
+        sens = Sensitivity(_fwk="CUSTOM")
+
+        # Manually set var_names and aliases but not sym_func
+        sens._var_names = ["x", "y"]
+        x = sp.Symbol('x')
+        y = sp.Symbol('y')
+        sens._aliases = {"x": x, "y": y}
+
+        with pytest.raises(ValueError) as excinfo:
+            sens._validate_analysis_ready()
+
+        assert "No expression has been defined" in str(excinfo.value)

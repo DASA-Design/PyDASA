@@ -5,6 +5,74 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.2] - 2026-01-15
+
+### Fixed
+- Fixed type annotations in `Sensitivity` class for better type safety
+    - Changed `_sym_func` from `Callable` to `sp.Expr` to properly represent SymPy expressions
+    - Updated `_exe_func` to `Union[Callable, Dict[str, Callable]]` to handle both analysis modes
+    - Fixed `_symbols` type from `Dict[str, Symbol]` to `Dict[sp.Symbol, sp.Symbol]`
+    - Split `_variables` into `Dict[str, Variable]` for objects and `_var_names: List[str]` for names
+    - Fixed property return types to match attribute types
+- Resolved type checking errors: "subs is not a known attribute", "Dict is not callable"
+- Fixed "var is possibly unbound" error in exception handlers with proper initialization
+- Removed trailing whitespace in docstrings
+
+### Added
+- New `var_names` property getter in `Sensitivity` class
+- Added `_validate_sympy_expr()` validation method for SymPy expression validation
+- Added `_validate_analysis_ready()` method to check if analysis can be performed
+- Comprehensive test suite for `Sensitivity` class (56 tests total, up from 43)
+    - Tests for `exe_func` property setter with callable and dict types
+    - Tests for `schema` property setter and validation
+    - Tests for `variables` property setter and validation
+    - Tests for `_validate_sympy_expr()` method
+    - Tests for `_validate_analysis_ready()` method with various failure scenarios
+    - Tests for `var_names` property getter
+
+### Changed
+- Improved error messages in `Sensitivity` class for better debugging
+- Updated `analyze_symbolically()` with better type guards and current variable tracking
+- Updated `analyze_numerically()` with proper type guards using local variables
+- Enhanced `_parse_expression()` method with proper type narrowing
+- Refactored property decorators for consistency with validation patterns
+- Replaced lambda expressions with proper function definitions for PEP 8 compliance
+
+### Internal
+- Added type guards to prevent runtime errors with Union types
+- Improved exception handling with proper context preservation (`raise ... from e`)
+- Enhanced type safety for SymPy integration throughout the module
+- Used local variables to satisfy type checker in complex assignment scenarios
+
+## [0.5.1] - 2026-01-14
+
+### Changed
+- Enhanced `Sensitivity` class with improved workflow integration
+- Refined coefficient handling in sensitivity analysis
+- Updated dimensional analysis workflow capabilities
+- Added comprehensive property validation decorators
+
+### Fixed
+- Improved stability of sensitivity analysis methods
+- Fixed minor issues in expression parsing
+
+## [0.5.0] - 2026-01-13
+
+### Added
+- Major refactoring to support CUSTOM framework in dimensional analysis
+- Schema class now requires `_schema` attribute initialization for CUSTOM framework
+- Enhanced framework validation and type checking
+
+### Changed
+- Restructured analysis workflows for better modularity
+- Matrix class updated to require `_schema` at initialization
+- Improved separation of concerns in analysis components
+- Updated error messages to use "schema" instead of "framework" for clarity
+
+### Fixed
+- Fixed test assertions to match updated property names
+- Corrected framework validation logic in multiple classes
+
 ## [0.4.10] - 2026-01-12
 ### Added
 - New validation decorators `validate_list_types` and `validate_dict_types` in `pydasa.validations.decorators` module
@@ -274,3 +342,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.0.1] - Unreleased
 ### Added
 - Distribution files: `pydasa-0.0.1-py3-none-any.whl`, `pydasa-0.0.1.tar.gz`
+
+[0.5.2]: https://github.com/DASA-Design/PyDASA/compare/v0.5.1...v0.5.2
+[0.5.1]: https://github.com/DASA-Design/PyDASA/compare/v0.5.0...v0.5.1
+[0.5.0]: https://github.com/DASA-Design/PyDASA/compare/v0.4.10...v0.5.0
+[0.4.10]: https://github.com/DASA-Design/PyDASA/compare/v0.4.9...v0.4.10
+[0.4.9]: https://github.com/DASA-Design/PyDASA/compare/v0.4.8...v0.4.9
+[0.4.8]: https://github.com/DASA-Design/PyDASA/compare/v0.4.7...v0.4.8
+[0.4.7]: https://github.com/DASA-Design/PyDASA/compare/v0.4.6...v0.4.7
+[0.4.6]: https://github.com/DASA-Design/PyDASA/compare/v0.4.5...v0.4.6
+[0.4.5]: https://github.com/DASA-Design/PyDASA/compare/v0.4.4...v0.4.5
+[0.4.4]: https://github.com/DASA-Design/PyDASA/compare/v0.4.3...v0.4.4
+[0.4.3]: https://github.com/DASA-Design/PyDASA/compare/v0.4.2...v0.4.3
+[0.4.2]: https://github.com/DASA-Design/PyDASA/compare/v0.4.1...v0.4.2
+[0.4.1]: https://github.com/DASA-Design/PyDASA/compare/v0.4.0...v0.4.1
+[0.4.0]: https://github.com/DASA-Design/PyDASA/compare/v0.3.4...v0.4.0
+[0.3.4]: https://github.com/DASA-Design/PyDASA/compare/v0.3.3...v0.3.4
+[0.3.3]: https://github.com/DASA-Design/PyDASA/compare/v0.3.2...v0.3.3
+[0.3.2]: https://github.com/DASA-Design/PyDASA/compare/v0.3.1...v0.3.2
+[0.3.1]: https://github.com/DASA-Design/PyDASA/compare/v0.3.0...v0.3.1
+[0.3.0]: https://github.com/DASA-Design/PyDASA/releases/tag/v0.3.0

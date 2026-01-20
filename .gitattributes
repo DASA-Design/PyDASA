@@ -1,0 +1,2 @@
+# Ensure JSON files are always UTF-8 without BOM
+*.json text eol=lf encoding=utf-8

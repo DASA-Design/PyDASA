@@ -265,6 +265,10 @@ class Matrix(Foundation):
         # Initialize base class
         super().__post_init__()
 
+        # Set default symbol if not specified
+        if not self._sym:
+            self._sym = f"DM_{{{self._idx}}}" if self._idx >= 0 else "DM_{-1}"
+
         # Process variables if provided
         if self._variables:
             self._prepare_analysis()
@@ -685,32 +689,27 @@ class Matrix(Foundation):
 
         NOTE: Numpy arrays don't have .clear() method, so we reassign. Lists have .clear() method.
         """
-        # Clear parent class attributes (idx, sym, alias, name, description)
+        # Reset parent class attributes (Foundation)
         super().clear()
+        self._sym = f"DM_{{{self._idx}}}"
 
-        # Clear Matrix-specific variables and data structures
-        self._variables.clear()
-        self._relevant_lt.clear()
+        # Reset Matrix-specific attributes
+        self._variables = {}
+        self._relevant_lt = {}
         self._output = None
-
-        # Reset variable statistics to initial state
         self._n_var = 0
         self._n_relevant = 0
         self._n_in = 0
         self._n_out = 0
         self._n_ctrl = 0
-
-        # Reset matrices to same state as __post_init__ leaves them
         self._dim_mtx = np.array([], dtype=float)
         self._dim_mtx_trans = None
         self._sym_mtx = sp.Matrix([])
         self._rref_mtx = None
-        self._nullspace.clear()
-        self._pivot_cols.clear()
-
-        # Clear results
-        self._coefficients.clear()
-        self.working_fdus.clear()
+        self._nullspace = []
+        self._pivot_cols = []
+        self._coefficients = {}
+        self.working_fdus = []
 
     # ========================================================================
     # Properties
@@ -943,51 +942,6 @@ class Matrix(Foundation):
     # Serialization
     # ========================================================================
 
-    def _convert_value(self, value: Any) -> Any:
-        """*_convert_value()* transform / cast a value to native Python-serializable format like dict.
-
-        Args:
-            value (Any): Value to convert.
-
-        Returns:
-            Any: Converted value.
-        """
-        # Handle None
-        if value is None:
-            return None
-
-        # Handle numpy arrays
-        if isinstance(value, np.ndarray):
-            return value.tolist()
-
-        # Handle sympy matrices
-        if isinstance(value, sp.Matrix):
-            return [[float(val) for val in row] for row in value.tolist()]
-
-        # Handle objects with to_dict method
-        if isinstance(value, (Schema, Variable, Coefficient)):
-            return value.to_dict()
-
-        # Handle dictionaries
-        if isinstance(value, dict):
-            if not value:  # Empty dict
-                return {}
-
-            # Check if all values have to_dict method
-            first_val = next(iter(value.values()))
-            if isinstance(first_val, (Variable, Coefficient)):
-                return {k: v.to_dict() for k, v in value.items()}
-
-            # Regular dict
-            return value
-
-        # Handle lists
-        if isinstance(value, list):
-            return [self._convert_value(item) for item in value]
-
-        # Default: return as-is
-        return value
-
     def to_dict(self) -> Dict[str, Any]:
         """*to_dict()* Convert model to dictionary representation.
 
@@ -1001,16 +955,33 @@ class Matrix(Foundation):
             attr_name = f.name
             attr_value = getattr(self, attr_name)
 
-            # Skip None values for optional fields
-            if attr_value is None:
-                continue
+            # Handle numpy arrays
+            if isinstance(attr_value, np.ndarray):
+                attr_value = attr_value.tolist()
+            # Handle SymPy matrices
+            elif isinstance(attr_value, sp.Matrix):
+                attr_value = [[float(val) for val in row] for row in attr_value.tolist()]
+            # Handle Schema, Variable, Coefficient objects
+            elif isinstance(attr_value, (Schema, Variable, Coefficient)):
+                attr_value = attr_value.to_dict()
+            # Handle dictionaries with Variable or Coefficient values
+            elif isinstance(attr_value, dict) and attr_value:
+                first_val = next(iter(attr_value.values()), None)
+                if isinstance(first_val, (Variable, Coefficient)):
+                    attr_value = {k: v.to_dict() for k, v in attr_value.items()}
+            # Handle lists
+            elif isinstance(attr_value, list):
+                # Check if list contains objects with to_dict
+                if attr_value and hasattr(attr_value[0], 'to_dict'):
+                    attr_value = [item.to_dict() if hasattr(item, 'to_dict') else item for item in attr_value]
 
-            # Convert based on type
-            converted_value = self._convert_value(attr_value)
+            # Skip callables (can't be serialized)
+            if callable(attr_value) and not isinstance(attr_value, type):
+                continue
 
             # Remove leading underscore from private attributes
             clean_name = attr_name[1:] if attr_name.startswith("_") else attr_name
-            result[clean_name] = converted_value
+            result[clean_name] = attr_value
 
         return result
 
@@ -1030,69 +1001,54 @@ class Matrix(Foundation):
         # Map keys without underscores to keys with underscores
         mapped_data = {}
 
-        # Define conversion rules
-        object_converters = {
-            "schema": Schema,
-            "variables": Variable,
-            "relevant_lt": Variable,
-            "output": Variable,
-            "coefficients": Coefficient
-        }
-
-        array_fields = ["dim_mtx", "dim_mtx_trans", "rref_mtx"]
-        matrix_fields = ["sym_mtx"]
-
-        # Computed fields that should not be passed to constructor
-        computed_fields = {
-            "n_var", "n_relevant", "n_in", "n_out", "n_ctrl",
-            "relevant_lt", "output", "coefficients",
-            "dim_mtx", "dim_mtx_trans", "sym_mtx", "rref_mtx", "pivot_cols"
-        }
-
         for key, value in data.items():
-            # Skip computed fields
-            clean_key = key[1:] if key.startswith("_") else key
-            if clean_key in computed_fields:
+            # Handle special conversions for Schema
+            if key == "schema" and isinstance(value, dict):
+                mapped_data["_schema"] = Schema.from_dict(value)
                 continue
-
-            # Map key to field name
-            field_key = None
-            if key in field_names:
-                field_key = key
-            elif f"_{key}" in field_names:
-                field_key = f"_{key}"
-            elif key.startswith("_") and key[1:] in field_names:
-                field_key = key[1:]
-
-            if field_key is None:
+            # Handle dictionary of Variables
+            elif key == "variables" and isinstance(value, dict):
+                mapped_data["_variables"] = {
+                    k: Variable.from_dict(v) if isinstance(v, dict) else v
+                    for k, v in value.items()
+                }
                 continue
-
-            # Convert objects
-            if clean_key in object_converters:
-                converter = object_converters[clean_key]
-
-                if isinstance(value, dict):
-                    if clean_key in ["variables", "relevant_lt", "coefficients"]:
-                        # Dictionary of objects
-                        mapped_data[field_key] = {
-                            k: converter.from_dict(v) if isinstance(v, dict) else v
-                            for k, v in value.items()
-                        }
-                    else:
-                        # Single object
-                        mapped_data[field_key] = converter.from_dict(value)
-
-            # Convert arrays
-            elif clean_key in array_fields and isinstance(value, list):
+            # Handle dictionary of Coefficients
+            elif key == "coefficients" and isinstance(value, dict):
+                mapped_data["_coefficients"] = {
+                    k: Coefficient.from_dict(v) if isinstance(v, dict) else v
+                    for k, v in value.items()
+                }
+                continue
+            # Handle single Variable output
+            elif key == "output" and isinstance(value, dict):
+                mapped_data["_output"] = Variable.from_dict(value)
+                continue
+            # Handle numpy arrays
+            elif key in ["dim_mtx", "dim_mtx_trans", "rref_mtx"] and isinstance(value, list):
+                field_key = f"_{key}" if f"_{key}" in field_names else key
                 mapped_data[field_key] = np.array(value)
+                continue
+            # Handle SymPy matrices
+            elif key == "sym_mtx" and isinstance(value, list):
+                mapped_data["_sym_mtx"] = sp.Matrix(value)
+                continue
+            # Handle nullspace (list of arrays or matrices)
+            elif key == "nullspace" and isinstance(value, list):
+                mapped_data["_nullspace"] = [np.array(item) if isinstance(item, list) else item for item in value]
+                continue
 
-            # Convert matrices
-            elif clean_key in matrix_fields and isinstance(value, list):
-                mapped_data[field_key] = sp.Matrix(value)
-
-            # Default: use as-is
+            # Try the key as-is first (handles both _idx and name)
+            if key in field_names:
+                mapped_data[key] = value
+            # Try adding underscore prefix (handles idx -> _idx)
+            elif f"_{key}" in field_names:
+                mapped_data[f"_{key}"] = value
+            # Try removing underscore prefix (handles _name -> name if needed)
+            elif key.startswith("_") and key[1:] in field_names:
+                mapped_data[key[1:]] = value
             else:
-                mapped_data[field_key] = value
+                # Use as-is for unknown keys (will be validated by dataclass)
+                mapped_data[key] = value
 
-        # Create model instance
         return cls(**mapped_data)

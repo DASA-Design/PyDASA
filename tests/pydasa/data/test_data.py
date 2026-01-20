@@ -581,6 +581,84 @@ def get_coefficient_test_data() -> dict:
         },
         "VALID_CATEGORIES": ["COMPUTED", "DERIVED", "computed", "derived"],
         "INVALID_CATEGORIES": ["INVALID", "INPUT", "OUTPUT", ""],
+        # Test data for calculate_setpoint() tests
+        "SETPOINT_TEST_VARS": {
+            "v_with_setpoint": {
+                "_sym": "v",
+                "_alias": "v",
+                "_fwk": "PHYSICAL",
+                "_dims": "L*T^-1",
+                "_setpoint": 5.0,
+                "_std_setpoint": 5.0,
+                "_name": "Velocity",
+                "description": "Velocity with setpoint"
+            },
+            "L_with_setpoint": {
+                "_sym": "L",
+                "_alias": "L",
+                "_fwk": "PHYSICAL",
+                "_dims": "L",
+                "_setpoint": 2.0,
+                "_std_setpoint": 2.0,
+                "_name": "Length",
+                "description": "Length with setpoint"
+            },
+            "rho_with_setpoint": {
+                "_sym": "\\rho",
+                "_alias": "rho",
+                "_fwk": "PHYSICAL",
+                "_dims": "M*L^-3",
+                "_setpoint": 4.0,
+                "_std_setpoint": 4.0,
+                "_name": "Density",
+                "description": "Density with setpoint"
+            },
+            "mu_with_setpoint": {
+                "_sym": "\\mu",
+                "_alias": "mu",
+                "_fwk": "PHYSICAL",
+                "_dims": "M*L^-1*T^-1",
+                "_setpoint": 0.5,
+                "_std_setpoint": 0.5,
+                "_name": "Viscosity",
+                "description": "Viscosity with setpoint"
+            },
+            "v_no_setpoint": {
+                "_sym": "v",
+                "_alias": "v",
+                "_fwk": "PHYSICAL",
+                "_dims": "L*T^-1",
+                "_name": "Velocity",
+                "description": "Velocity without setpoint"
+            }
+        },
+        "SETPOINT_TEST_VALUES": {
+            "simple_three_vars": {
+                "v": 2.0,
+                "L": 3.0,
+                "\\rho": 4.0
+            },
+            "two_vars": {
+                "v": 5.0,
+                "L": 2.0
+            },
+            "reynolds_vars": {
+                "v": 10.0,
+                "L": 2.0,
+                "\\rho": 4.0,
+                "\\mu": 0.5
+            },
+            "wrong_var_names": {
+                "v": 2.0,
+                "L": 3.0,
+                "\\mu": 4.0  # Should be \\rho
+            }
+        },
+        "SETPOINT_EXPECTED_RESULTS": {
+            "simple_three_vars": 1.5,  # (2.0^1) * (3.0^1) * (4.0^-1) = 2 * 3 / 4 = 1.5
+            "two_vars": 2.5,  # (5.0^1) * (2.0^-1) = 5.0 / 2.0 = 2.5
+            "reynolds": 160.0  # (10.0^1) * (2.0^1) * (4.0^1) * (0.5^-1) = 10 * 2 * 4 / 0.5 = 160
+        }
     }
 
 
@@ -752,6 +830,40 @@ def get_model_test_data() -> dict:
             "\\Pi_{999} * \\Pi_{1000}",
             ""
         ],
+    }
+
+
+# test data for from pydasa.elements.specs.numerical import BoundsSpecs, StandardizedSpecs, NumericalSpecs
+def get_numerical_test_data() -> dict:
+    """Get test data for numerical specs tests."""
+    return {
+        "BOUNDS_VALUES": {
+            "setpoint": 5.0,
+            "min": 0.0,
+            "max": 10.0,
+            "mean": 5.0,
+            "median": 5.0,
+            "dev": 2.0,
+        },
+        "STANDARDIZED_VALUES": {
+            "std_setpoint": 50.0,
+            "std_min": 0.0,
+            "std_max": 100.0,
+            "std_mean": 50.0,
+            "std_median": 50.0,
+            "std_dev": 20.0,
+        },
+        "DISCRETIZATION_VALUES": {
+            "step": 0.1,
+        },
+        "INVALID_VALUES": {
+            "type_error": "invalid",
+            "out_of_range_high": 999.0,
+            "out_of_range_low": -999.0,
+            "negative_dev": -5.0,
+            "zero_step": 0.0,
+            "large_step": 50.0,
+        },
     }
 
 

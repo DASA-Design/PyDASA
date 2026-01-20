@@ -205,6 +205,8 @@ class TestCoefficient(unittest.TestCase):
     # ========================================================================
     # Dimensional column property tests
     # ========================================================================
+    # Dimensional column property tests
+    # ========================================================================
 
     def test_dim_col_getter(self) -> None:
         """Test dim_col property getter."""
@@ -257,6 +259,13 @@ class TestCoefficient(unittest.TestCase):
         coef = Coefficient()
         coef.pivot_lt = None    # type: ignore
         assert coef.pivot_lt is None
+
+    def test_pivot_lt_setter_invalid_type(self) -> None:
+        """Test pivot_lt property setter with invalid type."""
+        coef = Coefficient()
+        with pytest.raises(ValueError) as excinfo:
+            coef.pivot_lt = "not_a_list"  # type: ignore
+        assert "must be list" in str(excinfo.value)
 
     # ========================================================================
     # Pi expression property tests
@@ -512,6 +521,158 @@ class TestCoefficient(unittest.TestCase):
         assert "must be equal" in str(excinfo.value)
 
     # ========================================================================
+    # Calculate setpoint tests
+    # ========================================================================
+
+    def test_calculate_setpoint_with_provided_vars(self) -> None:
+        """Test calculate_setpoint with explicitly provided variable values."""
+        # Create coefficient: v*L/rho (exponents: 1, 1, -1)
+        simple_vars = {
+            "v": self.test_variables["v"],
+            "L": self.test_variables["L"],
+            "\\rho": self.test_variables["\\rho"]
+        }
+
+        coef = Coefficient(
+            _idx=0,
+            _sym="\\Pi_{0}",
+            _variables=simple_vars,
+            _dim_col=[1, 1, -1]
+        )
+
+        # Use fixture data for variable values
+        vars_dict = self.test_data["SETPOINT_TEST_VALUES"]["simple_three_vars"]
+        result = coef.calculate_setpoint(vars=vars_dict)
+
+        expected = self.test_data["SETPOINT_EXPECTED_RESULTS"]["simple_three_vars"]
+        assert result == expected
+        assert coef.setpoint == expected
+
+    def test_calculate_setpoint_using_stored_setpoints(self) -> None:
+        """Test calculate_setpoint using variable setpoints stored in variables."""
+        # Create variables with setpoints from fixture
+        v_var = Variable(**self.test_data["SETPOINT_TEST_VARS"]["v_with_setpoint"])
+        L_var = Variable(**self.test_data["SETPOINT_TEST_VARS"]["L_with_setpoint"])
+
+        simple_vars = {
+            "v": v_var,
+            "L": L_var
+        }
+
+        coef = Coefficient(
+            _idx=0,
+            _sym="\\Pi_{0}",
+            _variables=simple_vars,
+            _dim_col=[1, -1]  # v/L
+        )
+
+        # Call without providing vars - should use stored setpoints
+        result = coef.calculate_setpoint()
+
+        expected = self.test_data["SETPOINT_EXPECTED_RESULTS"]["two_vars"]
+        assert result == expected
+        assert coef.setpoint == expected
+
+    def test_calculate_setpoint_variable_without_setpoint(self) -> None:
+        """Test calculate_setpoint raises error when variable has no setpoint."""
+        # Create variables from fixture - one without setpoint
+        v_var = Variable(**self.test_data["SETPOINT_TEST_VARS"]["v_no_setpoint"])
+        L_var = Variable(**self.test_data["SETPOINT_TEST_VARS"]["L_with_setpoint"])
+
+        simple_vars = {
+            "v": v_var,
+            "L": L_var
+        }
+
+        coef = Coefficient(
+            _idx=0,
+            _sym="\\Pi_{0}",
+            _variables=simple_vars,
+            _dim_col=[1, -1]
+        )
+
+        # Should raise ValueError because v has no setpoint
+        with pytest.raises(ValueError) as excinfo:
+            coef.calculate_setpoint()
+        assert "std_setpoint is not defined" in str(excinfo.value)
+        assert "v" in str(excinfo.value)
+
+    def test_calculate_setpoint_mismatched_variable_count(self) -> None:
+        """Test calculate_setpoint raises error when provided vars don't match coefficient variables."""
+        simple_vars = {
+            "v": self.test_variables["v"],
+            "L": self.test_variables["L"],
+            "\\rho": self.test_variables["\\rho"]
+        }
+
+        coef = Coefficient(
+            _idx=0,
+            _sym="\\Pi_{0}",
+            _variables=simple_vars,
+            _dim_col=[1, 1, -1]  # Three variables
+        )
+
+        # Provide only two variables using fixture data
+        vars_dict = self.test_data["SETPOINT_TEST_VALUES"]["two_vars"]
+
+        with pytest.raises(ValueError) as excinfo:
+            coef.calculate_setpoint(vars=vars_dict)
+        assert "does not match" in str(excinfo.value)
+
+    def test_calculate_setpoint_missing_variable_in_dict(self) -> None:
+        """Test calculate_setpoint raises error when a specific variable is missing."""
+        simple_vars = {
+            "v": self.test_variables["v"],
+            "L": self.test_variables["L"],
+            "\\rho": self.test_variables["\\rho"]
+        }
+
+        coef = Coefficient(
+            _idx=0,
+            _sym="\\Pi_{0}",
+            _variables=simple_vars,
+            _dim_col=[1, 1, -1]
+        )
+
+        # Provide wrong variable names using fixture data
+        vars_dict = self.test_data["SETPOINT_TEST_VALUES"]["wrong_var_names"]
+
+        with pytest.raises(ValueError) as excinfo:
+            coef.calculate_setpoint(vars=vars_dict)
+        assert "setpoint is missing" in str(excinfo.value)
+
+    def test_calculate_setpoint_with_complex_exponents(self) -> None:
+        """Test calculate_setpoint with various positive and negative exponents."""
+        # Create variables with setpoints from fixture
+        v_var = Variable(**self.test_data["SETPOINT_TEST_VARS"]["v_with_setpoint"])
+        v_var.std_setpoint = 10.0  # Override with test-specific value (use standardized)
+
+        L_var = Variable(**self.test_data["SETPOINT_TEST_VARS"]["L_with_setpoint"])
+        rho_var = Variable(**self.test_data["SETPOINT_TEST_VARS"]["rho_with_setpoint"])
+        mu_var = Variable(**self.test_data["SETPOINT_TEST_VARS"]["mu_with_setpoint"])
+
+        simple_vars = {
+            "v": v_var,
+            "L": L_var,
+            "\\rho": rho_var,
+            "\\mu": mu_var
+        }
+
+        # Reynolds number: v*L*rho/mu (exponents: 1, 1, 1, -1)
+        coef = Coefficient(
+            _idx=0,
+            _sym="\\Pi_{Re}",
+            _variables=simple_vars,
+            _dim_col=[1, 1, 1, -1]
+        )
+
+        result = coef.calculate_setpoint()
+
+        expected = self.test_data["SETPOINT_EXPECTED_RESULTS"]["reynolds"]
+        assert result == expected
+        assert coef.setpoint == expected
+
+    # ========================================================================
     # Utility methods tests
     # ========================================================================
 
@@ -532,7 +693,7 @@ class TestCoefficient(unittest.TestCase):
         coef.clear()
 
         assert coef._idx == -1
-        assert coef._sym == ""
+        assert coef._sym == "\\Pi_{-1}"  # clear() sets symbol based on _idx
         assert coef._alias == ""
         assert coef._fwk == "PHYSICAL"
         assert coef.name == ""

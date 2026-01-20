@@ -23,6 +23,7 @@ from typing import Optional, List, Dict, Any, Union
 
 # third-party imports
 import numpy as np
+from numpy.typing import NDArray
 
 # custom module imports
 from pydasa.core.basic import Foundation
@@ -35,6 +36,7 @@ from pydasa.serialization.parser import latex_to_python
 from pydasa.validations.decorators import validate_type
 from pydasa.validations.decorators import validate_range
 from pydasa.validations.decorators import validate_choices
+from pydasa.validations.decorators import validate_emptiness
 from pydasa.validations.decorators import validate_list_types
 from pydasa.validations.decorators import validate_dict_types
 
@@ -125,7 +127,9 @@ class Coefficient(Foundation, BoundsSpecs):
     """Step size for simulations, always in standardized units."""
 
     # :attr: _data
-    _data: np.ndarray = field(default_factory=lambda: np.array([]))
+    _data: NDArray[np.float64] = field(
+        default_factory=lambda: np.array([], dtype=np.float64)
+    )
     """Data array for the dimensionless coefficient for analysis."""
 
     # Flags
@@ -150,26 +154,32 @@ class Coefficient(Foundation, BoundsSpecs):
             if self._idx >= 0:
                 self._sym = f"\\Pi_{{{self._idx}}}"
             else:
-                self._sym = "\\Pi_{}"
+                self._sym = "\\Pi_{-1}"
         # Set the Python alias if not specified
         if not self._alias:
             self._alias = latex_to_python(self._sym)
 
         self.cat = self._cat
-        self.variables = self._variables
 
-        # Defaults to empty list
-        self.dim_col = self._dim_col or []
-        self.pivot_lt = self._pivot_lt or []
+        # Only call setter if variables is not empty
+        if self._variables:
+            self.variables = self._variables
+
+        # Only call setter if dim_col is not empty
+        if self._dim_col:
+            self.dim_col = self._dim_col
+
+        # Only call setter if pivot_lt is not empty
+        if self._pivot_lt:
+            self.pivot_lt = self._pivot_lt
 
         # Only build expression if parameters and dimensions are provided
         if len(self._variables) > 0 and len(self._dim_col) > 0:
             var_keys = list(self._variables.keys())
             self.pi_expr, self.var_dims = self._build_expression(var_keys,
                                                                  self._dim_col)
-
         else:
-            self.pi_expr = ""
+            # Don't set pi_expr to empty string
             self.var_dims = {}
 
         # Set data
@@ -181,7 +191,7 @@ class Coefficient(Foundation, BoundsSpecs):
         _step = self._step
 
         if _min is not None and _max is not None and _step is not None:
-            self._data = np.arange(_min, _max, _step)
+            self._data = np.arange(_min, _max, _step, dtype=np.float64)
 
     def _build_expression(self,
                           var_lt: List[str],
@@ -270,6 +280,7 @@ class Coefficient(Foundation, BoundsSpecs):
 
     @variables.setter
     @validate_type(dict, allow_none=False)
+    @validate_emptiness()
     @validate_dict_types(str, Variable)
     def variables(self, val: Dict[str, Variable]) -> None:
         """*variables* Set the variable symbols dictionary.
@@ -293,6 +304,7 @@ class Coefficient(Foundation, BoundsSpecs):
 
     @dim_col.setter
     @validate_type(list, allow_none=False)
+    @validate_emptiness()
     @validate_list_types(int, float)
     def dim_col(self, val: Union[List[int], List[float]]) -> None:
         """*dim_col* Set the dimensional column.
@@ -315,6 +327,7 @@ class Coefficient(Foundation, BoundsSpecs):
         return self._pivot_lt
 
     @pivot_lt.setter
+    @validate_type(list, allow_none=True)
     @validate_list_types(int)
     def pivot_lt(self, val: List[int]) -> None:
         """*pivot_lt* Set the pivot indices list.
@@ -337,7 +350,8 @@ class Coefficient(Foundation, BoundsSpecs):
         return self._pi_expr
 
     @pi_expr.setter
-    @validate_type(str, allow_none=False)
+    @validate_type(str, allow_none=True)
+    @validate_emptiness()
     def pi_expr(self, val: str) -> None:
         """*pi_expr* Set the coefficient expression.
 
@@ -375,29 +389,76 @@ class Coefficient(Foundation, BoundsSpecs):
         self._step = val
 
     @property
-    def data(self) -> np.ndarray:
+    def data(self) -> NDArray[np.float64]:
         """*data* Get standardized data array.
 
         Returns:
-            np.ndarray: Data array for range (always standardized).
+            NDArray[np.float64]: Data array for range (always standardized).
         """
         return self._data
 
     @data.setter
     @validate_type(list, np.ndarray, allow_none=False)
-    def data(self, val: np.ndarray) -> None:
+    def data(self, val: NDArray[np.float64]) -> None:
         """*data* Set standardized data array.
 
         Args:
-            val (np.ndarray): Data array for range (always standardized).
+            val (NDArray[np.float64]): Data array for range (always standardized).
 
         Raises:
             ValueError: If value is not a numpy array.
         """
+        # always store as numpy array
+        if isinstance(val, list):
+            val = np.array(val, dtype=np.float64)
         self._data = val
 
+    # @validate_type(dict, allow_none=True)
+    # @validate_dict_types(str, (int, float))
+    def calculate_setpoint(self,
+                           vars: Optional[Dict[str, float]] = None) -> float:
+        """*calculate_setpoint()* Calculate coefficient setpoint value based on provided variable setpoints. If no variables are provided uses the ones stored in the variables standardized attribute.
+
+        Args:
+            vars (Optional[Dict[str, float]]): Variable setpoints dictionary.
+
+        Raises:
+            ValueError: If variable setpoints are missing or invalid.
+            ValueError: If number of variable setpoints does not match coefficient variables.
+        """
+        if vars is None:
+            vars = {}
+            # check stored variables for setpoints
+            for sym, var in self._variables.items():
+                if var.std_setpoint is None:
+                    _msg = f"Variable '{sym}' std_setpoint is not defined."
+                    raise ValueError(_msg)
+                vars[sym] = var.std_setpoint  # Use standardized units
+
+        # validate provided setpoints
+        if len(vars) != len(self.var_dims):
+            _msg = f"No. of Variable setpoints ({len(vars)}) does not "
+            _msg += f"match coefficient variables ({len(self.var_dims)})."
+            raise ValueError(_msg)
+
+        # TODO can be make in symbolic, sympy is worth it?
+        # setpoint start at 1.0 for multiplication
+        setpoint = 1.0
+        for sym, exp in self.var_dims.items():
+            # if every variable setpoint is provided
+            if sym not in vars:
+                _msg = f"Variable '{sym}' std_setpoint is missing for "
+                _msg += f"coefficient '{self._sym}' calculation."
+                raise ValueError(_msg)
+            var_setpoint = vars[sym]
+            # calculate setpoint
+            setpoint *= var_setpoint**exp
+        # store calculated setpoint
+        self._setpoint = setpoint
+        return setpoint
+
     def generate_data(self) -> None:
-        """*generate_data()* Generate standardized data array from min, max, using step value.
+        """*generate_data()* Generate a linear standardized data array from min, max, using step value.
 
         Raises:
             ValueError: If needed values are missing.
@@ -408,7 +469,7 @@ class Coefficient(Foundation, BoundsSpecs):
         _step = self._step
 
         if _min is not None and _max is not None and _step is not None:
-            self._data = np.arange(_min, _max, _step)
+            self._data = np.arange(_min, _max, _step, dtype=np.float64)
         else:
             _msg = "Cannot generate data array. Needed values are missing: "
             _msg += f"_min={_min}, _max={_max}, _step={_step}."
@@ -435,6 +496,7 @@ class Coefficient(Foundation, BoundsSpecs):
         """
         # Reset parent class attributes (Foundation and BoundsSpecs)
         super().clear()
+        self._sym = f"\\Pi_{{{self._idx}}}"
 
         # Reset coefficient-specific attributes
         self._cat = CoefCardinality.COMPUTED.value
@@ -444,7 +506,7 @@ class Coefficient(Foundation, BoundsSpecs):
         self._pi_expr = None
         self.var_dims = {}
         self._step = 1e-3
-        self._data = np.array([])
+        self._data = np.array([], dtype=np.float64)
         self.relevance = True
 
     def to_dict(self) -> Dict[str, Any]:
@@ -493,25 +555,26 @@ class Coefficient(Foundation, BoundsSpecs):
         field_names = {f.name for f in fields(cls)}
 
         # Map keys without underscores to keys with underscores
-        mapped_data = {}
+        _data = {}
 
         for key, value in data.items():
             # Try the key as-is first (handles both _idx and name)
             if key in field_names:
-                mapped_data[key] = value
+                _data[key] = value
             # Try adding underscore prefix (handles idx -> _idx)
             elif f"_{key}" in field_names:
-                mapped_data[f"_{key}"] = value
+                _data[f"_{key}"] = value
             # Try removing underscore prefix (handles _name -> name if needed)
             elif key.startswith("_") and key[1:] in field_names:
-                mapped_data[key[1:]] = value
+                _data[key[1:]] = value
             else:
                 # Use as-is for unknown keys (will be validated by dataclass)
-                mapped_data[key] = value
+                _data[key] = value
 
         # Convert lists back to numpy arrays for range attributes
-        for range_key in ["std_range", "_std_range"]:
-            if range_key in mapped_data and isinstance(mapped_data[range_key], list):
-                mapped_data[range_key] = np.array(mapped_data[range_key])
+        for _data_key in ["_data", "data"]:
+            if _data_key in _data and isinstance(_data[_data_key], list):
+                _data[_data_key] = np.array(_data[_data_key],
+                                            dtype=np.float64)
 
-        return cls(**mapped_data)
+        return cls(**_data)

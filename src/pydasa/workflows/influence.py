@@ -16,7 +16,7 @@ Classes:
 """
 
 from __future__ import annotations
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 from typing import List, Dict, Any, Union, Tuple
 # import re
 
@@ -37,7 +37,6 @@ from pydasa.validations.decorators import validate_type
 from pydasa.validations.decorators import validate_choices
 from pydasa.validations.decorators import validate_emptiness
 # Import global configuration
-from pydasa.core.setup import Frameworks
 from pydasa.core.setup import AnaliticMode
 from pydasa.core.setup import PYDASA_CFG
 # from pydasa.validations.patterns import LATEX_RE
@@ -101,7 +100,7 @@ class SensitivityAnalysis(Foundation):
 
         # Set default symbol if not specified
         if not self._sym:
-            self._sym = f"SH_{{\\Pi_{{{self._idx}}}}}" if self._idx >= 0 else "SH_\\Pi_{-1}"
+            self._sym = f"SANSYS_{{\\Pi_{{{self._idx}}}}}" if self._idx >= 0 else "SANSYS_\\Pi_{-1}"
 
         if not self._alias:
             self._alias = latex_to_python(self._sym)
@@ -418,12 +417,9 @@ class SensitivityAnalysis(Foundation):
 
         Resets all handler properties to their initial state.
         """
-        # Reset base class attributes
-        self._idx = -1
-        self._sym = "SENS_Pi_{-1}"
-        self._fwk = Frameworks.PHYSICAL.value
-        self.name = ""
-        self.description = ""
+        # Reset parent class attributes (Foundation)
+        super().clear()
+        self._sym = f"SANSYS_{{\\Pi_{{{self._idx}}}}}"
 
         # Reset handler-specific attributes
         self._cat = AnaliticMode.SYM.value
@@ -438,21 +434,35 @@ class SensitivityAnalysis(Foundation):
         Returns:
             Dict[str, Any]: Dictionary representation of sensitivity handler.
         """
-        return {
-            "name": self._name,
-            "description": self.description,
-            "idx": self._idx,
-            "sym": self._sym,
-            "fwk": self._fwk,
-            "cat": self._cat,
-            "variables": [
-                var.to_dict() for var in self._variables.values()
-            ],
-            "coefficients": [
-                coef.to_dict() for coef in self._coefficients.values()
-            ],
-            "results": self._results
-        }
+        result = {}
+
+        # Get all dataclass fields
+        for f in fields(self):
+            attr_name = f.name
+            attr_value = getattr(self, attr_name)
+
+            # Handle special dictionary types (Variable and Coefficient dicts)
+            if attr_name == "_variables" and isinstance(attr_value, dict):
+                attr_value = [var.to_dict() for var in attr_value.values()]
+            elif attr_name == "_coefficients" and isinstance(attr_value, dict):
+                attr_value = [coef.to_dict() for coef in attr_value.values()]
+            elif attr_name == "_analyses" and isinstance(attr_value, dict):
+                # Skip analyses - they are transient and recreated as needed
+                continue
+
+            # Skip callables (can't be serialized)
+            if callable(attr_value) and not isinstance(attr_value, type):
+                continue
+
+            # Remove leading underscore from private attributes
+            if attr_name.startswith("_"):
+                clean_name = attr_name[1:]  # Remove first character
+            else:
+                clean_name = attr_name
+
+            result[clean_name] = attr_value
+
+        return result
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> SensitivityAnalysis:
@@ -464,34 +474,38 @@ class SensitivityAnalysis(Foundation):
         Returns:
             SensitivityAnalysis: New sensitivity handler instance.
         """
-        # Create variables and coefficients from dicts
-        variables = {}
-        if "variables" in data:
-            variables = {
-                var.name: Variable.from_dict(var) for var in data["variables"]
-            }
+        # Get all valid field names from the dataclass
+        field_names = {f.name for f in fields(cls)}
 
-        coefficients = {}
-        if "coefficients" in data:
-            coefficients = {
-                coef.name: Coefficient.from_dict(coef) for coef in data["coefficients"]
-            }
+        # Map keys without underscores to keys with underscores
+        mapped_data = {}
 
-        # Remove list items from data
-        handler_data = data.copy()
-        for key in ["variables", "coefficients", "results"]:
-            if key in handler_data:
-                del handler_data[key]
+        for key, value in data.items():
+            # Handle special list conversions back to dictionaries
+            if key == "variables" and isinstance(value, list):
+                mapped_data["_variables"] = {
+                    var["name"] if "name" in var else var.get("_name", f"var_{i}"): Variable.from_dict(var)
+                    for i, var in enumerate(value)
+                }
+                continue
+            elif key == "coefficients" and isinstance(value, list):
+                mapped_data["_coefficients"] = {
+                    coef["name"] if "name" in coef else coef.get("_name", f"coef_{i}"): Coefficient.from_dict(coef)
+                    for i, coef in enumerate(value)
+                }
+                continue
 
-        # Create handler
-        handler = cls(
-            **handler_data,
-            _variables=variables,
-            _coefficients=coefficients
-        )
+            # Try the key as-is first (handles both _idx and name)
+            if key in field_names:
+                mapped_data[key] = value
+            # Try adding underscore prefix (handles idx -> _idx)
+            elif f"_{key}" in field_names:
+                mapped_data[f"_{key}"] = value
+            # Try removing underscore prefix (handles _name -> name if needed)
+            elif key.startswith("_") and key[1:] in field_names:
+                mapped_data[key[1:]] = value
+            else:
+                # Use as-is for unknown keys (will be validated by dataclass)
+                mapped_data[key] = value
 
-        # Set results if available
-        if "results" in data:
-            handler._results = data["results"]
-
-        return handler
+        return cls(**mapped_data)

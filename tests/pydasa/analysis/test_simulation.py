@@ -523,11 +523,13 @@ class TestMonteCarlo(unittest.TestCase):
         mc_sim.run()
 
         # Test statistics
+        assert mc_sim.mean is not None
+        assert mc_sim.dev is not None
+        assert mc_sim.median is not None
         assert not np.isnan(mc_sim.mean)
-        assert not np.isnan(mc_sim.std_dev)
-        assert not np.isnan(mc_sim.variance)
+        assert not np.isnan(mc_sim.dev)
         assert not np.isnan(mc_sim.median)
-        assert mc_sim._count == N_EXP
+        assert mc_sim.count == N_EXP
 
     def test_statistics_property(self) -> None:
         """*test_statistics_property()* tests statistics dictionary property."""
@@ -555,8 +557,8 @@ class TestMonteCarlo(unittest.TestCase):
 
         assert isinstance(stats, dict)
         assert "mean" in stats
-        assert "std_dev" in stats
-        assert "variance" in stats
+        assert "dev" in stats
+
         assert "median" in stats
         assert "min" in stats
         assert "max" in stats

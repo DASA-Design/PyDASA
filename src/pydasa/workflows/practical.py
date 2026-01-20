@@ -473,7 +473,7 @@ class MonteCarloSimulation(Foundation):
 
                 # Store comprehensive results
                 res = {
-                    "inputs": sim.inputs,
+                    "inputs": sim.data,
                     "results": sim.results,
                     "statistics": sim.statistics,
                 }

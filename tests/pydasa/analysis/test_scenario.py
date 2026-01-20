@@ -353,7 +353,7 @@ class TestSensitivity(unittest.TestCase):
 
         # Create a simple SymPy expression
         x = sp.Symbol('x')
-        test_expr = x + 1
+        test_expr = x + 1   # type: ignore
 
         sens.sym_func = test_expr
         assert sens.sym_func == test_expr
@@ -830,7 +830,7 @@ class TestSensitivity(unittest.TestCase):
 
         # Create a valid SymPy expression
         x = sp.Symbol('x')
-        expr = x + 1
+        expr = x + 1    # type: ignore
 
         # Should not raise any exception
         try:

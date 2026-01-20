@@ -16,7 +16,7 @@ Classes:
 """
 
 from __future__ import annotations
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 from typing import Optional, List, Dict, Any, Callable, Union
 
 # Third-party modules
@@ -41,7 +41,6 @@ from pydasa.validations.decorators import validate_dict_types
 from pydasa.dimensional.vaschy import Schema
 from pydasa.dimensional.buckingham import Coefficient
 from pydasa.elements.parameter import Variable
-from pydasa.core.setup import Frameworks
 from pydasa.core.setup import AnaliticMode
 
 # Import utils
@@ -195,7 +194,7 @@ class Sensitivity(Foundation):
 
         # Set default symbol if not specified
         if not self._sym:
-            self._sym = f"SANSYS_\\Pi_{{{self._idx}}}" if self._idx >= 0 else "SANSYS_\\Pi_{}"
+            self._sym = f"SENS_{{\\Pi_{{{self._idx}}}}}" if self._idx >= 0 else "SENS_{\\Pi_{-1}}"
         # Set default Python alias if not specified
         if not self._alias:
             self._alias = latex_to_python(self._sym)
@@ -629,15 +628,13 @@ class Sensitivity(Foundation):
         return self._var_names.copy()
 
     def clear(self) -> None:
-        """*clear()* Reset all attributes to default values. Resets all sensitivity analysis properties to their initial state.
+        """*clear()* Reset all attributes to default values.
+
+        Resets all sensitivity analysis properties to their initial state.
         """
-        # Reset base class attributes
-        self._idx = -1
-        self._sym = "SANSYS_\\Pi_{}"
-        self._alias = ""
-        self._fwk = Frameworks.PHYSICAL.value
-        self.name = ""
-        self.description = ""
+        # Reset parent class attributes (Foundation)
+        super().clear()
+        self._sym = f"SENS_{{\\Pi_{{{self._idx}}}}}"
 
         # Reset sensitivity-specific attributes
         self._cat = AnaliticMode.SYM.value
@@ -646,8 +643,12 @@ class Sensitivity(Foundation):
         self._exe_func = None
         self._variables = {}
         self._var_names = []
+        self._schema = Schema()
+        self._coefficient = None
         self._symbols = {}
         self._aliases = {}
+        self._latex_to_py = {}
+        self._py_to_latex = {}
         self.var_bounds = []
         self.var_values = {}
         self.var_domains = None
@@ -661,25 +662,50 @@ class Sensitivity(Foundation):
         Returns:
             Dict[str, Any]: Dictionary representation of sensitivity analysis.
         """
-        return {
-            "name": self.name,
-            "description": self.description,
-            "idx": self._idx,
-            "sym": self._sym,
-            "alias": self._alias,
-            "fwk": self._fwk,
-            "cat": self._cat,
-            "pi_expr": self._pi_expr,
-            "variables": self._variables,
-            "symbols": self._symbols,
-            "aliases": self._aliases,
-            "var_bounds": self.var_bounds,
-            "var_values": self.var_values,
-            "var_domains": self.var_domains,
-            "var_ranges": self.var_ranges,
-            "n_samples": self.n_samples,
-            "results": self.results
-        }
+        result = {}
+
+        # Get all dataclass fields
+        for f in fields(self):
+            attr_name = f.name
+            attr_value = getattr(self, attr_name)
+
+            # Skip numpy arrays (not JSON serializable without special handling)
+            if isinstance(attr_value, np.ndarray):
+                # Convert to list for JSON compatibility
+                attr_value = attr_value.tolist()
+
+            # Skip SymPy objects (not JSON serializable)
+            if isinstance(attr_value, sp.Expr):
+                # Convert to string representation
+                attr_value = str(attr_value)
+            elif isinstance(attr_value, dict):
+                # Handle dictionaries with SymPy keys/values
+                cleaned_dict = {}
+                for k, v in attr_value.items():
+                    # Convert SymPy keys to strings
+                    key = str(k) if isinstance(k, sp.Basic) else k
+                    # Convert SymPy values to strings
+                    value = str(v) if isinstance(v, sp.Basic) else v
+                    cleaned_dict[key] = value
+                attr_value = cleaned_dict
+
+            # Skip callables (can't be serialized)
+            if callable(attr_value) and not isinstance(attr_value, type):
+                continue
+
+            # Skip Schema objects (complex nested structure)
+            if attr_name == "_schema":
+                continue
+
+            # Remove leading underscore from private attributes
+            if attr_name.startswith("_"):
+                clean_name = attr_name[1:]  # Remove first character
+            else:
+                clean_name = attr_name
+
+            result[clean_name] = attr_value
+
+        return result
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> Sensitivity:
@@ -691,28 +717,29 @@ class Sensitivity(Foundation):
         Returns:
             Sensitivity: New sensitivity analysis instance.
         """
-        # Create basic instance
-        instance = cls(
-            _name=data.get("name", ""),
-            description=data.get("description", ""),
-            _idx=data.get("idx", -1),
-            _sym=data.get("sym", ""),
-            _cat=data.get("cat", AnaliticMode.SYM.value),
-            _fwk=data.get("fwk", Frameworks.PHYSICAL.value),
-            _alias=data.get("alias", ""),
-            _pi_expr=data.get("pi_expr", None),
-            _variables=data.get("variables", {}),
-            _symbols=data.get("symbols", {}),
-            _aliases=data.get("aliases", {}),
-            var_bounds=data.get("var_bounds", []),
-            var_values=data.get("var_values", {}),
-            var_domains=data.get("var_domains", None),
-            var_ranges=data.get("var_ranges", None),
-            n_samples=data.get("n_samples", -1),
-            # results=data.get("results", {})
-        )
+        # Get all valid field names from the dataclass
+        field_names = {f.name for f in fields(cls)}
 
-        # Set additional properties if available
-        if "results" in data:
-            instance.results = data["results"]
-        return instance
+        # Map keys without underscores to keys with underscores
+        mapped_data = {}
+
+        for key, value in data.items():
+            # Try the key as-is first (handles both _idx and name)
+            if key in field_names:
+                mapped_data[key] = value
+            # Try adding underscore prefix (handles idx -> _idx)
+            elif f"_{key}" in field_names:
+                mapped_data[f"_{key}"] = value
+            # Try removing underscore prefix (handles _name -> name if needed)
+            elif key.startswith("_") and key[1:] in field_names:
+                mapped_data[key[1:]] = value
+            else:
+                # Use as-is for unknown keys (will be validated by dataclass)
+                mapped_data[key] = value
+
+        # Convert lists back to numpy arrays for domain/range attributes
+        for array_key in ["var_domains", "_var_domains", "var_ranges", "_var_ranges"]:
+            if array_key in mapped_data and isinstance(mapped_data[array_key], list):
+                mapped_data[array_key] = np.array(mapped_data[array_key])
+
+        return cls(**mapped_data)

@@ -17,7 +17,7 @@ Classes:
 """
 
 from __future__ import annotations
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 from typing import Optional, List, Dict, Any, Callable, Tuple, Union
 
 # python third-party modules
@@ -30,13 +30,22 @@ import sympy as sp
 
 # Import validation base classes
 from pydasa.core.basic import Foundation
+from pydasa.core.setup import Frameworks   # , PYDASA_CFG
+from pydasa.core.setup import AnaliticMode
 
 # Import validation decorators
-from pydasa.validations.decorators import validate_range, validate_type, validate_custom
+from pydasa.validations.decorators import validate_type
+from pydasa.validations.decorators import validate_range
+# from pydasa.validations.decorators import validate_choices
+from pydasa.validations.decorators import validate_emptiness
+# from pydasa.validations.decorators import validate_list_types
+from pydasa.validations.decorators import validate_dict_types
+from pydasa.validations.decorators import validate_custom
 
 # Import related classes
 from pydasa.dimensional.buckingham import Coefficient
 from pydasa.elements.parameter import Variable
+from pydasa.elements.specs.numerical import BoundsSpecs
 
 # Import utils
 from pydasa.serialization.parser import parse_latex, create_latex_mapping
@@ -51,7 +60,7 @@ from pydasa.serialization.parser import latex_to_python
 
 
 @dataclass
-class MonteCarlo(Foundation):
+class MonteCarlo(Foundation, BoundsSpecs):
     """**MonteCarlo** class for stochastic analysis in *PyDASA*.
 
     Performs Monte Carlo simulations on dimensionless coefficients to analyze the coefficient's distribution and sensitivity to input parameter
@@ -59,6 +68,7 @@ class MonteCarlo(Foundation):
 
     Args:
         Foundation: Foundation class for validation of symbols and frameworks.
+        BoundsSpecs: Value bounds for statistical properties (mean, median, dev, min, max).
 
     Attributes:
         # Core Identification
@@ -88,18 +98,17 @@ class MonteCarlo(Foundation):
         _distributions (Dict[str, Dict[str, Any]]): Variable sampling distributions.
         _simul_cache (Dict[str, NDArray[np.float64]]): Working sampled values cache.
 
-        # Results and Inputs
-        inputs (Optional[np.ndarray]): Variable simulated inputs.
+        # Results and Input data
+        _data (Optional[np.ndarray]): Variable simulated data inputs.
         _results (Optional[np.ndarray]): Raw simulation results.
 
-        # Statistics
+        # Statistics (inherited from BoundsSpecs: _mean, _median, _dev, _min, _max)
         _mean (float): Mean value of simulation results.
         _median (float): Median value of simulation results.
-        _std_dev (float): Standard deviation of simulation results.
-        _variance (float): Variance of simulation results.
+        _dev (float): Standard deviation of simulation results.
         _min (float): Minimum value in simulation results.
         _max (float): Maximum value in simulation results.
-        _count (int): Number of valid simulation results.
+        _count (int): Number of valid simulation results (MonteCarlo-specific).
         _statistics (Optional[Dict[str, float]]): Statistical summary.
     """
 
@@ -128,12 +137,12 @@ class MonteCarlo(Foundation):
     """Python-compatible alias for use in code."""
 
     # :attr: _fwk
-    _fwk: str = "PHYSICAL"
+    _fwk: str = Frameworks.PHYSICAL.value
     """Frameworks context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM)."""
 
     # :attr: _cat
-    _cat: str = "NUM"
-    """Category of analysis (SYM, NUM, HYB)."""
+    _cat: str = AnaliticMode.NUM.value
+    """Category of analysis (SYM, NUM)."""
 
     # ========================================================================
     # Coefficient and Expression Management
@@ -211,10 +220,10 @@ class MonteCarlo(Foundation):
     # Results and Inputs
     # ========================================================================
 
-    # :attr: inputs
-    inputs: NDArray[np.float64] = field(
+    # :attr: _data
+    _data: NDArray[np.float64] = field(
         default_factory=lambda: np.array([], dtype=np.float64))
-    """Sample value range for the simulation."""
+    """Input data matrix for simulation experiments (experiments × variables)."""
 
     # :attr: _results
     _results: NDArray[np.float64] = field(
@@ -226,35 +235,31 @@ class MonteCarlo(Foundation):
     # ========================================================================
 
     # :attr: _mean
-    _mean: float = np.nan
+    _mean: Optional[float] = np.nan
     """Mean value of simulation results."""
 
     # :attr: _median
-    _median: float = np.nan
+    _median: Optional[float] = np.nan
     """Median value of simulation results."""
 
-    # :attr: _std_dev
-    _std_dev: float = np.nan
+    # :attr: _dev
+    _dev: Optional[float] = np.nan
     """Standard deviation of simulation results."""
 
-    # :attr: _variance
-    _variance: float = np.nan
-    """Variance of simulation results."""
-
     # :attr: _min
-    _min: float = np.nan
+    _min: Optional[float] = np.nan
     """Minimum value in simulation results."""
 
     # :attr: _max
-    _max: float = np.nan
+    _max: Optional[float] = np.nan
     """Maximum value in simulation results."""
 
     # :attr: _count
-    _count: int = 0
+    _count: int = -1
     """Number of valid simulation results."""
 
     # :attr: _statistics
-    _statistics: Optional[Dict[str, float]] = None
+    _statistics: Optional[Dict[str, Union[float, int, None]]] = None
     """Statistical summary of the Monte Carlo simulation results."""
 
     # ========================================================================
@@ -313,10 +318,10 @@ class MonteCarlo(Foundation):
         n_sym = len(self._symbols)
         if n_sym > 0 and self._experiments > 0:
             # Only allocate if we have variables and valid experiment count
-            if self.inputs.size == 0:  # Check size, not None
-                self.inputs = np.full((self._experiments, n_sym),
-                                      np.nan,
-                                      dtype=np.float64)
+            if self._data.size == 0:  # Check size, not None
+                self._data = np.full((self._experiments, n_sym),
+                                     np.nan,
+                                     dtype=np.float64)
             if self._results.size == 0:  # Check size, not None
                 self._results = np.full((self._experiments, 1),
                                         np.nan,
@@ -330,16 +335,9 @@ class MonteCarlo(Foundation):
                                                  np.nan,
                                                  dtype=np.float64)
 
-        # Statistics initialized to NaN (not calculated yet)
-        self._mean = np.nan
-        self._median = np.nan
-        self._std_dev = np.nan
-        self._variance = np.nan
-        self._min = np.nan
-        self._max = np.nan
-
-        # Zero makes sense here
-        self._count = 0
+        # Statistics attributes already set to np.nan via declarations
+        # _count remains MonteCarlo-specific
+        self.count = 0
 
     # ========================================================================
     # Foundation and Configuration
@@ -392,6 +390,11 @@ class MonteCarlo(Foundation):
             self._name = f"{coef.name} Monte Carlo Experiments"
         if not self.description:
             self.description = f"Monte Carlo simulation for {coef.name}"
+
+    def collect_variable_data(self) -> None:
+        """*collect_simulation_data()* collect the data from the Variables to execute the simulation with those values.
+        """
+        pass
 
     def _parse_expression(self, expr: str) -> None:
         """*_parse_expression()* Parse the LaTeX expression into a sympy function.
@@ -589,7 +592,7 @@ class MonteCarlo(Foundation):
                     sorted_vals = [v[-1] for v in result]
 
                 # Save simulation inputs and results
-                self.inputs[_iter, :] = sorted_vals
+                self._data[_iter, :] = sorted_vals
                 self._results[_iter] = result
 
             except Exception as e:
@@ -607,7 +610,7 @@ class MonteCarlo(Foundation):
         """*_reset_memory()* Reset results and inputs arrays."""
         # reseting full array space with NaN
         n_sym = len(self._symbols)
-        self.inputs = np.full((self._experiments, n_sym), np.nan)
+        self._data = np.full((self._experiments, n_sym), np.nan)
         self._results = np.full((self._experiments, 1), np.nan)
 
         # # reset intermediate values
@@ -618,29 +621,32 @@ class MonteCarlo(Foundation):
 
     def _reset_statistics(self) -> None:
         """*_reset_statistics()* Reset all statistical attributes to default values."""
-        # reset statistics to NaN or zero
-        self._mean = np.nan
-        self._median = np.nan
-        self._std_dev = np.nan
-        self._variance = np.nan
-        self._min = np.nan
-        self._max = np.nan
-        self._count = 0
+        # Reset inherited BoundsSpecs attributes to None
+        BoundsSpecs.clear(self)
+
+        # Override with MonteCarlo-specific defaults (np.nan for computed results)
+        self.mean = np.nan
+        self.median = np.nan
+        self.dev = np.nan
+        self.min = np.nan
+        self.max = np.nan
+
+        # Reset MonteCarlo-specific count
+        self._count = -1
 
     def _calculate_statistics(self) -> None:
         """*_calculate_statistics()* Calculate statistical properties of simulation results."""
         # Check for empty array (size == 0), not None
-        if self._results.size == 0:
+        if self._results.size < 1:
             raise ValueError("No results available. Run simulation first.")
 
         else:
-            self._mean = float(np.mean(self._results))
-            self._median = float(np.median(self._results))
-            self._std_dev = float(np.std(self._results))
-            self._variance = float(np.var(self._results))
-            self._min = float(np.min(self._results))
-            self._max = float(np.max(self._results))
-            self._count = len(self._results)
+            self.mean = float(np.mean(self._results))
+            self.median = float(np.median(self._results))
+            self.dev = float(np.std(self._results))
+            self.min = float(np.min(self._results))
+            self.max = float(np.max(self._results))
+            self.count = len(self._results)
 
     def get_confidence_interval(self,
                                 conf: float = 0.95) -> Tuple[float, float]:
@@ -665,7 +671,7 @@ class MonteCarlo(Foundation):
 
         # Calculate the margin of error using the t-distribution
         alpha = stats.t.ppf((1 + conf) / 2, self._count - 1)
-        margin = alpha * self._std_dev / np.sqrt(self._count)
+        margin = alpha * self._dev / np.sqrt(self._count)
         ans = (self._mean - margin, self._mean + margin)
         return ans
 
@@ -782,7 +788,7 @@ class MonteCarlo(Foundation):
         # Extract all values for each variable (column)
         for i, var in enumerate(self._py_to_latex.values()):
             # Get the entire column for this variable (all simulation runs)
-            column = self.inputs[:, i]
+            column = self._data[:, i]
 
             # Use a meaningful key that includes variable name and coefficient
             key = f"{var}@{self._coefficient.sym}"
@@ -829,14 +835,44 @@ class MonteCarlo(Foundation):
         return self._results.copy()
 
     @property
-    def statistics(self) -> Dict[str, float]:
+    def data(self) -> NDArray[np.float64]:
+        """*data* Input data matrix for simulation experiments.
+
+        Returns:
+            NDArray[np.float64]: Copy of the input data matrix (experiments × variables).
+
+        Raises:
+            ValueError: If no data is available.
+        """
+        if self._data.size == 0:
+            raise ValueError("No input data available. Run the simulation first.")
+        return self._data.copy()
+
+    @data.setter
+    @validate_type(list, np.ndarray, allow_none=False)
+    def data(self, val: Union[List, NDArray[np.float64]]) -> None:
+        """*data* Set the input data matrix.
+
+        Args:
+            val (Union[List, NDArray[np.float64]]): Input data matrix.
+
+        Raises:
+            ValueError: If value is not a numpy array or list.
+        """
+        # Always store as numpy array
+        if isinstance(val, list):
+            val = np.array(val, dtype=np.float64)
+        self._data = val
+
+    @property
+    def statistics(self) -> Dict[str, Union[float, int, None]]:
         """*statistics* Get the statistical analysis of simulation results.
 
         Raises:
             ValueError: If no results are available.
 
         Returns:
-            Dict[str, float]: Dictionary containing statistical properties.
+            Dict[str, Union[float, int, None]]: Dictionary containing statistical properties.
         """
         if self._results.size == 0:
             _msg = "No statistics available. Run the simulation first."
@@ -844,13 +880,12 @@ class MonteCarlo(Foundation):
 
         # Build statistics dictionary from individual attributes
         self._statistics = {
-            "mean": self._mean,
-            "median": self._median,
-            "std_dev": self._std_dev,
-            "variance": self._variance,
-            "min": self._min,
-            "max": self._max,
-            "count": self._count
+            "mean": self.mean,
+            "median": self.median,
+            "dev": self.dev,
+            "min": self.min,
+            "max": self.max,
+            "count": self.count
         }
         return self._statistics
 
@@ -864,6 +899,7 @@ class MonteCarlo(Foundation):
         return self._experiments
 
     @experiments.setter
+    @validate_type(int, allow_none=False)
     @validate_range(min_value=1)
     def experiments(self, val: int) -> None:
         """*experiments* Set the number of simulation runs.
@@ -886,6 +922,9 @@ class MonteCarlo(Foundation):
         return self._distributions.copy()
 
     @distributions.setter
+    @validate_type(dict, allow_none=False)
+    @validate_emptiness()
+    @validate_dict_types(str, dict)
     @validate_custom(lambda self, val: self._validate_dist(val,
                                                            "distributions"))
     def distributions(self, val: Dict[str, Dict[str, Any]]) -> None:
@@ -909,7 +948,8 @@ class MonteCarlo(Foundation):
         return self._dependencies
 
     @dependencies.setter
-    @validate_type(dict)
+    @validate_type(dict, allow_none=False)
+    @validate_dict_types(str, list)
     def dependencies(self, val: Dict[str, List[str]]) -> None:
         """*dependencies* Set variable dependencies.
 
@@ -919,96 +959,7 @@ class MonteCarlo(Foundation):
         self._dependencies = val
 
     # Individual statistics properties
-
-    @property
-    def mean(self) -> float:
-        """*mean* Mean value of simulation results.
-
-        Returns:
-            float: Mean value.
-
-        Raises:
-            ValueError: If no results are available.
-        """
-        if self._results.size == 0:
-            _msg = "No statistics available. Run the simulation first."
-            raise ValueError(_msg)
-        return self._mean
-
-    @property
-    def median(self) -> float:
-        """*median* Median value of simulation results.
-
-        Returns:
-            float: Median value.
-
-        Raises:
-            ValueError: If no results are available.
-        """
-        if self._results.size == 0:
-            _msg = "No statistics available. Run the simulation first."
-            raise ValueError(_msg)
-        return self._median
-
-    @property
-    def std_dev(self) -> float:
-        """*std_dev* Standard deviation of simulation results.
-
-        Returns:
-            float: Standard deviation.
-
-        Raises:
-            ValueError: If no results are available.
-        """
-        if self._results.size == 0:
-            _msg = "No statistics available. Run the simulation first."
-            raise ValueError(_msg)
-        return self._std_dev
-
-    @property
-    def variance(self) -> float:
-        """*variance* Variance of simulation results.
-
-        Returns:
-            float: Variance value.
-
-        Raises:
-            ValueError: If no results are available.
-        """
-        if self._results.size == 0:
-            _msg = "No statistics available. Run the simulation first."
-            raise ValueError(_msg)
-        return self._variance
-
-    @property
-    def min_value(self) -> float:
-        """*min_value* Minimum value in simulation results.
-
-        Returns:
-            float: Minimum value.
-
-        Raises:
-            ValueError: If no results are available.
-        """
-        if self._results.size == 0:
-            _msg = "No statistics available. Run the simulation first."
-            raise ValueError(_msg)
-        return self._min
-
-    @property
-    def max_value(self) -> float:
-        """*max_value* Maximum value in simulation results.
-
-        Returns:
-            float: Maximum value.
-
-        Raises:
-            ValueError: If no results are available.
-        """
-        if self._results.size == 0:
-            _msg = "No statistics available. Run the simulation first."
-            raise ValueError(_msg)
-        return self._max
+    # Note: mean, median, dev, min, and max are inherited from BoundsSpecs
 
     @property
     def count(self) -> int:
@@ -1020,34 +971,47 @@ class MonteCarlo(Foundation):
         Raises:
             ValueError: If no results are available.
         """
-        if self._results.size == 0:
+        if self._results.size < 1:
             _msg = "No statistics available. Run the simulation first."
             raise ValueError(_msg)
         return self._count
 
+    @count.setter
+    @validate_type(int, allow_none=False)
+    @validate_range(min_value=0)
+    def count(self, val: int) -> None:
+        """*count* Set the number of valid simulation results.
+
+        Args:
+            val (int): Result count.
+
+        Raises:
+            ValueError: If count is negative.
+        """
+        self._count = val
+
     @property
-    def summary(self) -> Dict[str, float]:
+    def summary(self) -> Dict[str, Union[float, int, None]]:
         """*summary* Get the statistical analysis of simulation results.
 
         Raises:
             ValueError: If no results are available.
 
         Returns:
-            Dict[str, float]: Dictionary containing statistical properties.
+            Dict[str, Union[float, int, None]]: Dictionary containing statistical properties.
         """
-        if self._results.size == 0:
+        if self._results.size < 1:
             _msg = "No statistics available. Run the simulation first."
             raise ValueError(_msg)
 
         # Build summary dictionary from individual attributes
         self._summary = {
-            "mean": self._mean,
-            "median": self._median,
-            "std_dev": self._std_dev,
-            "variance": self._variance,
-            "min": self._min,
-            "max": self._max,
-            "count": self._count
+            "mean": self.mean,
+            "median": self.median,
+            "dev": self.dev,
+            "min": self.min,
+            "max": self.max,
+            "count": self.count
         }
         return self._summary
 
@@ -1057,28 +1021,33 @@ class MonteCarlo(Foundation):
 
     def clear(self) -> None:
         """*clear()* Reset all attributes to default values."""
-        # Reset base class attributes
-        self._idx = -1
-        self._sym = "MC_\\Pi_{}"
-        self._alias = ""
-        self._fwk = "PHYSICAL"
-        self._name = ""
-        self.description = ""
+        # Reset parent class attributes (Foundation)
+        super().clear()
+        self._sym = f"MC_{{\\Pi_{{{self._idx}}}}}"
 
-        # Reset simulation attributes
+        # Reset BoundsSpecs attributes
+        BoundsSpecs.clear(self)
+
+        # Reset MonteCarlo-specific attributes
+        self._cat = AnaliticMode.NUM.value
+        self._coefficient = Coefficient()
         self._pi_expr = None
         self._sym_func = None
         self._exe_func = None
         self._variables = {}
+        self._symbols = {}
+        self._aliases = {}
         self._latex_to_py = {}
         self._py_to_latex = {}
+        self._var_symbols = []
         self._experiments = -1
         self._distributions = {}
+        self._dependencies = {}
+        self._simul_cache = {}
+        self._data = np.array([], dtype=np.float64)
+        self._results = np.array([], dtype=np.float64)
 
-        # reset results, inputs and intermediate values
-        self._reset_memory()
-
-        # Reset statistics
+        # Reset statistics with MonteCarlo-specific defaults
         self._reset_statistics()
 
     # ========================================================================
@@ -1087,29 +1056,40 @@ class MonteCarlo(Foundation):
 
     def to_dict(self) -> Dict[str, Any]:
         """*to_dict()* Convert simulation to dictionary representation."""
-        return {
-            # Foundation class attributes
-            "idx": self._idx,
-            "sym": self._sym,
-            "alias": self._alias,
-            "fwk": self._fwk,
-            "name": self._name,
-            "description": self.description,
-            # Simulation attributes
-            "pi_expr": self._pi_expr,
-            "variables": self._variables,
-            "iterations": self._experiments,
-            # Results
-            "mean": self._mean,
-            "median": self._median,
-            "std_dev": self._std_dev,
-            "variance": self._variance,
-            "min": self._min,
-            "max": self._max,
-            "count": self._count,
-            "inputs": self.inputs.tolist() if self.inputs.size > 0 else None,
-            "results": self._results.tolist() if self._results.size > 0 else None,
-        }
+        result = {}
+
+        # Get all dataclass fields
+        for f in fields(self):
+            attr_name = f.name
+            attr_value = getattr(self, attr_name)
+
+            # Handle numpy arrays
+            if isinstance(attr_value, np.ndarray):
+                attr_value = attr_value.tolist() if attr_value.size > 0 else []
+            # Handle Coefficient object
+            elif isinstance(attr_value, Coefficient):
+                attr_value = attr_value.to_dict()
+            # Handle Variable dictionaries
+            elif isinstance(attr_value, dict) and attr_value:
+                first_val = next(iter(attr_value.values()), None)
+                if isinstance(first_val, Variable):
+                    attr_value = {k: v.to_dict() for k, v in attr_value.items()}
+                # Handle sympy Symbol dictionaries - skip them
+                elif hasattr(first_val, '__module__') and first_val.__module__.startswith('sympy'):
+                    continue
+            # Handle SymPy expressions
+            elif hasattr(attr_value, '__module__') and hasattr(attr_value, '__module__') and str(type(attr_value).__module__).startswith('sympy'):
+                attr_value = str(attr_value)
+
+            # Skip callables (can't be serialized)
+            if callable(attr_value) and not isinstance(attr_value, type):
+                continue
+
+            # Remove leading underscore from private attributes
+            clean_name = attr_name[1:] if attr_name.startswith("_") else attr_name
+            result[clean_name] = attr_value
+
+        return result
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "MonteCarlo":
@@ -1121,38 +1101,45 @@ class MonteCarlo(Foundation):
         Returns:
             MonteCarlo: New simulation instance.
         """
-        # Create basic instance
-        instance = cls(
-            _name=data.get("name", ""),
-            description=data.get("description", ""),
-            _idx=data.get("idx", -1),
-            _sym=data.get("sym", "MC_\\Pi_{}"),
-            _fwk=data.get("fwk", "PHYSICAL"),
-            _alias=data.get("alias", ""),
-            _cat=data.get("cat", "NUM"),
-            _pi_expr=data.get("pi_expr", None),
-            _experiments=data.get("iterations", -1),
-        )
+        # Get all valid field names from the dataclass
+        field_names = {f.name for f in fields(cls)}
 
-        # The to_dict() method stores them at the top level
-        instance._mean = data.get("mean", np.nan)
-        instance._median = data.get("median", np.nan)
-        instance._std_dev = data.get("std_dev", np.nan)
-        instance._variance = data.get("variance", np.nan)
-        instance._min = data.get("min", np.nan)
-        instance._max = data.get("max", np.nan)
-        instance._count = data.get("count", 0)
+        # Map keys without underscores to keys with underscores
+        mapped_data = {}
 
-        # Optionally set inputs and results if available
-        if "inputs" in data and data["inputs"] is not None:
-            instance.inputs = np.array(data["inputs"], dtype=np.float64)
+        for key, value in data.items():
+            # Handle special conversions for Coefficient
+            if key == "coefficient" and isinstance(value, dict):
+                mapped_data["_coefficient"] = Coefficient.from_dict(value)
+                continue
+            # Handle dictionary of Variables
+            elif key == "variables" and isinstance(value, dict):
+                mapped_data["_variables"] = {
+                    k: Variable.from_dict(v) if isinstance(v, dict) else v
+                    for k, v in value.items()
+                }
+                continue
+            # Handle numpy arrays
+            elif key in ["inputs", "results"] and isinstance(value, list):
+                field_key = f"_{key}" if key == "results" else key
+                mapped_data[field_key] = np.array(value, dtype=np.float64)
+                continue
+            # Handle special key mapping for iterations -> experiments
+            elif key == "iterations":
+                mapped_data["_experiments"] = value
+                continue
 
-        if "results" in data and data["results"] is not None:
-            instance._results = np.array(data["results"], dtype=np.float64)
+            # Try the key as-is first (handles both _idx and name)
+            if key in field_names:
+                mapped_data[key] = value
+            # Try adding underscore prefix (handles idx -> _idx)
+            elif f"_{key}" in field_names:
+                mapped_data[f"_{key}"] = value
+            # Try removing underscore prefix (handles _name -> name if needed)
+            elif key.startswith("_") and key[1:] in field_names:
+                mapped_data[key[1:]] = value
+            else:
+                # Use as-is for unknown keys (will be validated by dataclass)
+                mapped_data[key] = value
 
-        # Optionally set variables if available
-        if "variables" in data and data["variables"]:
-            for sym, specs in data["variables"].items():
-                instance._variables[sym] = Variable(**specs)
-
-        return instance
+        return cls(**mapped_data)

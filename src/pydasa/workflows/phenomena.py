@@ -16,7 +16,7 @@ Classes:
 """
 # Standard library imports
 from __future__ import annotations
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 from typing import Dict, Optional, Any, Union, List
 
 # Import validation base classes
@@ -114,7 +114,7 @@ class AnalysisEngine(Foundation):
 
         # Set default symbol if not specified
         if not self._sym:
-            self._sym = f"Solver_{{{self._idx}}}" if self._idx >= 0 else "Solver_{-1}"
+            self._sym = f"DAEN_{{\\Pi_{{{self._idx}}}}}" if self._idx >= 0 else "DAEN_{\\Pi_{-1}}"
 
         if not self._alias:
             self._alias = latex_to_python(self._sym)
@@ -512,14 +512,15 @@ class AnalysisEngine(Foundation):
 
         Clears all solver properties to their initial state, INCLUDING variables.
         """
-        # Clear parent class attributes (idx, sym, alias, name, description)
+        # Reset parent class attributes (Foundation)
         super().clear()
+        self._sym = f"DAEN_{{\\Pi_{{{self._idx}}}}}"
 
-        # Clear AnalysisEngine-specific attributes
-        self._variables.clear()
+        # Reset AnalysisEngine-specific attributes
+        self._variables = {}
         self._schema = Schema(_fwk=Frameworks.PHYSICAL.value)
         self._model = None
-        self._coefficients.clear()
+        self._coefficients = {}
         self._is_solved = False
 
     def to_dict(self) -> Dict[str, Any]:
@@ -528,67 +529,89 @@ class AnalysisEngine(Foundation):
         Returns:
             Dict[str, Any]: Dictionary representation of solver state.
         """
-        # After __post_init__, _schema is always a Schema instance
-        schema_dict = self._schema.to_dict() if isinstance(self._schema, Schema) else None
+        result = {}
 
-        return {
-            "name": self.name,
-            "description": self.description,
-            "idx": self._idx,
-            "sym": self._sym,
-            "alias": self._alias,
-            "fwk": self._fwk,
-            "schema": schema_dict,
-            "variables": {
-                k: v.to_dict() for k, v in self._variables.items()
-            },
-            "coefficients": {
-                k: v.to_dict() for k, v in self._coefficients.items()
-            },
-            "is_solved": self._is_solved,
-        }
+        # Get all dataclass fields
+        for f in fields(self):
+            attr_name = f.name
+            attr_value = getattr(self, attr_name)
+
+            # Handle Schema object
+            if isinstance(attr_value, Schema):
+                attr_value = attr_value.to_dict()
+            # Handle Matrix object
+            elif isinstance(attr_value, Matrix):
+                attr_value = attr_value.to_dict()
+            # Handle dictionaries with Variable or Coefficient values
+            elif isinstance(attr_value, dict) and attr_value:
+                first_val = next(iter(attr_value.values()), None)
+                if isinstance(first_val, (Variable, Coefficient)):
+                    attr_value = {k: v.to_dict() for k, v in attr_value.items()}
+
+            # Skip callables (can't be serialized)
+            if callable(attr_value) and not isinstance(attr_value, type):
+                continue
+
+            # Remove leading underscore from private attributes
+            clean_name = attr_name[1:] if attr_name.startswith("_") else attr_name
+            result[clean_name] = attr_value
+
+        return result
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> AnalysisEngine:
         """*from_dict()* Create a AnalysisEngine instance from a dictionary.
 
         Args:
-            data (Dict[str, Any]): Dictionary containing the solver"s state.
+            data (Dict[str, Any]): Dictionary containing the solver's state.
 
         Returns:
             AnalysisEngine: New instance of AnalysisEngine.
         """
-        # Get schema data if present
-        schema_data = data.get("schema")
-        _schema = Schema.from_dict(schema_data) if schema_data else None
+        # Get all valid field names from the dataclass
+        field_names = {f.name for f in fields(cls)}
 
-        # Create instance with basic attributes
-        instance = cls(
-            _name=data.get("name", ""),
-            description=data.get("description", ""),
-            _idx=data.get("idx", -1),
-            _sym=data.get("sym", ""),
-            _alias=data.get("alias", ""),
-            _fwk=data.get("fwk", ""),
-            _schema=_schema,
-        )
+        # Map keys without underscores to keys with underscores
+        mapped_data = {}
 
-        # Set variables
-        vars_data = data.get("variables", {})
-        if vars_data:
-            vars_dict = {k: Variable.from_dict(v) for k, v in vars_data.items()}
-            instance.variables = vars_dict
+        for key, value in data.items():
+            # Handle special conversions for Schema
+            if key == "schema" and isinstance(value, dict):
+                mapped_data["_schema"] = Schema.from_dict(value)
+                continue
+            # Handle dictionary of Variables
+            elif key == "variables" and isinstance(value, dict):
+                mapped_data["_variables"] = {
+                    k: Variable.from_dict(v) if isinstance(v, dict) else v
+                    for k, v in value.items()
+                }
+                continue
+            # Handle dictionary of Coefficients
+            elif key == "coefficients" and isinstance(value, dict):
+                mapped_data["_coefficients"] = {
+                    k: Coefficient.from_dict(v) if isinstance(v, dict) else v
+                    for k, v in value.items()
+                }
+                continue
+            # Handle Matrix object
+            elif key == "model" and isinstance(value, dict):
+                mapped_data["_model"] = Matrix.from_dict(value)
+                continue
 
-        # Set coefficients
-        coefs_data = data.get("coefficients", {})
-        if coefs_data:
-            coefs_dict = {k: Coefficient.from_dict(v) for k, v in coefs_data.items()}
-            instance._coefficients = coefs_dict
+            # Try the key as-is first (handles both _idx and name)
+            if key in field_names:
+                mapped_data[key] = value
+            # Try adding underscore prefix (handles idx -> _idx)
+            elif f"_{key}" in field_names:
+                mapped_data[f"_{key}"] = value
+            # Try removing underscore prefix (handles _name -> name if needed)
+            elif key.startswith("_") and key[1:] in field_names:
+                mapped_data[key[1:]] = value
+            else:
+                # Use as-is for unknown keys (will be validated by dataclass)
+                mapped_data[key] = value
 
-        # Set state flags
-        instance._is_solved = data.get("is_solved", False)
-
-        return instance
+        return cls(**mapped_data)
 
     def __repr__(self) -> str:
         """*__repr__()* String representation of solver.

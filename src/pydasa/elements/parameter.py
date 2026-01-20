@@ -196,25 +196,25 @@ class Variable(ConceptualSpecs, SymbolicSpecs, NumericalSpecs, StatisticalSpecs)
         field_names = {f.name for f in fields(cls)}
 
         # Map keys without underscores to keys with underscores
-        mapped_data = {}
+        _data = {}
 
         for key, value in data.items():
             # Try the key as-is first (handles both _idx and name)
             if key in field_names:
-                mapped_data[key] = value
+                _data[key] = value
             # Try adding underscore prefix (handles idx -> _idx)
             elif f"_{key}" in field_names:
-                mapped_data[f"_{key}"] = value
+                _data[f"_{key}"] = value
             # Try removing underscore prefix (handles _name -> name if needed)
             elif key.startswith("_") and key[1:] in field_names:
-                mapped_data[key[1:]] = value
+                _data[key[1:]] = value
             else:
                 # Use as-is for unknown keys (will be validated by dataclass)
-                mapped_data[key] = value
+                _data[key] = value
 
         # Convert lists back to numpy arrays for range attributes
-        for range_key in ["std_range", "_std_range"]:
-            if range_key in mapped_data and isinstance(mapped_data[range_key], list):
-                mapped_data[range_key] = np.array(mapped_data[range_key])
+        for _data_key in ["data", "_data"]:
+            if _data_key in _data and isinstance(_data[_data_key], list):
+                _data[_data_key] = np.array(_data[_data_key])
 
-        return cls(**mapped_data)
+        return cls(**_data)

@@ -25,6 +25,7 @@ from typing import Optional
 
 # third-party numerical imports
 import numpy as np
+from numpy.typing import NDArray
 
 # custom modules
 from pydasa.validations.decorators import validate_type
@@ -43,6 +44,7 @@ class BoundsSpecs:
         _min (Optional[float]): Minimum value in original units.
         _max (Optional[float]): Maximum value in original units.
         _mean (Optional[float]): Mean value in original units.
+        _median (Optional[float]): Median value in original units.
         _dev (Optional[float]): Standard deviation in original units.
     """
 
@@ -63,6 +65,10 @@ class BoundsSpecs:
     _mean: Optional[float] = None
     """Mean value in original units."""
 
+    # :attr: _median
+    _median: Optional[float] = None
+    """Median value in original units."""
+
     # :attr: _dev
     _dev: Optional[float] = None
     """Standard deviation in original units."""
@@ -77,7 +83,7 @@ class BoundsSpecs:
         return self._setpoint
 
     @setpoint.setter
-    @validate_type(int, float, allow_none=False)
+    @validate_type(int, float, allow_none=False, allow_nan=True)
     def setpoint(self, val: Optional[float]) -> None:
         """*setpoint* Sets specific value/point system for original units.
 
@@ -99,7 +105,7 @@ class BoundsSpecs:
         return self._min
 
     @min.setter
-    @validate_type(int, float, allow_none=False)
+    @validate_type(int, float, allow_none=False, allow_nan=True)
     @validate_range(max_attr="_max")
     def min(self, val: Optional[float]) -> None:
         """*min* Sets minimum range value.
@@ -123,7 +129,7 @@ class BoundsSpecs:
         return self._max
 
     @max.setter
-    @validate_type(int, float, allow_none=False)
+    @validate_type(int, float, allow_none=False, allow_nan=True)
     @validate_range(min_attr="_min")
     def max(self, val: Optional[float]) -> None:
         """*max* Sets the maximum range value.
@@ -147,7 +153,7 @@ class BoundsSpecs:
         return self._mean
 
     @mean.setter
-    @validate_type(int, float, allow_none=False)
+    @validate_type(int, float, allow_none=False, allow_nan=True)
     @validate_range(min_attr="_min", max_attr="_max")
     def mean(self, val: Optional[float]) -> None:
         """*mean* Sets the Variable mean value.
@@ -162,6 +168,30 @@ class BoundsSpecs:
         self._mean = val
 
     @property
+    def median(self) -> Optional[float]:
+        """*median* Get the median value.
+
+        Returns:
+            Optional[float]: Median value.
+        """
+        return self._median
+
+    @median.setter
+    @validate_type(int, float, allow_none=False, allow_nan=True)
+    @validate_range(min_attr="_min", max_attr="_max")
+    def median(self, val: Optional[float]) -> None:
+        """*median* Sets the median value.
+
+        Args:
+            val (Optional[float]): Median value.
+
+        Raises:
+            ValueError: If value not a valid number.
+            ValueError: If value is outside min-max range.
+        """
+        self._median = val
+
+    @property
     def dev(self) -> Optional[float]:
         """*dev* Get the Variable standardized deviation.
 
@@ -171,7 +201,7 @@ class BoundsSpecs:
         return self._dev
 
     @dev.setter
-    @validate_type(int, float, allow_none=False)
+    @validate_type(int, float, allow_none=False, allow_nan=True)
     @validate_range(min_value=0, min_inclusive=True)
     def dev(self, val: Optional[float]) -> None:
         """*dev* Sets the Variable standardized deviation.
@@ -196,6 +226,7 @@ class BoundsSpecs:
         self._min = None
         self._max = None
         self._mean = None
+        self._median = None
         self._dev = None
 
 
@@ -211,6 +242,7 @@ class StandardizedSpecs:
         _std_min (Optional[float]): Minimum value in standardized units.
         _std_max (Optional[float]): Maximum value in standardized units.
         _std_mean (Optional[float]): Mean value in standardized units.
+        _std_median (Optional[float]): Median value in standardized units.
         _std_dev (Optional[float]): Standard deviation in standardized units.
     """
 
@@ -230,6 +262,10 @@ class StandardizedSpecs:
     # :attr: _std_mean
     _std_mean: Optional[float] = None
     """Mean value in standardized units."""
+
+    # :attr: _std_median
+    _std_median: Optional[float] = None
+    """Median value in standardized units."""
 
     # :attr: _std_dev
     _std_dev: Optional[float] = None
@@ -326,6 +362,30 @@ class StandardizedSpecs:
         self._std_mean = val
 
     @property
+    def std_median(self) -> Optional[float]:
+        """*std_median* Get standardized median value.
+
+        Returns:
+            Optional[float]: Standardized median.
+        """
+        return self._std_median
+
+    @std_median.setter
+    @validate_type(int, float, allow_none=False)
+    @validate_range(min_attr="_std_min", max_attr="_std_max")
+    def std_median(self, val: Optional[float]) -> None:
+        """*std_median* Sets the standardized median value.
+
+        Args:
+            val (Optional[float]): Standardized median value.
+
+        Raises:
+            ValueError: If value is not a valid number.
+            ValueError: If value is outside std_min-std_max range.
+        """
+        self._std_median = val
+
+    @property
     def std_dev(self) -> Optional[float]:
         """*std_dev* Get standardized standardized deviation.
 
@@ -358,6 +418,7 @@ class StandardizedSpecs:
         self._std_min = None
         self._std_max = None
         self._std_mean = None
+        self._std_median = None
         self._std_dev = None
 
 
@@ -384,16 +445,18 @@ class NumericalSpecs(BoundsSpecs, StandardizedSpecs):
             _min (Optional[float]): Minimum value in original units.
             _max (Optional[float]): Maximum value in original units.
             _mean (Optional[float]): Mean value in original units.
+            _median (Optional[float]): Median value in original units.
             _dev (Optional[float]): Standard deviation in original units.
         # From StandardizedSpecs (standardized units):
             _std_setpoint (Optional[float]): Specific value/point in standardized units.
             _std_min (Optional[float]): Minimum value in standardized units.
             _std_max (Optional[float]): Maximum value in standardized units.
             _std_mean (Optional[float]): Mean value in standardized units.
+            _std_median (Optional[float]): Median value in standardized units.
             _std_dev (Optional[float]): Standard deviation in standardized units.
         # Discretization properties:
             _step (Optional[float]): Step size for simulations.
-            _data (np.ndarray): Range for numerical analysis in standardized units.
+            _data (NDArray[np.float64]): Range for numerical analysis in standardized units.
     """
 
     # :attr: _step
@@ -401,7 +464,9 @@ class NumericalSpecs(BoundsSpecs, StandardizedSpecs):
     """Step size for simulations."""
 
     # :attr: _data
-    _data: np.ndarray = field(default_factory=lambda: np.array([]))
+    _data: NDArray[np.float64] = field(
+        default_factory=lambda: np.array([], dtype=np.float64)
+    )
     """Data range array for analysis."""
 
     @property
@@ -428,25 +493,28 @@ class NumericalSpecs(BoundsSpecs, StandardizedSpecs):
         self._step = val
 
     @property
-    def data(self) -> np.ndarray:
+    def data(self) -> NDArray[np.float64]:
         """*data* Get standardized data array.
 
         Returns:
-            np.ndarray: Data array for range (always standardized).
+            NDArray[np.float64]: Data array for range (always standardized).
         """
         return self._data
 
     @data.setter
     @validate_type(list, np.ndarray, allow_none=False)
-    def data(self, val: np.ndarray) -> None:
+    def data(self, val: NDArray[np.float64]) -> None:
         """*data* Set standardized data array.
 
         Args:
-            val (np.ndarray): Data array for range (always standardized).
+            val (NDArray[np.float64]): Data array for range (always standardized).
 
         Raises:
-            ValueError: If value is not a numpy array.
+            ValueError: If value is not a numpy array or list.
         """
+        # always store as numpy array
+        if isinstance(val, list):
+            val = np.array(val, dtype=np.float64)
         self._data = val
 
     def generate_data(self) -> None:

@@ -24,16 +24,23 @@ from enum import Enum
 from typing import Callable, Any, Union, Type, Optional, Tuple
 import re
 
+# third-party imports
+import numpy as np
 
-def validate_type(*expected_types: type, allow_none: bool = True) -> Callable:
+
+def validate_type(*expected_types: type,
+                  allow_none: bool = True,
+                  allow_nan: bool = False) -> Callable:
     """*validate_type()* Decorator to validate argument type against expected type(s).
 
     Args:
         *expected_types (type): One or more expected types for validation.
         allow_none (bool, optional): Whether None values are allowed. Defaults to True.
+        allow_nan (bool, optional): Whether np.nan values are allowed. Defaults to False.
 
     Raises:
         ValueError: If value is None when allow_none is False.
+        ValueError: If value is np.nan when allow_nan is False.
         ValueError: If value type does not match any of the expected types.
 
     Returns:
@@ -54,6 +61,12 @@ def validate_type(*expected_types: type, allow_none: bool = True) -> Callable:
         @validate_type(int, float)
         def value(self, val: Union[int, float]) -> None:
             self._value = val
+
+        # Allow np.nan
+        @mean.setter
+        @validate_type(int, float, allow_nan=True)
+        def mean(self, val: Optional[float]) -> None:
+            self._mean = val
     """
     def decorator(func: Callable) -> Callable:
         @wraps(func)
@@ -62,6 +75,13 @@ def validate_type(*expected_types: type, allow_none: bool = True) -> Callable:
             if value is None:
                 if not allow_none:
                     _msg = f"{func.__name__} cannot be None."
+                    raise ValueError(_msg)
+                return func(self, value)
+
+            # if value is np.nan
+            if isinstance(value, float) and np.isnan(value):
+                if not allow_nan:
+                    _msg = f"{func.__name__} cannot be np.nan."
                     raise ValueError(_msg)
                 return func(self, value)
 

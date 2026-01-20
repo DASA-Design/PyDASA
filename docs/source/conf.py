@@ -191,15 +191,30 @@ html_theme_options = {
     # },
     "navbar_end": ["theme-switcher", "navbar-icon-links"],
     "show_prev_next": True,
+    # Version switcher configuration
+    "switcher": {
+        "json_url": "https://pydasa.readthedocs.io/en/latest/_static/switcher.json",
+        "version_match": version,
+    },
+    # Add version dropdown to navbar
+    "navbar_start": ["navbar-logo", "version-switcher"],
 }
 
 # multi-language and version configuration
+# Read the Docs will inject version information automatically
 html_context = {
     "default_mode": "default",
     "current_version": release,
-    "versions": [["1.0", "link to 1.0"], ["2.0", "link to 2.0"]],
     "current_language": "en",
-    "languages": [["en", "link to en"], ["de", "link to de"]]
+    # Read the Docs injects these automatically:
+    # "versions": List of (slug, url) tuples
+    # "languages": List of (code, url) tuples
+    # "READTHEDOCS": True when building on RTD
+    "display_github": True,
+    "github_user": "DASA-Design",
+    "github_repo": "PyDASA",
+    "github_version": "main",
+    "conf_py_path": "/docs/source/",
 }
 
 html_static_path = ["_static"]

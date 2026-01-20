@@ -193,12 +193,12 @@ html_theme_options = {
     "show_prev_next": True,
 }
 
-# Add version switcher only if switcher.json exists
-# This prevents build errors when the file isn't available yet
+# Add version switcher using local file path
+# This prevents fetching from URL which can cause BOM errors
 switcher_path = os.path.join(os.path.dirname(__file__), "_static", "switcher.json")
 if os.path.exists(switcher_path):
     html_theme_options["switcher"] = {
-        "json_url": "https://pydasa.readthedocs.io/en/latest/_static/switcher.json",
+        "json_url": "_static/switcher.json",  # Use relative path, not URL
         "version_match": version,
     }
     # Add version dropdown to navbar

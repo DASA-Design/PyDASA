@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.3] - 2026-01-19
+
+### Added
+- `allow_nan` parameter to `validate_type` decorator for `np.nan` validation
+- `data` property (getter/setter) for `MonteCarlo` input data matrix with automatic list-to-array conversion
+- `median` property to `BoundsSpecs` and `StandardizedSpecs` classes
+- `calculate_setpoint()` method to `Coefficient` class with comprehensive validation
+
+### Changed
+- `MonteCarlo` now inherits from both `Foundation` and `BoundsSpecs` (multiple inheritance)
+- `BoundsSpecs` setters accept `np.nan` values via `allow_nan=True` parameter
+- `MonteCarlo` type annotations changed to `Optional[float]` to match `BoundsSpecs`
+- `statistics` and `summary` properties return `Dict[str, Union[float, int, None]]`
+- `_reset_statistics()` and `clear()` call `BoundsSpecs.clear(self)` for inherited attributes
+- `AnalysisEngine` symbol formatting and serialization improved in `to_dict()` and `from_dict()`
+
+### Removed
+- `_variance` attribute from `MonteCarlo` (standard deviation is sufficient)
+- Redundant property getters: `mean`, `median`, `dev`, `min_value`, `max_value` (now inherited from `BoundsSpecs`)
+- ~120 lines of duplicate code through inheritance refactoring
+
+### Fixed
+- Type checker errors for property overrides in `MonteCarlo`
+- Test assertion in `test_buckingham.py` to match error message: "std_setpoint is not defined"
+- Type mismatch between `BoundsSpecs` (`float | None`) and `MonteCarlo` declarations
+- `np.isnan()` type errors with proper `Optional[float]` annotations
+
+### Improved
+- Validation decorator system with `np.nan` support for statistical computations
+- Architecture: `None` for user config, `np.nan` for computed results
+- Test coverage: 26 MonteCarlo tests, 53 Buckingham tests, 330+ numerical spec tests passing
+
 ## [0.5.2] - 2026-01-15
 
 ### Fixed
@@ -47,27 +79,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.5.1] - 2026-01-14
 
 ### Changed
-- Enhanced `Sensitivity` class with improved workflow integration
-- Refined coefficient handling in sensitivity analysis
-- Updated dimensional analysis workflow capabilities
-- Added comprehensive property validation decorators
+- Updated terminology from 'framework' to 'schema' in Matrix and AnalysisEngine classes for consistency
+- Refined dimensional analysis workflow capabilities
 
 ### Fixed
-- Improved stability of sensitivity analysis methods
-- Fixed minor issues in expression parsing
+- Fixed error message for invalid schema assignment in TestAnalysisEngine
 
 ## [0.5.0] - 2026-01-13
 
 ### Added
-- Major refactoring to support CUSTOM framework in dimensional analysis
-- Schema class now requires `_schema` attribute initialization for CUSTOM framework
-- Enhanced framework validation and type checking
+- Enhanced dimensional expression parsing and validation in `parser.py`
+- Functions to extract coefficients, powered coefficients, and numeric constants from expressions
+- New method `derive_coefficient` in `AnalysisEngine` for deriving coefficients from existing ones
+- Comprehensive validation for AnalysisEngine schema input types
 
 ### Changed
+- Improved dimensional operation computations and validations
+- Updated regex patterns in `patterns.py` for better matching of numeric constants and operations
+- Refactored `AnalysisEngine` in `phenomena.py` to support custom schemas
 - Restructured analysis workflows for better modularity
-- Matrix class updated to require `_schema` at initialization
-- Improved separation of concerns in analysis components
-- Updated error messages to use "schema" instead of "framework" for clarity
+- Enhanced unit tests for the `Matrix` class and `AnalysisEngine`
+- Updated error messages for clarity and consistency across validation checks
 
 ### Fixed
 - Fixed test assertions to match updated property names
@@ -343,6 +375,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Distribution files: `pydasa-0.0.1-py3-none-any.whl`, `pydasa-0.0.1.tar.gz`
 
+[0.5.3]: https://github.com/DASA-Design/PyDASA/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/DASA-Design/PyDASA/compare/v0.5.1...v0.5.2
 [0.5.1]: https://github.com/DASA-Design/PyDASA/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/DASA-Design/PyDASA/compare/v0.4.10...v0.5.0

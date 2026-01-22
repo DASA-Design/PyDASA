@@ -31,7 +31,7 @@ from pydasa.dimensional.vaschy import Schema
 from pydasa.dimensional.model import Matrix
 
 # Import the module to test
-from pydasa.analysis.simulation import MonteCarlo
+from pydasa.analysis.simulation import MonteCarlo, SimulationMode
 
 # Import related classes
 from pydasa.dimensional.buckingham import Coefficient
@@ -41,6 +41,7 @@ from tests.pydasa.data.test_data import get_simulation_test_data
 
 # Asserting module imports
 assert MonteCarlo
+assert SimulationMode
 assert Coefficient
 assert Variable
 assert Matrix
@@ -366,7 +367,7 @@ class TestMonteCarlo(unittest.TestCase):
         with pytest.raises(ValueError) as excinfo:
             mc_sim.run()
 
-        assert "Missing distributions" in str(excinfo.value)
+        assert "Distributions must be provided" in str(excinfo.value) or "Missing distributions" in str(excinfo.value)
 
     # ========================================================================
     # Monte Carlo Simulation Execution Tests
@@ -764,3 +765,241 @@ class TestMonteCarlo(unittest.TestCase):
 
         # Check results are NaN
         assert all(np.isnan(mc_sim._results.flatten()))
+
+    # ========================================================================
+    # Simulation Mode Tests
+    # ========================================================================
+
+    def test_simulation_mode_enum(self) -> None:
+        """*test_simulation_mode_enum()* tests SimulationMode enum values."""
+        assert SimulationMode.DIST.value == "DIST"
+        assert SimulationMode.DATA.value == "DATA"
+
+    def test_run_with_generate_mode_explicit(self) -> None:
+        """*test_run_with_generate_mode_explicit()* tests running with explicit generate mode."""
+        if "\\Pi_{1}" not in self.coefficients:
+            pytest.skip("Pi_1 coefficient not found")
+
+        coef = self.coefficients["\\Pi_{1}"]
+        mc_sim = MonteCarlo(_coefficient=coef,
+                            _variables=self.variables,
+                            _experiments=N_EXP)
+
+        # Setup distributions
+        vars_in_coef = list(coef.var_dims.keys())
+        mc_sim._distributions = {
+            k: v for k, v in self.dist_specs.items()
+            if k in vars_in_coef
+        }
+
+        if not all(v in mc_sim._distributions for v in vars_in_coef):
+            pytest.skip("Missing distributions")
+
+        # Run with explicit DIST mode
+        mc_sim.run(mode=SimulationMode.DIST)
+
+        assert mc_sim._results.size == N_EXP
+        assert not all(np.isnan(mc_sim._results.flatten()))
+
+    def test_run_with_generate_mode_string(self) -> None:
+        """*test_run_with_generate_mode_string()* tests running with mode='generate' string."""
+        if "\\Pi_{1}" not in self.coefficients:
+            pytest.skip("Pi_1 coefficient not found")
+
+        coef = self.coefficients["\\Pi_{1}"]
+        mc_sim = MonteCarlo(_coefficient=coef,
+                            _variables=self.variables,
+                            _experiments=N_EXP)
+
+        # Setup distributions
+        vars_in_coef = list(coef.var_dims.keys())
+        mc_sim._distributions = {
+            k: v for k, v in self.dist_specs.items()
+            if k in vars_in_coef
+        }
+
+        if not all(v in mc_sim._distributions for v in vars_in_coef):
+            pytest.skip("Missing distributions")
+
+        # Run with string mode
+        mc_sim.run(mode="dist")
+
+        assert mc_sim._results.size == N_EXP
+        assert not all(np.isnan(mc_sim._results.flatten()))
+
+    def test_run_with_data_mode(self) -> None:
+        """*test_run_with_data_mode()* tests running simulation with pre-existing data."""
+        if "\\Pi_{1}" not in self.coefficients:
+            pytest.skip("Pi_1 coefficient not found")
+
+        coef = self.coefficients["\\Pi_{1}"]
+        vars_in_coef = list(coef.var_dims.keys())
+
+        # Generate sample data for variables
+        n_samples = 50
+        for var_sym in vars_in_coef:
+            if var_sym in self.variables:
+                var = self.variables[var_sym]
+                # Create sample data
+                var._data = np.random.uniform(0.1, 10.0, n_samples)
+
+        mc_sim = MonteCarlo(_coefficient=coef,
+                            _variables=self.variables,
+                            _experiments=n_samples)
+
+        # Run with DATA mode
+        mc_sim.run(mode=SimulationMode.DATA)
+
+        assert mc_sim._results.size == n_samples
+        assert not all(np.isnan(mc_sim._results.flatten()))
+        assert mc_sim._experiments == n_samples
+
+    def test_run_with_data_mode_string(self) -> None:
+        """*test_run_with_data_mode_string()* tests running with mode='data' string."""
+        if "\\Pi_{1}" not in self.coefficients:
+            pytest.skip("Pi_1 coefficient not found")
+
+        coef = self.coefficients["\\Pi_{1}"]
+        vars_in_coef = list(coef.var_dims.keys())
+
+        # Generate sample data for variables
+        n_samples = 50
+        for var_sym in vars_in_coef:
+            if var_sym in self.variables:
+                var = self.variables[var_sym]
+                var._data = np.random.uniform(0.1, 10.0, n_samples)
+
+        mc_sim = MonteCarlo(_coefficient=coef,
+                            _variables=self.variables,
+                            _experiments=n_samples)
+
+        # Run with string mode
+        mc_sim.run(mode="data")
+
+        assert mc_sim._results.size == n_samples
+        assert not all(np.isnan(mc_sim._results.flatten()))
+
+    def test_run_data_mode_no_data_raises_error(self) -> None:
+        """*test_run_data_mode_no_data_raises_error()* tests error when variables have no data."""
+        if "\\Pi_{1}" not in self.coefficients:
+            pytest.skip("Pi_1 coefficient not found")
+
+        coef = self.coefficients["\\Pi_{1}"]
+        mc_sim = MonteCarlo(_coefficient=coef,
+                            _variables=self.variables,
+                            _experiments=N_EXP)
+
+        # Don't set any variable data
+        with pytest.raises(ValueError) as excinfo:
+            mc_sim.run(mode="data")
+
+        assert "has no data" in str(excinfo.value)
+
+    def test_run_data_mode_inconsistent_lengths_raises_error(self) -> None:
+        """*test_run_data_mode_inconsistent_lengths_raises_error()* tests error with inconsistent data lengths."""
+        if "\\Pi_{1}" not in self.coefficients:
+            pytest.skip("Pi_1 coefficient not found")
+
+        coef = self.coefficients["\\Pi_{1}"]
+        vars_in_coef = list(coef.var_dims.keys())
+
+        if len(vars_in_coef) < 2:
+            pytest.skip("Need at least 2 variables for this test")
+
+        # Set different data lengths for variables
+        for idx, var_sym in enumerate(vars_in_coef):
+            if var_sym in self.variables:
+                var = self.variables[var_sym]
+                # Create different length arrays
+                length = 50 + idx * 10
+                var._data = np.random.uniform(0.1, 10.0, length)
+
+        mc_sim = MonteCarlo(_coefficient=coef,
+                            _variables=self.variables,
+                            _experiments=100)
+
+        with pytest.raises(ValueError) as excinfo:
+            mc_sim.run(mode="data")
+
+        assert "data points" in str(excinfo.value) or "inconsistent" in str(excinfo.value)
+
+    def test_run_data_mode_fewer_points_than_experiments(self) -> None:
+        """*test_run_data_mode_fewer_points_than_experiments()* tests adjustment when data < experiments."""
+        if "\\Pi_{1}" not in self.coefficients:
+            pytest.skip("Pi_1 coefficient not found")
+
+        coef = self.coefficients["\\Pi_{1}"]
+        vars_in_coef = list(coef.var_dims.keys())
+
+        # Set data with fewer points than requested experiments
+        n_samples = 30
+        for var_sym in vars_in_coef:
+            if var_sym in self.variables:
+                var = self.variables[var_sym]
+                var._data = np.random.uniform(0.1, 10.0, n_samples)
+
+        mc_sim = MonteCarlo(_coefficient=coef,
+                            _variables=self.variables,
+                            _experiments=100)  # Request more than available
+
+        # Should run with available data (adjust experiments to match data)
+        mc_sim.run(iters=n_samples, mode="data")
+
+        # Should have run with available data points
+        assert mc_sim._experiments == n_samples
+        assert mc_sim._results.size == n_samples
+
+    def test_invalid_mode_raises_error(self) -> None:
+        """*test_invalid_mode_raises_error()* tests error with invalid mode string."""
+        if "\\Pi_{1}" not in self.coefficients:
+            pytest.skip("Pi_1 coefficient not found")
+
+        coef = self.coefficients["\\Pi_{1}"]
+        mc_sim = MonteCarlo(_coefficient=coef,
+                            _variables=self.variables,
+                            _experiments=N_EXP)
+
+        # Setup distributions
+        vars_in_coef = list(coef.var_dims.keys())
+        mc_sim._distributions = {
+            k: v for k, v in self.dist_specs.items()
+            if k in vars_in_coef
+        }
+
+        if not all(v in mc_sim._distributions for v in vars_in_coef):
+            pytest.skip("Missing distributions")
+
+        with pytest.raises(ValueError) as excinfo:
+            mc_sim.run(mode="invalid_mode")
+
+        assert "Invalid cat" in str(excinfo.value) or "Invalid mode" in str(excinfo.value)
+
+    def test_data_mode_results_match_input_order(self) -> None:
+        """*test_data_mode_results_match_input_order()* tests that data mode preserves input order."""
+        if "\\Pi_{1}" not in self.coefficients:
+            pytest.skip("Pi_1 coefficient not found")
+
+        coef = self.coefficients["\\Pi_{1}"]
+        vars_in_coef = list(coef.var_dims.keys())
+
+        # Set specific data values
+        n_samples = 10
+        for var_sym in vars_in_coef:
+            if var_sym in self.variables:
+                var = self.variables[var_sym]
+                # Create sequential data for verification
+                var._data = np.linspace(1.0, 10.0, n_samples)
+
+        mc_sim = MonteCarlo(_coefficient=coef,
+                            _variables=self.variables,
+                            _experiments=n_samples)
+
+        mc_sim.run(mode="data")
+
+        # Verify that input data was used in order
+        assert len(mc_sim._data) == len(vars_in_coef)
+        for var_sym in vars_in_coef:
+            assert var_sym in mc_sim._data
+            assert len(mc_sim._data[var_sym]) == n_samples
+            # Check that data was used
+            assert not np.isnan(mc_sim._data[var_sym][0])

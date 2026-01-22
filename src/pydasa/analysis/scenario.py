@@ -36,6 +36,8 @@ from pydasa.validations.decorators import validate_choices
 from pydasa.validations.decorators import validate_pattern
 from pydasa.validations.decorators import validate_custom
 from pydasa.validations.decorators import validate_dict_types
+from pydasa.validations.decorators import validate_emptiness
+from pydasa.validations.decorators import validate_index
 
 # Import related classes
 from pydasa.dimensional.vaschy import Schema
@@ -85,13 +87,14 @@ class Sensitivity(Foundation):
         _aliases (Dict[str, Any]): Variable aliases for use in code.
 
         # Analysis Configuration
-        var_bounds (List[List[float]]): Min/max bounds for each variable.
-        var_values (Dict[str, float]): Values for symbolic analysis.
-        var_ranges (np.ndarray): Sample value range for numerical analysis.
-        n_samples (int): Number of samples for analysis.
+        _var_bounds (List[List[float]]): Min/max bounds for each variable.
+        _var_values (Dict[str, float]): Values for symbolic analysis.
+        _var_ranges (np.ndarray): Sample value range for numerical analysis.
+        _var_domains (np.ndarray): Sample domain for numerical analysis.
+        _experiments (int): Number of samples for analysis.
 
         # Results
-        results (Dict[str, Any]): Analysis results.
+        _results (Dict[str, Any]): Analysis results.
     """
 
     # Category attribute
@@ -145,46 +148,30 @@ class Sensitivity(Foundation):
     """Mapping from Python-compatible names to LaTeX symbols."""
 
     # Analysis configuration
-    # :attr: var_bounds
-    var_bounds: List[List[float]] = field(default_factory=list)
+    # :attr: _var_bounds
+    _var_bounds: List[List[float]] = field(default_factory=list)
     """Min/max bounds for each variable."""
 
-    # :attr: var_values
-    var_values: Dict[str, float] = field(default_factory=dict)
+    # :attr: _var_values
+    _var_values: Dict[str, float] = field(default_factory=dict)
     """Values for symbolic analysis."""
 
-    # :attr: var_domains
-    var_domains: Optional[np.ndarray] = None
+    # :attr: _var_domains
+    _var_domains: Optional[np.ndarray] = None
     """Sample domain (inputs) for numerical analysis."""
 
-    # :attr: var_ranges
-    var_ranges: Optional[np.ndarray] = None
+    # :attr: _var_ranges
+    _var_ranges: Optional[np.ndarray] = None
     """Sample value range (results) for numerical analysis."""
 
-    # :attr: n_samples
-    n_samples: int = -1
-    """Number of samples for analysis."""
+    # :attr: _experiments
+    _experiments: int = -1
+    """Number of experiments/samples for analysis."""
 
     # Results
-    # :attr: results
-    results: Dict[str, Any] = field(default_factory=dict)
+    # :attr: _results
+    _results: Dict[str, Any] = field(default_factory=dict)
     """Analysis results."""
-
-    def _validate_sympy_expr(self, value: Any, field_name: str) -> None:
-        """Custom validator to ensure value is a valid SymPy expression.
-
-        Args:
-            value: The value to validate.
-            field_name: Name of the field being validated.
-
-        Raises:
-            ValueError: If value is not a SymPy expression.
-        """
-        if not isinstance(value, sp.Expr):
-            raise ValueError(
-                f"{field_name} must be a SymPy expression. "
-                f"Provided: {type(value).__name__}"
-            )
 
     def __post_init__(self) -> None:
         """*__post_init__()* Initializes the sensitivity analysis. Validates basic properties, sets default values, and processes the expression if provided.
@@ -208,6 +195,32 @@ class Sensitivity(Foundation):
         if self._pi_expr:
             # Parse the expression
             self._parse_expression(self._pi_expr)
+
+    def _validate_sym_expr(self, val: Any) -> None:
+        """*_validate_sym_expr()* Check that the symbolic expression is a SymPy expression.
+
+        Args:
+            val (Any): Value to validate.
+
+        Raises:
+            ValueError: If value is not a valid SymPy expression.
+        """
+        if not isinstance(val, sp.Expr):
+            _msg = "'sym_func' must be a SymPy expression, "
+            _msg += f"got {type(val).__name__}"
+            raise ValueError(_msg)
+
+    def _validate_exec_func(self, val: Any) -> None:
+        """Validate executable function is callable or dict of callables."""
+        if callable(val):
+            return
+        if isinstance(val, dict):
+            if not all(callable(v) for v in val.values()):
+                raise ValueError("All dictionary values must be callable")
+            return
+        _msg = "'exe_func' must be Callable or Dict[str, Callable], "
+        _msg += f"got {type(val).__name__}"
+        raise ValueError(_msg)
 
     def _validate_analysis_ready(self) -> None:
         """*_validate_analysis_ready()* Checks if the analysis can be performed.
@@ -258,11 +271,11 @@ class Sensitivity(Foundation):
 
             # Validate it's actually a SymPy expression
             if parsed_expr is None:
-                _msg = "parse_latex returned None"
+                _msg = "parse_latex returned 'None'."
                 raise ValueError(_msg)
 
             if not isinstance(parsed_expr, sp.Expr):
-                _msg = f"Parsed expression is not a SymPy expression: {type(parsed_expr).__name__}"
+                _msg = f"Parsed expression is not a SymPy expression: {type(parsed_expr).__name__}."
                 raise TypeError(_msg)
 
             # Create symbol mapping
@@ -317,8 +330,8 @@ class Sensitivity(Foundation):
         Returns:
             Dict[str, float]: Sensitivity results for each variable.
         """
-        # # parse the coefficient expression
-        # self._parse_expression(self._pi_expr)
+        # Validate analysis readiness
+        self._validate_analysis_ready()
 
         # save variable values for the analysis
         self.var_values = vals
@@ -329,9 +342,6 @@ class Sensitivity(Foundation):
         if missing_vars:
             _msg = f"Missing values for variables: {missing_vars}"
             raise ValueError(_msg)
-
-        # Validate analysis readiness
-        self._validate_analysis_ready()
 
         # trying symbolic coefficient sensitivity analysis
         try:
@@ -353,8 +363,8 @@ class Sensitivity(Foundation):
                     results[py_to_latex[var]] = res
 
             self._exe_func = functions
-            self.results = results
-            return self.results
+            self._results = results
+            return self._results
 
         except Exception as e:
             coef = f"{self._sym} = ({self._pi_expr})"
@@ -364,20 +374,17 @@ class Sensitivity(Foundation):
     def analyze_numerically(self,
                             vals: List[str],
                             bounds: List[List[float]],
-                            n_samples: int = -1) -> Dict[str, Any]:
+                            iters: int = -1) -> Dict[str, Any]:
         """*analyze_numerically()* Perform numerical sensitivity analysis.
 
         Args:
             vals (List[str]): List of variable names to analyze.
             bounds (List[List[float]]): Bounds for each variable [min, max].
-            n_samples (int, optional): Number of samples to use. Defaults to -1.
+            iters (int, optional): Number of iterations to use. Defaults to -1.
 
         Returns:
             Dict[str, Any]: Detailed sensitivity analysis results.
         """
-        # # parse the coefficient expression
-        # self._parse_expression(self._pi_expr)
-
         # Validate analysis readiness
         self._validate_analysis_ready()
 
@@ -390,7 +397,7 @@ class Sensitivity(Foundation):
                 raise ValueError(_msg)
 
             # Set number of samples
-            self.n_samples = n_samples
+            self.experiments = iters
             # Store bounds
             self.var_bounds = bounds
 
@@ -405,9 +412,9 @@ class Sensitivity(Foundation):
                 }
 
                 # Generate samples (domain)
-                self.var_domains = sample(problem, n_samples)
+                self._var_domains = sample(problem, self._experiments)
                 _len = len(self._var_names)
-                self.var_domains = self.var_domains.reshape(-1, _len)
+                self._var_domains = self._var_domains.reshape(-1, _len)
 
                 # Create lambdify function using Python symbols
                 aliases = [self._aliases[v] for v in self._var_names]
@@ -426,8 +433,8 @@ class Sensitivity(Foundation):
                 # Local variable guaranteed to be Callable
                 Y = np.apply_along_axis(lambda v: exe_func(*v),
                                         1,
-                                        self.var_domains)
-                self.var_ranges = Y.reshape(-1, 1)
+                                        self._var_domains)
+                self._var_ranges = Y.reshape(-1, 1)
 
                 # Perform FAST (Fourier Amplitude Sensitivity Test) analysis
                 results = analyze(problem, Y)
@@ -437,8 +444,8 @@ class Sensitivity(Foundation):
                     py_to_latex = self._py_to_latex
                     results["names"] = [py_to_latex.get(v, v) for v in results["names"]]
 
-            self.results = results
-            return self.results
+            self._results = results
+            return self._results
 
         except Exception as e:
             coef = f"{self._sym} = ({self._pi_expr})"
@@ -481,6 +488,7 @@ class Sensitivity(Foundation):
 
     @pi_expr.setter
     @validate_type(str)
+    @validate_emptiness()
     @validate_pattern(LATEX_RE, allow_alnum=True)
     def pi_expr(self, val: str) -> None:
         """*pi_expr* Set the expression to analyze.
@@ -508,7 +516,7 @@ class Sensitivity(Foundation):
 
     @sym_func.setter
     @validate_type(sp.Expr, allow_none=False)
-    @validate_custom(lambda self, val: self._validate_sympy_expr(val, "sym_func"))
+    @validate_custom(lambda self, val: self._validate_sym_expr(val))
     def sym_func(self, val: sp.Expr) -> None:
         """*sym_func* Set the symbolic expression.
 
@@ -530,7 +538,7 @@ class Sensitivity(Foundation):
         return self._exe_func
 
     @exe_func.setter
-    # @validate_type(dict, allow_none=False)
+    @validate_custom(lambda self, val: self._validate_exec_func(val))
     def exe_func(self, val: Union[Callable, Dict[str, Callable]]) -> None:
         """*exe_func* Set the executable function(s).
 
@@ -539,20 +547,9 @@ class Sensitivity(Foundation):
                 dictionary of functions.
 
         Raises:
-            TypeError: If value is not a callable or dict of callables.
+            ValueError: If value is not a callable or dict of callables.
         """
-        # Validate the input
-        if callable(val):
-            self._exe_func = val
-        elif isinstance(val, dict):
-            # Validate all dict values are callable
-            if not all(callable(v) for v in val.values()):
-                raise TypeError("All dictionary values must be callable")
-            self._exe_func = val
-        else:
-            _msg = "'exe_func' must be Callable or Dict[str, Callable], "
-            _msg += f"got {type(val).__name__}"
-            raise TypeError(_msg)
+        self._exe_func = val
 
     @property
     def variables(self) -> Dict[str, Variable]:
@@ -565,6 +562,7 @@ class Sensitivity(Foundation):
 
     @variables.setter
     @validate_type(dict, allow_none=False)
+    @validate_emptiness()
     @validate_dict_types(str, Variable)
     def variables(self, val: Dict[str, Variable]) -> None:
         """*variables* Set the variable symbols dictionary.
@@ -627,6 +625,146 @@ class Sensitivity(Foundation):
         """
         return self._var_names.copy()
 
+    @property
+    def coefficient(self) -> Optional[Coefficient]:
+        """*coefficient* Get the dimensionless coefficient specification.
+
+        Returns:
+            Optional[Coefficient]: Coefficient specification.
+        """
+        return self._coefficient
+
+    @coefficient.setter
+    @validate_type(Coefficient, allow_none=True)
+    def coefficient(self, val: Optional[Coefficient]) -> None:
+        """*coefficient* Set the dimensionless coefficient specification.
+
+        Args:
+            val (Optional[Coefficient]): Coefficient specification.
+
+        Raises:
+            ValueError: If value is not a Coefficient instance.
+        """
+        self._coefficient = val
+
+    @property
+    def latex_to_py(self) -> Dict[str, str]:
+        """*latex_to_py* Get the mapping from LaTeX symbols to Python compatible names.
+
+        Returns:
+            Dict[str, str]: LaTeX to Python symbol mapping.
+        """
+        return self._latex_to_py.copy()
+
+    @property
+    def py_to_latex(self) -> Dict[str, str]:
+        """*py_to_latex* Get the mapping from Python compatible names to LaTeX symbols.
+
+        Returns:
+            Dict[str, str]: Python to LaTeX symbol mapping.
+        """
+        return self._py_to_latex.copy()
+
+    @property
+    def var_bounds(self) -> List[List[float]]:
+        """*var_bounds* Get the min/max bounds for each variable.
+
+        Returns:
+            List[List[float]]: Bounds for each variable.
+        """
+        return self._var_bounds.copy()
+
+    @var_bounds.setter
+    @validate_type(list, allow_none=False)
+    @validate_emptiness()
+    def var_bounds(self, val: List[List[float]]) -> None:
+        """*var_bounds* Set the min/max bounds for each variable.
+
+        Args:
+            val (List[List[float]]): Bounds for each variable [min, max].
+
+        Raises:
+            ValueError: If bounds list is invalid or empty.
+        """
+        self._var_bounds = val
+
+    @property
+    def var_values(self) -> Dict[str, float]:
+        """*var_values* Get the values for symbolic analysis.
+
+        Returns:
+            Dict[str, float]: Variable values for symbolic analysis.
+        """
+        return self._var_values.copy()
+
+    @var_values.setter
+    @validate_type(dict, allow_none=False)
+    @validate_emptiness()
+    def var_values(self, val: Dict[str, float]) -> None:
+        """*var_values* Set the values for symbolic analysis.
+
+        Args:
+            val (Dict[str, float]): Variable values for symbolic analysis.
+
+        Raises:
+            ValueError: If values dictionary is invalid or empty.
+        """
+        self._var_values = val
+
+    @property
+    def var_domains(self) -> Optional[np.ndarray]:
+        """*var_domains* Get the sample domain for numerical analysis.
+
+        Returns:
+            Optional[np.ndarray]: Sample domain (inputs) or None if not computed.
+        """
+        if self._var_domains is None:
+            return None
+        return self._var_domains.copy()
+
+    @property
+    def var_ranges(self) -> Optional[np.ndarray]:
+        """*var_ranges* Get the sample value range for numerical analysis.
+
+        Returns:
+            Optional[np.ndarray]: Sample value range (results) or None if not computed.
+        """
+        if self._var_ranges is None:
+            return None
+        return self._var_ranges.copy()
+
+    @property
+    def results(self) -> Dict[str, Any]:
+        """*results* Get the analysis results.
+
+        Returns:
+            Dict[str, Any]: Analysis results dictionary.
+        """
+        return self._results.copy()
+
+    @property
+    def experiments(self) -> int:
+        """*experiments* Get the number of experiments for analysis.
+
+        Returns:
+            int: Number of experiments.
+        """
+        return self._experiments
+
+    @experiments.setter
+    @validate_type(int, allow_none=False)
+    @validate_index(allow_zero=False)
+    def experiments(self, val: int) -> None:
+        """*experiments* Set the number of experiments for analysis.
+
+        Args:
+            val (int): Number of experiments (must be >= 1).
+
+        Raises:
+            ValueError: If experiments value is invalid or less than 1.
+        """
+        self._experiments = val
+
     def clear(self) -> None:
         """*clear()* Reset all attributes to default values.
 
@@ -649,12 +787,12 @@ class Sensitivity(Foundation):
         self._aliases = {}
         self._latex_to_py = {}
         self._py_to_latex = {}
-        self.var_bounds = []
-        self.var_values = {}
-        self.var_domains = None
-        self.var_ranges = None
-        self.n_samples = -1
-        self.results = {}
+        self._var_bounds = []
+        self._var_values = {}
+        self._var_domains = None
+        self._var_ranges = None
+        self._experiments = -1
+        self._results = {}
 
     def to_dict(self) -> Dict[str, Any]:
         """*to_dict()* Convert sensitivity analysis to dictionary representation.

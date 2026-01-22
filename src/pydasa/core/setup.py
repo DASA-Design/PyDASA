@@ -180,6 +180,24 @@ class AnaliticMode(str, Enum):
         return descriptions[self]
 
 
+class SimulationMode(str, Enum):
+    """**SimulationMode** Enum for simulation modes in *PyDASA*.
+
+    Attributes:
+        DIST: Generate samples using distribution functions (Monte Carlo).
+        DATA: Use pre-existing data from Variable._data attributes.
+    """
+    DIST = "DIST"
+    DATA = "DATA"
+
+    @property
+    def description(self) -> str:
+        descriptions = {
+            SimulationMode.DIST: "Generate samples using distribution functions (Monte Carlo).",
+            SimulationMode.DATA: "Use pre-existing data from Variable._data attributes.",
+        }
+        return descriptions[self]
+
 # =============================================================================
 # Immutable Configuration Singleton
 # =============================================================================
@@ -259,6 +277,15 @@ class PyDASAConfig:
             tuple[AnaliticMode, ...]: Tuple of supported AnaliticMode.
         """
         return tuple(AnaliticMode)
+
+    @property
+    def simulation_modes(self) -> tuple[SimulationMode, ...]:
+        """*simulation_modes* Get supported simulation modes.
+
+        Returns:
+            tuple[SimulationMode, ...]: Tuple of supported SimulationMode.
+        """
+        return tuple(SimulationMode)
 
 
 # Get singleton instance for configuration

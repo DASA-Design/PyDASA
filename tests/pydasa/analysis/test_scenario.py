@@ -483,7 +483,7 @@ class TestSensitivity(unittest.TestCase):
         vals = ["U", "d"]
         bounds = [[1.0, 10.0], [0.5, 5.0]]
 
-        results = sens.analyze_numerically(vals, bounds, n_samples=100)
+        results = sens.analyze_numerically(vals, bounds, iters=100)
 
         assert results is not None
         assert isinstance(results, dict)
@@ -507,7 +507,7 @@ class TestSensitivity(unittest.TestCase):
         # Create bounds
         bounds = [[0.1, 10.0] for _ in var_names]
 
-        results = sens.analyze_numerically(var_names, bounds, n_samples=100)
+        results = sens.analyze_numerically(var_names, bounds, iters=100)
 
         assert results is not None
         assert isinstance(results, dict)
@@ -520,21 +520,21 @@ class TestSensitivity(unittest.TestCase):
         bounds = [[1.0, 10.0]]  # Only one bound, need two
 
         with pytest.raises(ValueError) as excinfo:
-            sens.analyze_numerically(vals, bounds, n_samples=100)
+            sens.analyze_numerically(vals, bounds, iters=100)
 
         assert "bounds" in str(excinfo.value).lower()
 
-    def test_analyze_numerically_samples_property(self) -> None:
-        """*test_analyze_numerically_samples_property()* tests n_samples is stored."""
+    def test_analyze_numerically_experiments_property(self) -> None:
+        """*test_analyze_numerically_experiments_property()* tests experiments is stored."""
         sens = Sensitivity(_pi_expr="U/d", _fwk="CUSTOM")
 
         vals = ["U", "d"]
         bounds = [[1.0, 10.0], [0.5, 5.0]]
-        n_samples = 75
+        experiments = 75
 
-        sens.analyze_numerically(vals, bounds, n_samples=n_samples)
+        sens.analyze_numerically(vals, bounds, iters=experiments)
 
-        assert sens.n_samples == n_samples
+        assert sens.experiments == experiments
 
     def test_analyze_numerically_domain_and_range(self) -> None:
         """*test_analyze_numerically_domain_and_range()* tests domain and range are generated."""
@@ -543,7 +543,7 @@ class TestSensitivity(unittest.TestCase):
         vals = ["U", "d"]
         bounds = [[1.0, 10.0], [0.5, 5.0]]
 
-        sens.analyze_numerically(vals, bounds, n_samples=100)
+        sens.analyze_numerically(vals, bounds, iters=100)
 
         assert sens.var_domains is not None
         assert sens.var_ranges is not None
@@ -581,7 +581,7 @@ class TestSensitivity(unittest.TestCase):
 
         vals = ["U", "d"]
         bounds = [[1.0, 10.0], [0.5, 5.0]]
-        sens.analyze_numerically(vals, bounds, n_samples=100)
+        sens.analyze_numerically(vals, bounds, iters=100)
 
         assert sens.results is not None
         assert isinstance(sens.results, dict)
@@ -644,7 +644,7 @@ class TestSensitivity(unittest.TestCase):
             "name": "Test Sensitivity",
             "description": "Test description",
             "pi_expr": "U",
-            "n_samples": 100
+            "experiments": 100
         }
 
         sens = Sensitivity.from_dict(data)
@@ -748,14 +748,14 @@ class TestSensitivity(unittest.TestCase):
         sens = Sensitivity(_fwk="CUSTOM")
 
         # Should fail with non-callable, non-dict types
-        with pytest.raises(TypeError):
+        with pytest.raises(ValueError):
             sens.exe_func = "not_a_callable"    # type: ignore
 
-        with pytest.raises(TypeError):
+        with pytest.raises(ValueError):
             sens.exe_func = 123    # type: ignore
 
         # Should fail with dict containing non-callables
-        with pytest.raises(TypeError):
+        with pytest.raises(ValueError):
             sens.exe_func = {"key": "not_callable"}    # type: ignore
 
     def test_var_names_property(self) -> None:
@@ -825,7 +825,7 @@ class TestSensitivity(unittest.TestCase):
     # ========================================================================
 
     def test_validate_sympy_expr_valid(self) -> None:
-        """*test_validate_sympy_expr_valid()* tests _validate_sympy_expr with valid expression."""
+        """*test_validate_sympy_expr_valid()* tests _validate_sym_expr with valid expression."""
         sens = Sensitivity(_fwk="CUSTOM")
 
         # Create a valid SymPy expression
@@ -834,25 +834,25 @@ class TestSensitivity(unittest.TestCase):
 
         # Should not raise any exception
         try:
-            sens._validate_sympy_expr(expr, "test_field")
+            sens._validate_sym_expr(expr)
         except ValueError:
-            pytest.fail("_validate_sympy_expr raised ValueError unexpectedly")
+            pytest.fail("_validate_sym_expr raised ValueError unexpectedly")
 
     def test_validate_sympy_expr_invalid(self) -> None:
-        """*test_validate_sympy_expr_invalid()* tests _validate_sympy_expr with invalid values."""
+        """*test_validate_sympy_expr_invalid()* tests _validate_sym_expr with invalid values."""
         sens = Sensitivity(_fwk="CUSTOM")
 
         # Should raise ValueError for non-SymPy expressions
         with pytest.raises(ValueError) as excinfo:
-            sens._validate_sympy_expr("not_an_expr", "test_field")
+            sens._validate_sym_expr("not_an_expr")
 
-        assert "must be a SymPy expression" in str(excinfo.value)
-
-        with pytest.raises(ValueError):
-            sens._validate_sympy_expr(123, "test_field")
+        assert "SymPy expression" in str(excinfo.value)
 
         with pytest.raises(ValueError):
-            sens._validate_sympy_expr(None, "test_field")
+            sens._validate_sym_expr(123)
+
+        with pytest.raises(ValueError):
+            sens._validate_sym_expr([1, 2, 3])
 
     def test_validate_analysis_ready_success(self) -> None:
         """*test_validate_analysis_ready_success()* tests _validate_analysis_ready when ready."""

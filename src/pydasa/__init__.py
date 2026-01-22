@@ -45,7 +45,7 @@ from .structs.tables.scht import Bucket, SCHashTable
 # exposing workflow modules
 from .workflows.influence import SensitivityAnalysis
 from .workflows.practical import MonteCarloSimulation
-# from .workflows.phenomena import AnalysisEngine
+from .workflows.phenomena import AnalysisEngine
 
 # asserting all imports
 # asserting analytics modules
@@ -80,7 +80,7 @@ assert SCHashTable
 # asserting workflow modules
 assert SensitivityAnalysis
 assert MonteCarloSimulation
-# assert AnalysisEngine
+assert AnalysisEngine
 
 # Define __all__ for wildcard imports
 __all__ = [
@@ -99,5 +99,5 @@ __all__ = [
     "save",
     "SensitivityAnalysis",
     "MonteCarloSimulation",
-    # "AnalysisEngine",
+    "AnalysisEngine",
 ]

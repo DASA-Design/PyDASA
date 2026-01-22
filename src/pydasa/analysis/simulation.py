@@ -31,12 +31,13 @@ import sympy as sp
 # Import validation base classes
 from pydasa.core.basic import Foundation
 from pydasa.core.setup import Frameworks   # , PYDASA_CFG
-from pydasa.core.setup import AnaliticMode
+from pydasa.core.setup import SimulationMode
+from pydasa.core.setup import PYDASA_CFG
 
 # Import validation decorators
 from pydasa.validations.decorators import validate_type
 from pydasa.validations.decorators import validate_range
-# from pydasa.validations.decorators import validate_choices
+from pydasa.validations.decorators import validate_choices
 from pydasa.validations.decorators import validate_emptiness
 # from pydasa.validations.decorators import validate_list_types
 from pydasa.validations.decorators import validate_dict_types
@@ -99,7 +100,7 @@ class MonteCarlo(Foundation, BoundsSpecs):
         _simul_cache (Dict[str, NDArray[np.float64]]): Working sampled values cache.
 
         # Results and Input data
-        _data (Optional[np.ndarray]): Variable simulated data inputs.
+        _data (Dict[str, NDArray[np.float64]]): Input data dictionary mapping variable names to arrays.
         _results (Optional[np.ndarray]): Raw simulation results.
 
         # Statistics (inherited from BoundsSpecs: _mean, _median, _dev, _min, _max)
@@ -141,8 +142,8 @@ class MonteCarlo(Foundation, BoundsSpecs):
     """Frameworks context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM)."""
 
     # :attr: _cat
-    _cat: str = AnaliticMode.NUM.value
-    """Category of analysis (SYM, NUM)."""
+    _cat: str = SimulationMode.DIST.value
+    """Category of analysis (DIST, DATA)."""
 
     # ========================================================================
     # Coefficient and Expression Management
@@ -209,7 +210,8 @@ class MonteCarlo(Foundation, BoundsSpecs):
     """
 
     # :attr: _dependencies
-    _dependencies: Dict[str, List[str]] = field(default_factory=dict, init=False)
+    _dependencies: Dict[str, List[str]] = field(default_factory=dict,
+                                                init=False)
     """Variable dependencies for simulations."""
 
     # :attr: _simul_cache
@@ -221,9 +223,8 @@ class MonteCarlo(Foundation, BoundsSpecs):
     # ========================================================================
 
     # :attr: _data
-    _data: NDArray[np.float64] = field(
-        default_factory=lambda: np.array([], dtype=np.float64))
-    """Input data matrix for simulation experiments (experiments × variables)."""
+    _data: Dict[str, NDArray[np.float64]] = field(default_factory=dict)
+    """Input data dictionary mapping variable names to their value arrays."""
 
     # :attr: _results
     _results: NDArray[np.float64] = field(
@@ -318,10 +319,11 @@ class MonteCarlo(Foundation, BoundsSpecs):
         n_sym = len(self._symbols)
         if n_sym > 0 and self._experiments > 0:
             # Only allocate if we have variables and valid experiment count
-            if self._data.size == 0:  # Check size, not None
-                self._data = np.full((self._experiments, n_sym),
-                                     np.nan,
-                                     dtype=np.float64)
+            if not self._data:  # Check if dict is empty
+                for var_name in self._variables.keys():
+                    self._data[var_name] = np.full(self._experiments,
+                                                   np.nan,
+                                                   dtype=np.float64)
             if self._results.size == 0:  # Check size, not None
                 self._results = np.full((self._experiments, 1),
                                         np.nan,
@@ -347,18 +349,20 @@ class MonteCarlo(Foundation, BoundsSpecs):
         """*_validate_readiness()* Checks if the simulation can be performed.
 
         Raises:
-            ValueError: If the simulation is not ready due to missing variables, executable function, distributions, or invalid number of iterations.
+            ValueError: If the simulation is not ready due to missing variables, executable function, or invalid number of iterations.
         """
         if not self._variables:
-            raise ValueError("No variables found in the expression.")
+            _msg = "No variables found in the expression."
+            raise ValueError(_msg)
+        if self._cat == SimulationMode.DIST.value and not self._distributions:
+            _msg = "Distributions must be provided in 'DIST' simulation mode."
+            raise ValueError(_msg)
+        if self._cat == SimulationMode.DATA.value and not self._data:
+            _msg = "Input data must be provided in 'DATA' simulation mode."
+            raise ValueError(_msg)
         if not self._sym_func:
-            raise ValueError("No expression has been defined for analysis.")
-        if not self._distributions:
-            _vars = self._variables
-            missing = [v for v in _vars if v not in self._distributions]
-            if missing:
-                _msg = f"Missing distributions for variables: {missing}"
-                raise ValueError(_msg)
+            _msg = "No Sympy function is not defined for the simulation."
+            raise ValueError(_msg)
         if self._experiments < 1:
             _msg = f"Invalid number of iterations: {self._experiments}"
             raise ValueError(_msg)
@@ -391,10 +395,89 @@ class MonteCarlo(Foundation, BoundsSpecs):
         if not self.description:
             self.description = f"Monte Carlo simulation for {coef.name}"
 
-    def collect_variable_data(self) -> None:
-        """*collect_simulation_data()* collect the data from the Variables to execute the simulation with those values.
+    def _collect_dataset(self,
+                         vars: Dict[str, Variable]) -> Dict[str, NDArray[np.float64]]:
+        """*_collect_dataset()* Consolidate dataset from all variables for 'DATA' simulation mode.
+
+        Args:
+            vars (Dict[str, Variable]): Dictionary of variables to collect data from.
+
+        Returns:
+            Dict[str, NDArray[np.float64]]: Dictionary mapping variable symbols to their data arrays.
+
+        Raises:
+            ValueError: If variables have no data.
+            ValueError: If variables have inconsistent lengths.
         """
-        pass
+        # Initialize dataset dictionary and working variables
+        _dataset = {}
+        _exp_len = None
+
+        for sym, var in vars.items():
+            # Check if variable has data
+            if var.data is None or len(var.data) == 0:
+                _msg = f"Variable '{var.sym}' has no data. "
+                raise ValueError(_msg)
+            # Check length consistency
+            _cur_len = len(var.data)
+            if _exp_len is None:
+                _exp_len = _cur_len
+            elif _cur_len != _exp_len:
+                _msg = f"Variable '{var.sym}' has {_cur_len} data points, "
+                _msg += f"but expected {_exp_len}."
+                # All variables must have the same length."
+                raise ValueError(_msg)
+            _dataset[sym] = np.array(var.data, dtype=np.float64)
+        # return the consolidated dataset
+        return _dataset
+
+    def _generate_dataset(self,
+                          vars: Dict[str, Variable]) -> Dict[str, NDArray[np.float64]]:
+        """*_generate_dataset()* Generate dataset by sampling from variable distributions for 'DIST' mode.
+
+        Args:
+            vars (Dict[str, Variable]): Dictionary of variables to generate samples for.
+
+        Returns:
+            Dict[str, NDArray[np.float64]]: Dictionary mapping variable symbols to sampled arrays.
+
+        Raises:
+            ValueError: If sampling fails or encounters errors.
+        """
+        # Initialize dataset dictionary
+        _dataset = {}
+        for var_name in vars.keys():
+            _dataset[var_name] = np.full(self._experiments,
+                                         np.nan,
+                                         dtype=np.float64)
+
+        # Run sampling loop for all experiments
+        for i in range(self._experiments):
+            try:
+                # Dict to store sample memory for the iteration
+                memory: Dict[str, float] = {}
+
+                # Generate samples for all variables
+                for var in vars.values():
+                    # Check for cached value
+                    cached_val = self._get_cached_value(var.sym, i)
+
+                    # If no cached value, generate new sample
+                    if cached_val is None or np.isnan(cached_val):
+                        val = self._generate_sample(var, memory)
+                        memory[var.sym] = val
+                        self._set_cached_value(var.sym, i, val)
+                    else:
+                        memory[var.sym] = cached_val
+
+                    # Store sampled value in dataset
+                    _dataset[var.sym][i] = memory[var.sym]
+
+            except Exception as e:
+                _msg = f"Error generating sample at iteration {i}: {str(e)}"
+                raise ValueError(_msg)
+
+        return _dataset
 
     def _parse_expression(self, expr: str) -> None:
         """*_parse_expression()* Parse the LaTeX expression into a sympy function.
@@ -446,7 +529,9 @@ class MonteCarlo(Foundation, BoundsSpecs):
                     self._sym_func = self._sym_func.subs(latex_symbol, py_sym)
 
             # Get Python variable names as strings
-            if self._sym_func is not None and hasattr(self._sym_func, 'free_symbols'):
+            con1 = self._sym_func is not None
+            con2 = hasattr(self._sym_func, "free_symbols")
+            if con1 and con2:
                 free_symbols = self._sym_func.free_symbols
                 self._var_symbols = sorted([str(s) for s in free_symbols])
             else:
@@ -523,25 +608,112 @@ class MonteCarlo(Foundation, BoundsSpecs):
         # return sampled data
         return data
 
-    def run(self, iters: Optional[int] = None) -> None:
+    # def run_OLD(self, iters: Optional[int] = None) -> None:
+    #     """*run()* Execute the Monte Carlo simulation.
+
+    #     Args:
+    #         iters (int, optional): Number of iterations to run. If None, uses _experiments.
+
+    #     Raises:
+    #         ValueError: If simulation is not ready or encounters errors during execution.
+    #     """
+    #     # Validate simulation readiness
+    #     self._validate_readiness()
+
+    #     # Set iterations if necessary
+    #     if iters is not None:
+    #         self._experiments = iters
+
+    #     # Clear previous results, inputs, and intermediate values
+    #     self._reset_memory()
+
+    #     # Create lambdify function using Python symbols
+    #     aliases = [self._aliases[v] for v in self._var_symbols]
+    #     self._exe_func = lambdify(aliases, self._sym_func, "numpy")
+
+    #     if self._exe_func is None:
+    #         raise ValueError("Failed to create executable function")
+
+    #     # Run experiment loop
+    #     for _iter in range(self._experiments):
+    #         try:
+    #             # Dict to store sample memory for the iteration
+    #             memory: Dict[str, float] = {}
+
+    #             # run through all variables
+    #             for var in self._variables.values():
+    #                 # Check for cached value
+    #                 cached_val = self._get_cached_value(var.sym, _iter)
+
+    #                 # if no cached value, generate new sample
+    #                 if cached_val is None or np.isnan(cached_val):
+    #                     # Generate sample for the variable
+    #                     val = self._generate_sample(var, memory)
+    #                     # Store the sample in the iteration values
+    #                     memory[var.sym] = val
+    #                     self._set_cached_value(var.sym, _iter, val)
+
+    #                 # otherwise use cached value
+    #                 else:
+    #                     # Use cached value
+    #                     memory[var.sym] = cached_val
+
+    #             # Prepare sorted/ordered values from memory for evaluation
+    #             sorted_vals = [memory[var] for var in self._latex_to_py]
+
+    #             # FIXME hotfix for queue functions
+    #             _type = (list, tuple, np.ndarray)
+    #             # Handle adjusted values
+    #             if any(isinstance(v, _type) for v in sorted_vals):
+    #                 sorted_vals = [
+    #                     v[-1] if isinstance(v, _type) else v for v in sorted_vals]
+
+    #             # Evaluate the coefficient
+    #             result = float(self._exe_func(*sorted_vals))
+
+    #             # Handle array results
+    #             if isinstance(result, _type):
+    #                 result = result[-1]
+    #                 sorted_vals = [v[-1] for v in result]
+
+    #             # Save simulation inputs and results
+    #             self._data[_iter, :] = sorted_vals
+    #             self._results[_iter] = result
+
+    #         except Exception as e:
+    #             _msg = f"Error during simulation run {_iter}: {str(e)}"
+    #             raise ValueError(_msg)
+
+    #     # Calculate statistics
+    #     self._calculate_statistics()
+
+    def run(self,
+            iters: Optional[int] = None,
+            mode: Union[str, SimulationMode] = SimulationMode.DIST) -> None:
         """*run()* Execute the Monte Carlo simulation.
 
         Args:
             iters (int, optional): Number of iterations to run. If None, uses _experiments.
+            mode (str | SimulationMode, optional): Simulation mode. Either 'DIST' to sample from distributions, or 'DATA' to use pre-existing Variable._data. Defaults to 'DIST'.
 
         Raises:
             ValueError: If simulation is not ready or encounters errors during execution.
         """
+        # STEP 1: check simulation configuration
+        # Set mode using validated property
+        self.cat = mode
+
+        # Set iterations using validated property
+        if iters is not None:
+            self.experiments = iters
+
         # Validate simulation readiness
         self._validate_readiness()
 
-        # Set iterations if necessary
-        if iters is not None:
-            self._experiments = iters
-
-        # Clear previous results, inputs, and intermediate values
+        # Clear previous results, inputs, and intermediate values, etc.
         self._reset_memory()
 
+        # STEP 2: prepare executale functions for simulation
         # Create lambdify function using Python symbols
         aliases = [self._aliases[v] for v in self._var_symbols]
         self._exe_func = lambdify(aliases, self._sym_func, "numpy")
@@ -549,39 +721,35 @@ class MonteCarlo(Foundation, BoundsSpecs):
         if self._exe_func is None:
             raise ValueError("Failed to create executable function")
 
-        # Run experiment loop
-        for _iter in range(self._experiments):
+        # STEP 3: setup the input dataset according to mode, 'DATA or 'DIST'
+        # Filter variables to only those in the coefficient expression
+        vars_in_expr = {}
+        for k, v in self._variables.items():
+            if k in self._var_symbols or v._alias in self._var_symbols:
+                vars_in_expr[k] = v
+
+        if self._cat == SimulationMode.DATA.value:
+            # Collect dataset from variables in expression
+            self._data = self._collect_dataset(vars_in_expr)
+        elif self._cat == SimulationMode.DIST.value:
+            # Generate dataset by sampling from distributions
+            self._data = self._generate_dataset(vars_in_expr)
+
+        # STEP 4: evaluate coefficient for all experiments
+        for i in range(self._experiments):
             try:
-                # Dict to store sample memory for the iteration
-                memory: Dict[str, float] = {}
+                # Get values for this iteration from _data dict
+                iter_vals = {
+                    _sym: self._data[_sym][i] for _sym in self._data.keys()
+                }
 
-                # run through all variables
-                for var in self._variables.values():
-                    # Check for cached value
-                    cached_val = self._get_cached_value(var.sym, _iter)
+                # Prepare sorted/ordered values for evaluation
+                sorted_vals = [iter_vals[var] for var in self._latex_to_py]
 
-                    # if no cached value, generate new sample
-                    if cached_val is None or np.isnan(cached_val):
-                        # Generate sample for the variable
-                        val = self._generate_sample(var, memory)
-                        # Store the sample in the iteration values
-                        memory[var.sym] = val
-                        self._set_cached_value(var.sym, _iter, val)
-
-                    # otherwise use cached value
-                    else:
-                        # Use cached value
-                        memory[var.sym] = cached_val
-
-                # Prepare sorted/ordered values from memory for evaluation
-                sorted_vals = [memory[var] for var in self._latex_to_py]
-
-                # FIXME hotfix for queue functions
+                # FIXME: hotfix for queue functions
                 _type = (list, tuple, np.ndarray)
-                # Handle adjusted values
                 if any(isinstance(v, _type) for v in sorted_vals):
-                    sorted_vals = [
-                        v[-1] if isinstance(v, _type) else v for v in sorted_vals]
+                    sorted_vals = [v[-1] if isinstance(v, _type) else v for v in sorted_vals]
 
                 # Evaluate the coefficient
                 result = float(self._exe_func(*sorted_vals))
@@ -589,18 +757,19 @@ class MonteCarlo(Foundation, BoundsSpecs):
                 # Handle array results
                 if isinstance(result, _type):
                     result = result[-1]
-                    sorted_vals = [v[-1] for v in result]
 
-                # Save simulation inputs and results
-                self._data[_iter, :] = sorted_vals
-                self._results[_iter] = result
+                # Store result
+                self._results[i] = result
 
             except Exception as e:
-                _msg = f"Error during simulation run {_iter}: {str(e)}"
+                _msg = f"Error calculating coefficient at iteration {i}: {str(e)}"
                 raise ValueError(_msg)
 
         # Calculate statistics
         self._calculate_statistics()
+
+        # Update experiment count
+        self.count = self._experiments
 
     # ========================================================================
     # Memory and Statistics Management
@@ -608,14 +777,19 @@ class MonteCarlo(Foundation, BoundsSpecs):
 
     def _reset_memory(self) -> None:
         """*_reset_memory()* Reset results and inputs arrays."""
-        # reseting full array space with NaN
-        n_sym = len(self._symbols)
-        self._data = np.full((self._experiments, n_sym), np.nan)
-        self._results = np.full((self._experiments, 1), np.nan)
+        # Reset data dictionary with NaN arrays
+        self._data = {}
+        for sym in self._variables.keys():
+            self._data[sym] = np.full(self._experiments,
+                                      np.nan,
+                                      dtype=np.float64)
+        self._results = np.full(self._experiments,
+                                np.nan,
+                                dtype=np.float64)
 
         # # reset intermediate values
         # for var in self._variables.keys():
-        #     self._simul_cache[var] = np.full((self._experiments, 1),
+        #     self._simul_cache[var] = np.full(self._experiments,
         #                                      np.nan,
         #                                      dtype=np.float64)
 
@@ -785,14 +959,11 @@ class MonteCarlo(Foundation, BoundsSpecs):
         """
         export: Dict[str, NDArray[np.float64]] = {}
 
-        # Extract all values for each variable (column)
-        for i, var in enumerate(self._py_to_latex.values()):
-            # Get the entire column for this variable (all simulation runs)
-            column = self._data[:, i]
-
+        # Extract data for each variable from the dictionary
+        for var_name, var_data in self._data.items():
             # Use a meaningful key that includes variable name and coefficient
-            key = f"{var}@{self._coefficient.sym}"
-            export[key] = column
+            key = f"{var_name}@{self._coefficient.sym}"
+            export[key] = var_data.copy()
 
         # Add the coefficient results
         export[self._coefficient.sym] = self._results.flatten()
@@ -835,34 +1006,37 @@ class MonteCarlo(Foundation, BoundsSpecs):
         return self._results.copy()
 
     @property
-    def data(self) -> NDArray[np.float64]:
-        """*data* Input data matrix for simulation experiments.
+    def data(self) -> Dict[str, NDArray[np.float64]]:
+        """*data* Get the input data dictionary.
 
         Returns:
-            NDArray[np.float64]: Copy of the input data matrix (experiments × variables).
+            Dict[str, NDArray[np.float64]]: Copy of input data mapping variable names to arrays.
 
         Raises:
             ValueError: If no data is available.
         """
-        if self._data.size == 0:
+        if not self._data:
             raise ValueError("No input data available. Run the simulation first.")
-        return self._data.copy()
+        return {k: v.copy() for k, v in self._data.items()}
 
     @data.setter
-    @validate_type(list, np.ndarray, allow_none=False)
-    def data(self, val: Union[List, NDArray[np.float64]]) -> None:
-        """*data* Set the input data matrix.
+    @validate_type(dict, allow_none=False)
+    def data(self, val: Dict[str, Union[List, NDArray[np.float64]]]) -> None:
+        """*data* Set the input data dictionary.
 
         Args:
-            val (Union[List, NDArray[np.float64]]): Input data matrix.
+            val (Dict[str, Union[List, NDArray[np.float64]]]): Input data mapping variable names to arrays.
 
         Raises:
-            ValueError: If value is not a numpy array or list.
+            ValueError: If value is not a dictionary.
         """
-        # Always store as numpy array
-        if isinstance(val, list):
-            val = np.array(val, dtype=np.float64)
-        self._data = val
+        # Convert all values to numpy arrays if they're lists
+        self._data = {}
+        for k, v in val.items():
+            if isinstance(v, list):
+                self._data[k] = np.array(v, dtype=np.float64)
+            else:
+                self._data[k] = v
 
     @property
     def statistics(self) -> Dict[str, Union[float, int, None]]:
@@ -958,6 +1132,29 @@ class MonteCarlo(Foundation, BoundsSpecs):
         """
         self._dependencies = val
 
+    @property
+    def cat(self) -> str:
+        """*mode* Get simulation execution category.
+
+        Returns:
+            str: Current simulation category (DIST or DATA).
+        """
+        return self._cat
+
+    @cat.setter
+    @validate_type(str, allow_none=False)
+    @validate_choices(PYDASA_CFG.simulation_modes, case_sensitive=False)
+    def cat(self, val: str) -> None:
+        """*cat* Set the analysis category.
+
+        Args:
+            val (str): Category value.
+
+        Raises:
+            ValueError: If category is invalid.
+        """
+        self._cat = val.upper()
+
     # Individual statistics properties
     # Note: mean, median, dev, min, and max are inherited from BoundsSpecs
 
@@ -1029,7 +1226,7 @@ class MonteCarlo(Foundation, BoundsSpecs):
         BoundsSpecs.clear(self)
 
         # Reset MonteCarlo-specific attributes
-        self._cat = AnaliticMode.NUM.value
+        self._cat = SimulationMode.DIST.value
         self._coefficient = Coefficient()
         self._pi_expr = None
         self._sym_func = None
@@ -1044,7 +1241,7 @@ class MonteCarlo(Foundation, BoundsSpecs):
         self._distributions = {}
         self._dependencies = {}
         self._simul_cache = {}
-        self._data = np.array([], dtype=np.float64)
+        self._data = {}
         self._results = np.array([], dtype=np.float64)
 
         # Reset statistics with MonteCarlo-specific defaults

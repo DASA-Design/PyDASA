@@ -208,25 +208,6 @@ class TestSensitivityAnalysis(unittest.TestCase):
             handler._get_variable_value("U", "invalid")
         assert "Invalid value type" in str(excinfo.value)
 
-    def test_validate_dict(self) -> None:
-        """*test_validate_dict()* tests dictionary validation."""
-        # Create handler
-        handler = SensitivityAnalysis()
-
-        # Test valid dictionary
-        valid_dict = {"key1": Variable(), "key2": Variable()}
-        assert handler._validate_dict(valid_dict, Variable)
-
-        # Test invalid type
-        with pytest.raises(ValueError) as excinfo:
-            handler._validate_dict("not a dict", Variable)  # type: ignore
-        assert "must be a dictionary" in str(excinfo.value)
-
-        # Test empty dictionary
-        with pytest.raises(ValueError) as excinfo:
-            handler._validate_dict({}, Variable)
-        assert "cannot be empty" in str(excinfo.value)
-
     def test_analyze_symbolic(self) -> None:
         """*test_analyze_symbolic()* tests symbolic sensitivity analysis."""
         # Create handler
@@ -458,3 +439,123 @@ class TestSensitivityAnalysis(unittest.TestCase):
         # Run analysis - should return empty results
         results = handler.analyze_symbolic()
         assert len(results) == 0
+
+    def test_reset(self) -> None:
+        """*test_reset()* tests reset method preserves variables but clears results."""
+        # Create handler with data
+        handler = SensitivityAnalysis(
+            _variables=self.test_variables,
+            _coefficients=self.test_coefficients
+        )
+
+        # Run analysis to generate results
+        handler.analyze_symbolic()
+
+        # Verify results exist and workflow is solved
+        assert len(handler._results) > 0
+        assert len(handler._analyses) > 0
+        assert handler.is_solved is True
+
+        # Reset handler
+        handler.reset()
+
+        # Test variables and coefficients preserved
+        assert len(handler._variables) == len(self.test_variables)
+        assert len(handler._coefficients) == len(self.test_coefficients)
+
+        # Test results and analyses cleared
+        assert len(handler._results) == 0
+        assert len(handler._analyses) == 0
+        assert handler.is_solved is False
+
+    def test_from_dict(self) -> None:
+        """*test_from_dict()* tests deserialization from dictionary representation."""
+        # Create handler with specific attributes
+        original = SensitivityAnalysis(
+            _idx=1,
+            _fwk="CUSTOM",
+            _cat="NUM",
+            _name="Test Sensitivity",
+            description="Test handler for serialization"
+        )
+
+        # Serialize to dictionary
+        data = original.to_dict()
+
+        # Deserialize from dictionary
+        restored = SensitivityAnalysis.from_dict(data)
+
+        # Test basic attributes preserved
+        assert restored.name == "Test Sensitivity"
+        assert restored.description == "Test handler for serialization"
+        assert restored._idx == 1
+        assert restored._fwk == "CUSTOM"
+        assert restored._cat == "NUM"
+
+        # Test instance type
+        assert isinstance(restored, SensitivityAnalysis)
+
+    def test_from_dict_with_data(self) -> None:
+        """*test_from_dict_with_data()* tests deserialization with variables and coefficients."""
+        # Create handler with variables and coefficients
+        original = SensitivityAnalysis(
+            _idx=2,
+            _cat="SYM",
+            _variables=self.test_variables,
+            _coefficients=self.test_coefficients,
+            _name="Complete Handler"
+        )
+
+        # Serialize to dictionary
+        data = original.to_dict()
+
+        # Deserialize from dictionary
+        restored = SensitivityAnalysis.from_dict(data)
+
+        # Test attributes preserved
+        assert restored.name == "Complete Handler"
+        assert restored._idx == 2
+        assert restored._cat == "SYM"
+
+        # Test variables and coefficients restored
+        assert len(restored._variables) == len(self.test_variables)
+        assert len(restored._coefficients) == len(self.test_coefficients)
+
+        # Test variable keys match
+        assert set(restored._variables.keys()) == set(self.test_variables.keys())
+        assert set(restored._coefficients.keys()) == set(self.test_coefficients.keys())
+
+    def test_is_solved_flag(self) -> None:
+        """*test_is_solved_flag()* tests is_solved flag updates correctly during workflow."""
+        # Create handler
+        handler = SensitivityAnalysis(
+            _variables=self.test_variables,
+            _coefficients=self.test_coefficients
+        )
+
+        # Initially not solved
+        assert handler.is_solved is False
+
+        # After symbolic analysis, should be solved
+        handler.analyze_symbolic()
+        assert handler.is_solved is True
+
+        # After reset, should be unsolved again
+        handler.reset()
+        assert handler.is_solved is False
+
+        # After numeric analysis, should be solved
+        handler.analyze_numeric(n_samples=200)
+        assert handler.is_solved is True
+
+    def test_is_solved_property_readonly(self) -> None:
+        """*test_is_solved_property_readonly()* tests is_solved property is read-only."""
+        # Create handler
+        handler = SensitivityAnalysis()
+
+        # Test getter works
+        assert handler.is_solved is False
+
+        # Test setter doesn't exist (should raise AttributeError)
+        with pytest.raises(AttributeError):
+            handler.is_solved = True  # type: ignore

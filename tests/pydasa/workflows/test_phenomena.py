@@ -132,90 +132,6 @@ class TestAnalysisEngine(unittest.TestCase):
         # Test default framework
         assert engine.schema._fwk == "PHYSICAL"
 
-    def test_schema_string_assignment(self) -> None:
-        """*test_schema_string_assignment()* tests setting schema from string."""
-        # Create engine
-        engine = AnalysisEngine()
-
-        # Set schema from string
-        engine.schema = "COMPUTATION"
-
-        # Test schema converted
-        assert isinstance(engine.schema, Schema)
-        assert engine.schema._fwk == "COMPUTATION"
-
-    def test_schema_dict_assignment(self) -> None:
-        """*test_schema_dict_assignment()* tests setting schema from dict."""
-        # Create engine
-        engine = AnalysisEngine()
-
-        # Create a simple schema dict using PHYSICAL framework (has default FDUs)
-        schema_dict = {
-            "_fwk": "PHYSICAL",
-            "_idx": 0
-        }
-
-        # Set schema from dict
-        engine.schema = schema_dict
-
-        # Test schema converted
-        assert isinstance(engine.schema, Schema)
-        assert engine.schema._fwk == "PHYSICAL"
-
-    def test_schema_object_assignment(self) -> None:
-        """*test_schema_object_assignment()* tests setting schema from Schema object."""
-        # Create engine
-        engine = AnalysisEngine()
-
-        # Set schema from object
-        engine.schema = self.dim_schema
-
-        # Test schema assigned
-        assert engine.schema is self.dim_schema
-        assert engine.schema._fwk == "CUSTOM"
-
-    def test_variables_dict_assignment(self) -> None:
-        """*test_variables_dict_assignment()* tests setting variables from dict."""
-        # Create engine
-        engine = AnalysisEngine()
-
-        # Set variables
-        engine.variables = self.test_variables
-
-        # Test variables set
-        assert len(engine.variables) == len(self.test_variables)
-        for sym in self.test_variables.keys():
-            assert sym in engine.variables
-            assert isinstance(engine.variables[sym], Variable)
-
-    def test_variables_conversion_from_dicts(self) -> None:
-        """*test_variables_conversion_from_dicts()* tests converting dict values to Variables."""
-        # Create engine
-        engine = AnalysisEngine()
-
-        # Create dict with dict values
-        var_dicts = {}
-        for sym, var in self.test_variables.items():
-            var_dicts[sym] = var.to_dict()
-
-        # Set variables from dicts
-        engine.variables = var_dicts
-
-        # Test conversion happened
-        assert len(engine.variables) == len(var_dicts)
-        for sym in var_dicts.keys():
-            assert isinstance(engine.variables[sym], Variable)
-
-    def test_variables_invalid_type(self) -> None:
-        """*test_variables_invalid_type()* tests error on invalid variable type."""
-        # Create engine
-        engine = AnalysisEngine()
-
-        # Try to set invalid variables
-        with pytest.raises(ValueError) as excinfo:
-            engine.variables = {"key": "invalid_string"}
-        assert "values must be Variable or dict" in str(excinfo.value)
-
     def test_create_matrix(self) -> None:
         """*test_create_matrix()* tests creating dimensional matrix."""
         # Create engine with variables
@@ -282,7 +198,7 @@ class TestAnalysisEngine(unittest.TestCase):
         # Reset engine
         engine.reset()
 
-        # Test state cleared
+        # Test state cleared (including Matrix-specific _model)
         assert engine.matrix is None
         assert len(engine.coefficients) == 0
         assert engine.is_solved is False
@@ -300,7 +216,7 @@ class TestAnalysisEngine(unittest.TestCase):
         # Clear engine
         engine.clear()
 
-        # Test everything cleared
+        # Test everything cleared (including Matrix-specific _model)
         assert len(engine.variables) == 0
         assert len(engine.coefficients) == 0
         assert engine.matrix is None
@@ -308,20 +224,6 @@ class TestAnalysisEngine(unittest.TestCase):
         # Test schema reset to default
         assert engine.schema is not None
         assert engine.schema._fwk == "PHYSICAL"
-
-    def test_properties_are_copies(self) -> None:
-        """*test_properties_are_copies()* tests that properties return copies."""
-        # Create engine
-        engine = AnalysisEngine()
-        engine.variables = self.test_variables
-
-        # Get variables
-        vars1 = engine.variables
-        vars2 = engine.variables
-
-        # Test they are different objects (copies)
-        assert vars1 is not vars2
-        assert id(vars1) != id(vars2)
 
     def test_to_dict(self) -> None:
         """*test_to_dict()* tests converting engine to dictionary."""
@@ -338,7 +240,7 @@ class TestAnalysisEngine(unittest.TestCase):
         # Convert to dict
         data = engine.to_dict()
 
-        # Test dictionary structure
+        # Test dictionary structure (including Foundation and WorkflowBase fields)
         assert isinstance(data, dict)
         assert "name" in data
         assert "description" in data
@@ -349,6 +251,8 @@ class TestAnalysisEngine(unittest.TestCase):
         assert "is_solved" in data
         assert data["name"] == "Test"
         assert data["description"] == "Test engine"
+        # Matrix-specific: model field should not be present if matrix not created
+        assert "model" not in data or data.get("model") is None
 
     def test_from_dict(self) -> None:
         """*test_from_dict()* tests creating engine from dictionary."""
@@ -373,6 +277,36 @@ class TestAnalysisEngine(unittest.TestCase):
         assert engine2._idx == engine1._idx
         assert len(engine2.variables) == len(engine1.variables)
 
+    def test_to_dict_with_matrix(self) -> None:
+        """*test_to_dict_with_matrix()* tests serialization includes Matrix when present."""
+        # Create engine with matrix
+        engine = AnalysisEngine(_fwk="CUSTOM", _schema=self.test_data["FDU_LIST"])
+        engine.variables = self.test_variables
+        engine.create_matrix()
+
+        # Convert to dict
+        data = engine.to_dict()
+
+        # Test Matrix serialized
+        assert "model" in data
+        assert data["model"] is not None
+        assert isinstance(data["model"], dict)
+
+    def test_from_dict_with_matrix(self) -> None:
+        """*test_from_dict_with_matrix()* tests deserialization restores Matrix."""
+        # Create engine with matrix
+        engine1 = AnalysisEngine(_fwk="CUSTOM", _schema=self.test_data["FDU_LIST"])
+        engine1.variables = self.test_variables
+        engine1.create_matrix()
+        data = engine1.to_dict()
+
+        # Create new engine from dict
+        engine2 = AnalysisEngine.from_dict(data)
+
+        # Test Matrix restored
+        assert engine2.matrix is not None
+        assert isinstance(engine2.matrix, Matrix)
+
     def test_repr(self) -> None:
         """*test_repr()* tests string representation."""
         # Create engine
@@ -387,19 +321,7 @@ class TestAnalysisEngine(unittest.TestCase):
         assert "Test Engine" in repr_str
         assert "variables=" in repr_str
         assert "coefficients=" in repr_str
-        assert "status=" in repr_str
-
-    def test_repr_solved_state(self) -> None:
-        """*test_repr_solved_state()* tests repr shows solved state."""
-        # Create engine
-        engine = AnalysisEngine(_name="Test")
-        engine._is_solved = True
-
-        # Get repr
-        repr_str = repr(engine)
-
-        # Test solved status shown
-        assert "solved" in repr_str
+        assert "is_solved=" in repr_str
 
     def test_is_solved_property(self) -> None:
         """*test_is_solved_property()* tests is_solved property."""

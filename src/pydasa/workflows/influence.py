@@ -16,26 +16,21 @@ Classes:
 """
 
 from __future__ import annotations
-from dataclasses import dataclass, field, fields
-from typing import List, Dict, Any, Union, Tuple
-# import re
+from dataclasses import dataclass, field
+from typing import Dict, Any, cast
 
 # Import validation base classes
 from pydasa.core.basic import Foundation
+from pydasa.workflows.basic import WorkflowBase
 
 # Import related classes
-from pydasa.elements.parameter import Variable
-from pydasa.dimensional.buckingham import Coefficient
 from pydasa.analysis.scenario import Sensitivity
 
 # Import utils
-from pydasa.validations.error import inspect_var
 from pydasa.serialization.parser import latex_to_python
 
 # Import validation decorators
-from pydasa.validations.decorators import validate_type
 from pydasa.validations.decorators import validate_choices
-from pydasa.validations.decorators import validate_emptiness
 # Import global configuration
 from pydasa.core.setup import AnaliticMode
 from pydasa.core.setup import PYDASA_CFG
@@ -43,57 +38,54 @@ from pydasa.core.setup import PYDASA_CFG
 
 
 @dataclass
-class SensitivityAnalysis(Foundation):
+class SensitivityAnalysis(Foundation, WorkflowBase):
     """**SensitivityAnalysis** class for managing multiple sensitivity analyses in *PyDASA*.
 
     Coordinates sensitivity analyses for multiple coefficients, processes their results, and generates comprehensive reports on variable impacts.
 
+    Args:
+        Foundation (Foundation): Inherits common validation logic.
+        WorkflowBase (WorkflowBase): Inherits workflow basic functionalities.
+
     Attributes:
-        # Identification and Classification
-        name (str): User-friendly name of the sensitivity handler.
-        description (str): Brief summary of the sensitivity handler.
-        _idx (int): Index/precedence of the sensitivity handler.
-        _sym (str): Symbol representation (LaTeX or alphanumeric).
-        _alias (str): Python-compatible alias for use in code.
-        _fwk (str): Frameworks context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
-        _cat (str): Category of analysis (SYM, NUM, HYB).
+        # From Foundation (Identification and Classification):
+            name (str): User-friendly name of the sensitivity analysis.
+            description (str): Brief summary of the sensitivity analysis.
+            _idx (int): Index/precedence of the sensitivity analysis.
+            _sym (str): Symbol representation (LaTeX or alphanumeric).
+            _alias (str): Python-compatible alias for use in code.
+            _fwk (str): Frameworks context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
 
-        # Analysis Components
-        _variables (Dict[str, Variable]): all available parameters/variables in the model (*Variable*).
-        _coefficients (Dict[str, Coefficient]): all available coefficients in the model (*Coefficient*).
+        # From WorkflowBase (Common Workflow Components):
+            _variables (Dict[str, Variable]): All available parameters/variables in the model (*Variable*). Accepts Variable instances or dicts.
+            _schema (Optional[Schema]): Dimensional framework schema for the workflow. After __post_init__, this will always be a Schema instance.
+            _coefficients (Dict[str, Coefficient]): All available coefficients in the model (*Coefficient*). Accepts Coefficient instances or dicts.
+            _results (Dict[str, Dict[str, Any]]): Consolidated results from sensitivity analyses.
+            _is_solved (bool): Flag indicating if the sensitivity analysis workflow has been completed.
 
-        # Analysis Results
-        _analyses (Dict[str, Sensitivity]): all sensitivity analyses performed.
-        _results (Dict[str, Dict[str, Any]]): all consolidated results of analyses.
+        # Specific to SensitivityAnalysis:
+            _cat (str): Category of sensitivity analysis (SYM, NUM, HYB).
+            _analyses (Dict[str, Sensitivity]): All sensitivity analyses performed for each coefficient.
     """
+
+    # ========================================================================
+    # SensitivityAnalysis Specific Attributes
+    # ========================================================================
 
     # Category attribute
     # :attr: _cat
     _cat: str = AnaliticMode.SYM.value
-    """Category of sensitivity analysis (SYM, NUM)."""
-
-    # Variable management
-    # :attr: _variables
-    _variables: Dict[str, Variable] = field(default_factory=dict)
-    """Dictionary of all parameters/variables in the model (*Variable*)."""
-
-    # :attr: _coefficients
-    _coefficients: Dict[str, Coefficient] = field(default_factory=dict)
-    """Dictionary of all coefficients in the model (*Coefficient*)."""
+    """Category of sensitivity analysis workflow (SYM, NUM)."""
 
     # Analysis results
     # :attr: _analyses
     _analyses: Dict[str, Sensitivity] = field(default_factory=dict)
-    """Dictionary of sensitivity analyses performed."""
-
-    # :attr: _results
-    _results: Dict[str, Dict[str, Any]] = field(default_factory=dict)
-    """Consolidated results of analyses."""
+    """Dictionary of sensitivity analyses performed in the workflow."""
 
     def __post_init__(self) -> None:
-        """*__post_init__()* Initializes the sensitivity handler.
+        """*__post_init__()* Post-initialization processing with validation and setup.
 
-        Validates basic properties and sets up component maps.
+        Validates basic properties and sets up component maps for the sensitivity analysis.
         """
         # Initialize from base class
         super().__post_init__()
@@ -107,49 +99,14 @@ class SensitivityAnalysis(Foundation):
 
         # Set name and description if not already set
         if not self.name:
-            self.name = f"sensitivity Analysis Handler {self._idx}"
+            self.name = f"Sensitivity Analysis {self._idx}"
 
         if not self.description:
-            self.description = f"Manages sensitivity analyses for [{self._coefficients.keys()}] coefficients."
+            self.description = "Manages sensitivity analyses for coefficients."
 
-    def _validate_dict(self, dt: dict,
-                       exp_type: Union[type, List[type], Tuple[type, ...]]) -> bool:
-        """*_validate_dict()* Validates a dictionary with expected value types.
-
-        Args:
-            dt (dict): Dictionary to validate.
-            exp_type (Union[type, List[type], Tuple[type, ...]]): Expected type(s) for dictionary values.
-
-        Raises:
-            ValueError: If the object is not a dictionary.
-            ValueError: If the dictionary is empty.
-            ValueError: If the dictionary contains values of unexpected types.
-
-        Returns:
-            bool: True if the dictionary is valid.
-        """
-        if not isinstance(dt, dict):
-            _msg = f"{inspect_var(dt)} must be a dictionary. "
-            _msg += f"Provided: {type(dt)}"
-            raise ValueError(_msg)
-
-        if len(dt) == 0:
-            _msg = f"{inspect_var(dt)} cannot be empty. "
-            _msg += f"Provided: {dt}"
-            raise ValueError(_msg)
-
-        # Convert exp_type to tuple for isinstance()
-        if isinstance(exp_type, (list, tuple)):
-            type_tuple = tuple(exp_type)
-        else:
-            type_tuple = (exp_type,)
-
-        if not all(isinstance(v, type_tuple) for v in dt.values()):
-            _msg = f"{inspect_var(dt)} must contain {exp_type} values."
-            _msg += f" Provided: {[type(v).__name__ for v in dt.values()]}"
-            raise ValueError(_msg)
-
-        return True
+    # ========================================================================
+    # Helper Methods
+    # ========================================================================
 
     def _create_analyses(self) -> None:
         """*_create_analyses()* Creates sensitivity analyses for each coefficient.
@@ -238,6 +195,10 @@ class SensitivityAnalysis(Foundation):
             _msg += "Must be one of: mean, min, max."
             raise ValueError(_msg)
 
+    # ========================================================================
+    # Workflow Methods
+    # ========================================================================
+
     def analyze_symbolic(self,
                          val_type: str = "mean") -> Dict[str, Dict[str, float]]:
         """*analyze_symbolic()* Performs symbolic sensitivity analysis.
@@ -270,6 +231,8 @@ class SensitivityAnalysis(Foundation):
             # Store results
             self._results[analysis.sym] = result
 
+        # Mark workflow as solved
+        self._is_solved = True
         return self._results
 
     def analyze_numeric(self,
@@ -308,9 +271,14 @@ class SensitivityAnalysis(Foundation):
 
             # Store results
             self._results[analysis.sym] = result
+
+        # Mark workflow as solved
+        self._is_solved = True
         return self._results
 
-    # Property getters and setters
+    # ========================================================================
+    # Property Getters and Setters
+    # ========================================================================
 
     @property
     def cat(self) -> str:
@@ -335,66 +303,6 @@ class SensitivityAnalysis(Foundation):
         self._cat = val.upper()
 
     @property
-    def variables(self) -> Dict[str, Variable]:
-        """*variables* Get the dictionary of variables.
-
-        Returns:
-            Dict[str, Variable]: Dictionary of variables.
-        """
-        return self._variables.copy()
-
-    @variables.setter
-    @validate_type(dict, allow_none=False)
-    @validate_emptiness()
-    def variables(self, val: Dict[str, Variable]) -> None:
-        """*variables* Set the dictionary of variables.
-
-        Args:
-            val (Dict[str, Variable]): Dictionary of variables.
-
-        Raises:
-            ValueError: If dictionary is invalid.
-        """
-        # Validate dictionary values are Variable instances
-        if not all(isinstance(v, Variable) for v in val.values()):
-            _msg = "All dictionary values must be Variable instances"
-            raise ValueError(_msg)
-
-        self._variables = val
-        # Clear existing analyses
-        self._analyses.clear()
-
-    @property
-    def coefficients(self) -> Dict[str, Coefficient]:
-        """*coefficients* Get the dictionary of coefficients.
-
-        Returns:
-            Dict[str, Coefficient]: Dictionary of coefficients.
-        """
-        return self._coefficients.copy()
-
-    @coefficients.setter
-    @validate_type(dict, allow_none=False)
-    @validate_emptiness()
-    def coefficients(self, val: Dict[str, Coefficient]) -> None:
-        """*coefficients* Set the dictionary of coefficients.
-
-        Args:
-            val (Dict[str, Coefficient]): Dictionary of coefficients.
-
-        Raises:
-            ValueError: If dictionary is invalid.
-        """
-        # Validate dictionary values are Coefficient instances
-        if not all(isinstance(v, Coefficient) for v in val.values()):
-            _msg = "All dictionary values must be Coefficient instances"
-            raise ValueError(_msg)
-
-        self._coefficients = val
-        # Clear existing analyses
-        self._analyses.clear()
-
-    @property
     def analyses(self) -> Dict[str, Sensitivity]:
         """*analyses* Get the dictionary of sensitivity analyses.
 
@@ -403,109 +311,70 @@ class SensitivityAnalysis(Foundation):
         """
         return self._analyses.copy()
 
-    @property
-    def results(self) -> Dict[str, Dict[str, Any]]:
-        """*results* Get the analysis results.
+    # ========================================================================
+    # Utility Methods
+    # ========================================================================
 
-        Returns:
-            Dict[str, Dict[str, Any]]: Analysis results.
+    def reset(self) -> None:
+        """*reset()* Reset the analysis state while preserving input configuration.
+
+        Clears coefficients, results, analyses, and solved state while keeping variables and schema.
         """
-        return self._results.copy()
+        # Clear SensitivityAnalysis specific attributes
+        self._analyses.clear()
+
+        # Handles coefficients, results, is_solved from WorkflowBase
+        super().reset()
 
     def clear(self) -> None:
         """*clear()* Reset all attributes to default values.
 
-        Resets all handler properties to their initial state.
+        Resets all analysis properties to their initial state, including variables, coefficients, and results from WorkflowBase.
         """
-        # Reset parent class attributes (Foundation)
-        super().clear()
+        # Reset SensitivityAnalysis specific attributes first
+        self._cat = AnaliticMode.SYM.value
+        self._analyses = {}
+
+        # Call both parent classes' clear methods explicitly for multiple inheritance
+        Foundation.clear(self)
+        WorkflowBase.clear(self)
+
+        # Reset symbol after parent clears
         self._sym = f"SANSYS_{{\\Pi_{{{self._idx}}}}}"
 
-        # Reset handler-specific attributes
-        self._cat = AnaliticMode.SYM.value
-        self._variables = {}
-        self._coefficients = {}
-        self._analyses = {}
-        self._results = {}
-
     def to_dict(self) -> Dict[str, Any]:
-        """*to_dict()* Convert sensitivity handler to dictionary representation.
+        """*to_dict()* Convert sensitivity analysis to dictionary representation.
 
         Returns:
-            Dict[str, Any]: Dictionary representation of sensitivity handler.
+            Dict[str, Any]: Dictionary representation of sensitivity analysis.
         """
-        result = {}
+        # Get base serialization from WorkflowBase
+        result = super().to_dict()
 
-        # Get all dataclass fields
-        for f in fields(self):
-            attr_name = f.name
-            attr_value = getattr(self, attr_name)
+        # Add SensitivityAnalysis specific attributes
+        result["cat"] = self._cat
 
-            # Handle special dictionary types (Variable and Coefficient dicts)
-            if attr_name == "_variables" and isinstance(attr_value, dict):
-                attr_value = [var.to_dict() for var in attr_value.values()]
-            elif attr_name == "_coefficients" and isinstance(attr_value, dict):
-                attr_value = [coef.to_dict() for coef in attr_value.values()]
-            elif attr_name == "_analyses" and isinstance(attr_value, dict):
-                # Skip analyses - they are transient and recreated as needed
-                continue
-
-            # Skip callables (can't be serialized)
-            if callable(attr_value) and not isinstance(attr_value, type):
-                continue
-
-            # Remove leading underscore from private attributes
-            if attr_name.startswith("_"):
-                clean_name = attr_name[1:]  # Remove first character
-            else:
-                clean_name = attr_name
-
-            result[clean_name] = attr_value
+        # Skip analyses - they are transient and recreated as needed
+        # (no need to serialize _analyses)
 
         return result
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> SensitivityAnalysis:
-        """*from_dict()* Create sensitivity handler from dictionary representation.
+        """*from_dict()* Create sensitivity analysis from dictionary representation.
 
         Args:
-            data (Dict[str, Any]): Dictionary representation of sensitivity handler.
+            data (Dict[str, Any]): Dictionary representation of sensitivity analysis.
 
         Returns:
-            SensitivityAnalysis: New sensitivity handler instance.
+            SensitivityAnalysis: New sensitivity analysis instance.
         """
-        # Get all valid field names from the dataclass
-        field_names = {f.name for f in fields(cls)}
+        # Use parent class to handle base deserialization
+        instance = cast(SensitivityAnalysis, super().from_dict(data))
 
-        # Map keys without underscores to keys with underscores
-        mapped_data = {}
+        # Handle SensitivityAnalysis specific attributes
+        if "cat" in data:
+            instance._cat = data["cat"]
 
-        for key, value in data.items():
-            # Handle special list conversions back to dictionaries
-            if key == "variables" and isinstance(value, list):
-                mapped_data["_variables"] = {
-                    var["name"] if "name" in var else var.get("_name", f"var_{i}"): Variable.from_dict(var)
-                    for i, var in enumerate(value)
-                }
-                continue
-            elif key == "coefficients" and isinstance(value, list):
-                mapped_data["_coefficients"] = {
-                    coef["name"] if "name" in coef else coef.get("_name", f"coef_{i}"): Coefficient.from_dict(coef)
-                    for i, coef in enumerate(value)
-                }
-                continue
-
-            # Try the key as-is first (handles both _idx and name)
-            if key in field_names:
-                mapped_data[key] = value
-            # Try adding underscore prefix (handles idx -> _idx)
-            elif f"_{key}" in field_names:
-                mapped_data[f"_{key}"] = value
-            # Try removing underscore prefix (handles _name -> name if needed)
-            elif key.startswith("_") and key[1:] in field_names:
-                mapped_data[key[1:]] = value
-            else:
-                # Use as-is for unknown keys (will be validated by dataclass)
-                mapped_data[key] = value
-
-        return cls(**mapped_data)
+        # Note: _analyses is not deserialized as it's transient and recreated as needed
+        return instance

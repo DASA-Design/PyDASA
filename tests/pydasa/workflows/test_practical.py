@@ -98,7 +98,7 @@ class TestMonteCarloSimulation(unittest.TestCase):
         # Test if handler is not None
         assert handler is not None
         # Test default category
-        assert handler._cat == "NUM"
+        assert handler._cat == "DIST"
         # Test default experiments
         assert handler._experiments == -1
         # Test empty collections
@@ -116,7 +116,7 @@ class TestMonteCarloSimulation(unittest.TestCase):
         handler = MonteCarloSimulation(
             _idx=0,
             _fwk="CUSTOM",
-            _cat="NUM",
+            _cat="DIST",
             _experiments=500,
             _variables=self.test_variables,
             _coefficients=self.test_coefficients,
@@ -127,7 +127,7 @@ class TestMonteCarloSimulation(unittest.TestCase):
         # Test if handler is not None
         assert handler is not None
         # Test custom category
-        assert handler._cat == "NUM"
+        assert handler._cat == "DIST"
         # Test custom experiments
         assert handler._experiments == 500
         # Test variables set
@@ -178,27 +178,8 @@ class TestMonteCarloSimulation(unittest.TestCase):
         # Test one simulation per coefficient
         assert len(handler._simulations) == len(self.test_coefficients)
 
-    def test_validate_dict(self) -> None:
-        """*test_validate_dict()* tests dictionary validation."""
-        # Create handler
-        handler = MonteCarloSimulation()
-
-        # Test valid dictionary
-        valid_dict = {"key1": Variable(), "key2": Variable()}
-        assert handler._validate_dict(valid_dict, Variable)
-
-        # Test invalid type
-        with pytest.raises(ValueError) as excinfo:
-            handler._validate_dict("not a dict", Variable)      # type: ignore #
-        assert "must be a dictionary" in str(excinfo.value)
-
-        # Test empty dictionary
-        with pytest.raises(ValueError) as excinfo:
-            handler._validate_dict({}, Variable)
-        assert "cannot be empty" in str(excinfo.value)
-
     def test_clear(self) -> None:
-        """*test_clear()* tests clearing handler state."""
+        """*test_clear()* tests clearing handler state completely."""
         # Create handler with data
         handler = MonteCarloSimulation(
             _variables=self.test_variables,
@@ -211,11 +192,41 @@ class TestMonteCarloSimulation(unittest.TestCase):
         # Clear handler
         handler.clear()
 
-        # Test collections cleared
+        # Test all collections cleared including variables and coefficients
         assert len(handler._simulations) == 0
         assert len(handler._distributions) == 0
         assert len(handler._results) == 0
         assert len(handler._shared_cache) == 0
+        assert len(handler._variables) == 0
+        assert len(handler._coefficients) == 0
+
+    def test_reset(self) -> None:
+        """*test_reset()* tests resetting simulation state while preserving configuration."""
+        # Create handler with data
+        handler = MonteCarloSimulation(
+            _variables=self.test_variables,
+            _coefficients=self.test_coefficients
+        )
+
+        # Configure distributions and simulations
+        handler.create_simulations()
+        
+        # Store original counts
+        original_var_count = len(handler._variables)
+        original_coef_count = len(handler._coefficients)
+
+        # Reset handler
+        handler.reset()
+
+        # Test simulation state cleared
+        assert len(handler._simulations) == 0
+        assert len(handler._distributions) == 0
+        assert len(handler._results) == 0
+        assert len(handler._shared_cache) == 0
+        
+        # Test configuration preserved
+        assert len(handler._variables) == original_var_count
+        assert len(handler._coefficients) == original_coef_count
 
     def test_properties(self) -> None:
         """*test_properties()* tests property getters and setters."""
@@ -223,9 +234,9 @@ class TestMonteCarloSimulation(unittest.TestCase):
         handler = MonteCarloSimulation()
 
         # Test cat property
-        assert handler.cat == "NUM"
-        handler.cat = "SYM"
-        assert handler.cat == "SYM"
+        assert handler.cat == "DIST"
+        handler.cat = "DATA"
+        assert handler.cat == "DATA"
 
         # Test experiments property
         assert handler.experiments == -1
@@ -247,7 +258,7 @@ class TestMonteCarloSimulation(unittest.TestCase):
         )
 
         # Configure
-        handler.config_simulations()
+        handler.create_simulations()
 
         # Get existing simulation
         sim = handler.get_simulation("\\Pi_{0}")
@@ -305,7 +316,7 @@ class TestMonteCarloSimulation(unittest.TestCase):
             _variables=self.test_variables,
             _coefficients=self.test_coefficients
         )
-        handler.config_simulations()
+        handler.create_simulations()
 
         # Verify shared cache exists
         assert hasattr(handler, '_shared_cache')
@@ -323,7 +334,7 @@ class TestMonteCarloSimulation(unittest.TestCase):
             _variables=self.test_variables,
             _coefficients=self.test_coefficients
         )
-        handler.config_simulations()
+        handler.create_simulations()
 
         # Get cache IDs from all simulations
         cache_ids = [id(sim._simul_cache) for sim in handler._simulations.values()]
@@ -340,8 +351,8 @@ class TestMonteCarloSimulation(unittest.TestCase):
             _coefficients=self.test_coefficients,
             _experiments=5
         )
-        handler.config_simulations()
-        handler.simulate(n_samples=5)
+        handler.create_simulations()
+        handler.run(iters=5)
 
         # Extract results
         all_results = {pi: sim.extract_results() for pi, sim in handler._simulations.items()}
@@ -367,7 +378,7 @@ class TestMonteCarloSimulation(unittest.TestCase):
             _variables=self.test_variables,
             _coefficients=self.test_coefficients
         )
-        handler.config_simulations()
+        handler.create_simulations()
 
         # Modify cache through handler
         test_var = 'd'
@@ -379,3 +390,54 @@ class TestMonteCarloSimulation(unittest.TestCase):
         for sim in handler._simulations.values():
             cached = sim._get_cached_value(test_var, test_idx)
             assert cached == test_value
+
+    def test_run_simulation_convenience_method(self) -> None:
+        """*test_run_simulation_convenience_method()* tests run_simulation() combines create and run."""
+        handler = MonteCarloSimulation(
+            _fwk="CUSTOM",
+            _variables=self.test_variables,
+            _coefficients=self.test_coefficients
+        )
+
+        # Run simulation with all setup in one call
+        handler.run_simulation(iters=5)
+
+        # Verify simulations were created
+        assert len(handler._simulations) > 0
+
+        # Verify results were generated
+        assert len(handler._results) > 0
+
+        # Verify experiments were set
+        assert handler._experiments == 5
+
+    def test_create_simulations_method(self) -> None:
+        """*test_create_simulations_method()* tests new create_simulations() method name."""
+        handler = MonteCarloSimulation(
+            _fwk="CUSTOM",
+            _variables=self.test_variables,
+            _coefficients=self.test_coefficients
+        )
+
+        # Use new method name
+        handler.create_simulations()
+
+        # Verify distributions and simulations created
+        assert len(handler._distributions) > 0
+        assert len(handler._simulations) > 0
+
+    def test_run_method(self) -> None:
+        """*test_run_method()* tests new run() method name with iters parameter."""
+        handler = MonteCarloSimulation(
+            _fwk="CUSTOM",
+            _variables=self.test_variables,
+            _coefficients=self.test_coefficients
+        )
+
+        # Setup and run with new method names
+        handler.create_simulations()
+        handler.run(iters=5)
+
+        # Verify results generated
+        assert len(handler._results) > 0
+        assert handler._experiments == 5

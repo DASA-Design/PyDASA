@@ -5,7 +5,7 @@ Module phenomena.py
 
 Module for **AnalysisEngine** to orchestrate dimensional analysis workflows in *PyDASA*.
 
-This module provides the **AnalysisEngine** class serves as the main entry point and workflow for *PyDASA's* dimensional analysis capabilities setting up the dimensional domain, solving the dimensional matrix, and coefficient generation.
+This module provides the **AnalysisEngine** class serves as the main entry point and workflow for *PyDASA's* dimensional analysis capabilities setting up the dimensional domain, solving the dimensional matrix, and generate coefficients.
 
 Classes:
     **AnalysisEngine**: Main workflow class for dimensional analysis and coefficient generation.
@@ -16,15 +16,15 @@ Classes:
 """
 # Standard library imports
 from __future__ import annotations
-from dataclasses import dataclass, field, fields
-from typing import Dict, Optional, Any, Union, List
+from dataclasses import dataclass, field
+from typing import Dict, Optional, Any, cast
 
 # Import validation base classes
 from pydasa.core.basic import Foundation
+from pydasa.workflows.basic import WorkflowBase
 
 # Import related classes
-from pydasa.elements.parameter import Variable
-from pydasa.dimensional.fundamental import Dimension
+# from pydasa.elements.parameter import Variable
 from pydasa.dimensional.buckingham import Coefficient
 from pydasa.dimensional.model import Matrix
 from pydasa.dimensional.vaschy import Schema
@@ -34,72 +34,48 @@ from pydasa.serialization.parser import latex_to_python
 
 # Import validation decorators
 from pydasa.validations.decorators import validate_type
-from pydasa.validations.decorators import validate_emptiness
-from pydasa.validations.decorators import validate_dict_types
 
 # Import global configuration
 from pydasa.core.setup import Frameworks   # , PYDASA_CFG
 
-# custom type hinting
-Variables = Union[Dict[str, Variable], Dict[str, Any]]
-Coefficients = Union[Dict[str, Coefficient], Dict[str, Any]]
-FDUs = Union[str, Dict[str, Any], List[Dict], Schema]
-
 
 @dataclass
-class AnalysisEngine(Foundation):
+class AnalysisEngine(Foundation, WorkflowBase):
     """**AnalysisEngine** class for orchestrating dimensional analysis workflows in *PyDASA*.
 
-    Main entry point that coordinates dimensional matrix solving and coefficient generation.
-    Also known as DimProblem.
+    Main entry point to solve the dimensional matrix and generate the dimensionless coefficients.
+
+    Args:
+        Foundation (Foundation): Inherits common validation logic.
+        WorkflowBase (WorkflowBase): Inherits workflow basic functionalities.
 
     Attributes:
-        # Identification and Classification
-        name (str): User-friendly name of the problem.
-        description (str): Brief summary of the problem.
-        _idx (int): Index/precedence of the problem.
-        _sym (str): Symbol representation (LaTeX or alphanumeric).
-        _alias (str): Python-compatible alias for use in code.
-        _fwk (str): Frameworks context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
+        # From Foundation:
+            _name (str): User-friendly name of the problem.
+            description (str): Brief summary of the problem.
+            _idx (int): Index/precedence of the problem.
+            _sym (str): Symbol representation (LaTeX or alphanumeric).
+            _alias (str): Python-compatible alias for use in code.
+            _fwk (str): Frameworks context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
 
-        # Problem Components
-        _variables (Dict[str, Variable]): All dimensional variables in the problem.
-        _schema (Optional[Schema]): Dimensional framework schema for the problem.
-        _model (Optional[Matrix]): Dimensional matrix for analysis.
+        # From Workflows:
+            _variables (Dict[str, Variable]): All variables in the model.
+            _schema (Optional[Schema]): Dimensional framework schema.
+            _coefficients (Dict[str, Coefficient]): All coefficients in the model.
+            _results (Dict[str, Dict[str, Any]]): Consolidated results from workflow.
+            _is_solved (bool): Flag indicating if the workflow has been solved.
 
-        # Generated Results
-        _coefficients (Dict[str, Coefficient]): Generated dimensionless coefficients.
-
-        # Workflow State
-        _is_solved (bool): Whether the dimensional matrix has been solved.
+        # For the Analysis Engine:
+            _model (Optional[Matrix]): Dimensional matrix for analysis.
     """
 
-    # Problem components
-    # :attr: _variables
-    _variables: Dict[str, Variable] = field(default_factory=dict)
-    """Dictionary of all dimensional variables in the problem."""
-
-    # :attr: _schema
-    _schema: Optional[Schema] = None
-    """Dimensional framework schema. Input can be: None, List[Dict], Dict, or Schema object. After __post_init__, this will always be a Schema instance.
-        - If None: Creates default Schema based on _fwk (e.g., PHYSICAL)
-        - If List[Dict] or Dict: Creates CUSTOM Schema with provided FDU definitions
-        - If Schema: Uses provided Schema object directly
-    """
+    # ========================================================================
+    # Dimensional Analysis Specific Attributes
+    # ========================================================================
 
     # :attr: _model
-    _model: Optional[Matrix] = None
+    _model: Optional[Matrix] = field(default=None, init=True)
     """Dimensional matrix for Buckingham Pi analysis."""
-
-    # Generated results
-    # :attr: _coefficients
-    _coefficients: Dict[str, Coefficient] = field(default_factory=dict)
-    """Dictionary of generated dimensionless coefficients."""
-
-    # Workflow state
-    # :attr: _is_solved
-    _is_solved: bool = False
-    """Flag indicating if dimensional matrix has been solved."""
 
     def __post_init__(self) -> None:
         """*__post_init__()* Post-initialization processing with validation and setup.
@@ -109,29 +85,26 @@ class AnalysisEngine(Foundation):
             TypeError: If schema is of incorrect type.
             TypeError: If schema list items are not dictionaries.
         """
+        # TODO check this after refector
         # Initialize from base class
         super().__post_init__()
 
         # Set default symbol if not specified
         if not self._sym:
-            self._sym = f"DAEN_{{\\Pi_{{{self._idx}}}}}" if self._idx >= 0 else "DAEN_{\\Pi_{-1}}"
+            self._sym = f"DA_{{\\Pi_{{{self._idx}}}}}" if self._idx >= 0 else "DA_{\\Pi_{-1}}"
 
         if not self._alias:
             self._alias = latex_to_python(self._sym)
 
         # Set name and description if not already set
         if not self.name:
-            self.name = f"Dimensional Analysis Engine {self._idx}"
+            self.name = f"Dimensional Analysis {self._idx}"
 
         if not self.description:
-            self.description = "Solves dimensional analysis using the Buckingham Pi-Theorem."
+            self.description = "Dimensional analysis model using the Buckingham Pi-Theorem."
 
         # Initialize schema based on provided input and framework
-        if isinstance(self._schema, Schema):
-            # Already a Schema object, use as-is
-            pass
-
-        elif self._schema is None:
+        if self._schema is None:
             # No schema provided - create default based on framework
             if self.fwk == Frameworks.CUSTOM.value:
                 _msg = "Custom framework requires '_schema' parameter with FDU definitions (List[Dict] or Dict)"
@@ -139,159 +112,17 @@ class AnalysisEngine(Foundation):
             else:
                 # Create schema for standard framework (PHYSICAL, COMPUTATION, SOFTWARE)
                 self._schema = Schema(_fwk=self.fwk)
-
-        elif isinstance(self._schema, list):
-            # List of FDU definitions provided - create CUSTOM schema
-            if not all(isinstance(item, dict) for item in self._schema):  # type: ignore
-                _msg = "When '_schema' is a list, all items must be dictionaries with FDU definitions"
-                raise TypeError(_msg)
-            fdu_list = [Dimension(**d) if isinstance(d, dict) else d for d in self._schema]  # type: ignore
-            self._schema = Schema(_fwk=Frameworks.CUSTOM.value,
-                                  _fdu_lt=fdu_list)
-
-        elif isinstance(self._schema, dict):
-            # Single dict provided - could be from_dict or single FDU definition
-            # Try from_dict first (has specific structure)
-            if "fwk" in self._schema or "_fwk" in self._schema:
-                self._schema = Schema.from_dict(self._schema)
-            else:
-                # Single FDU definition dict - treat as CUSTOM with one dimension
-                fdu_list = [Dimension(**self._schema)]
-                self._schema = Schema(_fwk=Frameworks.CUSTOM.value,
-                                      _fdu_lt=fdu_list)
-
         else:
-            _msg = "'_schema' must be None, List[Dict], Dict, or Schema object. "
-            _msg += f"Provided: {type(self._schema).__name__}"
-            raise TypeError(_msg)
+            # Use WorkflowBase helper to convert schema from various formats
+            self._schema = self._convert_to_schema(self._schema)
 
     # ========================================================================
     # Helper Methods
     # ========================================================================
 
-    def _convert_to_objects(self, data: dict, tgt_cls: type) -> dict:
-        """*_convert_to_objects()* Converts dictionary values to instances of the target class if they are not already.
-
-        Args:
-            data (dict): Dictionary with values to convert.
-            tgt_cls (type): Target class type for conversion.
-        Returns:
-            dict: Dictionary with values as instances of the target class.
-        """
-        # Convert dict values to Variable/Coefficient objects if needed
-        ans = dict()
-        for key, val in data.items():
-            # if value is already the target class, keep it
-            if isinstance(val, tgt_cls):
-                ans[key] = val
-            # otherwise, convert from dict
-            else:
-                ans[key] = tgt_cls.from_dict(val)
-        # return proper dict
-        return ans
-
-    def _convert_to_schema(self, val: FDUs) -> Schema:
-        """*_convert_to_schema()* Converts input to a Schema object.
-
-        Args:
-            val (FDUs): Dimensional framework schema. Can be str, dict, list of dicts, or Schema object.
-
-        Raises:
-            TypeError: If val is not a valid type.
-            TypeError: If dict is invalid.
-
-        Returns:
-            Schema: Converted Schema object.
-        """
-        # if schema is already a Schema, return it
-        if isinstance(val, Schema):
-            return val
-
-        # if schema is a string, convert to Schema
-        elif isinstance(val, str):
-            return Schema(_fwk=val.upper())
-
-        # if schema is a list of dicts, create CUSTOM schema
-        elif isinstance(val, list):
-            if not all(isinstance(item, dict) for item in val):
-                _msg = "When schema is a list, all items must be dictionaries with FDU definitions."
-                raise TypeError(_msg)
-            fdu_list = [
-                Dimension(**d) if isinstance(d, dict) else d for d in val
-            ]
-            return Schema(_fwk=Frameworks.CUSTOM.value, _fdu_lt=fdu_list)
-
-        # if schema is a dict, convert to Schema
-        elif isinstance(val, dict):
-            # Check if it's a complete Schema dict (has framework info)
-            if "fwk" in val or "_fwk" in val:
-                return Schema.from_dict(val)
-            else:
-                # Single FDU definition dict - treat as CUSTOM with one dimension
-                fdu_list = [Dimension(**val)]
-                return Schema(_fwk=Frameworks.CUSTOM.value, _fdu_lt=fdu_list)
-
-        else:
-            _msg = "Input must be type non-empty 'str', 'dict', 'list', or 'Schema'. "
-            _msg += f"Provided: {type(val).__name__}"
-            raise TypeError(_msg)
-
     # ========================================================================
     # Property Getters and Setters
     # ========================================================================
-
-    @property
-    def variables(self) -> Dict[str, Variable]:
-        """*variables* Get the dictionary of variables.
-
-        Returns:
-            Dict[str, Variable]: Dictionary of variables.
-        """
-        return self._variables.copy()
-
-    @variables.setter
-    @validate_type(dict, Variable, allow_none=False)
-    @validate_emptiness()
-    @validate_dict_types(str, (Variable, dict))
-    def variables(self, val: Variables) -> None:
-        """*variables* Set the dictionary of variables.
-
-        Args:
-            val (Variables): Dictionary of variables (Variable objects or dicts).
-
-        Raises:
-            ValueError: If dictionary is invalid or contains invalid values.
-        """
-        # convert dict values to Variable objects if needed
-        self._variables = self._convert_to_objects(val, Variable)
-        self._is_solved = False  # Reset solve state
-
-    @property
-    def schema(self) -> Schema:
-        """*schema* Get the dimensional framework schema.
-
-        Returns:
-            Schema: Dimensional framework schema. Always initialized after __post_init__.
-        """
-        if not isinstance(self._schema, Schema):
-            raise RuntimeError("Schema not properly initialized. This should not happen.")
-        return self._schema
-
-    @schema.setter
-    @validate_type(str, dict, list, Schema, allow_none=False)
-    @validate_emptiness()
-    def schema(self, val: FDUs) -> None:
-        """*schema* Set the dimensional framework schema.
-
-        Args:
-            val (FDUs): Dimensional framework schema. Can be str, dict, list of dicts, or Schema object.
-
-        Raises:
-            TypeError: If val is not a valid type.
-            TypeError: If dict is invalid.
-        """
-        # Convert input to Schema object using helper method
-        self._schema = self._convert_to_schema(val)
 
     @property
     def matrix(self) -> Optional[Matrix]:
@@ -314,50 +145,12 @@ class AnalysisEngine(Foundation):
         if val is not None:
             self._is_solved = False  # Reset solve state
 
-    @property
-    def coefficients(self) -> Dict[str, Coefficient]:
-        """*coefficients* Get the generated coefficients.
-
-        Returns:
-            Dict[str, Coefficient]: Dictionary of coefficients.
-        """
-        return self._coefficients.copy()
-
-    @coefficients.setter
-    @validate_type(dict, Coefficient, allow_none=False)
-    @validate_emptiness()
-    @validate_dict_types(str, (Coefficient, dict))
-    def coefficients(self, val: Coefficients) -> None:
-        """*coefficients* Set the generated coefficients.
-
-        Args:
-            val (Coefficients): Dictionary of coefficients (Coefficient objects or dicts).
-
-        Raises:
-            ValueError: If dictionary is invalid or contains invalid values.
-            ValueError: If dictionary is empty.
-        """
-        # Convert dict values to Coefficient objects if needed
-        self._coefficients = self._convert_to_objects(val, Coefficient)
-        self._is_solved = False  # Reset solve state
-
-    @property
-    def is_solved(self) -> bool:
-        """*is_solved* Check if dimensional matrix has been solved.
-
-        Returns:
-            bool: True if solved, False otherwise.
-        """
-        return self._is_solved
-
     # ========================================================================
     # Workflow Methods
     # ========================================================================
 
     def create_matrix(self, **kwargs) -> None:
-        """*create_matrix()* Create and configure dimensional matrix.
-
-        Creates a Matrix object from the current variables and optional parameters.
+        """*create_matrix()* Create and configure dimensional matrix for the model.
 
         Args:
             **kwargs: Optional keyword arguments to pass to Matrix constructor.
@@ -380,12 +173,9 @@ class AnalysisEngine(Foundation):
         self._model = Matrix(_idx=self.idx,
                              _fwk=self._fwk,
                              _schema=self._schema,
-                             _variables=self._variables,
-                             # **kwargs
-                             )
+                             _variables=self._variables,)
 
         self._is_solved = False     # Reset solve state
-        # return self._model
 
     def solve(self) -> Dict[str, Coefficient]:
         """*solve()* Solve the dimensional matrix and generate coefficients.
@@ -422,17 +212,13 @@ class AnalysisEngine(Foundation):
         """*run_analysis()* Execute complete dimensional analysis workflow. Convenience method that runs the entire workflow: create matrix and solve.
 
         Returns:
-            Dict[str, Any]: Dictionary of generated dimensionless coefficient in native python format
-
-        Raises:
-            ValueError: If variables are not set.
+            Dict[str, Any]: Dictionary of analysis results.
         """
         # Step 1: Create matrix if not already created
         if self._model is None:
             self.create_matrix()
 
         # Step 2: Solve and return coefficients
-        # return self.solve()
         # Create + Solve matrix
         coefficients = self.solve()
         results = {k: v.to_dict() for k, v in coefficients.items()}
@@ -446,41 +232,32 @@ class AnalysisEngine(Foundation):
                            idx: int = -1) -> Coefficient:
         """*derive_coefficient()* Derive a new coefficient from existing ones.
 
-        Creates a new dimensionless coefficient by algebraically combining existing
-        Pi coefficients using the expression string.
-
         Args:
-            expr (str): Expression defining the new coefficient using existing Pi symbols. (e.g., "\\Pi_{0}**(-1)" or "\\Pi_{1} * \\Pi_{3}")
+            expr (str): LaTeX expression defining the new coefficient in terms of existing ones.
             symbol (str, optional): Symbol representation (LaTeX or alphanumeric) for the derived coefficient. Defaults to "" to keep the original (e.g., Pi_{0}).
-            name (str, optional): User-friendly name for the derived coefficient.
-            description (str, optional): Description of the derived coefficient.
+            name (str, optional): User-friendly name for the derived coefficient. Defaults to "".
+            description (str, optional): Description of the derived coefficient. Defaults to "".
             idx (int, optional): Index/precedence of the derived coefficient. Defaults to -1.
 
-        Returns:
-            Coefficient: The newly derived dimensionless coefficient.
-
         Raises:
-            ValueError: If matrix is not created or solved.
+            ValueError: If matrix is not created.
+            ValueError: If matrix is not solved.
+            ValueError: If the expression for the derived coefficient is invalid.
             RuntimeError: If derivation fails.
 
-        Example:
-            >>> # Derive Reynolds number from inverse of Pi_0
-            >>> Re = engine.derive_coefficient(
-            ...     expr="\\Pi_{0}**(-1)",
-            ...     name="Reynolds Number",
-            ...     description="Re = ρvD/μ"
-            ... )
-            >>> # Derive combined coefficient
-            >>> pi_combined = engine.derive_coefficient(
-            ...     expr="\\Pi_{1} * \\Pi_{3}",
-            ...     name="Combined Coefficient"
-            ... )
+        Returns:
+            Coefficient: The newly derived coefficient.
         """
+
         if self._model is None:
-            raise ValueError("Matrix must be created before deriving coefficients. Call create_matrix() first.")
+            _msg = "Matrix must be created before deriving coefficients."
+            _msg += " Call create_matrix() first."
+            raise ValueError(_msg)
 
         if not self._is_solved:
-            raise ValueError("Matrix must be solved before deriving coefficients. Call solve() first.")
+            _msg = "Matrix must be solved before deriving coefficients."
+            _msg += " Call solve() first."
+            raise ValueError(_msg)
 
         try:
             # Delegate to the Matrix's derive_coefficient method
@@ -499,29 +276,27 @@ class AnalysisEngine(Foundation):
     # ========================================================================
 
     def reset(self) -> None:
-        """*reset()* Reset the solver state.
-
-        Resets all generated results, KEEPING only the input variables.
+        """*reset()* Reset the solver state, all the results, KEEPING only the input variables.
         """
+        # Handles coefficients, results, is_solved from WorkflowBase
+        super().reset()
         self._model = None
-        self._coefficients.clear()
-        self._is_solved = False
 
     def clear(self) -> None:
         """*clear()* Reset all attributes to default values.
 
         Clears all solver properties to their initial state, INCLUDING variables.
         """
-        # Reset parent class attributes (Foundation)
-        super().clear()
-        self._sym = f"DAEN_{{\\Pi_{{{self._idx}}}}}"
-
-        # Reset AnalysisEngine-specific attributes
-        self._variables = {}
-        self._schema = Schema(_fwk=Frameworks.PHYSICAL.value)
+        # Reset AnalysisEngine-specific attributes first
         self._model = None
-        self._coefficients = {}
-        self._is_solved = False
+
+        # Call both parent classes' clear methods explicitly for multiple inheritance
+        Foundation.clear(self)
+        WorkflowBase.clear(self)
+
+        # Reset symbol and schema after parent clears
+        self._sym = f"DA_{{\\Pi_{{{self._idx}}}}}"
+        self._schema = Schema(_fwk=Frameworks.PHYSICAL.value)
 
     def to_dict(self) -> Dict[str, Any]:
         """*to_dict()* Convert solver state to dictionary.
@@ -529,32 +304,12 @@ class AnalysisEngine(Foundation):
         Returns:
             Dict[str, Any]: Dictionary representation of solver state.
         """
-        result = {}
+        # Get base serialization from WorkflowBase
+        result = super().to_dict()
 
-        # Get all dataclass fields
-        for f in fields(self):
-            attr_name = f.name
-            attr_value = getattr(self, attr_name)
-
-            # Handle Schema object
-            if isinstance(attr_value, Schema):
-                attr_value = attr_value.to_dict()
-            # Handle Matrix object
-            elif isinstance(attr_value, Matrix):
-                attr_value = attr_value.to_dict()
-            # Handle dictionaries with Variable or Coefficient values
-            elif isinstance(attr_value, dict) and attr_value:
-                first_val = next(iter(attr_value.values()), None)
-                if isinstance(first_val, (Variable, Coefficient)):
-                    attr_value = {k: v.to_dict() for k, v in attr_value.items()}
-
-            # Skip callables (can't be serialized)
-            if callable(attr_value) and not isinstance(attr_value, type):
-                continue
-
-            # Remove leading underscore from private attributes
-            clean_name = attr_name[1:] if attr_name.startswith("_") else attr_name
-            result[clean_name] = attr_value
+        # Add Matrix-specific handling
+        if self._model is not None:
+            result["model"] = self._model.to_dict()
 
         return result
 
@@ -568,61 +323,12 @@ class AnalysisEngine(Foundation):
         Returns:
             AnalysisEngine: New instance of AnalysisEngine.
         """
-        # Get all valid field names from the dataclass
-        field_names = {f.name for f in fields(cls)}
+        # Use parent class to handle base deserialization
+        instance = cast(AnalysisEngine, super().from_dict(data))
 
-        # Map keys without underscores to keys with underscores
-        mapped_data = {}
+        # Handle AnalysisEngine-specific Matrix reconstruction
+        model_data = data.get("model", None)
+        if model_data is not None and isinstance(model_data, dict):
+            instance._model = Matrix.from_dict(model_data)
 
-        for key, value in data.items():
-            # Handle special conversions for Schema
-            if key == "schema" and isinstance(value, dict):
-                mapped_data["_schema"] = Schema.from_dict(value)
-                continue
-            # Handle dictionary of Variables
-            elif key == "variables" and isinstance(value, dict):
-                mapped_data["_variables"] = {
-                    k: Variable.from_dict(v) if isinstance(v, dict) else v
-                    for k, v in value.items()
-                }
-                continue
-            # Handle dictionary of Coefficients
-            elif key == "coefficients" and isinstance(value, dict):
-                mapped_data["_coefficients"] = {
-                    k: Coefficient.from_dict(v) if isinstance(v, dict) else v
-                    for k, v in value.items()
-                }
-                continue
-            # Handle Matrix object
-            elif key == "model" and isinstance(value, dict):
-                mapped_data["_model"] = Matrix.from_dict(value)
-                continue
-
-            # Try the key as-is first (handles both _idx and name)
-            if key in field_names:
-                mapped_data[key] = value
-            # Try adding underscore prefix (handles idx -> _idx)
-            elif f"_{key}" in field_names:
-                mapped_data[f"_{key}"] = value
-            # Try removing underscore prefix (handles _name -> name if needed)
-            elif key.startswith("_") and key[1:] in field_names:
-                mapped_data[key[1:]] = value
-            else:
-                # Use as-is for unknown keys (will be validated by dataclass)
-                mapped_data[key] = value
-
-        return cls(**mapped_data)
-
-    def __repr__(self) -> str:
-        """*__repr__()* String representation of solver.
-
-        Returns:
-            str: String representation.
-        """
-        status = "solved" if self._is_solved else "not solved"
-        coef_count = len(self._coefficients)
-
-        return (f"AnalysisEngine(name={self.name!r}, "
-                f"variables={len(self._variables)}, "
-                f"coefficients={coef_count}, "
-                f"status={status})")
+        return instance

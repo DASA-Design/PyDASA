@@ -43,6 +43,7 @@ from .structs.tables.scht import Bucket, SCHashTable
 
 # exposing validation, error and decorator modules
 # exposing workflow modules
+from .workflows.basic import WorkflowBase
 from .workflows.influence import SensitivityAnalysis
 from .workflows.practical import MonteCarloSimulation
 from .workflows.phenomena import AnalysisEngine
@@ -78,6 +79,7 @@ assert MapEntry
 assert Bucket
 assert SCHashTable
 # asserting workflow modules
+assert WorkflowBase
 assert SensitivityAnalysis
 assert MonteCarloSimulation
 assert AnalysisEngine
@@ -97,6 +99,7 @@ __all__ = [
     "Variable",
     "load",
     "save",
+    "WorkflowBase",
     "SensitivityAnalysis",
     "MonteCarloSimulation",
     "AnalysisEngine",

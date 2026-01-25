@@ -41,6 +41,9 @@ from pydasa.validations.decorators import validate_index
 class SymBasis(ABC):
     """**SymBasis** Foundation class for entities with symbols and framework functionalities.
 
+    Args:
+        ABC (ABC): Abstract base class.
+
     Attributes:
         _sym (str): Symbol representation.
         _alias (str): Python-compatible alias for use in code.
@@ -156,6 +159,9 @@ class SymBasis(ABC):
 class IdxBasis(SymBasis):
     """**IdxBasis** Foundation class for entities with index/precedence functionality.
 
+    Args:
+        SymBasis (SymBasis): Inherits symbol and framework validation.
+
     Attributes:
         _idx (int): Index/precedence value
     """
@@ -211,6 +217,9 @@ class Foundation(IdxBasis):
     """**Foundation** Foundation class for all dimensional analysis entities.
 
     Provides common validation logic and attributes shared by FDU, Variable, and Coeffcient classes.
+
+    Args:
+        IdxBasis (IdxBasis): Inherits index, symbol, and framework validation.
 
     Attributes:
         name (str): User-friendly name
@@ -296,25 +305,3 @@ class Foundation(IdxBasis):
             str: String representation.
         """
         return self.__str__()
-
-    # def __repr__(self) -> str:
-    #     """*__repr__()* Concise string representation for debugging.
-
-    #     Returns a short, readable identifier showing only key attributes.
-
-    #     Returns:
-    #         str: Concise string representation (e.g., "Variable(sym='v', idx=0)").
-    #     """
-    #     # Show only key identifying attributes
-    #     key_parts = []
-
-    #     if hasattr(self, '_sym') and self._sym:
-    #         key_parts.append(f"sym={self._sym!r}")
-
-    #     if hasattr(self, '_idx') and self._idx != -1:
-    #         key_parts.append(f"idx={self._idx}")
-
-    #     if hasattr(self, '_name') and self._name:
-    #         key_parts.append(f"name={self._name!r}")
-
-    #     return f"{self.__class__.__name__}({', '.join(key_parts)})"

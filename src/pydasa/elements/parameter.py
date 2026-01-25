@@ -45,6 +45,7 @@ class Variable(ConceptualSpecs, SymbolicSpecs, NumericalSpecs, StatisticalSpecs)
     - **StatisticalSpecs**: Probabilistic modeling (how do we MODEL uncertainty?)
 
     All attributes, properties, and methods are inherited from the spec classes.
+
     This class only provides integration logic and utility methods.
 
     Attributes:
@@ -129,6 +130,7 @@ class Variable(ConceptualSpecs, SymbolicSpecs, NumericalSpecs, StatisticalSpecs)
         std_max = self._std_max
         step = self._step
 
+        # NOTE: OLD CODE keep for reference
         # if all([self._std_min is not None,
         #         self._std_max is not None,
         #         self._step is not None]):

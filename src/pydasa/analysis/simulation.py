@@ -1298,11 +1298,13 @@ class MonteCarlo(Foundation, BoundsSpecs):
         Returns:
             MonteCarlo: New simulation instance.
         """
-        # Get all valid field names from the dataclass
-        field_names = {f.name for f in fields(cls)}
+        # Get all valid field names from the dataclass (only init=True fields)
+        init_fields = {f.name for f in fields(cls) if f.init}
+        non_init_fields = {f.name for f in fields(cls) if not f.init}
 
         # Map keys without underscores to keys with underscores
         mapped_data = {}
+        post_init_data = {}
 
         for key, value in data.items():
             # Handle special conversions for Coefficient
@@ -1327,16 +1329,31 @@ class MonteCarlo(Foundation, BoundsSpecs):
                 continue
 
             # Try the key as-is first (handles both _idx and name)
-            if key in field_names:
+            if key in init_fields:
                 mapped_data[key] = value
             # Try adding underscore prefix (handles idx -> _idx)
-            elif f"_{key}" in field_names:
+            elif f"_{key}" in init_fields:
                 mapped_data[f"_{key}"] = value
             # Try removing underscore prefix (handles _name -> name if needed)
-            elif key.startswith("_") and key[1:] in field_names:
+            elif key.startswith("_") and key[1:] in init_fields:
                 mapped_data[key[1:]] = value
+            # Check if it's a non-init field (set after creation)
+            elif key in non_init_fields or f"_{key}" in non_init_fields:
+                field_key = key if key in non_init_fields else f"_{key}"
+                post_init_data[field_key] = value
             else:
-                # Use as-is for unknown keys (will be validated by dataclass)
-                mapped_data[key] = value
+                # Skip unknown keys
+                continue
 
-        return cls(**mapped_data)
+        # Create instance with init fields
+        instance = cls(**mapped_data)
+
+        # Set non-init fields directly
+        for key, value in post_init_data.items():
+            setattr(instance, key, value)
+
+        # Recalculate statistics if results exist
+        if instance._results.size > 0:
+            instance._calculate_statistics()
+
+        return instance

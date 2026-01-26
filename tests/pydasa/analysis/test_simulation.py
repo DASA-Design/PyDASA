@@ -66,6 +66,18 @@ def dist_dependent(a: float, U: float) -> float:
     return random.uniform(a, 2 * U)
 
 
+def _is_none_or_nan(value: float | int | None) -> bool:
+    """Helper to check if value is None or NaN.
+
+    Args:
+        value: Value to check (can be float, int, or None)
+
+    Returns:
+        True if value is None or NaN, False otherwise
+    """
+    return value is None or (isinstance(value, (float, int)) and np.isnan(value))
+
+
 # ============================================================================
 # Test Class
 # ============================================================================
@@ -1003,3 +1015,295 @@ class TestMonteCarlo(unittest.TestCase):
             assert len(mc_sim._data[var_sym]) == n_samples
             # Check that data was used
             assert not np.isnan(mc_sim._data[var_sym][0])
+
+    # ========================================================================
+    # Summary Property Tests
+    # ========================================================================
+
+    def test_summary_property(self) -> None:
+        """*test_summary_property()* tests summary property returns correct statistics."""
+        if "\\Pi_{1}" not in self.coefficients:
+            pytest.skip("Pi_1 coefficient not found")
+
+        coef = self.coefficients["\\Pi_{1}"]
+        vars_in_coef = list(coef.var_dims.keys())
+
+        mc_sim = MonteCarlo(
+            _coefficient=coef,
+            _variables=self.variables,
+            _experiments=N_EXP
+        )
+
+        # Set up distributions
+        mc_sim._distributions = {
+            k: v for k, v in self.dist_specs.items() if k in vars_in_coef
+        }
+
+        mc_sim.run()
+
+        # Test summary property
+        summary = mc_sim.summary
+        assert summary is not None
+        assert isinstance(summary, dict)
+        assert "mean" in summary
+        assert "median" in summary
+        assert "dev" in summary
+        assert "min" in summary
+        assert "max" in summary
+        assert "count" in summary
+        assert summary["count"] == N_EXP
+
+    def test_summary_property_without_results(self) -> None:
+        """*test_summary_property_without_results()* tests summary with no results."""
+        if "\\Pi_{1}" not in self.coefficients:
+            pytest.skip("Pi_1 coefficient not found")
+
+        coef = self.coefficients["\\Pi_{1}"]
+        mc_sim = MonteCarlo(_coefficient=coef,
+                            _experiments=N_EXP)
+
+        # Access summary without running simulation - should have NaN values
+        summary = mc_sim.summary
+        assert summary is not None
+        assert isinstance(summary, dict)
+        # Statistics should be NaN or default values before running
+        assert _is_none_or_nan(summary["mean"])
+        assert _is_none_or_nan(summary["median"])
+        assert _is_none_or_nan(summary["dev"])
+        assert _is_none_or_nan(summary["min"])
+        assert _is_none_or_nan(summary["max"])
+
+    # ========================================================================
+    # Clear Method Tests
+    # ========================================================================
+
+    def test_clear_method(self) -> None:
+        """*test_clear_method()* tests clear method resets all attributes."""
+        if "\\Pi_{1}" not in self.coefficients:
+            pytest.skip("Pi_1 coefficient not found")
+
+        coef = self.coefficients["\\Pi_{1}"]
+        vars_in_coef = list(coef.var_dims.keys())
+
+        mc_sim = MonteCarlo(
+            _idx=5,
+            _sym="MC_Test",
+            _fwk="CUSTOM",
+            _name="Test Simulation",
+            _coefficient=coef,
+            _variables=self.variables,
+            _experiments=N_EXP
+        )
+
+        # Set up and run simulation
+        mc_sim._distributions = {
+            k: v for k, v in self.dist_specs.items() if k in vars_in_coef
+        }
+        mc_sim.run()
+
+        # Verify simulation has results
+        assert mc_sim._results.size > 0
+        assert len(mc_sim._data) > 0
+
+        # Clear the simulation
+        mc_sim.clear()
+
+        # Verify all attributes are reset
+        assert mc_sim._coefficient is not None  # Should be default Coefficient()
+        assert mc_sim._pi_expr is None
+        assert mc_sim._sym_func is None
+        assert mc_sim._exe_func is None
+        assert len(mc_sim._variables) == 0
+        assert len(mc_sim._symbols) == 0
+        assert len(mc_sim._aliases) == 0
+        assert len(mc_sim._latex_to_py) == 0
+        assert len(mc_sim._py_to_latex) == 0
+        assert len(mc_sim._var_symbols) == 0
+        assert mc_sim._experiments == -1
+        assert len(mc_sim._distributions) == 0
+        assert len(mc_sim._dependencies) == 0
+        assert len(mc_sim._simul_cache) == 0
+        assert len(mc_sim._data) == 0
+
+        # Use .size for NumPy arrays, not len()
+        assert mc_sim._results.size == 0
+
+        # Verify statistics are reset to NaN or None
+        assert _is_none_or_nan(mc_sim._mean)
+        assert _is_none_or_nan(mc_sim._median)
+        assert _is_none_or_nan(mc_sim._dev)
+        assert _is_none_or_nan(mc_sim._min)
+        assert _is_none_or_nan(mc_sim._max)
+        assert mc_sim._count == -1
+
+    # ========================================================================
+    # Serialization Tests
+    # ========================================================================
+
+    def test_to_dict_method(self) -> None:
+        """*test_to_dict_method()* tests serialization to dictionary."""
+        if "\\Pi_{1}" not in self.coefficients:
+            pytest.skip("Pi_1 coefficient not found")
+
+        coef = self.coefficients["\\Pi_{1}"]
+        vars_in_coef = list(coef.var_dims.keys())
+
+        mc_sim = MonteCarlo(
+            _idx=3,
+            _sym="MC_Pi_1",
+            _fwk="CUSTOM",
+            _name="Test MC Simulation",
+            description="Test simulation for serialization",
+            _coefficient=coef,
+            _variables=self.variables,
+            _experiments=N_EXP
+        )
+
+        # Set up and run simulation
+        mc_sim._distributions = {
+            k: v for k, v in self.dist_specs.items() if k in vars_in_coef
+        }
+        mc_sim.run()
+
+        # Convert to dictionary
+        sim_dict = mc_sim.to_dict()
+
+        # Verify dictionary structure
+        assert isinstance(sim_dict, dict)
+        assert "idx" in sim_dict or "_idx" in sim_dict
+        assert "sym" in sim_dict or "_sym" in sim_dict
+        assert "fwk" in sim_dict or "_fwk" in sim_dict
+        assert "name" in sim_dict or "_name" in sim_dict
+        assert "description" in sim_dict
+        assert "coefficient" in sim_dict
+        assert "variables" in sim_dict
+        assert "experiments" in sim_dict or "iterations" in sim_dict
+        assert "results" in sim_dict
+
+        # Verify coefficient is serialized
+        coef_data = sim_dict.get("coefficient")
+        assert coef_data is not None
+        assert isinstance(coef_data, dict)
+
+        # Verify variables are serialized
+        vars_data = sim_dict.get("variables")
+        assert vars_data is not None
+        assert isinstance(vars_data, dict)
+
+        # Verify results are converted to list
+        results_data = sim_dict.get("results")
+        assert results_data is not None
+        assert isinstance(results_data, list)
+
+    def test_from_dict_method(self) -> None:
+        """*test_from_dict_method()* tests deserialization from dictionary."""
+        if "\\Pi_{1}" not in self.coefficients:
+            pytest.skip("Pi_1 coefficient not found")
+
+        coef = self.coefficients["\\Pi_{1}"]
+        vars_in_coef = list(coef.var_dims.keys())
+
+        # Create original simulation
+        mc_sim_original = MonteCarlo(
+            _idx=7,
+            _sym="MC_Original",
+            _fwk="CUSTOM",
+            _name="Original Simulation",
+            description="Test for round-trip serialization",
+            _coefficient=coef,
+            _variables=self.variables,
+            _experiments=N_EXP
+        )
+
+        # Set up and run simulation
+        mc_sim_original._distributions = {
+            k: v for k, v in self.dist_specs.items() if k in vars_in_coef
+        }
+        mc_sim_original.run()
+
+        # Serialize
+        sim_dict = mc_sim_original.to_dict()
+
+        # Deserialize
+        mc_sim_restored = MonteCarlo.from_dict(sim_dict)
+
+        # Verify restoration
+        assert mc_sim_restored is not None
+        assert mc_sim_restored._idx == mc_sim_original._idx
+        assert mc_sim_restored._sym == mc_sim_original._sym
+        assert mc_sim_restored._fwk == mc_sim_original._fwk
+        assert mc_sim_restored._name == mc_sim_original._name
+        assert mc_sim_restored.description == mc_sim_original.description
+        assert mc_sim_restored._experiments == mc_sim_original._experiments
+
+        # Verify coefficient is restored
+        assert mc_sim_restored._coefficient is not None
+        assert mc_sim_restored._coefficient.sym == mc_sim_original._coefficient.sym
+
+        # Verify variables are restored
+        assert len(mc_sim_restored._variables) == len(mc_sim_original._variables)
+
+        # Verify results are restored
+        assert mc_sim_restored._results.size == mc_sim_original._results.size
+        np.testing.assert_array_equal(mc_sim_restored._results, mc_sim_original._results)
+
+    def test_serialization_round_trip(self) -> None:
+        """*test_serialization_round_trip()* tests complete round-trip serialization."""
+        if "\\Pi_{1}" not in self.coefficients:
+            pytest.skip("Pi_1 coefficient not found")
+
+        coef = self.coefficients["\\Pi_{1}"]
+        vars_in_coef = list(coef.var_dims.keys())
+
+        # Create and run original simulation
+        mc_sim_original = MonteCarlo(
+            _idx=9,
+            _sym="MC_RoundTrip",
+            _fwk="CUSTOM",
+            _coefficient=coef,
+            _variables=self.variables,
+            _experiments=50
+        )
+
+        mc_sim_original._distributions = {
+            k: v for k, v in self.dist_specs.items() if k in vars_in_coef
+        }
+        mc_sim_original.run()
+
+        # Get original statistics
+        original_stats = mc_sim_original.statistics
+
+        # Round-trip: serialize and deserialize
+        sim_dict = mc_sim_original.to_dict()
+        mc_sim_restored = MonteCarlo.from_dict(sim_dict)
+
+        # Get restored statistics
+        restored_stats = mc_sim_restored.statistics
+
+        # Compare statistics
+        assert restored_stats["mean"] == original_stats["mean"]
+        assert restored_stats["median"] == original_stats["median"]
+        assert restored_stats["dev"] == original_stats["dev"]
+        assert restored_stats["min"] == original_stats["min"]
+        assert restored_stats["max"] == original_stats["max"]
+        assert restored_stats["count"] == original_stats["count"]
+
+    def test_from_dict_with_minimal_data(self) -> None:
+        """*test_from_dict_with_minimal_data()* tests deserialization with minimal required data."""
+        if "\\Pi_{1}" not in self.coefficients:
+            pytest.skip("Pi_1 coefficient not found")
+
+        coef = self.coefficients["\\Pi_{1}"]
+
+        # Create minimal dictionary
+        minimal_dict = {
+            "coefficient": coef.to_dict(),
+            "experiments": 10
+        }
+
+        # Should create a valid MonteCarlo instance
+        mc_sim = MonteCarlo.from_dict(minimal_dict)
+
+        assert mc_sim is not None
+        assert mc_sim._coefficient is not None
+        assert mc_sim._experiments == 10

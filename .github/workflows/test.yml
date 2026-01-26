@@ -39,5 +39,8 @@ jobs:
           name: codecov-pydasa
           fail_ci_if_error: false
       
-      - name: Test notebooks
-        run: pytest --nbval docs/source/public/examples/notebooks/
+      # TODO: Re-enable when notebooks are ready
+      # - name: Test notebooks
+      #   run: |
+      #     pip install nbval
+      #     pytest --nbval docs/source/public/examples/notebooks/

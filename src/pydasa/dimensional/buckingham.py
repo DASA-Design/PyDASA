@@ -429,7 +429,12 @@ class Coefficient(Foundation, BoundsSpecs):
         if vars is None:
             vars = {}
             # check stored variables for setpoints
-            for sym, var in self._variables.items():
+            # Only collect variables that are actually used in this coefficient
+            for sym in self.var_dims.keys():
+                if sym not in self._variables:
+                    _msg = f"Variable '{sym}' not found in stored variables."
+                    raise ValueError(_msg)
+                var = self._variables[sym]
                 if var.std_setpoint is None:
                     _msg = f"Variable '{sym}' std_setpoint is not defined."
                     raise ValueError(_msg)

@@ -441,3 +441,126 @@ class TestMonteCarloSimulation(unittest.TestCase):
         # Verify results generated
         assert len(handler._results) > 0
         assert handler._experiments == 5
+
+    def test_from_dict_method(self) -> None:
+        """*test_from_dict_method()* tests deserialization from dictionary."""
+        # Create original handler
+        handler_original = MonteCarloSimulation(
+            _idx=3,
+            _fwk="CUSTOM",
+            _name="Test Handler",
+            description="Test for serialization",
+            _cat="DIST",
+            _experiments=50,
+            _variables=self.test_variables,
+            _coefficients=self.test_coefficients
+        )
+
+        # Configure and run simulations
+        handler_original.create_simulations()
+        handler_original.run(iters=50)
+
+        # Serialize
+        handler_dict = handler_original.to_dict()
+
+        # Deserialize
+        handler_restored = MonteCarloSimulation.from_dict(handler_dict)
+
+        # Verify restoration
+        assert handler_restored is not None
+        assert handler_restored._idx == handler_original._idx
+        assert handler_restored._fwk == handler_original._fwk
+        assert handler_restored._name == handler_original._name
+        assert handler_restored.description == handler_original.description
+        assert handler_restored._cat == handler_original._cat
+        assert handler_restored._experiments == handler_original._experiments
+
+        # Verify variables are restored
+        assert len(handler_restored._variables) == len(handler_original._variables)
+
+        # Verify coefficients are restored
+        assert len(handler_restored._coefficients) == len(handler_original._coefficients)
+
+        # Verify simulations are restored
+        assert len(handler_restored._simulations) == len(handler_original._simulations)
+
+        # Verify distributions are restored
+        assert len(handler_restored._distributions) == len(handler_original._distributions)
+
+        # Verify results are restored
+        assert len(handler_restored._results) == len(handler_original._results)
+
+    def test_serialization_round_trip(self) -> None:
+        """*test_serialization_round_trip()* tests complete round-trip serialization."""
+        # Create and configure original handler
+        handler_original = MonteCarloSimulation(
+            _idx=7,
+            _fwk="CUSTOM",
+            _name="Round Trip Handler",
+            _cat="DIST",
+            _variables=self.test_variables,
+            _coefficients=self.test_coefficients
+        )
+
+        handler_original.create_simulations()
+        handler_original.run(iters=10)
+
+        # Get original results count
+        original_results_count = len(handler_original._results)
+
+        # Round-trip: serialize and deserialize
+        handler_dict = handler_original.to_dict()
+        handler_restored = MonteCarloSimulation.from_dict(handler_dict)
+
+        # Verify results count matches
+        assert len(handler_restored._results) == original_results_count
+
+        # Verify key attributes match
+        assert handler_restored._idx == handler_original._idx
+        assert handler_restored._name == handler_original._name
+        assert handler_restored._cat == handler_original._cat
+        assert handler_restored._experiments == handler_original._experiments
+        assert handler_restored._is_solved == handler_original._is_solved
+
+    def test_from_dict_with_minimal_data(self) -> None:
+        """*test_from_dict_with_minimal_data()* tests deserialization with minimal required data."""
+        # Create minimal dictionary
+        minimal_dict = {
+            "_idx": 0,
+            "_fwk": "CUSTOM",
+            "cat": "DIST",
+            "experiments": 100
+        }
+
+        # Should create a valid MonteCarloSimulation instance
+        handler = MonteCarloSimulation.from_dict(minimal_dict)
+
+        assert handler is not None
+        assert handler._idx == 0
+        assert handler._fwk == "CUSTOM"
+        assert handler._cat == "DIST"
+        assert handler._experiments == 100
+
+    def test_from_dict_preserves_configuration(self) -> None:
+        """*test_from_dict_preserves_configuration()* tests that configuration is preserved during deserialization."""
+        # Create handler with full configuration
+        handler_original = MonteCarloSimulation(
+            _idx=5,
+            _fwk="CUSTOM",
+            _cat="DATA",
+            _experiments=200,
+            _variables=self.test_variables,
+            _coefficients=self.test_coefficients
+        )
+
+        # Configure without running
+        handler_original.create_simulations()
+
+        # Serialize and deserialize
+        handler_dict = handler_original.to_dict()
+        handler_restored = MonteCarloSimulation.from_dict(handler_dict)
+
+        # Verify configuration preserved
+        assert handler_restored.is_configured == handler_original.is_configured
+        assert len(handler_restored._simulations) == len(handler_original._simulations)
+        assert len(handler_restored._distributions) == len(handler_original._distributions)

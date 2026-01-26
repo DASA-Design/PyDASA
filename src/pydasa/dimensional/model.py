@@ -571,6 +571,7 @@ class Matrix(Foundation):
                     - "\\Pi_{0} - \\Pi_{1}" (subtraction: result is dimensionless)
                     - "2 * \\Pi_{0}" (constant multiplication: constant is dimensionless)
                     - "0.5 * \\Pi_{1} * \\Pi_{0}**(-1)" (mixed expression with constant)
+                    - "1/\\Pi_{2}" (invert the coefficient - changes both exponents and values)
             symbol (str): Symbol representation (LaTeX or alphanumeric) for the derived coefficient. Default to "" to keep the original (e.g., Pi_{0}).
             name (str, optional): Name for the derived coefficient. Defaults to "Derived-Pi-{idx}".
             description (str, optional): Description of the coefficient. Defaults to "Derived from: {expr}".
@@ -611,7 +612,10 @@ class Matrix(Foundation):
         # Get base coefficient for structure
         _coef_symbols = re.findall(PI_COEF_RE, expr)
         _base_coef = self.coefficients[_coef_symbols[0]]
-        _new_vars = _base_coef.variables.copy()
+
+        # Use the relevant_lt (all relevant variables) instead of just base coef variables
+        # This ensures control variables are included even if not in all Pi groups
+        _new_vars = self._relevant_lt.copy() if hasattr(self, '_relevant_lt') and self._relevant_lt else _base_coef.variables.copy()
 
         # Validate all coefficients use same variables
         for sym in _coef_symbols[1:]:

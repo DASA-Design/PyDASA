@@ -320,7 +320,10 @@ class MonteCarlo(Foundation, BoundsSpecs):
         if n_sym > 0 and self._experiments > 0:
             # Only allocate if we have variables and valid experiment count
             if not self._data:  # Check if dict is empty
-                for var_name in self._variables.keys():
+                # Allocate space for all variables that appear in the expression
+                # Use _latex_to_py if available (from parsed expression), otherwise use _variables
+                var_names = self._latex_to_py if self._latex_to_py else list(self._variables.keys())
+                for var_name in var_names:
                     self._data[var_name] = np.full(self._experiments,
                                                    np.nan,
                                                    dtype=np.float64)
@@ -722,10 +725,13 @@ class MonteCarlo(Foundation, BoundsSpecs):
             raise ValueError("Failed to create executable function")
 
         # STEP 3: setup the input dataset according to mode, 'DATA or 'DIST'
-        # Filter variables to only those in the coefficient expression
+        # Filter variables to only those needed for the coefficient evaluation
+        # Use _latex_to_py to ensure we get all variables from the parsed expression
         vars_in_expr = {}
         for k, v in self._variables.items():
-            if k in self._var_symbols or v._alias in self._var_symbols:
+            # Include if variable symbol is in _latex_to_py (parsed expression)
+            # or in _var_symbols (original symbols) or alias matches
+            if k in self._latex_to_py or k in self._var_symbols or v._alias in self._var_symbols:
                 vars_in_expr[k] = v
 
         if self._cat == SimulationMode.DATA.value:
@@ -744,7 +750,17 @@ class MonteCarlo(Foundation, BoundsSpecs):
                 }
 
                 # Prepare sorted/ordered values for evaluation
-                sorted_vals = [iter_vals[var] for var in self._latex_to_py]
+                # CRITICAL: Must use same order as aliases (from _var_symbols)
+                # Map _var_symbols back to LaTeX symbols to lookup values
+                sorted_vals = []
+                for py_sym in self._var_symbols:
+                    # Find the LaTeX symbol that maps to this Python symbol
+                    latex_sym = self._py_to_latex.get(py_sym, py_sym)
+                    if latex_sym in iter_vals:
+                        sorted_vals.append(iter_vals[latex_sym])
+                    else:
+                        # Fallback: try using the Python symbol directly
+                        sorted_vals.append(iter_vals[py_sym])
 
                 # FIXME: hotfix for queue functions
                 _type = (list, tuple, np.ndarray)

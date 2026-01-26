@@ -14,6 +14,8 @@ authors = [
 ]
 classifiers = [
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Development Status :: 3 - Alpha",
     "Operating System :: OS Independent",
     "Intended Audience :: Science/Research",

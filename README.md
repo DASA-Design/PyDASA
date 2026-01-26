@@ -1,5 +1,11 @@
 # PyDASA
 
+![PyPI](https://img.shields.io/pypi/v/pydasa)
+![Python Version](https://img.shields.io/pypi/pyversions/pydasa)
+![License](https://img.shields.io/github/license/DASA-Design/PyDASA)
+![Documentation Status](https://readthedocs.org/projects/pydasa/badge/?version=latest)
+![Coverage](https://codecov.io/gh/DASA-Design/PyDASA/branch/main/graph/badge.svg)
+
 Library to solve software architecture and physical problems with dimensionless analysis and the Pi-Theorem
 
 ## The Need (Epic User Story)

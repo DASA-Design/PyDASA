@@ -30,4 +30,5 @@
         "htmlcov/index.html"
     ],
     "codeStatsViewer.maxLargestFilesSidebar": 10,
+    "ruff.enable": false
 }

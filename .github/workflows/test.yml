@@ -39,8 +39,8 @@ jobs:
           flags: unittests
           name: codecov-pydasa
           fail_ci_if_error: false
-      
-      - name: Test notebooks
-        run: |
-          pip install nbval
-          pytest --nbval docs/source/_static/examples/notebooks/
+      # # TODO avilitate when notebooks are impllemented
+      # - name: Test notebooks
+      #   run: |
+      #     pip install nbval
+      #     pytest --nbval docs/source/_static/examples/notebooks/

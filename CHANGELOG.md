@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.3] - 2026-01-26
+
+### Fixed
+- Enhanced MonteCarlo variable handling and serialization
+- Updated Codecov action to v5 with improved coverage report upload
+
+### Removed
+- Removed unused Jupyter notebook PyDASA-Yoly.ipynb from examples directory
+
+### Changed
+- Re-enabled notebook testing in CI workflow
+
+## [0.6.2] - 2026-01-26
+
+### Fixed
+- Improved MonteCarlo initialization and handling of non-init fields
+
+### Changed
+- Temporarily commented out notebook testing step in CI workflow
+
+## [0.6.1] - 2026-01-26
+
+### Added
+- Quickstart guide and Reynolds number analysis example documentation
+
+### Fixed
+- Enhanced testing workflow with coverage reporting
+- Updated README badges
+
 ## [0.6.0] - 2026-01-25
 
 ### Changed
@@ -387,6 +416,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Distribution files: `pydasa-0.0.1-py3-none-any.whl`, `pydasa-0.0.1.tar.gz`
 
+[0.6.3]: https://github.com/DASA-Design/PyDASA/compare/v0.6.2...v0.6.3
+[0.6.2]: https://github.com/DASA-Design/PyDASA/compare/v0.6.1...v0.6.2
+[0.6.1]: https://github.com/DASA-Design/PyDASA/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/DASA-Design/PyDASA/compare/v0.5.3...v0.6.0
 [0.5.3]: https://github.com/DASA-Design/PyDASA/compare/v0.5.2...v0.5.3
 [0.5.2]: https://github.com/DASA-Design/PyDASA/compare/v0.5.1...v0.5.2

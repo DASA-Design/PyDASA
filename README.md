@@ -309,8 +309,6 @@ For more information on how to se **PyDASA**, go to our comprehensive documentat
     - ✅ DONE
     - ⚠️ ATTENTION REQUIRED
 
-**Current Version:** 0.6.4
-
 ### ✅ Core Modules (Implemented & Tested)
 
 - **core/**: Foundation classes, configuration, I/O.

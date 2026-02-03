@@ -1,4 +1,4 @@
-﻿"""
+"""
 Simple Reynolds Number Analysis with PyDASA
 ===========================================
 
@@ -36,7 +36,7 @@ variables = {
         "_idx": 1,
         "_sym": "v",
         "_fwk": "PHYSICAL",
-        "_cat": "OUT",  # At least one variable must be OUTPUT
+        "_cat": "IN",  # if this were OUT, Reynolds would be trivial
         "_name": "Velocity",
         "relevant": True,
         "_dims": "L*T^-1",
@@ -64,7 +64,7 @@ variables = {
         "_idx": 3,
         "_sym": "\\mu",
         "_fwk": "PHYSICAL",
-        "_cat": "IN",
+        "_cat": "OUT",  # Need exactly one OUTPUT variable
         "_name": "Viscosity",
         "relevant": True,
         "_dims": "M*L^-1*T^-1",
@@ -89,15 +89,18 @@ results = engine.run_analysis()
 # Step 4: Display results
 print("=" * 50)
 print("DIMENSIONAL ANALYSIS RESULTS")
-print("=" * 50)
+for sym, coeff in results.items():
+    print(f"{sym}: {coeff.get('pi_expr')}")
+print("=" * 50, "\n")
+
+# Detailed output of dimensionless coefficients
 print(f"Number of dimensionless groups: {len(engine.coefficients)}")
-print()
 
 for name, coeff in engine.coefficients.items():
-    print(f"{name}: {coeff.pi_expr}")
-    print(f"  Variables: {list(coeff.var_dims.keys())}")
-    print(f"  Exponents: {list(coeff.var_dims.values())}")
-    print()
+    print(f"\t{name}: {coeff.pi_expr}")
+    print(f"\tVariables: {list(coeff.var_dims.keys())}")
+    print(f"\tExponents: {list(coeff.var_dims.values())}")
+print("=" * 50, "\n")
 
 # Step 5: Derive Reynolds Number using AnalysisEngine.derive_coefficient()
 # Get the Pi_0 key (inverse Reynolds)

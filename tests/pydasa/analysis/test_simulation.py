@@ -714,6 +714,164 @@ class TestMonteCarlo(unittest.TestCase):
         vars_dict = mc_sim.variables
         assert isinstance(vars_dict, dict)
 
+    def test_results_property(self) -> None:
+        """*test_results_property()* tests results property getter."""
+        coef = list(self.coefficients.values())[0]
+        mc_sim = MonteCarlo(_coefficient=coef,
+                            _variables=self.variables,
+                            _experiments=N_EXP)
+        mc_sim.distributions = self.dist_specs
+
+        # Before running simulation, should raise error
+        with pytest.raises(ValueError):
+            _ = mc_sim.results
+
+        # After running simulation, should return results
+        mc_sim.run(iters=N_EXP, mode="DIST")
+        results = mc_sim.results
+        assert isinstance(results, np.ndarray)
+        assert len(results) == N_EXP
+
+    def test_data_property_getter(self) -> None:
+        """*test_data_property_getter()* tests data property getter."""
+        coef = list(self.coefficients.values())[0]
+        mc_sim = MonteCarlo(_coefficient=coef,
+                           _variables=self.variables,
+                           _experiments=N_EXP)
+        mc_sim.distributions = self.dist_specs
+
+        # Before running simulation, should raise error
+        with pytest.raises(ValueError):
+            _ = mc_sim.data
+
+        # After running simulation, should return data
+        mc_sim.run(iters=N_EXP, mode="DIST")
+        data = mc_sim.data
+        assert isinstance(data, dict)
+        assert len(data) > 0
+
+    def test_data_property_setter(self) -> None:
+        """*test_data_property_setter()* tests data property setter."""
+        coef = list(self.coefficients.values())[0]
+        mc_sim = MonteCarlo(_coefficient=coef)
+
+        # Set data with lists
+        test_data = {
+            "U": [1.0, 2.0, 3.0],
+            "h": [0.1, 0.2, 0.3]
+        }
+        mc_sim.data = test_data
+
+        # Verify data was converted to numpy arrays
+        retrieved_data = mc_sim.data
+        for key, values in retrieved_data.items():
+            assert isinstance(values, np.ndarray)
+
+    def test_distributions_property(self) -> None:
+        """*test_distributions_property()* tests distributions property."""
+        coef = list(self.coefficients.values())[0]
+        mc_sim = MonteCarlo(_coefficient=coef)
+
+        # Test getter with empty distributions
+        dists = mc_sim.distributions
+        assert isinstance(dists, dict)
+
+        # Test setter
+        mc_sim.distributions = self.dist_specs
+        dists = mc_sim.distributions
+        assert len(dists) > 0
+
+    def test_dependencies_property(self) -> None:
+        """*test_dependencies_property()* tests dependencies property."""
+        coef = list(self.coefficients.values())[0]
+        mc_sim = MonteCarlo(_coefficient=coef)
+
+        # Test getter
+        deps = mc_sim.dependencies
+        assert isinstance(deps, dict)
+
+        # Test setter
+        test_deps = {"\\mu_{1}": ["U"]}
+        mc_sim.dependencies = test_deps
+        deps = mc_sim.dependencies
+        assert "\\mu_{1}" in deps
+        assert deps["\\mu_{1}"] == ["U"]
+
+    def test_cat_property(self) -> None:
+        """*test_cat_property()* tests cat property."""
+        coef = list(self.coefficients.values())[0]
+        mc_sim = MonteCarlo(_coefficient=coef)
+
+        # Test getter
+        cat = mc_sim.cat
+        assert isinstance(cat, str)
+
+        # Test setter with valid values
+        mc_sim.cat = "DIST"
+        assert mc_sim.cat == "DIST"
+
+        mc_sim.cat = "DATA"
+        assert mc_sim.cat == "DATA"
+
+        # Test setter with invalid value
+        with pytest.raises(ValueError):
+            mc_sim.cat = "INVALID"
+
+    def test_count_property_getter(self) -> None:
+        """*test_count_property_getter()* tests count property getter."""
+        coef = list(self.coefficients.values())[0]
+        mc_sim = MonteCarlo(_coefficient=coef,
+                           _variables=self.variables,
+                           _experiments=N_EXP)
+        mc_sim.distributions = self.dist_specs
+
+        # Before running simulation, should raise error
+        with pytest.raises(ValueError):
+            _ = mc_sim.count
+
+        # After running simulation, should return count
+        mc_sim.run(iters=N_EXP, mode="DIST")
+        count = mc_sim.count
+        assert count == N_EXP
+
+    def test_count_property_setter(self) -> None:
+        """*test_count_property_setter()* tests count property setter."""
+        coef = list(self.coefficients.values())[0]
+        mc_sim = MonteCarlo(_coefficient=coef)
+
+        # Test setting valid count
+        mc_sim.count = 100
+        # Note: _count is set, but count property getter requires results
+
+        # Test setting invalid count
+        with pytest.raises(ValueError):
+            mc_sim.count = -1
+
+    def test_inherited_statistics_properties(self) -> None:
+        """*test_inherited_statistics_properties()* tests inherited BoundsSpecs properties."""
+        coef = list(self.coefficients.values())[0]
+        mc_sim = MonteCarlo(_coefficient=coef,
+                           _variables=self.variables,
+                           _experiments=N_EXP)
+        mc_sim.distributions = self.dist_specs
+
+        # Run simulation
+        mc_sim.run(iters=N_EXP, mode="DIST")
+
+        # Test inherited properties from BoundsSpecs
+        assert isinstance(mc_sim.mean, (float, np.floating))
+        assert isinstance(mc_sim.median, (float, np.floating))
+        assert isinstance(mc_sim.dev, (float, np.floating))
+        assert isinstance(mc_sim.min, (float, np.floating))
+        assert isinstance(mc_sim.max, (float, np.floating))
+
+        # Verify values are not NaN
+        assert not np.isnan(mc_sim.mean)
+        assert not np.isnan(mc_sim.median)
+        assert not np.isnan(mc_sim.dev)
+        assert not np.isnan(mc_sim.min)
+        assert not np.isnan(mc_sim.max)
+
     # ========================================================================
     # Cache Management Tests
     # ========================================================================

@@ -212,7 +212,7 @@ class AnalysisEngine(Foundation, WorkflowBase):
         """*run_analysis()* Execute complete dimensional analysis workflow. Convenience method that runs the entire workflow: create matrix and solve.
 
         Returns:
-            Dict[str, Any]: Dictionary of analysis results.
+            Dict[str, Any]: Dictionary with the Dimensional Analysis results with coefficient details in nested dictionaries.
         """
         # Step 1: Create matrix if not already created
         if self._model is None:
@@ -270,6 +270,50 @@ class AnalysisEngine(Foundation, WorkflowBase):
         except Exception as e:
             _msg = f"Failed to derive coefficient: {str(e)}"
             raise RuntimeError(_msg) from e
+
+    def calculate_coefficients(self,
+                               setpoints: Optional[Dict[str, float]] = None) -> Dict[str, float]:
+        """*calculate_coefficients()* Calculate numerical values for all coefficients based on current variable setpoints.
+
+        Args:
+            setpoints (Optional[Dict[str, float]], optional): Dictionary of variable symbols and their numerical setpoint values. Defaults to None.
+
+        Raises:
+            ValueError: If matrix is not created.
+            ValueError: If matrix is not solved.
+
+        Returns:
+            Dict[str, float]: Dictionary of coefficient symbols and their calculated numerical values.
+        """
+        data: Dict[str, float] = {}
+
+        if self._model is None:
+            _msg = "Matrix must be created before calculating coefficients."
+            _msg += " Call create_matrix() first."
+            raise ValueError(_msg)
+
+        if not self._is_solved:
+            _msg = "Matrix must be solved before calculating coefficients."
+            _msg += " Call solve() first."
+            raise ValueError(_msg)
+
+        # Delegate to the each Coefficient to calculate its value
+        for sym, coeff in self._model.coefficients.items():
+            # if the setpoints are valid in the coefficient variables, use them
+            if setpoints is not None:
+                if set(coeff.var_dims.keys()).issubset(setpoints.keys()):
+                    # Filter setpoints to only include variables used by this coefficient
+                    coeff_setpoints = {}
+                    for k, v in setpoints.items():
+                        if k in coeff.var_dims.keys():
+                            coeff_setpoints[k] = v
+                    coeff.setpoint = coeff.calculate_setpoint(coeff_setpoints)
+                    data[sym] = coeff.setpoint
+
+            # otherwise, use the default ones in the variables
+            else:
+                coeff.calculate_setpoint()
+        return data
 
     # ========================================================================
     # Utility Methods

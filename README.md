@@ -6,7 +6,7 @@
 ![Documentation Status](https://readthedocs.org/projects/pydasa/badge/?version=latest)
 ![Coverage](https://codecov.io/gh/DASA-Design/PyDASA/branch/main/graph/badge.svg)
 
-Library to solve software architecture and physical problems with dimensionless analysis and the Pi-Theorem
+**PyDASA** (Dimensional Analysis for Scientific Applications and Software Architecture) is an open-source Python library for dimensional analysis of complex phenomena across physical, chemical, computational, and software domains using the Buckingham Pi-theorem.
 
 ## The Need (Epic User Story)
 
@@ -45,14 +45,16 @@ from pydasa.workflows.phenomena import AnalysisEngine
 
 There are two other main modules for Sensitivity Analysis (`SensitivityAnalysis`) and Monte Carlo Simulation (`MonteCarloSimulation`), but we will focus on Dimensional Analysis here.
 
-
 ### Step 1: Define Variables
 
 Define the variables involved in the phenomenon as a dictionary. Each variable is defined by its unique symbolic name (key) and a dictionary of attributes (value).
 
 ```python
 
+# Define variables for Reynolds number example
+# Can be a list, dict, or Variable objects
 variables = {
+    # Density: ρ [M/L³] - INPUT
     "\\rho": {
         "_idx": 0,
         "_sym": "\\rho",
@@ -63,33 +65,35 @@ variables = {
         "_setpoint": 1000.0,       # Value for calculations
         "_std_setpoint": 1000.0,   # Standardized value (used internally)
     },
+    # Velocity in pipe: v [L/T] - OUTPUT (we want to find this)
     "v": {
         "_idx": 1,
         "_sym": "v",
         "_fwk": "PHYSICAL",
-        "_cat": "OUT",             # OUTPUT - exactly ONE required
+        "_cat": "IN",           # if this were OUT, Reynolds would be trivial
         "relevant": True,
-        "_dims": "L*T^-1",         # Dimensions: Length/Time
-        "_setpoint": 2.0,
-        "_std_setpoint": 2.0,
+        "_dims": "L*T^-1",      # Dimensions: Length/Time
+        "_setpoint": 5.0,
+        "_std_setpoint": 5.0,
     },
-    "L": {
+    "D": {      # pipe diameter
         "_idx": 2,
-        "_sym": "L",
+        "_sym": "D",
         "_fwk": "PHYSICAL",
         "_cat": "IN",
         "relevant": True,
-        "_dims": "L",              # Dimensions: Length
+        "_dims": "L",               # Dimensions: Length
         "_setpoint": 0.05,
         "_std_setpoint": 0.05,
     },
+    # Length: L [L] - INPUT
     "\\mu": {
         "_idx": 3,
         "_sym": "\\mu",
         "_fwk": "PHYSICAL",
-        "_cat": "IN",
+        "_cat": "OUT",              # Need exactly one OUTPUT variable
         "relevant": True,
-        "_dims": "M*L^-1*T^-1",    # Dimensions: Mass/(Length·Time)
+        "_dims": "M*L^-1*T^-1",     # Dimensions: Mass/(Length·Time)
         "_setpoint": 0.001,
         "_std_setpoint": 0.001,
     }
@@ -97,9 +101,10 @@ variables = {
 ```
 
 **Notes**:
+
 - Variables with `"relevant": False` are ignored in analysis, even if defined.
 - The dimensional matrix needs to have exactly **ONE** output variable (`"_cat": "OUT"`).
-- The other bariables can be categoried as Inputs (`"IN"`) or Control (`"CTRL"`).
+- The other variables can be categorized as Inputs (`"IN"`) or Control (`"CTRL"`).
 - `_dims` are the dimensional representations using the current FDUs (Fundamental Dimensional Units) of the selected framework. In this case, we use the `PHYSICAL` framework with base dimensions **M** (Mass), **L** (Length), **T** (Time), but other frameworks are available.
 - Subsequent calculations of coefficients require `_setpoint` and `_std_setpoint` values.
 
@@ -115,6 +120,7 @@ engine.variables = variables
 ```
 
 **Notes**:
+
 - By default, the framework is `PHYSICAL`.
 - Other built-in frameworks are: `COMPUTATION`, `SOFTWARE`. Plus, you can define custom frameworks with the `CUSTOM` option and a FDU definition list.
 - Variables can be added as native dictionaries or as `Variable` **PyDASA** objects (use: `from pydasa.elements.parameter import Variable`).
@@ -127,20 +133,24 @@ Then you just run the analysis to solve the dimensional matrix.
 
 ```python
 results = engine.run_analysis()  # May fail if variable definitions have errors
+print(f"Number of dimensionless groups: {len(results)}")
+for name, coeff in results.items():
+    print(f"\t{name}: {coeff.get('pi_expr')}")
 ```
 
-The `run_analysis()` method will process the variables, build the dimensional matrix, and compute the dimensionless coefficients using the Buckingham Pi theorem.
+The `run_analysis()` method will process the variables, build the dimensional matrix, and compute the dimensionless coefficients using the Buckingham Pi theorem; printing and processing the results in dict format will show the number of dimensionless groups found and their expressions.
 
 **Output**:
 
 ```
 Number of dimensionless groups: 1
-\Pi_{0}: \mu/(L*\rho*v)
+    \Pi_{0}: \frac{\mu}{\rho*v*L}
 ```
 
 **If errors occur**: Check variable definitions (dimensions, categories, relevance flags)
 
 **Notes**:
+
 - The results are stored in `engine.coefficients` as `Coefficient` objects.
 - Each coefficient has attributes like `pi_expr` (the dimensionless expression), `name`, `symbol`, etc. used for further analysis, visualization, or exporting.
 - The variables are accessible via `engine.variables` for any additional processing or exporting.
@@ -149,16 +159,28 @@ Number of dimensionless groups: 1
 
 ### Step 4: Display Results
 
-Then, you can display the results in the console or export them for visualization.
+Then, you can also display the object-like results in console or export them for visualization.
 
 Here is how you print the coefficients:
 
 ```python
+print(f"Number of dimensionless groups: {len(engine.coefficients)}")
 for name, coeff in engine.coefficients.items():
-    print(f"{name}: {coeff.pi_expr}")
+    print(f"\t{name}: {coeff.pi_expr}")
+    print(f"\tVariables: {list(coeff.var_dims.keys())}")
+    print(f"\tExponents: {list(coeff.var_dims.values())}")
 ```
 
-If you want to export the results for use with external libraries (matplotlib, pandas, seaborn) you can use the `to_dict()` method:
+Then, the output will be:
+
+```
+Number of dimensionless groups: 1
+        \Pi_{0}: \frac{\mu}{\rho*v*L}
+        Variables: ['\\rho', 'v', 'L', '\\mu']
+        Exponents: [-1, -1, -1, 1]
+```
+
+Since variables and coefficients are Python objects, you can export them to dict format for external libraries (matplotlib, pandas, seaborn) using `to_dict()`:
 
 ```python
 # Export to dict for external libraries
@@ -176,7 +198,7 @@ var_data = {sym: var.to_dict() for sym, var in engine.variables.items()}
 
 ### Step 5: Derive \& Calculate Coefficients
 
-You can also derive new coefficients from existing ones and calculate their numerical values using the stored setpoints.
+Since expressions and setpoints are stored in variables, you can derive new coefficients from existing ones and calculate their values directly.
 
 ```python
 # Derive Reynolds number (Re = 1/Pi_0)
@@ -190,9 +212,18 @@ Re_coeff = engine.derive_coefficient(
 # Calculate numerical value using stored setpoints
 Re_value = Re_coeff.calculate_setpoint()  # Uses _std_setpoint values
 print(f"Reynolds Number: {Re_value:.2e}")
+
+# Interpret the result based on typical flow regimes
+if Re_value < 2300:
+    print("Flow regime: LAMINAR")
+elif Re_value < 4000:
+    print("Flow regime: TRANSITIONAL")
+else:
+    print("Flow regime: TURBULENT")
 ```
 
 **Notes**:
+
 - The `derive_coefficient()` method allows you to create new coefficients based on existing ones using mathematical expressions.
 - The `calculate_setpoint()` method computes the numerical value of the coefficient using the `_std_setpoint` values of the involved variables.
 - The other **PyDASA** modules (Sensitivity Analysis, Monte Carlo Simulation) also use the `Variable` and `Coefficient` objects, so you can seamlessly integrate dimensional analysis results into further analyses.
@@ -208,13 +239,13 @@ Flow regime: TURBULENT
 
 ### Summary
 
-| Step | Action              | Notes                                                                    |
-| ---- | ------------------- | ----------------------------------------------------------------------------- |
+| Step | Action              | Notes                                                                                                           |
+| ---- | ------------------- | --------------------------------------------------------------------------------------------------------------- |
 | 1    | Define variables    | important attributes `relevant=True`, exactly 1 `_cat=OUT`, try to include `_setpoint`/`_std_setpoint`. |
-| 2    | Create engine       | `_fwk="PHYSICAL"` (or custom), accepts `dict` or `Variable` objects.            |
-| 3    | Run analysis        | `run_analysis()` may fail on ill defined variables, inconsistent units, missing attributes, or invalid FDUs.                                         |
-| 4    | Display results     | Console output or export via `.to_dict()` to use other libraries.                                   |
-| 5    | Derive coefficients | Use `derive_coefficient()` + `calculate_setpoint()` to compute new coefficients and their values.                      |
+| 2    | Create engine       | `_fwk="PHYSICAL"` (or custom), accepts `dict` or `Variable` objects.                                      |
+| 3    | Run analysis        | `run_analysis()` may fail on ill defined variables, inconsistent units, missing attributes, or invalid FDUs.  |
+| 4    | Display results     | Console output or export via `.to_dict()` to use other libraries.                                             |
+| 5    | Derive coefficients | Use `derive_coefficient()` + `calculate_setpoint()` to compute new coefficients and their values.           |
 
 **Full example**: See `reynolds_simple.py` in the PyDASA repository.
 
@@ -230,11 +261,11 @@ Flow regime: TURBULENT
 ### Manage Symbolic and Numerical Variables
 
 - **Define dimensional parameters** with complete specifications:
-  - Symbolic representation (name, LaTeX symbol).
-  - Dimensional formula (e.g., "L*T^-1" for velocity).
-  - Numerical ranges (min, max, mean, step)
-  - Classification (input, output, control).
-  - Statistical distributions and dependencies.
+  - **Specify** symbolic representation (name, LaTeX symbol).
+  - **Define** dimensional formula (e.g., "L*T^-1" for velocity).
+  - **Establish** numerical ranges (min, max, mean, step)
+  - **Assign** classification (input, output, control).
+  - **Configure** statistical distributions and dependencies.
 
 ### Integrate System of Units of Measurement
 
@@ -245,10 +276,10 @@ Flow regime: TURBULENT
 ### Discover Dimensionless Coefficients
 
 - **Generate dimensionless numbers** using the Buckingham Pi theorem:
-  1. **Build relevance list:** Identify mutually independent parameters influencing the phenomenon.
-  2. **Construct dimensional matrix:** Arrange FDUs (rows) and variables (columns) into core and residual matrices.
-  3. **Transform to identity matrix:** Apply linear transformations to the core matrix.
-  4. **Generate Pi coefficients:** Combine residual and unity matrices to produce dimensionless groups.
+  1. **Build relevance list** by identifying mutually independent parameters influencing the phenomenon.
+  2. **Construct dimensional matrix** by arranging FDUs (rows) and variables (columns) into core and residual matrices.
+  3. **Transform to identity matrix** by applying linear transformations to the core matrix.
+  4. **Generate Pi coefficients** by combining residual and unity matrices to produce dimensionless groups.
 - **Classify coefficients** by repeating vs. non-repeating parameters.
 - **Manage metadata:** names, symbols, formulas, and parameter relationships.
 
@@ -278,16 +309,16 @@ For more information on how to se **PyDASA**, go to our comprehensive documentat
     - ✅ DONE
     - ⚠️ ATTENTION REQUIRED
 
-**Current Version:** 0.6.0
+**Current Version:** 0.6.4
 
 ### ✅ Core Modules (Implemented & Tested)
 
-- **core/**: Foundation classes, configuration, I/O (100\% tested).
-- **dimensional/**: Buckingham Pi theorem, dimensional matrix solver (100\% tested).
-- **elements/**: Variable and parameter management with specs (100\% tested).
-- **workflows/**: AnalysisEngine, MonteCarloSimulation, SensitivityAnalysis (100\% tested).
-- **validations/**: Decorator-based validation system (100\% tested).
-- **serialization/**: LaTeX and formula parsing (100\% tested).
+- **core/**: Foundation classes, configuration, I/O.
+- **dimensional/**: Buckingham Pi theorem, dimensional matrix solver.
+- **elements/**: Variable and parameter management with specs.
+- **workflows/**: AnalysisEngine, MonteCarloSimulation, SensitivityAnalysis.
+- **validations/**: Decorator-based validation system.
+- **serialization/**: LaTeX and formula parsing.
 
 ### 👨‍💻 Currently Working
 
@@ -297,9 +328,9 @@ For more information on how to se **PyDASA**, go to our comprehensive documentat
 
 ### 📋 Pending Development
 
-- **context/**: Unit conversion system (stub implementation).
-- **structs/**: Data structures (partial test coverage).
-- **Documentation**: API reference completion and additional tutorials.
+- **context/**: Implement Unit conversion system (stub implementation).
+- **structs/**: Implement Data structures (partial test coverage).
+- **Documentation**: Complete API reference completion and additional tutorials.
 
 ## ⚠️ How to Contribute
 
@@ -312,6 +343,7 @@ Contributions are welcome! We use [Conventional Commits](https://www.conventiona
 ```
 
 **Types:**
+
 - `feat`: New feature (triggers MINOR version bump).
 - `fix`: Bug fix (triggers PATCH version bump).
 - `docs`: Documentation changes only.

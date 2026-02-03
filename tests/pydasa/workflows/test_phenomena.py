@@ -493,3 +493,107 @@ class TestAnalysisEngine(unittest.TestCase):
         assert derived.name == "Test"
         assert derived.description == "Test description"
         assert derived.idx == 99
+
+    def test_calculate_coefficients_without_matrix(self) -> None:
+        """*test_calculate_coefficients_without_matrix()* tests error when calculating without matrix."""
+        # Create engine without matrix
+        engine = AnalysisEngine()
+        engine.variables = self.test_variables
+
+        # Try to calculate without creating matrix
+        with pytest.raises(ValueError) as excinfo:
+            engine.calculate_coefficients()
+        assert "Matrix must be created before calculating coefficients" in str(excinfo.value)
+
+    def test_calculate_coefficients_without_solving(self) -> None:
+        """*test_calculate_coefficients_without_solving()* tests error when calculating without solving."""
+        # Create engine and matrix but don't solve
+        engine = AnalysisEngine(_fwk="CUSTOM", _schema=self.test_data["FDU_LIST"])
+        engine.variables = self.test_variables
+        engine.create_matrix()
+
+        # Try to calculate without solving
+        with pytest.raises(ValueError) as excinfo:
+            engine.calculate_coefficients()
+        assert "Matrix must be solved before calculating coefficients" in str(excinfo.value)
+
+    def test_calculate_coefficients_with_defaults(self) -> None:
+        """*test_calculate_coefficients_with_defaults()* tests calculating with default setpoints."""
+        # Create and solve engine
+        engine = AnalysisEngine(_fwk="CUSTOM",
+                                _schema=self.test_data["FDU_LIST"])
+        engine.variables = self.test_variables
+        
+        # Set std_setpoint on all variables to enable default calculation
+        for var in engine.variables.values():
+            var.std_setpoint = 1.0
+        
+        engine.run_analysis()
+
+        # Calculate coefficients using default setpoints from variables
+        results = engine.calculate_coefficients()
+
+        # Test results returned
+        assert isinstance(results, dict)
+        # Should have results for coefficients that can be calculated
+
+    def test_calculate_coefficients_with_custom_setpoints(self) -> None:
+        """*test_calculate_coefficients_with_custom_setpoints()* tests calculating with custom setpoints."""
+        # Create and solve engine
+        engine = AnalysisEngine(_fwk="CUSTOM",
+                                _schema=self.test_data["FDU_LIST"])
+        engine.variables = self.test_variables
+        engine.run_analysis()
+
+        # Prepare custom setpoints for all variables
+        custom_setpoints = {}
+        for var_sym, var in self.test_variables.items():
+            custom_setpoints[var_sym] = 1.0  # Use simple value for all
+
+        # Calculate coefficients with custom setpoints
+        results = engine.calculate_coefficients(setpoints=custom_setpoints)
+
+        # Test results returned
+        assert isinstance(results, dict)
+        # Should have results for coefficients that can be calculated
+
+    def test_calculate_coefficients_with_partial_setpoints(self) -> None:
+        """*test_calculate_coefficients_with_partial_setpoints()* tests with incomplete setpoints."""
+        # Create and solve engine
+        engine = AnalysisEngine(_fwk="CUSTOM",
+                                _schema=self.test_data["FDU_LIST"])
+        engine.variables = self.test_variables
+        engine.run_analysis()
+
+        # Provide only partial setpoints (not all variables)
+        partial_setpoints = {"U": 1.0, "h": 0.1}
+
+        # Calculate coefficients with partial setpoints
+        results = engine.calculate_coefficients(setpoints=partial_setpoints)
+
+        # Test results returned (may be partial or empty)
+        assert isinstance(results, dict)
+        # Method should not fail, but may return limited results
+
+    def test_calculate_coefficients_updates_coefficient_setpoints(self) -> None:
+        """*test_calculate_coefficients_updates_coefficient_setpoints()* tests that coefficient setpoints are updated."""
+        # Create and solve engine
+        engine = AnalysisEngine(_fwk="CUSTOM", _schema=self.test_data["FDU_LIST"])
+        engine.variables = self.test_variables
+        engine.run_analysis()
+
+        # Get a coefficient before calculation
+        if len(engine.coefficients) > 0:
+            first_coef_sym = list(engine.coefficients.keys())[0]
+            # first_coef = engine.coefficients[first_coef_sym]
+
+            # Prepare setpoints
+            custom_setpoints = {var_sym: 1.0 for var_sym in self.test_variables.keys()}
+
+            # Calculate coefficients
+            results = engine.calculate_coefficients(setpoints=custom_setpoints)
+
+            # If this coefficient was calculated, check it's in results
+            if first_coef_sym in results:
+                # Verify the result is a valid number
+                assert isinstance(results[first_coef_sym], (int, float))

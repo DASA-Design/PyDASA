@@ -341,8 +341,7 @@ class MonteCarlo(Foundation, BoundsSpecs):
                                                  dtype=np.float64)
 
         # Statistics attributes already set to np.nan via declarations
-        # _count remains MonteCarlo-specific
-        self.count = 0
+        # _count remains at -1 until simulation is run
 
     # ========================================================================
     # Foundation and Configuration
@@ -1017,7 +1016,7 @@ class MonteCarlo(Foundation, BoundsSpecs):
         Raises:
             ValueError: If no results are available.
         """
-        if self._results.size == 0:
+        if self._count < 0:
             raise ValueError("No results available. Run the simulation first.")
         return self._results.copy()
 
@@ -1031,9 +1030,14 @@ class MonteCarlo(Foundation, BoundsSpecs):
         Raises:
             ValueError: If no data is available.
         """
-        if not self._data:
-            raise ValueError("No input data available. Run the simulation first.")
-        return {k: v.copy() for k, v in self._data.items()}
+        # Check if data dict is empty or if simulation hasn't run (count < 0)
+        if not self._data or (self._count < 0 and all(np.all(np.isnan(v)) for v in self._data.values())):
+            _msg = "No input data available. Run the simulation first or set data explicitly."
+            raise ValueError(_msg)
+        _data = {}
+        for k, v in self._data.items():
+            _data[k] = v.copy()
+        return _data
 
     @data.setter
     @validate_type(dict, allow_none=False)
@@ -1184,7 +1188,7 @@ class MonteCarlo(Foundation, BoundsSpecs):
         Raises:
             ValueError: If no results are available.
         """
-        if self._results.size < 1:
+        if self._count < 0:
             _msg = "No statistics available. Run the simulation first."
             raise ValueError(_msg)
         return self._count
@@ -1207,24 +1211,18 @@ class MonteCarlo(Foundation, BoundsSpecs):
     def summary(self) -> Dict[str, Union[float, int, None]]:
         """*summary* Get the statistical analysis of simulation results.
 
-        Raises:
-            ValueError: If no results are available.
-
         Returns:
-            Dict[str, Union[float, int, None]]: Dictionary containing statistical properties.
+            Dict[str, Union[float, int, None]]: Dictionary containing statistical properties. It returns NaN values and -1 count if simulation hasn't run yet.
         """
-        if self._results.size < 1:
-            _msg = "No statistics available. Run the simulation first."
-            raise ValueError(_msg)
-
         # Build summary dictionary from individual attributes
+        # Use _count directly to avoid validation error
         self._summary = {
             "mean": self.mean,
             "median": self.median,
             "dev": self.dev,
             "min": self.min,
             "max": self.max,
-            "count": self.count
+            "count": self._count
         }
         return self._summary
 

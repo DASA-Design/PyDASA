@@ -1,30 +1,14 @@
-﻿Getting Started
+Getting Started
 ===============
 
-This section will help you get up and running with PyDASA.
+This section will help you get up and running with **PyDASA** as a Python library for dimensional analysis using the Buckingham Pi theorem.
+
+* :doc:`installation` - Requirements and setup process.
+* :doc:`quickstart` - Your first dimensional analysis.
 
 .. toctree::
-   :maxdepth: 2
+    :maxdepth: 1
+    :hidden:
 
-   installation
-   quickstart
-   tutorial
-
-Overview
---------
-
-PyDASA is a Python library for dimensional analysis using the Buckingham Pi theorem.
-
-It provides tools for:
-
-* Automatic dimensionless number discovery
-* Monte Carlo simulation
-* Sensitivity analysis
-* Variable management
-
-Quick Links
------------
-
-* :doc:`installation` - Install PyDASA
-* :doc:`quickstart` - Your first dimensional analysis
-* :doc:`tutorial` - Complete walkthrough
+    installation
+    quickstart

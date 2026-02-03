@@ -1,30 +1,14 @@
-﻿Examples
+Examples
 ========
 
-Practical examples demonstrating PyDASA capabilities.
+Learn **PyDASA** capabilities through practical examples:
+
+* :doc:`tutorial` - Step-by-step traditional Dimensional Analysis workflow in a simple Reynolds Number example.
+* :doc:`customization` - Custom Dimensional Framework and workflow for a web server performance analysis with Server modelling Queuing Theory (M/M/c/K).
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
+    :hidden:
 
-    basics
-    customization
-    sensitivity
-    montecarlo
-
-Overview
---------
-
-Learn PyDASA through practical examples:
-
-* Basic dimensional analysis
-* Custom frameworks and configurations
-* Sensitivity analysis workflows
-* Monte Carlo simulations
-
-Contents
---------
-
-* :doc:`basics` - Getting started with basic examples
-* :doc:`customization` - Customizing dimensional frameworks
-* :doc:`sensitivity` - Sensitivity analysis examples
-* :doc:`montecarlo` - Monte Carlo simulation examples
+    Tutorial <tutorial>
+    Customization <customization>

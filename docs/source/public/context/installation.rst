@@ -1,14 +1,31 @@
-﻿Installation
+Installation
 ============
 
 PyPI Installation
 -----------------
 
-Install PyDASA from PyPI using pip:
+To install **PyDASA**, use pip command:
 
 .. code-block:: bash
 
-   pip install pydasa
+    pip install pydasa
+
+PyPI will automatically handle the installation of all required dependencies. Then, to check the installed version of **PyDASA**, run:
+
+.. code-block:: python
+
+    import pydasa
+    print(pydasa.__version__)
+
+PyPI Update
+--------------
+
+To update **PyDASA** to the latest version, use pip with the --upgrade flag:
+
+.. code-block:: bash
+
+   pip install --upgrade pydasa
+
 
 Development Installation
 ------------------------
@@ -29,7 +46,7 @@ PyDASA requires Python 3.10 or higher and the following dependencies:
 * numpy >= 1.26.4
 * scipy >= 1.13.0
 * sympy >= 1.12
-* matplotlib >= 3.8.0
-* pandas >= 2.1.0
 * SALib >= 1.4.5
-* antlr4-python3-runtime == 4.11
+.. * antlr4-python3-runtime == 4.11
+.. * matplotlib >= 3.8.0
+.. * pandas >= 2.1.0

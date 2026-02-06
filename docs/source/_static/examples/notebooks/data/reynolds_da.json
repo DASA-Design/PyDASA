@@ -1,0 +1,2966 @@
+{
+    "variables": {
+        "\\rho": {
+            "dist_type": "uniform",
+            "dist_params": {},
+            "depends": [],
+            "dist_func": null,
+            "std_setpoint": null,
+            "std_min": null,
+            "std_max": null,
+            "std_mean": null,
+            "std_median": null,
+            "std_dev": null,
+            "setpoint": null,
+            "min": null,
+            "max": null,
+            "mean": null,
+            "median": null,
+            "dev": null,
+            "step": 0.001,
+            "data": [],
+            "dims": "M*L^-3",
+            "units": "kg/m\u00b3",
+            "std_dims": "M^(1)*L^(-3)",
+            "sym_exp": "M**(1)* L**(-3)",
+            "dim_col": [
+                0,
+                1,
+                -3
+            ],
+            "std_units": "",
+            "sym": "\\rho",
+            "fwk": "PHYSICAL",
+            "alias": "rho",
+            "idx": 0,
+            "name": "Density",
+            "description": "",
+            "schema": {
+                "sym": "",
+                "fwk": "CUSTOM",
+                "alias": "",
+                "idx": -1,
+                "name": "",
+                "description": "",
+                "fdu_lt": [
+                    {
+                        "idx": 0,
+                        "sym": "T",
+                        "alias": "",
+                        "fwk": "PHYSICAL",
+                        "unit": "s",
+                        "name": "Time",
+                        "description": ""
+                    },
+                    {
+                        "idx": 1,
+                        "sym": "M",
+                        "alias": "",
+                        "fwk": "PHYSICAL",
+                        "unit": "kg",
+                        "name": "Mass",
+                        "description": ""
+                    },
+                    {
+                        "idx": 2,
+                        "sym": "L",
+                        "alias": "",
+                        "fwk": "PHYSICAL",
+                        "unit": "m",
+                        "name": "Length",
+                        "description": ""
+                    }
+                ],
+                "fdu_map": {
+                    "T": {
+                        "idx": 0,
+                        "sym": "T",
+                        "alias": "",
+                        "fwk": "PHYSICAL",
+                        "unit": "s",
+                        "name": "Time",
+                        "description": ""
+                    },
+                    "M": {
+                        "idx": 1,
+                        "sym": "M",
+                        "alias": "",
+                        "fwk": "PHYSICAL",
+                        "unit": "kg",
+                        "name": "Mass",
+                        "description": ""
+                    },
+                    "L": {
+                        "idx": 2,
+                        "sym": "L",
+                        "alias": "",
+                        "fwk": "PHYSICAL",
+                        "unit": "m",
+                        "name": "Length",
+                        "description": ""
+                    }
+                },
+                "fdu_symbols": [
+                    "T",
+                    "M",
+                    "L"
+                ],
+                "fdu_regex": "^[TML](\\^-?\\d+)?(\\*[TML](?:\\^-?\\d+)?)*$",
+                "fdu_pow_regex": "\\-?\\d+",
+                "fdu_no_pow_regex": "[TML](?!\\^)",
+                "fdu_sym_regex": "[TML]"
+            },
+            "cat": "IN",
+            "relevant": true
+        },
+        "v": {
+            "dist_type": "uniform",
+            "dist_params": {},
+            "depends": [],
+            "dist_func": null,
+            "std_setpoint": null,
+            "std_min": null,
+            "std_max": null,
+            "std_mean": null,
+            "std_median": null,
+            "std_dev": null,
+            "setpoint": null,
+            "min": null,
+            "max": null,
+            "mean": null,
+            "median": null,
+            "dev": null,
+            "step": 0.001,
+            "data": [],
+            "dims": "L*T^-1",
+            "units": "m/s",
+            "std_dims": "T^(-1)*L^(1)",
+            "sym_exp": "T**(-1)* L**(1)",
+            "dim_col": [
+                -1,
+                0,
+                1
+            ],
+            "std_units": "",
+            "sym": "v",
+            "fwk": "PHYSICAL",
+            "alias": "v",
+            "idx": 3,
+            "name": "Velocity",
+            "description": "",
+            "schema": {
+                "sym": "",
+                "fwk": "CUSTOM",
+                "alias": "",
+                "idx": -1,
+                "name": "",
+                "description": "",
+                "fdu_lt": [
+                    {
+                        "idx": 0,
+                        "sym": "T",
+                        "alias": "",
+                        "fwk": "PHYSICAL",
+                        "unit": "s",
+                        "name": "Time",
+                        "description": ""
+                    },
+                    {
+                        "idx": 1,
+                        "sym": "M",
+                        "alias": "",
+                        "fwk": "PHYSICAL",
+                        "unit": "kg",
+                        "name": "Mass",
+                        "description": ""
+                    },
+                    {
+                        "idx": 2,
+                        "sym": "L",
+                        "alias": "",
+                        "fwk": "PHYSICAL",
+                        "unit": "m",
+                        "name": "Length",
+                        "description": ""
+                    }
+                ],
+                "fdu_map": {
+                    "T": {
+                        "idx": 0,
+                        "sym": "T",
+                        "alias": "",
+                        "fwk": "PHYSICAL",
+                        "unit": "s",
+                        "name": "Time",
+                        "description": ""
+                    },
+                    "M": {
+                        "idx": 1,
+                        "sym": "M",
+                        "alias": "",
+                        "fwk": "PHYSICAL",
+                        "unit": "kg",
+                        "name": "Mass",
+                        "description": ""
+                    },
+                    "L": {
+                        "idx": 2,
+                        "sym": "L",
+                        "alias": "",
+                        "fwk": "PHYSICAL",
+                        "unit": "m",
+                        "name": "Length",
+                        "description": ""
+                    }
+                },
+                "fdu_symbols": [
+                    "T",
+                    "M",
+                    "L"
+                ],
+                "fdu_regex": "^[TML](\\^-?\\d+)?(\\*[TML](?:\\^-?\\d+)?)*$",
+                "fdu_pow_regex": "\\-?\\d+",
+                "fdu_no_pow_regex": "[TML](?!\\^)",
+                "fdu_sym_regex": "[TML]"
+            },
+            "cat": "OUT",
+            "relevant": true
+        },
+        "D": {
+            "dist_type": "uniform",
+            "dist_params": {},
+            "depends": [],
+            "dist_func": null,
+            "std_setpoint": null,
+            "std_min": null,
+            "std_max": null,
+            "std_mean": null,
+            "std_median": null,
+            "std_dev": null,
+            "setpoint": null,
+            "min": null,
+            "max": null,
+            "mean": null,
+            "median": null,
+            "dev": null,
+            "step": 0.001,
+            "data": [],
+            "dims": "L",
+            "units": "m",
+            "std_dims": "L^(1)",
+            "sym_exp": "L**(1)",
+            "dim_col": [
+                0,
+                0,
+                1
+            ],
+            "std_units": "",
+            "sym": "D",
+            "fwk": "PHYSICAL",
+            "alias": "D",
+            "idx": 1,
+            "name": "Diameter",
+            "description": "",
+            "schema": {
+                "sym": "",
+                "fwk": "CUSTOM",
+                "alias": "",
+                "idx": -1,
+                "name": "",
+                "description": "",
+                "fdu_lt": [
+                    {
+                        "idx": 0,
+                        "sym": "T",
+                        "alias": "",
+                        "fwk": "PHYSICAL",
+                        "unit": "s",
+                        "name": "Time",
+                        "description": ""
+                    },
+                    {
+                        "idx": 1,
+                        "sym": "M",
+                        "alias": "",
+                        "fwk": "PHYSICAL",
+                        "unit": "kg",
+                        "name": "Mass",
+                        "description": ""
+                    },
+                    {
+                        "idx": 2,
+                        "sym": "L",
+                        "alias": "",
+                        "fwk": "PHYSICAL",
+                        "unit": "m",
+                        "name": "Length",
+                        "description": ""
+                    }
+                ],
+                "fdu_map": {
+                    "T": {
+                        "idx": 0,
+                        "sym": "T",
+                        "alias": "",
+                        "fwk": "PHYSICAL",
+                        "unit": "s",
+                        "name": "Time",
+                        "description": ""
+                    },
+                    "M": {
+                        "idx": 1,
+                        "sym": "M",
+                        "alias": "",
+                        "fwk": "PHYSICAL",
+                        "unit": "kg",
+                        "name": "Mass",
+                        "description": ""
+                    },
+                    "L": {
+                        "idx": 2,
+                        "sym": "L",
+                        "alias": "",
+                        "fwk": "PHYSICAL",
+                        "unit": "m",
+                        "name": "Length",
+                        "description": ""
+                    }
+                },
+                "fdu_symbols": [
+                    "T",
+                    "M",
+                    "L"
+                ],
+                "fdu_regex": "^[TML](\\^-?\\d+)?(\\*[TML](?:\\^-?\\d+)?)*$",
+                "fdu_pow_regex": "\\-?\\d+",
+                "fdu_no_pow_regex": "[TML](?!\\^)",
+                "fdu_sym_regex": "[TML]"
+            },
+            "cat": "IN",
+            "relevant": true
+        },
+        "\\mu": {
+            "dist_type": "uniform",
+            "dist_params": {},
+            "depends": [],
+            "dist_func": null,
+            "std_setpoint": null,
+            "std_min": null,
+            "std_max": null,
+            "std_mean": null,
+            "std_median": null,
+            "std_dev": null,
+            "setpoint": null,
+            "min": null,
+            "max": null,
+            "mean": null,
+            "median": null,
+            "dev": null,
+            "step": 0.001,
+            "data": [],
+            "dims": "M*L^-1*T^-1",
+            "units": "Pa\u00b7s",
+            "std_dims": "T^(-1)*M^(1)*L^(-1)",
+            "sym_exp": "T**(-1)* M**(1)* L**(-1)",
+            "dim_col": [
+                -1,
+                1,
+                -1
+            ],
+            "std_units": "",
+            "sym": "\\mu",
+            "fwk": "PHYSICAL",
+            "alias": "mu",
+            "idx": 2,
+            "name": "Viscosity",
+            "description": "",
+            "schema": {
+                "sym": "",
+                "fwk": "CUSTOM",
+                "alias": "",
+                "idx": -1,
+                "name": "",
+                "description": "",
+                "fdu_lt": [
+                    {
+                        "idx": 0,
+                        "sym": "T",
+                        "alias": "",
+                        "fwk": "PHYSICAL",
+                        "unit": "s",
+                        "name": "Time",
+                        "description": ""
+                    },
+                    {
+                        "idx": 1,
+                        "sym": "M",
+                        "alias": "",
+                        "fwk": "PHYSICAL",
+                        "unit": "kg",
+                        "name": "Mass",
+                        "description": ""
+                    },
+                    {
+                        "idx": 2,
+                        "sym": "L",
+                        "alias": "",
+                        "fwk": "PHYSICAL",
+                        "unit": "m",
+                        "name": "Length",
+                        "description": ""
+                    }
+                ],
+                "fdu_map": {
+                    "T": {
+                        "idx": 0,
+                        "sym": "T",
+                        "alias": "",
+                        "fwk": "PHYSICAL",
+                        "unit": "s",
+                        "name": "Time",
+                        "description": ""
+                    },
+                    "M": {
+                        "idx": 1,
+                        "sym": "M",
+                        "alias": "",
+                        "fwk": "PHYSICAL",
+                        "unit": "kg",
+                        "name": "Mass",
+                        "description": ""
+                    },
+                    "L": {
+                        "idx": 2,
+                        "sym": "L",
+                        "alias": "",
+                        "fwk": "PHYSICAL",
+                        "unit": "m",
+                        "name": "Length",
+                        "description": ""
+                    }
+                },
+                "fdu_symbols": [
+                    "T",
+                    "M",
+                    "L"
+                ],
+                "fdu_regex": "^[TML](\\^-?\\d+)?(\\*[TML](?:\\^-?\\d+)?)*$",
+                "fdu_pow_regex": "\\-?\\d+",
+                "fdu_no_pow_regex": "[TML](?!\\^)",
+                "fdu_sym_regex": "[TML]"
+            },
+            "cat": "IN",
+            "relevant": true
+        },
+        "g": {
+            "dist_type": "uniform",
+            "dist_params": {},
+            "depends": [],
+            "dist_func": null,
+            "std_setpoint": null,
+            "std_min": null,
+            "std_max": null,
+            "std_mean": null,
+            "std_median": null,
+            "std_dev": null,
+            "setpoint": null,
+            "min": null,
+            "max": null,
+            "mean": null,
+            "median": null,
+            "dev": null,
+            "step": 0.001,
+            "data": [],
+            "dims": "L*T^-2",
+            "units": "m/s\u00b2",
+            "std_dims": "T^(-2)*L^(1)",
+            "sym_exp": "T**(-2)* L**(1)",
+            "dim_col": [
+                -2,
+                0,
+                1
+            ],
+            "std_units": "",
+            "sym": "g",
+            "fwk": "PHYSICAL",
+            "alias": "g",
+            "idx": -1,
+            "name": "Gravity",
+            "description": "",
+            "schema": {
+                "sym": "",
+                "fwk": "CUSTOM",
+                "alias": "",
+                "idx": -1,
+                "name": "",
+                "description": "",
+                "fdu_lt": [
+                    {
+                        "idx": 0,
+                        "sym": "T",
+                        "alias": "",
+                        "fwk": "PHYSICAL",
+                        "unit": "s",
+                        "name": "Time",
+                        "description": ""
+                    },
+                    {
+                        "idx": 1,
+                        "sym": "M",
+                        "alias": "",
+                        "fwk": "PHYSICAL",
+                        "unit": "kg",
+                        "name": "Mass",
+                        "description": ""
+                    },
+                    {
+                        "idx": 2,
+                        "sym": "L",
+                        "alias": "",
+                        "fwk": "PHYSICAL",
+                        "unit": "m",
+                        "name": "Length",
+                        "description": ""
+                    }
+                ],
+                "fdu_map": {
+                    "T": {
+                        "idx": 0,
+                        "sym": "T",
+                        "alias": "",
+                        "fwk": "PHYSICAL",
+                        "unit": "s",
+                        "name": "Time",
+                        "description": ""
+                    },
+                    "M": {
+                        "idx": 1,
+                        "sym": "M",
+                        "alias": "",
+                        "fwk": "PHYSICAL",
+                        "unit": "kg",
+                        "name": "Mass",
+                        "description": ""
+                    },
+                    "L": {
+                        "idx": 2,
+                        "sym": "L",
+                        "alias": "",
+                        "fwk": "PHYSICAL",
+                        "unit": "m",
+                        "name": "Length",
+                        "description": ""
+                    }
+                },
+                "fdu_symbols": [
+                    "T",
+                    "M",
+                    "L"
+                ],
+                "fdu_regex": "^[TML](\\^-?\\d+)?(\\*[TML](?:\\^-?\\d+)?)*$",
+                "fdu_pow_regex": "\\-?\\d+",
+                "fdu_no_pow_regex": "[TML](?!\\^)",
+                "fdu_sym_regex": "[TML]"
+            },
+            "cat": "CTRL",
+            "relevant": false
+        }
+    },
+    "schema": {
+        "sym": "",
+        "fwk": "CUSTOM",
+        "alias": "",
+        "idx": -1,
+        "name": "",
+        "description": "",
+        "fdu_lt": [
+            {
+                "idx": 0,
+                "sym": "T",
+                "alias": "",
+                "fwk": "PHYSICAL",
+                "unit": "s",
+                "name": "Time",
+                "description": ""
+            },
+            {
+                "idx": 1,
+                "sym": "M",
+                "alias": "",
+                "fwk": "PHYSICAL",
+                "unit": "kg",
+                "name": "Mass",
+                "description": ""
+            },
+            {
+                "idx": 2,
+                "sym": "L",
+                "alias": "",
+                "fwk": "PHYSICAL",
+                "unit": "m",
+                "name": "Length",
+                "description": ""
+            }
+        ],
+        "fdu_map": {
+            "T": {
+                "idx": 0,
+                "sym": "T",
+                "alias": "",
+                "fwk": "PHYSICAL",
+                "unit": "s",
+                "name": "Time",
+                "description": ""
+            },
+            "M": {
+                "idx": 1,
+                "sym": "M",
+                "alias": "",
+                "fwk": "PHYSICAL",
+                "unit": "kg",
+                "name": "Mass",
+                "description": ""
+            },
+            "L": {
+                "idx": 2,
+                "sym": "L",
+                "alias": "",
+                "fwk": "PHYSICAL",
+                "unit": "m",
+                "name": "Length",
+                "description": ""
+            }
+        },
+        "fdu_symbols": [
+            "T",
+            "M",
+            "L"
+        ],
+        "fdu_regex": "^[TML](\\^-?\\d+)?(\\*[TML](?:\\^-?\\d+)?)*$",
+        "fdu_pow_regex": "\\-?\\d+",
+        "fdu_no_pow_regex": "[TML](?!\\^)",
+        "fdu_sym_regex": "[TML]"
+    },
+    "coefficients": {
+        "\\Pi_{0}": {
+            "setpoint": null,
+            "min": null,
+            "max": null,
+            "mean": null,
+            "median": null,
+            "dev": null,
+            "sym": "\\Pi_{0}",
+            "fwk": "CUSTOM",
+            "alias": "Pi_0",
+            "idx": 0,
+            "name": "Pi-0",
+            "description": "Dimensionless coefficient 0 from nullspace",
+            "cat": "COMPUTED",
+            "variables": {
+                "\\rho": {
+                    "dist_type": "uniform",
+                    "dist_params": {},
+                    "depends": [],
+                    "dist_func": null,
+                    "std_setpoint": null,
+                    "std_min": null,
+                    "std_max": null,
+                    "std_mean": null,
+                    "std_median": null,
+                    "std_dev": null,
+                    "setpoint": null,
+                    "min": null,
+                    "max": null,
+                    "mean": null,
+                    "median": null,
+                    "dev": null,
+                    "step": 0.001,
+                    "data": [],
+                    "dims": "M*L^-3",
+                    "units": "kg/m\u00b3",
+                    "std_dims": "M^(1)*L^(-3)",
+                    "sym_exp": "M**(1)* L**(-3)",
+                    "dim_col": [
+                        0,
+                        1,
+                        -3
+                    ],
+                    "std_units": "",
+                    "sym": "\\rho",
+                    "fwk": "PHYSICAL",
+                    "alias": "rho",
+                    "idx": 0,
+                    "name": "Density",
+                    "description": "",
+                    "schema": {
+                        "sym": "",
+                        "fwk": "CUSTOM",
+                        "alias": "",
+                        "idx": -1,
+                        "name": "",
+                        "description": "",
+                        "fdu_lt": [
+                            {
+                                "idx": 0,
+                                "sym": "T",
+                                "alias": "",
+                                "fwk": "PHYSICAL",
+                                "unit": "s",
+                                "name": "Time",
+                                "description": ""
+                            },
+                            {
+                                "idx": 1,
+                                "sym": "M",
+                                "alias": "",
+                                "fwk": "PHYSICAL",
+                                "unit": "kg",
+                                "name": "Mass",
+                                "description": ""
+                            },
+                            {
+                                "idx": 2,
+                                "sym": "L",
+                                "alias": "",
+                                "fwk": "PHYSICAL",
+                                "unit": "m",
+                                "name": "Length",
+                                "description": ""
+                            }
+                        ],
+                        "fdu_map": {
+                            "T": {
+                                "idx": 0,
+                                "sym": "T",
+                                "alias": "",
+                                "fwk": "PHYSICAL",
+                                "unit": "s",
+                                "name": "Time",
+                                "description": ""
+                            },
+                            "M": {
+                                "idx": 1,
+                                "sym": "M",
+                                "alias": "",
+                                "fwk": "PHYSICAL",
+                                "unit": "kg",
+                                "name": "Mass",
+                                "description": ""
+                            },
+                            "L": {
+                                "idx": 2,
+                                "sym": "L",
+                                "alias": "",
+                                "fwk": "PHYSICAL",
+                                "unit": "m",
+                                "name": "Length",
+                                "description": ""
+                            }
+                        },
+                        "fdu_symbols": [
+                            "T",
+                            "M",
+                            "L"
+                        ],
+                        "fdu_regex": "^[TML](\\^-?\\d+)?(\\*[TML](?:\\^-?\\d+)?)*$",
+                        "fdu_pow_regex": "\\-?\\d+",
+                        "fdu_no_pow_regex": "[TML](?!\\^)",
+                        "fdu_sym_regex": "[TML]"
+                    },
+                    "cat": "IN",
+                    "relevant": true
+                },
+                "D": {
+                    "dist_type": "uniform",
+                    "dist_params": {},
+                    "depends": [],
+                    "dist_func": null,
+                    "std_setpoint": null,
+                    "std_min": null,
+                    "std_max": null,
+                    "std_mean": null,
+                    "std_median": null,
+                    "std_dev": null,
+                    "setpoint": null,
+                    "min": null,
+                    "max": null,
+                    "mean": null,
+                    "median": null,
+                    "dev": null,
+                    "step": 0.001,
+                    "data": [],
+                    "dims": "L",
+                    "units": "m",
+                    "std_dims": "L^(1)",
+                    "sym_exp": "L**(1)",
+                    "dim_col": [
+                        0,
+                        0,
+                        1
+                    ],
+                    "std_units": "",
+                    "sym": "D",
+                    "fwk": "PHYSICAL",
+                    "alias": "D",
+                    "idx": 1,
+                    "name": "Diameter",
+                    "description": "",
+                    "schema": {
+                        "sym": "",
+                        "fwk": "CUSTOM",
+                        "alias": "",
+                        "idx": -1,
+                        "name": "",
+                        "description": "",
+                        "fdu_lt": [
+                            {
+                                "idx": 0,
+                                "sym": "T",
+                                "alias": "",
+                                "fwk": "PHYSICAL",
+                                "unit": "s",
+                                "name": "Time",
+                                "description": ""
+                            },
+                            {
+                                "idx": 1,
+                                "sym": "M",
+                                "alias": "",
+                                "fwk": "PHYSICAL",
+                                "unit": "kg",
+                                "name": "Mass",
+                                "description": ""
+                            },
+                            {
+                                "idx": 2,
+                                "sym": "L",
+                                "alias": "",
+                                "fwk": "PHYSICAL",
+                                "unit": "m",
+                                "name": "Length",
+                                "description": ""
+                            }
+                        ],
+                        "fdu_map": {
+                            "T": {
+                                "idx": 0,
+                                "sym": "T",
+                                "alias": "",
+                                "fwk": "PHYSICAL",
+                                "unit": "s",
+                                "name": "Time",
+                                "description": ""
+                            },
+                            "M": {
+                                "idx": 1,
+                                "sym": "M",
+                                "alias": "",
+                                "fwk": "PHYSICAL",
+                                "unit": "kg",
+                                "name": "Mass",
+                                "description": ""
+                            },
+                            "L": {
+                                "idx": 2,
+                                "sym": "L",
+                                "alias": "",
+                                "fwk": "PHYSICAL",
+                                "unit": "m",
+                                "name": "Length",
+                                "description": ""
+                            }
+                        },
+                        "fdu_symbols": [
+                            "T",
+                            "M",
+                            "L"
+                        ],
+                        "fdu_regex": "^[TML](\\^-?\\d+)?(\\*[TML](?:\\^-?\\d+)?)*$",
+                        "fdu_pow_regex": "\\-?\\d+",
+                        "fdu_no_pow_regex": "[TML](?!\\^)",
+                        "fdu_sym_regex": "[TML]"
+                    },
+                    "cat": "IN",
+                    "relevant": true
+                },
+                "\\mu": {
+                    "dist_type": "uniform",
+                    "dist_params": {},
+                    "depends": [],
+                    "dist_func": null,
+                    "std_setpoint": null,
+                    "std_min": null,
+                    "std_max": null,
+                    "std_mean": null,
+                    "std_median": null,
+                    "std_dev": null,
+                    "setpoint": null,
+                    "min": null,
+                    "max": null,
+                    "mean": null,
+                    "median": null,
+                    "dev": null,
+                    "step": 0.001,
+                    "data": [],
+                    "dims": "M*L^-1*T^-1",
+                    "units": "Pa\u00b7s",
+                    "std_dims": "T^(-1)*M^(1)*L^(-1)",
+                    "sym_exp": "T**(-1)* M**(1)* L**(-1)",
+                    "dim_col": [
+                        -1,
+                        1,
+                        -1
+                    ],
+                    "std_units": "",
+                    "sym": "\\mu",
+                    "fwk": "PHYSICAL",
+                    "alias": "mu",
+                    "idx": 2,
+                    "name": "Viscosity",
+                    "description": "",
+                    "schema": {
+                        "sym": "",
+                        "fwk": "CUSTOM",
+                        "alias": "",
+                        "idx": -1,
+                        "name": "",
+                        "description": "",
+                        "fdu_lt": [
+                            {
+                                "idx": 0,
+                                "sym": "T",
+                                "alias": "",
+                                "fwk": "PHYSICAL",
+                                "unit": "s",
+                                "name": "Time",
+                                "description": ""
+                            },
+                            {
+                                "idx": 1,
+                                "sym": "M",
+                                "alias": "",
+                                "fwk": "PHYSICAL",
+                                "unit": "kg",
+                                "name": "Mass",
+                                "description": ""
+                            },
+                            {
+                                "idx": 2,
+                                "sym": "L",
+                                "alias": "",
+                                "fwk": "PHYSICAL",
+                                "unit": "m",
+                                "name": "Length",
+                                "description": ""
+                            }
+                        ],
+                        "fdu_map": {
+                            "T": {
+                                "idx": 0,
+                                "sym": "T",
+                                "alias": "",
+                                "fwk": "PHYSICAL",
+                                "unit": "s",
+                                "name": "Time",
+                                "description": ""
+                            },
+                            "M": {
+                                "idx": 1,
+                                "sym": "M",
+                                "alias": "",
+                                "fwk": "PHYSICAL",
+                                "unit": "kg",
+                                "name": "Mass",
+                                "description": ""
+                            },
+                            "L": {
+                                "idx": 2,
+                                "sym": "L",
+                                "alias": "",
+                                "fwk": "PHYSICAL",
+                                "unit": "m",
+                                "name": "Length",
+                                "description": ""
+                            }
+                        },
+                        "fdu_symbols": [
+                            "T",
+                            "M",
+                            "L"
+                        ],
+                        "fdu_regex": "^[TML](\\^-?\\d+)?(\\*[TML](?:\\^-?\\d+)?)*$",
+                        "fdu_pow_regex": "\\-?\\d+",
+                        "fdu_no_pow_regex": "[TML](?!\\^)",
+                        "fdu_sym_regex": "[TML]"
+                    },
+                    "cat": "IN",
+                    "relevant": true
+                },
+                "v": {
+                    "dist_type": "uniform",
+                    "dist_params": {},
+                    "depends": [],
+                    "dist_func": null,
+                    "std_setpoint": null,
+                    "std_min": null,
+                    "std_max": null,
+                    "std_mean": null,
+                    "std_median": null,
+                    "std_dev": null,
+                    "setpoint": null,
+                    "min": null,
+                    "max": null,
+                    "mean": null,
+                    "median": null,
+                    "dev": null,
+                    "step": 0.001,
+                    "data": [],
+                    "dims": "L*T^-1",
+                    "units": "m/s",
+                    "std_dims": "T^(-1)*L^(1)",
+                    "sym_exp": "T**(-1)* L**(1)",
+                    "dim_col": [
+                        -1,
+                        0,
+                        1
+                    ],
+                    "std_units": "",
+                    "sym": "v",
+                    "fwk": "PHYSICAL",
+                    "alias": "v",
+                    "idx": 3,
+                    "name": "Velocity",
+                    "description": "",
+                    "schema": {
+                        "sym": "",
+                        "fwk": "CUSTOM",
+                        "alias": "",
+                        "idx": -1,
+                        "name": "",
+                        "description": "",
+                        "fdu_lt": [
+                            {
+                                "idx": 0,
+                                "sym": "T",
+                                "alias": "",
+                                "fwk": "PHYSICAL",
+                                "unit": "s",
+                                "name": "Time",
+                                "description": ""
+                            },
+                            {
+                                "idx": 1,
+                                "sym": "M",
+                                "alias": "",
+                                "fwk": "PHYSICAL",
+                                "unit": "kg",
+                                "name": "Mass",
+                                "description": ""
+                            },
+                            {
+                                "idx": 2,
+                                "sym": "L",
+                                "alias": "",
+                                "fwk": "PHYSICAL",
+                                "unit": "m",
+                                "name": "Length",
+                                "description": ""
+                            }
+                        ],
+                        "fdu_map": {
+                            "T": {
+                                "idx": 0,
+                                "sym": "T",
+                                "alias": "",
+                                "fwk": "PHYSICAL",
+                                "unit": "s",
+                                "name": "Time",
+                                "description": ""
+                            },
+                            "M": {
+                                "idx": 1,
+                                "sym": "M",
+                                "alias": "",
+                                "fwk": "PHYSICAL",
+                                "unit": "kg",
+                                "name": "Mass",
+                                "description": ""
+                            },
+                            "L": {
+                                "idx": 2,
+                                "sym": "L",
+                                "alias": "",
+                                "fwk": "PHYSICAL",
+                                "unit": "m",
+                                "name": "Length",
+                                "description": ""
+                            }
+                        },
+                        "fdu_symbols": [
+                            "T",
+                            "M",
+                            "L"
+                        ],
+                        "fdu_regex": "^[TML](\\^-?\\d+)?(\\*[TML](?:\\^-?\\d+)?)*$",
+                        "fdu_pow_regex": "\\-?\\d+",
+                        "fdu_no_pow_regex": "[TML](?!\\^)",
+                        "fdu_sym_regex": "[TML]"
+                    },
+                    "cat": "OUT",
+                    "relevant": true
+                }
+            },
+            "dim_col": [
+                1,
+                1,
+                -1,
+                1
+            ],
+            "var_dims": {
+                "\\rho": 1,
+                "D": 1,
+                "\\mu": -1,
+                "v": 1
+            },
+            "pivot_lt": [
+                0,
+                1,
+                2
+            ],
+            "pi_expr": "\\frac{\\rho*D*v}{\\mu}",
+            "step": 0.001,
+            "data": [],
+            "relevance": true
+        }
+    },
+    "results": {},
+    "is_solved": true,
+    "sym": "DA_{\\Pi_{-1}}",
+    "fwk": "CUSTOM",
+    "alias": "DA_Pi_-1",
+    "idx": -1,
+    "name": "Reynolds Number Analysis",
+    "description": "Dimensional analysis model using the Buckingham Pi-Theorem.",
+    "model": {
+        "sym": "DM_{-1}",
+        "fwk": "CUSTOM",
+        "alias": "",
+        "idx": -1,
+        "name": "Dimensional Matrix",
+        "description": "",
+        "schema": {
+            "sym": "",
+            "fwk": "CUSTOM",
+            "alias": "",
+            "idx": -1,
+            "name": "",
+            "description": "",
+            "fdu_lt": [
+                {
+                    "idx": 0,
+                    "sym": "T",
+                    "alias": "",
+                    "fwk": "PHYSICAL",
+                    "unit": "s",
+                    "name": "Time",
+                    "description": ""
+                },
+                {
+                    "idx": 1,
+                    "sym": "M",
+                    "alias": "",
+                    "fwk": "PHYSICAL",
+                    "unit": "kg",
+                    "name": "Mass",
+                    "description": ""
+                },
+                {
+                    "idx": 2,
+                    "sym": "L",
+                    "alias": "",
+                    "fwk": "PHYSICAL",
+                    "unit": "m",
+                    "name": "Length",
+                    "description": ""
+                }
+            ],
+            "fdu_map": {
+                "T": {
+                    "idx": 0,
+                    "sym": "T",
+                    "alias": "",
+                    "fwk": "PHYSICAL",
+                    "unit": "s",
+                    "name": "Time",
+                    "description": ""
+                },
+                "M": {
+                    "idx": 1,
+                    "sym": "M",
+                    "alias": "",
+                    "fwk": "PHYSICAL",
+                    "unit": "kg",
+                    "name": "Mass",
+                    "description": ""
+                },
+                "L": {
+                    "idx": 2,
+                    "sym": "L",
+                    "alias": "",
+                    "fwk": "PHYSICAL",
+                    "unit": "m",
+                    "name": "Length",
+                    "description": ""
+                }
+            },
+            "fdu_symbols": [
+                "T",
+                "M",
+                "L"
+            ],
+            "fdu_regex": "^[TML](\\^-?\\d+)?(\\*[TML](?:\\^-?\\d+)?)*$",
+            "fdu_pow_regex": "\\-?\\d+",
+            "fdu_no_pow_regex": "[TML](?!\\^)",
+            "fdu_sym_regex": "[TML]"
+        },
+        "working_fdus": [
+            "M",
+            "T",
+            "L"
+        ],
+        "variables": {
+            "\\rho": {
+                "dist_type": "uniform",
+                "dist_params": {},
+                "depends": [],
+                "dist_func": null,
+                "std_setpoint": null,
+                "std_min": null,
+                "std_max": null,
+                "std_mean": null,
+                "std_median": null,
+                "std_dev": null,
+                "setpoint": null,
+                "min": null,
+                "max": null,
+                "mean": null,
+                "median": null,
+                "dev": null,
+                "step": 0.001,
+                "data": [],
+                "dims": "M*L^-3",
+                "units": "kg/m\u00b3",
+                "std_dims": "M^(1)*L^(-3)",
+                "sym_exp": "M**(1)* L**(-3)",
+                "dim_col": [
+                    0,
+                    1,
+                    -3
+                ],
+                "std_units": "",
+                "sym": "\\rho",
+                "fwk": "PHYSICAL",
+                "alias": "rho",
+                "idx": 0,
+                "name": "Density",
+                "description": "",
+                "schema": {
+                    "sym": "",
+                    "fwk": "CUSTOM",
+                    "alias": "",
+                    "idx": -1,
+                    "name": "",
+                    "description": "",
+                    "fdu_lt": [
+                        {
+                            "idx": 0,
+                            "sym": "T",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "s",
+                            "name": "Time",
+                            "description": ""
+                        },
+                        {
+                            "idx": 1,
+                            "sym": "M",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "kg",
+                            "name": "Mass",
+                            "description": ""
+                        },
+                        {
+                            "idx": 2,
+                            "sym": "L",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "m",
+                            "name": "Length",
+                            "description": ""
+                        }
+                    ],
+                    "fdu_map": {
+                        "T": {
+                            "idx": 0,
+                            "sym": "T",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "s",
+                            "name": "Time",
+                            "description": ""
+                        },
+                        "M": {
+                            "idx": 1,
+                            "sym": "M",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "kg",
+                            "name": "Mass",
+                            "description": ""
+                        },
+                        "L": {
+                            "idx": 2,
+                            "sym": "L",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "m",
+                            "name": "Length",
+                            "description": ""
+                        }
+                    },
+                    "fdu_symbols": [
+                        "T",
+                        "M",
+                        "L"
+                    ],
+                    "fdu_regex": "^[TML](\\^-?\\d+)?(\\*[TML](?:\\^-?\\d+)?)*$",
+                    "fdu_pow_regex": "\\-?\\d+",
+                    "fdu_no_pow_regex": "[TML](?!\\^)",
+                    "fdu_sym_regex": "[TML]"
+                },
+                "cat": "IN",
+                "relevant": true
+            },
+            "v": {
+                "dist_type": "uniform",
+                "dist_params": {},
+                "depends": [],
+                "dist_func": null,
+                "std_setpoint": null,
+                "std_min": null,
+                "std_max": null,
+                "std_mean": null,
+                "std_median": null,
+                "std_dev": null,
+                "setpoint": null,
+                "min": null,
+                "max": null,
+                "mean": null,
+                "median": null,
+                "dev": null,
+                "step": 0.001,
+                "data": [],
+                "dims": "L*T^-1",
+                "units": "m/s",
+                "std_dims": "T^(-1)*L^(1)",
+                "sym_exp": "T**(-1)* L**(1)",
+                "dim_col": [
+                    -1,
+                    0,
+                    1
+                ],
+                "std_units": "",
+                "sym": "v",
+                "fwk": "PHYSICAL",
+                "alias": "v",
+                "idx": 3,
+                "name": "Velocity",
+                "description": "",
+                "schema": {
+                    "sym": "",
+                    "fwk": "CUSTOM",
+                    "alias": "",
+                    "idx": -1,
+                    "name": "",
+                    "description": "",
+                    "fdu_lt": [
+                        {
+                            "idx": 0,
+                            "sym": "T",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "s",
+                            "name": "Time",
+                            "description": ""
+                        },
+                        {
+                            "idx": 1,
+                            "sym": "M",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "kg",
+                            "name": "Mass",
+                            "description": ""
+                        },
+                        {
+                            "idx": 2,
+                            "sym": "L",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "m",
+                            "name": "Length",
+                            "description": ""
+                        }
+                    ],
+                    "fdu_map": {
+                        "T": {
+                            "idx": 0,
+                            "sym": "T",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "s",
+                            "name": "Time",
+                            "description": ""
+                        },
+                        "M": {
+                            "idx": 1,
+                            "sym": "M",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "kg",
+                            "name": "Mass",
+                            "description": ""
+                        },
+                        "L": {
+                            "idx": 2,
+                            "sym": "L",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "m",
+                            "name": "Length",
+                            "description": ""
+                        }
+                    },
+                    "fdu_symbols": [
+                        "T",
+                        "M",
+                        "L"
+                    ],
+                    "fdu_regex": "^[TML](\\^-?\\d+)?(\\*[TML](?:\\^-?\\d+)?)*$",
+                    "fdu_pow_regex": "\\-?\\d+",
+                    "fdu_no_pow_regex": "[TML](?!\\^)",
+                    "fdu_sym_regex": "[TML]"
+                },
+                "cat": "OUT",
+                "relevant": true
+            },
+            "D": {
+                "dist_type": "uniform",
+                "dist_params": {},
+                "depends": [],
+                "dist_func": null,
+                "std_setpoint": null,
+                "std_min": null,
+                "std_max": null,
+                "std_mean": null,
+                "std_median": null,
+                "std_dev": null,
+                "setpoint": null,
+                "min": null,
+                "max": null,
+                "mean": null,
+                "median": null,
+                "dev": null,
+                "step": 0.001,
+                "data": [],
+                "dims": "L",
+                "units": "m",
+                "std_dims": "L^(1)",
+                "sym_exp": "L**(1)",
+                "dim_col": [
+                    0,
+                    0,
+                    1
+                ],
+                "std_units": "",
+                "sym": "D",
+                "fwk": "PHYSICAL",
+                "alias": "D",
+                "idx": 1,
+                "name": "Diameter",
+                "description": "",
+                "schema": {
+                    "sym": "",
+                    "fwk": "CUSTOM",
+                    "alias": "",
+                    "idx": -1,
+                    "name": "",
+                    "description": "",
+                    "fdu_lt": [
+                        {
+                            "idx": 0,
+                            "sym": "T",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "s",
+                            "name": "Time",
+                            "description": ""
+                        },
+                        {
+                            "idx": 1,
+                            "sym": "M",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "kg",
+                            "name": "Mass",
+                            "description": ""
+                        },
+                        {
+                            "idx": 2,
+                            "sym": "L",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "m",
+                            "name": "Length",
+                            "description": ""
+                        }
+                    ],
+                    "fdu_map": {
+                        "T": {
+                            "idx": 0,
+                            "sym": "T",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "s",
+                            "name": "Time",
+                            "description": ""
+                        },
+                        "M": {
+                            "idx": 1,
+                            "sym": "M",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "kg",
+                            "name": "Mass",
+                            "description": ""
+                        },
+                        "L": {
+                            "idx": 2,
+                            "sym": "L",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "m",
+                            "name": "Length",
+                            "description": ""
+                        }
+                    },
+                    "fdu_symbols": [
+                        "T",
+                        "M",
+                        "L"
+                    ],
+                    "fdu_regex": "^[TML](\\^-?\\d+)?(\\*[TML](?:\\^-?\\d+)?)*$",
+                    "fdu_pow_regex": "\\-?\\d+",
+                    "fdu_no_pow_regex": "[TML](?!\\^)",
+                    "fdu_sym_regex": "[TML]"
+                },
+                "cat": "IN",
+                "relevant": true
+            },
+            "\\mu": {
+                "dist_type": "uniform",
+                "dist_params": {},
+                "depends": [],
+                "dist_func": null,
+                "std_setpoint": null,
+                "std_min": null,
+                "std_max": null,
+                "std_mean": null,
+                "std_median": null,
+                "std_dev": null,
+                "setpoint": null,
+                "min": null,
+                "max": null,
+                "mean": null,
+                "median": null,
+                "dev": null,
+                "step": 0.001,
+                "data": [],
+                "dims": "M*L^-1*T^-1",
+                "units": "Pa\u00b7s",
+                "std_dims": "T^(-1)*M^(1)*L^(-1)",
+                "sym_exp": "T**(-1)* M**(1)* L**(-1)",
+                "dim_col": [
+                    -1,
+                    1,
+                    -1
+                ],
+                "std_units": "",
+                "sym": "\\mu",
+                "fwk": "PHYSICAL",
+                "alias": "mu",
+                "idx": 2,
+                "name": "Viscosity",
+                "description": "",
+                "schema": {
+                    "sym": "",
+                    "fwk": "CUSTOM",
+                    "alias": "",
+                    "idx": -1,
+                    "name": "",
+                    "description": "",
+                    "fdu_lt": [
+                        {
+                            "idx": 0,
+                            "sym": "T",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "s",
+                            "name": "Time",
+                            "description": ""
+                        },
+                        {
+                            "idx": 1,
+                            "sym": "M",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "kg",
+                            "name": "Mass",
+                            "description": ""
+                        },
+                        {
+                            "idx": 2,
+                            "sym": "L",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "m",
+                            "name": "Length",
+                            "description": ""
+                        }
+                    ],
+                    "fdu_map": {
+                        "T": {
+                            "idx": 0,
+                            "sym": "T",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "s",
+                            "name": "Time",
+                            "description": ""
+                        },
+                        "M": {
+                            "idx": 1,
+                            "sym": "M",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "kg",
+                            "name": "Mass",
+                            "description": ""
+                        },
+                        "L": {
+                            "idx": 2,
+                            "sym": "L",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "m",
+                            "name": "Length",
+                            "description": ""
+                        }
+                    },
+                    "fdu_symbols": [
+                        "T",
+                        "M",
+                        "L"
+                    ],
+                    "fdu_regex": "^[TML](\\^-?\\d+)?(\\*[TML](?:\\^-?\\d+)?)*$",
+                    "fdu_pow_regex": "\\-?\\d+",
+                    "fdu_no_pow_regex": "[TML](?!\\^)",
+                    "fdu_sym_regex": "[TML]"
+                },
+                "cat": "IN",
+                "relevant": true
+            },
+            "g": {
+                "dist_type": "uniform",
+                "dist_params": {},
+                "depends": [],
+                "dist_func": null,
+                "std_setpoint": null,
+                "std_min": null,
+                "std_max": null,
+                "std_mean": null,
+                "std_median": null,
+                "std_dev": null,
+                "setpoint": null,
+                "min": null,
+                "max": null,
+                "mean": null,
+                "median": null,
+                "dev": null,
+                "step": 0.001,
+                "data": [],
+                "dims": "L*T^-2",
+                "units": "m/s\u00b2",
+                "std_dims": "T^(-2)*L^(1)",
+                "sym_exp": "T**(-2)* L**(1)",
+                "dim_col": [
+                    -2,
+                    0,
+                    1
+                ],
+                "std_units": "",
+                "sym": "g",
+                "fwk": "PHYSICAL",
+                "alias": "g",
+                "idx": -1,
+                "name": "Gravity",
+                "description": "",
+                "schema": {
+                    "sym": "",
+                    "fwk": "CUSTOM",
+                    "alias": "",
+                    "idx": -1,
+                    "name": "",
+                    "description": "",
+                    "fdu_lt": [
+                        {
+                            "idx": 0,
+                            "sym": "T",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "s",
+                            "name": "Time",
+                            "description": ""
+                        },
+                        {
+                            "idx": 1,
+                            "sym": "M",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "kg",
+                            "name": "Mass",
+                            "description": ""
+                        },
+                        {
+                            "idx": 2,
+                            "sym": "L",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "m",
+                            "name": "Length",
+                            "description": ""
+                        }
+                    ],
+                    "fdu_map": {
+                        "T": {
+                            "idx": 0,
+                            "sym": "T",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "s",
+                            "name": "Time",
+                            "description": ""
+                        },
+                        "M": {
+                            "idx": 1,
+                            "sym": "M",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "kg",
+                            "name": "Mass",
+                            "description": ""
+                        },
+                        "L": {
+                            "idx": 2,
+                            "sym": "L",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "m",
+                            "name": "Length",
+                            "description": ""
+                        }
+                    },
+                    "fdu_symbols": [
+                        "T",
+                        "M",
+                        "L"
+                    ],
+                    "fdu_regex": "^[TML](\\^-?\\d+)?(\\*[TML](?:\\^-?\\d+)?)*$",
+                    "fdu_pow_regex": "\\-?\\d+",
+                    "fdu_no_pow_regex": "[TML](?!\\^)",
+                    "fdu_sym_regex": "[TML]"
+                },
+                "cat": "CTRL",
+                "relevant": false
+            }
+        },
+        "relevance_lt": {
+            "\\rho": {
+                "dist_type": "uniform",
+                "dist_params": {},
+                "depends": [],
+                "dist_func": null,
+                "std_setpoint": null,
+                "std_min": null,
+                "std_max": null,
+                "std_mean": null,
+                "std_median": null,
+                "std_dev": null,
+                "setpoint": null,
+                "min": null,
+                "max": null,
+                "mean": null,
+                "median": null,
+                "dev": null,
+                "step": 0.001,
+                "data": [],
+                "dims": "M*L^-3",
+                "units": "kg/m\u00b3",
+                "std_dims": "M^(1)*L^(-3)",
+                "sym_exp": "M**(1)* L**(-3)",
+                "dim_col": [
+                    0,
+                    1,
+                    -3
+                ],
+                "std_units": "",
+                "sym": "\\rho",
+                "fwk": "PHYSICAL",
+                "alias": "rho",
+                "idx": 0,
+                "name": "Density",
+                "description": "",
+                "schema": {
+                    "sym": "",
+                    "fwk": "CUSTOM",
+                    "alias": "",
+                    "idx": -1,
+                    "name": "",
+                    "description": "",
+                    "fdu_lt": [
+                        {
+                            "idx": 0,
+                            "sym": "T",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "s",
+                            "name": "Time",
+                            "description": ""
+                        },
+                        {
+                            "idx": 1,
+                            "sym": "M",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "kg",
+                            "name": "Mass",
+                            "description": ""
+                        },
+                        {
+                            "idx": 2,
+                            "sym": "L",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "m",
+                            "name": "Length",
+                            "description": ""
+                        }
+                    ],
+                    "fdu_map": {
+                        "T": {
+                            "idx": 0,
+                            "sym": "T",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "s",
+                            "name": "Time",
+                            "description": ""
+                        },
+                        "M": {
+                            "idx": 1,
+                            "sym": "M",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "kg",
+                            "name": "Mass",
+                            "description": ""
+                        },
+                        "L": {
+                            "idx": 2,
+                            "sym": "L",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "m",
+                            "name": "Length",
+                            "description": ""
+                        }
+                    },
+                    "fdu_symbols": [
+                        "T",
+                        "M",
+                        "L"
+                    ],
+                    "fdu_regex": "^[TML](\\^-?\\d+)?(\\*[TML](?:\\^-?\\d+)?)*$",
+                    "fdu_pow_regex": "\\-?\\d+",
+                    "fdu_no_pow_regex": "[TML](?!\\^)",
+                    "fdu_sym_regex": "[TML]"
+                },
+                "cat": "IN",
+                "relevant": true
+            },
+            "D": {
+                "dist_type": "uniform",
+                "dist_params": {},
+                "depends": [],
+                "dist_func": null,
+                "std_setpoint": null,
+                "std_min": null,
+                "std_max": null,
+                "std_mean": null,
+                "std_median": null,
+                "std_dev": null,
+                "setpoint": null,
+                "min": null,
+                "max": null,
+                "mean": null,
+                "median": null,
+                "dev": null,
+                "step": 0.001,
+                "data": [],
+                "dims": "L",
+                "units": "m",
+                "std_dims": "L^(1)",
+                "sym_exp": "L**(1)",
+                "dim_col": [
+                    0,
+                    0,
+                    1
+                ],
+                "std_units": "",
+                "sym": "D",
+                "fwk": "PHYSICAL",
+                "alias": "D",
+                "idx": 1,
+                "name": "Diameter",
+                "description": "",
+                "schema": {
+                    "sym": "",
+                    "fwk": "CUSTOM",
+                    "alias": "",
+                    "idx": -1,
+                    "name": "",
+                    "description": "",
+                    "fdu_lt": [
+                        {
+                            "idx": 0,
+                            "sym": "T",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "s",
+                            "name": "Time",
+                            "description": ""
+                        },
+                        {
+                            "idx": 1,
+                            "sym": "M",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "kg",
+                            "name": "Mass",
+                            "description": ""
+                        },
+                        {
+                            "idx": 2,
+                            "sym": "L",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "m",
+                            "name": "Length",
+                            "description": ""
+                        }
+                    ],
+                    "fdu_map": {
+                        "T": {
+                            "idx": 0,
+                            "sym": "T",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "s",
+                            "name": "Time",
+                            "description": ""
+                        },
+                        "M": {
+                            "idx": 1,
+                            "sym": "M",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "kg",
+                            "name": "Mass",
+                            "description": ""
+                        },
+                        "L": {
+                            "idx": 2,
+                            "sym": "L",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "m",
+                            "name": "Length",
+                            "description": ""
+                        }
+                    },
+                    "fdu_symbols": [
+                        "T",
+                        "M",
+                        "L"
+                    ],
+                    "fdu_regex": "^[TML](\\^-?\\d+)?(\\*[TML](?:\\^-?\\d+)?)*$",
+                    "fdu_pow_regex": "\\-?\\d+",
+                    "fdu_no_pow_regex": "[TML](?!\\^)",
+                    "fdu_sym_regex": "[TML]"
+                },
+                "cat": "IN",
+                "relevant": true
+            },
+            "\\mu": {
+                "dist_type": "uniform",
+                "dist_params": {},
+                "depends": [],
+                "dist_func": null,
+                "std_setpoint": null,
+                "std_min": null,
+                "std_max": null,
+                "std_mean": null,
+                "std_median": null,
+                "std_dev": null,
+                "setpoint": null,
+                "min": null,
+                "max": null,
+                "mean": null,
+                "median": null,
+                "dev": null,
+                "step": 0.001,
+                "data": [],
+                "dims": "M*L^-1*T^-1",
+                "units": "Pa\u00b7s",
+                "std_dims": "T^(-1)*M^(1)*L^(-1)",
+                "sym_exp": "T**(-1)* M**(1)* L**(-1)",
+                "dim_col": [
+                    -1,
+                    1,
+                    -1
+                ],
+                "std_units": "",
+                "sym": "\\mu",
+                "fwk": "PHYSICAL",
+                "alias": "mu",
+                "idx": 2,
+                "name": "Viscosity",
+                "description": "",
+                "schema": {
+                    "sym": "",
+                    "fwk": "CUSTOM",
+                    "alias": "",
+                    "idx": -1,
+                    "name": "",
+                    "description": "",
+                    "fdu_lt": [
+                        {
+                            "idx": 0,
+                            "sym": "T",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "s",
+                            "name": "Time",
+                            "description": ""
+                        },
+                        {
+                            "idx": 1,
+                            "sym": "M",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "kg",
+                            "name": "Mass",
+                            "description": ""
+                        },
+                        {
+                            "idx": 2,
+                            "sym": "L",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "m",
+                            "name": "Length",
+                            "description": ""
+                        }
+                    ],
+                    "fdu_map": {
+                        "T": {
+                            "idx": 0,
+                            "sym": "T",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "s",
+                            "name": "Time",
+                            "description": ""
+                        },
+                        "M": {
+                            "idx": 1,
+                            "sym": "M",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "kg",
+                            "name": "Mass",
+                            "description": ""
+                        },
+                        "L": {
+                            "idx": 2,
+                            "sym": "L",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "m",
+                            "name": "Length",
+                            "description": ""
+                        }
+                    },
+                    "fdu_symbols": [
+                        "T",
+                        "M",
+                        "L"
+                    ],
+                    "fdu_regex": "^[TML](\\^-?\\d+)?(\\*[TML](?:\\^-?\\d+)?)*$",
+                    "fdu_pow_regex": "\\-?\\d+",
+                    "fdu_no_pow_regex": "[TML](?!\\^)",
+                    "fdu_sym_regex": "[TML]"
+                },
+                "cat": "IN",
+                "relevant": true
+            },
+            "v": {
+                "dist_type": "uniform",
+                "dist_params": {},
+                "depends": [],
+                "dist_func": null,
+                "std_setpoint": null,
+                "std_min": null,
+                "std_max": null,
+                "std_mean": null,
+                "std_median": null,
+                "std_dev": null,
+                "setpoint": null,
+                "min": null,
+                "max": null,
+                "mean": null,
+                "median": null,
+                "dev": null,
+                "step": 0.001,
+                "data": [],
+                "dims": "L*T^-1",
+                "units": "m/s",
+                "std_dims": "T^(-1)*L^(1)",
+                "sym_exp": "T**(-1)* L**(1)",
+                "dim_col": [
+                    -1,
+                    0,
+                    1
+                ],
+                "std_units": "",
+                "sym": "v",
+                "fwk": "PHYSICAL",
+                "alias": "v",
+                "idx": 3,
+                "name": "Velocity",
+                "description": "",
+                "schema": {
+                    "sym": "",
+                    "fwk": "CUSTOM",
+                    "alias": "",
+                    "idx": -1,
+                    "name": "",
+                    "description": "",
+                    "fdu_lt": [
+                        {
+                            "idx": 0,
+                            "sym": "T",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "s",
+                            "name": "Time",
+                            "description": ""
+                        },
+                        {
+                            "idx": 1,
+                            "sym": "M",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "kg",
+                            "name": "Mass",
+                            "description": ""
+                        },
+                        {
+                            "idx": 2,
+                            "sym": "L",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "m",
+                            "name": "Length",
+                            "description": ""
+                        }
+                    ],
+                    "fdu_map": {
+                        "T": {
+                            "idx": 0,
+                            "sym": "T",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "s",
+                            "name": "Time",
+                            "description": ""
+                        },
+                        "M": {
+                            "idx": 1,
+                            "sym": "M",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "kg",
+                            "name": "Mass",
+                            "description": ""
+                        },
+                        "L": {
+                            "idx": 2,
+                            "sym": "L",
+                            "alias": "",
+                            "fwk": "PHYSICAL",
+                            "unit": "m",
+                            "name": "Length",
+                            "description": ""
+                        }
+                    },
+                    "fdu_symbols": [
+                        "T",
+                        "M",
+                        "L"
+                    ],
+                    "fdu_regex": "^[TML](\\^-?\\d+)?(\\*[TML](?:\\^-?\\d+)?)*$",
+                    "fdu_pow_regex": "\\-?\\d+",
+                    "fdu_no_pow_regex": "[TML](?!\\^)",
+                    "fdu_sym_regex": "[TML]"
+                },
+                "cat": "OUT",
+                "relevant": true
+            }
+        },
+        "output": {
+            "dist_type": "uniform",
+            "dist_params": {},
+            "depends": [],
+            "dist_func": null,
+            "std_setpoint": null,
+            "std_min": null,
+            "std_max": null,
+            "std_mean": null,
+            "std_median": null,
+            "std_dev": null,
+            "setpoint": null,
+            "min": null,
+            "max": null,
+            "mean": null,
+            "median": null,
+            "dev": null,
+            "step": 0.001,
+            "data": [],
+            "dims": "L*T^-1",
+            "units": "m/s",
+            "std_dims": "T^(-1)*L^(1)",
+            "sym_exp": "T**(-1)* L**(1)",
+            "dim_col": [
+                -1,
+                0,
+                1
+            ],
+            "std_units": "",
+            "sym": "v",
+            "fwk": "PHYSICAL",
+            "alias": "v",
+            "idx": 3,
+            "name": "Velocity",
+            "description": "",
+            "schema": {
+                "sym": "",
+                "fwk": "CUSTOM",
+                "alias": "",
+                "idx": -1,
+                "name": "",
+                "description": "",
+                "fdu_lt": [
+                    {
+                        "idx": 0,
+                        "sym": "T",
+                        "alias": "",
+                        "fwk": "PHYSICAL",
+                        "unit": "s",
+                        "name": "Time",
+                        "description": ""
+                    },
+                    {
+                        "idx": 1,
+                        "sym": "M",
+                        "alias": "",
+                        "fwk": "PHYSICAL",
+                        "unit": "kg",
+                        "name": "Mass",
+                        "description": ""
+                    },
+                    {
+                        "idx": 2,
+                        "sym": "L",
+                        "alias": "",
+                        "fwk": "PHYSICAL",
+                        "unit": "m",
+                        "name": "Length",
+                        "description": ""
+                    }
+                ],
+                "fdu_map": {
+                    "T": {
+                        "idx": 0,
+                        "sym": "T",
+                        "alias": "",
+                        "fwk": "PHYSICAL",
+                        "unit": "s",
+                        "name": "Time",
+                        "description": ""
+                    },
+                    "M": {
+                        "idx": 1,
+                        "sym": "M",
+                        "alias": "",
+                        "fwk": "PHYSICAL",
+                        "unit": "kg",
+                        "name": "Mass",
+                        "description": ""
+                    },
+                    "L": {
+                        "idx": 2,
+                        "sym": "L",
+                        "alias": "",
+                        "fwk": "PHYSICAL",
+                        "unit": "m",
+                        "name": "Length",
+                        "description": ""
+                    }
+                },
+                "fdu_symbols": [
+                    "T",
+                    "M",
+                    "L"
+                ],
+                "fdu_regex": "^[TML](\\^-?\\d+)?(\\*[TML](?:\\^-?\\d+)?)*$",
+                "fdu_pow_regex": "\\-?\\d+",
+                "fdu_no_pow_regex": "[TML](?!\\^)",
+                "fdu_sym_regex": "[TML]"
+            },
+            "cat": "OUT",
+            "relevant": true
+        },
+        "n_var": 5,
+        "n_relevant": 4,
+        "n_in": 3,
+        "n_out": 1,
+        "n_ctrl": 0,
+        "dim_mtx": [
+            [
+                0.0,
+                0.0,
+                -1.0,
+                -1.0
+            ],
+            [
+                1.0,
+                0.0,
+                1.0,
+                0.0
+            ],
+            [
+                -3.0,
+                1.0,
+                -1.0,
+                1.0
+            ]
+        ],
+        "dim_mtx_trans": [
+            [
+                0.0,
+                1.0,
+                -3.0
+            ],
+            [
+                0.0,
+                0.0,
+                1.0
+            ],
+            [
+                -1.0,
+                1.0,
+                -1.0
+            ],
+            [
+                -1.0,
+                0.0,
+                1.0
+            ]
+        ],
+        "sym_mtx": [
+            [
+                0.0,
+                0.0,
+                -1.0,
+                -1.0
+            ],
+            [
+                1.0,
+                0.0,
+                1.0,
+                0.0
+            ],
+            [
+                -3.0,
+                1.0,
+                -1.0,
+                1.0
+            ]
+        ],
+        "rref_mtx": [
+            [
+                1.0,
+                0.0,
+                0.0,
+                -1.0
+            ],
+            [
+                0.0,
+                1.0,
+                0.0,
+                -1.0
+            ],
+            [
+                0.0,
+                0.0,
+                1.0,
+                1.0
+            ]
+        ],
+        "nullspace": [
+            [
+                [
+                    1.0
+                ],
+                [
+                    1.0
+                ],
+                [
+                    -1.0
+                ],
+                [
+                    1.0
+                ]
+            ]
+        ],
+        "pivot_cols": [
+            0,
+            1,
+            2
+        ],
+        "coefficients": {
+            "\\Pi_{0}": {
+                "setpoint": null,
+                "min": null,
+                "max": null,
+                "mean": null,
+                "median": null,
+                "dev": null,
+                "sym": "\\Pi_{0}",
+                "fwk": "CUSTOM",
+                "alias": "Pi_0",
+                "idx": 0,
+                "name": "Pi-0",
+                "description": "Dimensionless coefficient 0 from nullspace",
+                "cat": "COMPUTED",
+                "variables": {
+                    "\\rho": {
+                        "dist_type": "uniform",
+                        "dist_params": {},
+                        "depends": [],
+                        "dist_func": null,
+                        "std_setpoint": null,
+                        "std_min": null,
+                        "std_max": null,
+                        "std_mean": null,
+                        "std_median": null,
+                        "std_dev": null,
+                        "setpoint": null,
+                        "min": null,
+                        "max": null,
+                        "mean": null,
+                        "median": null,
+                        "dev": null,
+                        "step": 0.001,
+                        "data": [],
+                        "dims": "M*L^-3",
+                        "units": "kg/m\u00b3",
+                        "std_dims": "M^(1)*L^(-3)",
+                        "sym_exp": "M**(1)* L**(-3)",
+                        "dim_col": [
+                            0,
+                            1,
+                            -3
+                        ],
+                        "std_units": "",
+                        "sym": "\\rho",
+                        "fwk": "PHYSICAL",
+                        "alias": "rho",
+                        "idx": 0,
+                        "name": "Density",
+                        "description": "",
+                        "schema": {
+                            "sym": "",
+                            "fwk": "CUSTOM",
+                            "alias": "",
+                            "idx": -1,
+                            "name": "",
+                            "description": "",
+                            "fdu_lt": [
+                                {
+                                    "idx": 0,
+                                    "sym": "T",
+                                    "alias": "",
+                                    "fwk": "PHYSICAL",
+                                    "unit": "s",
+                                    "name": "Time",
+                                    "description": ""
+                                },
+                                {
+                                    "idx": 1,
+                                    "sym": "M",
+                                    "alias": "",
+                                    "fwk": "PHYSICAL",
+                                    "unit": "kg",
+                                    "name": "Mass",
+                                    "description": ""
+                                },
+                                {
+                                    "idx": 2,
+                                    "sym": "L",
+                                    "alias": "",
+                                    "fwk": "PHYSICAL",
+                                    "unit": "m",
+                                    "name": "Length",
+                                    "description": ""
+                                }
+                            ],
+                            "fdu_map": {
+                                "T": {
+                                    "idx": 0,
+                                    "sym": "T",
+                                    "alias": "",
+                                    "fwk": "PHYSICAL",
+                                    "unit": "s",
+                                    "name": "Time",
+                                    "description": ""
+                                },
+                                "M": {
+                                    "idx": 1,
+                                    "sym": "M",
+                                    "alias": "",
+                                    "fwk": "PHYSICAL",
+                                    "unit": "kg",
+                                    "name": "Mass",
+                                    "description": ""
+                                },
+                                "L": {
+                                    "idx": 2,
+                                    "sym": "L",
+                                    "alias": "",
+                                    "fwk": "PHYSICAL",
+                                    "unit": "m",
+                                    "name": "Length",
+                                    "description": ""
+                                }
+                            },
+                            "fdu_symbols": [
+                                "T",
+                                "M",
+                                "L"
+                            ],
+                            "fdu_regex": "^[TML](\\^-?\\d+)?(\\*[TML](?:\\^-?\\d+)?)*$",
+                            "fdu_pow_regex": "\\-?\\d+",
+                            "fdu_no_pow_regex": "[TML](?!\\^)",
+                            "fdu_sym_regex": "[TML]"
+                        },
+                        "cat": "IN",
+                        "relevant": true
+                    },
+                    "D": {
+                        "dist_type": "uniform",
+                        "dist_params": {},
+                        "depends": [],
+                        "dist_func": null,
+                        "std_setpoint": null,
+                        "std_min": null,
+                        "std_max": null,
+                        "std_mean": null,
+                        "std_median": null,
+                        "std_dev": null,
+                        "setpoint": null,
+                        "min": null,
+                        "max": null,
+                        "mean": null,
+                        "median": null,
+                        "dev": null,
+                        "step": 0.001,
+                        "data": [],
+                        "dims": "L",
+                        "units": "m",
+                        "std_dims": "L^(1)",
+                        "sym_exp": "L**(1)",
+                        "dim_col": [
+                            0,
+                            0,
+                            1
+                        ],
+                        "std_units": "",
+                        "sym": "D",
+                        "fwk": "PHYSICAL",
+                        "alias": "D",
+                        "idx": 1,
+                        "name": "Diameter",
+                        "description": "",
+                        "schema": {
+                            "sym": "",
+                            "fwk": "CUSTOM",
+                            "alias": "",
+                            "idx": -1,
+                            "name": "",
+                            "description": "",
+                            "fdu_lt": [
+                                {
+                                    "idx": 0,
+                                    "sym": "T",
+                                    "alias": "",
+                                    "fwk": "PHYSICAL",
+                                    "unit": "s",
+                                    "name": "Time",
+                                    "description": ""
+                                },
+                                {
+                                    "idx": 1,
+                                    "sym": "M",
+                                    "alias": "",
+                                    "fwk": "PHYSICAL",
+                                    "unit": "kg",
+                                    "name": "Mass",
+                                    "description": ""
+                                },
+                                {
+                                    "idx": 2,
+                                    "sym": "L",
+                                    "alias": "",
+                                    "fwk": "PHYSICAL",
+                                    "unit": "m",
+                                    "name": "Length",
+                                    "description": ""
+                                }
+                            ],
+                            "fdu_map": {
+                                "T": {
+                                    "idx": 0,
+                                    "sym": "T",
+                                    "alias": "",
+                                    "fwk": "PHYSICAL",
+                                    "unit": "s",
+                                    "name": "Time",
+                                    "description": ""
+                                },
+                                "M": {
+                                    "idx": 1,
+                                    "sym": "M",
+                                    "alias": "",
+                                    "fwk": "PHYSICAL",
+                                    "unit": "kg",
+                                    "name": "Mass",
+                                    "description": ""
+                                },
+                                "L": {
+                                    "idx": 2,
+                                    "sym": "L",
+                                    "alias": "",
+                                    "fwk": "PHYSICAL",
+                                    "unit": "m",
+                                    "name": "Length",
+                                    "description": ""
+                                }
+                            },
+                            "fdu_symbols": [
+                                "T",
+                                "M",
+                                "L"
+                            ],
+                            "fdu_regex": "^[TML](\\^-?\\d+)?(\\*[TML](?:\\^-?\\d+)?)*$",
+                            "fdu_pow_regex": "\\-?\\d+",
+                            "fdu_no_pow_regex": "[TML](?!\\^)",
+                            "fdu_sym_regex": "[TML]"
+                        },
+                        "cat": "IN",
+                        "relevant": true
+                    },
+                    "\\mu": {
+                        "dist_type": "uniform",
+                        "dist_params": {},
+                        "depends": [],
+                        "dist_func": null,
+                        "std_setpoint": null,
+                        "std_min": null,
+                        "std_max": null,
+                        "std_mean": null,
+                        "std_median": null,
+                        "std_dev": null,
+                        "setpoint": null,
+                        "min": null,
+                        "max": null,
+                        "mean": null,
+                        "median": null,
+                        "dev": null,
+                        "step": 0.001,
+                        "data": [],
+                        "dims": "M*L^-1*T^-1",
+                        "units": "Pa\u00b7s",
+                        "std_dims": "T^(-1)*M^(1)*L^(-1)",
+                        "sym_exp": "T**(-1)* M**(1)* L**(-1)",
+                        "dim_col": [
+                            -1,
+                            1,
+                            -1
+                        ],
+                        "std_units": "",
+                        "sym": "\\mu",
+                        "fwk": "PHYSICAL",
+                        "alias": "mu",
+                        "idx": 2,
+                        "name": "Viscosity",
+                        "description": "",
+                        "schema": {
+                            "sym": "",
+                            "fwk": "CUSTOM",
+                            "alias": "",
+                            "idx": -1,
+                            "name": "",
+                            "description": "",
+                            "fdu_lt": [
+                                {
+                                    "idx": 0,
+                                    "sym": "T",
+                                    "alias": "",
+                                    "fwk": "PHYSICAL",
+                                    "unit": "s",
+                                    "name": "Time",
+                                    "description": ""
+                                },
+                                {
+                                    "idx": 1,
+                                    "sym": "M",
+                                    "alias": "",
+                                    "fwk": "PHYSICAL",
+                                    "unit": "kg",
+                                    "name": "Mass",
+                                    "description": ""
+                                },
+                                {
+                                    "idx": 2,
+                                    "sym": "L",
+                                    "alias": "",
+                                    "fwk": "PHYSICAL",
+                                    "unit": "m",
+                                    "name": "Length",
+                                    "description": ""
+                                }
+                            ],
+                            "fdu_map": {
+                                "T": {
+                                    "idx": 0,
+                                    "sym": "T",
+                                    "alias": "",
+                                    "fwk": "PHYSICAL",
+                                    "unit": "s",
+                                    "name": "Time",
+                                    "description": ""
+                                },
+                                "M": {
+                                    "idx": 1,
+                                    "sym": "M",
+                                    "alias": "",
+                                    "fwk": "PHYSICAL",
+                                    "unit": "kg",
+                                    "name": "Mass",
+                                    "description": ""
+                                },
+                                "L": {
+                                    "idx": 2,
+                                    "sym": "L",
+                                    "alias": "",
+                                    "fwk": "PHYSICAL",
+                                    "unit": "m",
+                                    "name": "Length",
+                                    "description": ""
+                                }
+                            },
+                            "fdu_symbols": [
+                                "T",
+                                "M",
+                                "L"
+                            ],
+                            "fdu_regex": "^[TML](\\^-?\\d+)?(\\*[TML](?:\\^-?\\d+)?)*$",
+                            "fdu_pow_regex": "\\-?\\d+",
+                            "fdu_no_pow_regex": "[TML](?!\\^)",
+                            "fdu_sym_regex": "[TML]"
+                        },
+                        "cat": "IN",
+                        "relevant": true
+                    },
+                    "v": {
+                        "dist_type": "uniform",
+                        "dist_params": {},
+                        "depends": [],
+                        "dist_func": null,
+                        "std_setpoint": null,
+                        "std_min": null,
+                        "std_max": null,
+                        "std_mean": null,
+                        "std_median": null,
+                        "std_dev": null,
+                        "setpoint": null,
+                        "min": null,
+                        "max": null,
+                        "mean": null,
+                        "median": null,
+                        "dev": null,
+                        "step": 0.001,
+                        "data": [],
+                        "dims": "L*T^-1",
+                        "units": "m/s",
+                        "std_dims": "T^(-1)*L^(1)",
+                        "sym_exp": "T**(-1)* L**(1)",
+                        "dim_col": [
+                            -1,
+                            0,
+                            1
+                        ],
+                        "std_units": "",
+                        "sym": "v",
+                        "fwk": "PHYSICAL",
+                        "alias": "v",
+                        "idx": 3,
+                        "name": "Velocity",
+                        "description": "",
+                        "schema": {
+                            "sym": "",
+                            "fwk": "CUSTOM",
+                            "alias": "",
+                            "idx": -1,
+                            "name": "",
+                            "description": "",
+                            "fdu_lt": [
+                                {
+                                    "idx": 0,
+                                    "sym": "T",
+                                    "alias": "",
+                                    "fwk": "PHYSICAL",
+                                    "unit": "s",
+                                    "name": "Time",
+                                    "description": ""
+                                },
+                                {
+                                    "idx": 1,
+                                    "sym": "M",
+                                    "alias": "",
+                                    "fwk": "PHYSICAL",
+                                    "unit": "kg",
+                                    "name": "Mass",
+                                    "description": ""
+                                },
+                                {
+                                    "idx": 2,
+                                    "sym": "L",
+                                    "alias": "",
+                                    "fwk": "PHYSICAL",
+                                    "unit": "m",
+                                    "name": "Length",
+                                    "description": ""
+                                }
+                            ],
+                            "fdu_map": {
+                                "T": {
+                                    "idx": 0,
+                                    "sym": "T",
+                                    "alias": "",
+                                    "fwk": "PHYSICAL",
+                                    "unit": "s",
+                                    "name": "Time",
+                                    "description": ""
+                                },
+                                "M": {
+                                    "idx": 1,
+                                    "sym": "M",
+                                    "alias": "",
+                                    "fwk": "PHYSICAL",
+                                    "unit": "kg",
+                                    "name": "Mass",
+                                    "description": ""
+                                },
+                                "L": {
+                                    "idx": 2,
+                                    "sym": "L",
+                                    "alias": "",
+                                    "fwk": "PHYSICAL",
+                                    "unit": "m",
+                                    "name": "Length",
+                                    "description": ""
+                                }
+                            },
+                            "fdu_symbols": [
+                                "T",
+                                "M",
+                                "L"
+                            ],
+                            "fdu_regex": "^[TML](\\^-?\\d+)?(\\*[TML](?:\\^-?\\d+)?)*$",
+                            "fdu_pow_regex": "\\-?\\d+",
+                            "fdu_no_pow_regex": "[TML](?!\\^)",
+                            "fdu_sym_regex": "[TML]"
+                        },
+                        "cat": "OUT",
+                        "relevant": true
+                    }
+                },
+                "dim_col": [
+                    1,
+                    1,
+                    -1,
+                    1
+                ],
+                "var_dims": {
+                    "\\rho": 1,
+                    "D": 1,
+                    "\\mu": -1,
+                    "v": 1
+                },
+                "pivot_lt": [
+                    0,
+                    1,
+                    2
+                ],
+                "pi_expr": "\\frac{\\rho*D*v}{\\mu}",
+                "step": 0.001,
+                "data": [],
+                "relevance": true
+            }
+        }
+    }
+}

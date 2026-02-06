@@ -56,6 +56,24 @@ extensions = [
 autodoc_member_order = "bysource"
 autodoc_typehints = "description"
 
+# Dict to resolve cross-reference ambiguities
+autodoc_type_aliases = {
+    "Matrix": "pydasa.dimensional.model.Matrix",
+    "Variable": "pydasa.elements.parameter.Variable",
+    "Schema": "pydasa.dimensional.vaschy.Schema",
+    "Coefficient": "pydasa.dimensional.buckingham.Coefficient",
+    "Dimension": "pydasa.dimensional.fundamental.Dimension",
+    "WorkflowBase": "pydasa.workflows.basic.WorkflowBase",
+    "Sensitivity": "pydasa.analysis.scenario.Sensitivity",
+    "MonteCarlo": "pydasa.analysis.simulation.MonteCarlo",
+}
+
+# # Suppress duplicate object warnings from property getters/setters
+# suppress_warnings = [
+#     'autoapi',
+#     'autoapi.python_import_resolution',
+# ]
+
 templates_path = ["_templates"]
 exclude_patterns = [
     "_build",
@@ -83,7 +101,9 @@ autoapi_options = [
     "undoc-members",
     "show-inheritance",
     "show-module-summary",
-    "imported-members",
+    # "special-members",  # Show stuff like __init__, __post_init__
+    "private-members",
+    # "imported-members",
 ]
 
 autoapi_python_use_implicit_namespaces = True
@@ -235,6 +255,4 @@ intersphinx_mapping = {
     "numpy": ("https://numpy.org/doc/stable/", None),
     "scipy": ("https://docs.scipy.org/doc/scipy/", None),
     "sympy": ("https://docs.sympy.org/latest/", None),
-    "matplotlib": ("https://matplotlib.org/stable/", None),
-    "pandas": ("https://pandas.pydata.org/docs/", None),
 }

@@ -3,13 +3,9 @@
 Module config.py
 ===========================================
 
-Configuration module for basic *PyDASA* configuration parameters related to Dimensional Analysis (DA) of complex phenomena.
+Configuration module for **PyDASA** Dimensional Analysis parameters. Provides type-safe, immutable configuration using Enums and frozen dataclasses.
 
-This module provides type-safe configuration through Enums and frozen dataclasses, replacing the previous mutable dictionary-based approach with immutable, type-checked alternatives.
-
-NOTE: in the future the enum should be configurated via external files (e.g., JSON, YAML) to allow user customization.
-
-Key Features:
+Its key features are:
     - Type-safe Enum definitions for frameworks, categories, and modes
     - Immutable configuration via frozen dataclass with singleton pattern
     - Backward compatibility with legacy dict-based access
@@ -29,8 +25,10 @@ Key Features:
         - SYM: Analysis for symbolic processable Parameters (e.g., 'x + y').
         - NUM: Analysis for numeric Variables (e.g., 1.0, 2.5).
 
-*IMPORTANT* Based on:
-    # H.Gorter, *Dimensionalanalyse: Eine Theoririe der physikalischen Dimensionen mit Anwendungen*
+NOTE: in the future the enum should be configurated via external files (e.g., `JSON`, `YAML`) to allow user customization.
+
+**IMPORTANT**
+    - Based on the theory from H. Görtler, *Dimensionalanalyse: Eine Theoririe der physikalischen Dimensionen mit Anwendungen*
 """
 # native python modules
 from enum import Enum
@@ -54,17 +52,11 @@ assert DFLT_CFG_FILE
 
 
 class Frameworks(str, Enum):
-    """**Frameworks** Enum for Fundamental Dimensional Units (FDUs) frameworks in *PyDASA*.
+    """Enumerator for Fundamental Dimensional Units (FDUs) frameworks/domains supported in *PyDASA*.
 
-    Purpose:
-        - Defines the dimensional frameworks supported in *PyDASA*.
-
-    Args:
-        str (class): Python native str class.
-        Enum (class): Python native Enum class.
-
-    Returns:
-        Frameworks: Enum member representing the FDU framework.
+    Inherits from:
+        - str: To allow string comparison and representation.
+        - Enum: To define enumeration members.
     """
 
     PHYSICAL = "PHYSICAL"
@@ -74,7 +66,7 @@ class Frameworks(str, Enum):
 
     @property
     def description(self) -> str:
-        """*description* Get human-readable description of the framework.
+        """Get the human-readable description of the dimensional frameworks/domains.
 
         Returns:
             str: Human-readable framework's description.
@@ -90,18 +82,11 @@ class Frameworks(str, Enum):
 
 
 class VarCardinality(str, Enum):
-    """**VarCardinality** Enum for Variable cardinality in *PyDASA*.
+    """Enumerator for Variable cardinality used to classify variables in the dimensional matrix.
 
-    Purpose:
-        - Defines the variable categories supported in *PyDASA*.
-        - Used to classify variables in the dimensional matrix.
-
-    Args:
-        str (class): Python native str class.
-        Enum (class): Python native Enum class.
-
-    Returns:
-        VarCardinality: Enum member representing the variable cardinality.
+    Inherits from:
+        - str (class): Python native str class.
+        - Enum (class): Python native Enum class.
     """
     IN = "IN"
     OUT = "OUT"
@@ -109,7 +94,7 @@ class VarCardinality(str, Enum):
 
     @property
     def description(self) -> str:
-        """*description* Get human-readable description of the variable cardinality.
+        """Get the human-readable description of the variable cardinality.
 
         Returns:
             str: Human-readable variable cardinality description.
@@ -123,26 +108,18 @@ class VarCardinality(str, Enum):
 
 
 class CoefCardinality(str, Enum):
-    """**CoefCardinality** Enum for Dimensionless Coefficient/Numbers/Groups (DC/DN/DG) cardinality in *PyDASA*.
+    """Enumerator for Dimensionless Coefficient/Numbers/Groups (DC/DN/DG) cardinality used to classify dimensionless coefficients in formulas and equations in **PyDASA.
 
-    Purpose:
-        - Defines the categories of dimensionless coefficients supported in *PyDASA*.
-        - Used to classify dimensionless coefficients in formulas and equations.
-        - Helps in organizing and managing dimensionless coefficients in the analysis.
-
-    Args:
-        str (class): Python native str class.
-        Enum (class): Python native Enum class.
-
-    Returns:
-        CoefCardinality: Enum member representing the coefficient cardinality.
+    Inherits from:
+        - str (class): Python native str class.
+        - Enum (class): Python native Enum class.
     """
     COMPUTED = "COMPUTED"
     DERIVED = "DERIVED"
 
     @property
     def description(self) -> str:
-        """*description* Get human-readable description of the coefficient cardinality.
+        """Get the human-readable description of the coefficient cardinality.
 
         Returns:
             str: Human-readable coefficient cardinality description.
@@ -155,18 +132,11 @@ class CoefCardinality(str, Enum):
 
 
 class AnaliticMode(str, Enum):
-    """**AnaliticMode** Enum for analysis modes (e.g. sensitivity analysis, Monte Carlo simulation) in *PyDASA*.
+    """Enumerator for the sensitivity analysis modes used to specify the type of analysis performed on variables, coefficients, or functions in **PyDASA**.
 
-    Purpose:
-        - Defines the analysis modes supported in *PyDASA*.
-        - Used to specify the type of analysis to be performed on variables, coefficients, or functions.
-
-    Args:
-        str (class): Python native str class.
-        Enum (class): python native Enum class.
-
-    Returns:
-        AnaliticMode: Enum member representing the analysis mode.
+    Inherits from:
+        - str (class): Python native str class.
+        - Enum (class): Python native Enum class.
     """
     SYM = "SYM"
     NUM = "NUM"
@@ -181,11 +151,11 @@ class AnaliticMode(str, Enum):
 
 
 class SimulationMode(str, Enum):
-    """**SimulationMode** Enum for simulation modes in *PyDASA*.
+    """Enumerator for simulation modes used to specify sample generation strategy (distribution-based or data-based) in **PyDASA**.
 
-    Attributes:
-        DIST: Generate samples using distribution functions (Monte Carlo).
-        DATA: Use pre-existing data from Variable._data attributes.
+    Inherits from:
+        - str (class): Python native str class.
+        - Enum (class): Python native Enum class.
     """
     DIST = "DIST"
     DATA = "DATA"
@@ -205,10 +175,7 @@ class SimulationMode(str, Enum):
 
 @dataclass(frozen=True)
 class PyDASAConfig:
-    """ **PyDASAConfig** Singleton class for PyDASA configuration. It uses dataclass decorator to freeze the data.
-
-    Returns:
-        PyDASAConfig: frozen singleton configuration instance.
+    """Singleton class for **PyDASA** configuration. It uses dataclass decorator to freeze the data.
     """
 
     # :attr: _instance
@@ -220,7 +187,7 @@ class PyDASAConfig:
     """Supported Fundamental Dimensional Units (FDUs) frameworks and their configurations."""
 
     def __post_init__(self):
-        """*__post_init__()* Post-initialization to load configuration from file."""
+        """Post-initialization to load default configuration from file."""
         # Load configuration from default file (relative to this module's directory)
         module_dir = Path(__file__).parent
         fp = module_dir / DFLT_CFG_FOLDER / DFLT_CFG_FILE
@@ -233,7 +200,7 @@ class PyDASAConfig:
 
     @classmethod
     def get_instance(cls) -> "PyDASAConfig":
-        """*get_instance()* Get the singleton instance of PyDASAConfig.
+        """Get the singleton instance of PyDASAConfig for accessing the global configuration.
 
         Returns:
             PyDASAConfig: Singleton instance of PyDASAConfig.
@@ -244,7 +211,7 @@ class PyDASAConfig:
 
     @property
     def frameworks(self) -> tuple[Frameworks, ...]:
-        """*frameworks* Get supported frameworks.
+        """Get **PyDASA** supported frameworks.
 
         Returns:
             tuple[Frameworks, ...]: Tuple of supported Frameworks.
@@ -253,7 +220,7 @@ class PyDASAConfig:
 
     @property
     def parameter_cardinality(self) -> tuple[VarCardinality, ...]:
-        """*parameter_cardinality* Get supported variable cardinalities.
+        """Get **PyDASA** supported variable cardinalities.
 
         Returns:
             tuple[VarCardinality, ...]: Tuple of supported VarCardinality.
@@ -262,7 +229,7 @@ class PyDASAConfig:
 
     @property
     def coefficient_cardinality(self) -> tuple[CoefCardinality, ...]:
-        """*coefficient_cardinality* Get supported coefficient cardinalities.
+        """Get **PyDASA** supported coefficient cardinalities.
 
         Returns:
             tuple[CoefCardinality, ...]: Tuple of supported CoefCardinality.
@@ -271,7 +238,7 @@ class PyDASAConfig:
 
     @property
     def analitic_modes(self) -> tuple[AnaliticMode, ...]:
-        """*analitic_modes* Get supported analysis modes.
+        """Get **PyDASA** supported analysis modes.
 
         Returns:
             tuple[AnaliticMode, ...]: Tuple of supported AnaliticMode.
@@ -280,7 +247,7 @@ class PyDASAConfig:
 
     @property
     def simulation_modes(self) -> tuple[SimulationMode, ...]:
-        """*simulation_modes* Get supported simulation modes.
+        """Get **PyDASA** supported simulation modes.
 
         Returns:
             tuple[SimulationMode, ...]: Tuple of supported SimulationMode.

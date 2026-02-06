@@ -3,7 +3,7 @@
 Module latex.py
 ===========================================
 
-Module for default global variables and comparison functions for use by all *PyDASA* and its Data Structs.
+Module for default global variables and comparison functions for use by all **PyDASA** and its Data Structs.
 """
 # python native modules
 # from dataclasses import dataclass
@@ -20,6 +20,7 @@ from pydasa.validations.patterns import LATEX_RE
 from pydasa.validations.patterns import PI_POW_RE
 from pydasa.validations.patterns import PI_COEF_RE
 from pydasa.validations.patterns import BASIC_OPS_RE
+from pydasa.validations.patterns import NUM_CONST_RE
 # Global vars for special Latex symbos and functions to ignore
 from pydasa.validations.patterns import IGNORE_EXPR
 
@@ -27,7 +28,7 @@ from pydasa.validations.patterns import IGNORE_EXPR
 # Latex Parsing Functions
 
 def latex_to_python(expr: str) -> str:
-    """*latex_to_python()* Convert a LaTeX expression to a Python-compatible string.
+    """Convert a LaTeX expression to a Python-compatible string.
 
     Args:
         expr (str): The LaTeX expression to convert.
@@ -46,7 +47,7 @@ def latex_to_python(expr: str) -> str:
 
 
 def extract_latex_vars(expr: str) -> Tuple[Dict[str, str], Dict[str, str]]:
-    """*extract_latex_vars()* Extract variable names in LaTeX format with their Python equivalents.
+    """Pair the variable names in LaTeX format with their Python equivalents.
 
     Args:
         expr (str): The LaTeX expression to parse.
@@ -85,7 +86,7 @@ def create_latex_mapping(expr: str) -> Tuple[Dict[Symbol, Symbol],  # symbol_map
                                              Dict[str, str],     # latex_to_py
                                              Dict[str, str]      # py_to_latex
                                              ]:
-    """*create_latex_mapping()* Create a mapping between LaTeX symbols and Python symbols.
+    """Construct a mapping between LaTeX symbols and Python symbols.
 
     Args:
         expr (str): The LaTeX expression to parse.
@@ -97,7 +98,7 @@ def create_latex_mapping(expr: str) -> Tuple[Dict[Symbol, Symbol],  # symbol_map
             - A dictionary mapping LaTeX variable names to their Python equivalents.
             - A dictionary mapping Python variable names to their LaTeX equivalents.
     """
-    # Get LaTeX<->Python variable mappings
+    # Get LaTeX <-> Python variable mappings
     latex_to_py, py_to_latex = extract_latex_vars(expr)
 
     # Parse to get LaTeX symbols
@@ -133,7 +134,7 @@ def create_latex_mapping(expr: str) -> Tuple[Dict[Symbol, Symbol],  # symbol_map
 # ============================================================================
 
 def extract_coeff_syms(expr: str, patt: str = PI_COEF_RE) -> List[str]:
-    """*extract_coeff_syms()* Extract Pi coefficient symbols from expression.
+    """Compose the Pi-coefficient symbols from expression.
 
     Args:
         expr (str): Mathematical expression containing Pi coefficients.
@@ -142,7 +143,8 @@ def extract_coeff_syms(expr: str, patt: str = PI_COEF_RE) -> List[str]:
     Returns:
         List[str]: List of unique coefficient symbols (e.g., ['\\Pi_{0}', '\\Pi_{1}']).
 
-    Example:
+    Example::
+
         >>> extract_coeff_syms("\\Pi_{0} * \\Pi_{1}**(-1)")
         ['\\Pi_{0}', '\\Pi_{1}']
     """
@@ -161,7 +163,7 @@ def extract_coeff_syms(expr: str, patt: str = PI_COEF_RE) -> List[str]:
 
 def extract_powered_coeffs(expr: str,
                            pow_patt: str = PI_POW_RE) -> Tuple[str, Dict[str, Tuple[str, float]]]:
-    """*extract_powered_coeffs()* Parse and replace power expressions with placeholders.
+    """Parse and replace power expressions with placeholders.
 
     Identifies patterns like \\Pi_{0}**(-1) and replaces them with temporary
     placeholders for easier parsing.
@@ -178,7 +180,8 @@ def extract_powered_coeffs(expr: str,
     Raises:
         ValueError: If power expression is invalid.
 
-    Example:
+    Example::
+
         >>> expr = "\\Pi_{0}**(-1) * \\Pi_{1}**(2)"
         >>> new_expr, transforms = extract_powered_coeffs(expr)
         >>> # new_expr: "__PHLR_0__ * __PHLR_1__"
@@ -206,7 +209,7 @@ def extract_powered_coeffs(expr: str,
 
 
 def extract_num_consts(expr: str) -> List[float]:
-    """*extract_num_consts()* Extract numeric constants from expression.
+    """Parse numeric constants from expression.
 
     Args:
         expr (str): Mathematical expression containing numeric values.
@@ -214,19 +217,20 @@ def extract_num_consts(expr: str) -> List[float]:
     Returns:
         List[float]: List of numeric constants found in expression.
 
-    Example:
+    Example::
+
         >>> extract_num_consts("2 * \\Pi_{0} + 0.5")
         [2.0, 0.5]
     """
-    pattern = r"[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?"
-    matches = re.findall(pattern, expr)
+    # pattern = r"[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?"
+    matches = re.findall(NUM_CONST_RE, expr)
     return [float(m) for m in matches]
 
 
 def compute_dims_opn(dim_col_a: Sequence[int | float],
                      dim_col_b: Sequence[int | float],
                      opn: str) -> List[int]:
-    """*compute_dims_opn()* Compute result of dimensional operation.
+    """Calulate the result of a dimensional operation.
 
     Applies dimensional analysis rules:
         - Multiplication (*): Add exponents
@@ -241,7 +245,8 @@ def compute_dims_opn(dim_col_a: Sequence[int | float],
     Returns:
         List[int]: Resulting dimensional column.
 
-    Example:
+    Example::
+
         >>> compute_dims_opn([1, 2, 0], [0, 1, -1], "*")
         [1, 3, -1]  # L^1 * M^2 * L^0 * M^1 * T^-1 = L^1 * M^3 * T^-1
     """
@@ -257,7 +262,7 @@ def compute_dims_opn(dim_col_a: Sequence[int | float],
 
 
 def apply_pow_to_dims(dim_col: Sequence[int | float], pwr: float) -> List[int]:
-    """*apply_pow_to_dims()* Apply power operation to dimensional column.
+    """Assing power operation to the dimensional column.
 
     Args:
         dim_col (Sequence[int | float]): Dimensional column.
@@ -266,7 +271,8 @@ def apply_pow_to_dims(dim_col: Sequence[int | float], pwr: float) -> List[int]:
     Returns:
         List[int]: Dimensional column with power applied.
 
-    Example:
+    Example::
+
         >>> apply_pow_to_dims([1, 2, -1], -1)
         [-1, -2, 1]  # (L^1 * M^2 * T^-1)^-1 = L^-1 * M^-2 * T^1
     """
@@ -276,7 +282,7 @@ def apply_pow_to_dims(dim_col: Sequence[int | float], pwr: float) -> List[int]:
 def validate_coeff_expr(expr: str,
                         avail_coeffs: Dict[str, Any],
                         pattern: str = PI_COEF_RE) -> None:
-    """*validate_coeff_expr()* Validate coefficient expression.
+    """Confirm dimensionless coefficient expression.
 
     Checks that:
         1. Expression contains valid coefficient references
@@ -294,10 +300,9 @@ def validate_coeff_expr(expr: str,
     coef_symbols = extract_coeff_syms(expr, pattern)
 
     if not coef_symbols:
-        raise ValueError(
-            f"Expression '{expr}' does not contain any valid "
-            f"coefficient references (format: \\Pi_{{n}})."
-        )
+        _msg = f"Expression '{expr}' does not contain any valid "
+        _msg += "coefficient references (format: \\Pi_{{n}})."
+        raise ValueError(_msg)
 
     # Check all coefficients exist
     for sym in coef_symbols:
@@ -311,15 +316,13 @@ def parse_dim_expr(expr: str,
                    coef_patt: str = PI_COEF_RE,
                    pow_patt: str = PI_POW_RE,
                    ops_patt: str = BASIC_OPS_RE) -> Tuple[List[int], Optional[float]]:
-    """*parse_dim_expr()* Parse and evaluate dimensional expression.
-
-    Main parsing function that processes a dimensional expression containing
+    """Parse and evaluate the dimensional expression. The function that processes a dimensional expression containing
     Pi coefficients, operations, and numeric constants.
 
     Args:
         expr (str): Mathematical expression to parse.
         coeffs (Dict[str, Any]): Available coefficients dictionary.
-        dim_col_fn (Callable[[Any], List[float]]): Function to extract dimension column from coefficient. Signature: dim_col_fn(coef) -> List[float]
+        dim_col_fn (Callable[[Any], List[float | int]]): Function to extract dimension column from coefficient. Signature: dim_col_fn(coef) -> List[float | int]
         coef_patt (str): Regex pattern to match coefficients.
         pow_patt (str): Regex pattern to match power expressions.
         ops_patt (str): Regex pattern to match operations.
@@ -332,7 +335,8 @@ def parse_dim_expr(expr: str,
     Raises:
         ValueError: If expression parsing fails.
 
-    Example:
+    Example::
+
         >>> def get_dims(c): return c._dim_col
         >>> result_dims, constant = parse_dim_expr(
         ...     "2 * \\Pi_{0}**(-1) * \\Pi_{1}",
@@ -385,7 +389,8 @@ def parse_dim_expr(expr: str,
                                                 _cur_op)
 
         # Check if it's a numeric constant
-        elif re.match(r"^[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?$", part):
+        # elif re.match(r"^[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?$", part):
+        elif re.match(NUM_CONST_RE, part):
             constant = float(part)
 
             # Initialize with zeros if first element
@@ -426,7 +431,7 @@ def parse_dim_expr(expr: str,
 
 
 def format_numeric_constant(constant: Optional[float]) -> str:
-    """*format_numeric_constant()* Format numeric constant for display.
+    """Arrange the numeric constant for display.
 
     Args:
         constant (Optional[float]): Numeric constant to format.
@@ -434,7 +439,8 @@ def format_numeric_constant(constant: Optional[float]) -> str:
     Returns:
         str: Formatted constant string, empty if None or 1.0.
 
-    Example:
+    Example::
+
         >>> format_numeric_constant(2.0)
         '2'
         >>> format_numeric_constant(0.5)

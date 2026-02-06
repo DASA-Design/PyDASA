@@ -3,16 +3,10 @@
 Module scenario.py
 ===========================================
 
-Module for sensitivity analysis in *PyDASA*.
+This module provides the *Sensitivity* class for performing sensitivity analysis on dimensional coefficients derived from dimensional analysis in **PyDASA**.
 
-This module provides the Sensitivity class for performing sensitivity analysis on dimensional coefficients derived from dimensional analysis.
-
-Classes:
-
-    **Sensitivity**: Performs sensitivity analysis on dimensional coefficients in *PyDASA*.
-
-*IMPORTANT:* Based on the theory from:
-    # H.Gorter, *Dimensionalanalyse: Eine Theoririe der physikalischen Dimensionen mit Anwendungen*
+**IMPORTANT**
+    - Based on the theory from H. Görtler, *Dimensionalanalyse: Eine Theoririe der physikalischen Dimensionen mit Anwendungen*
 """
 
 from __future__ import annotations
@@ -57,50 +51,25 @@ from pydasa.validations.patterns import LATEX_RE
 
 @dataclass
 class Sensitivity(Foundation):
-    # FIXME clean code, some vars and types are inconsistent
-    """**Sensitivity** class for analyzing variable impacts in *PyDASA*.
+    """Performs sensitivity analysis on dimensional coefficients in **PyDASA** to determine which variables have the most significant impact on the system behavior.
 
-    Performs sensitivity analysis on dimensionless coefficients to determine which variables have the most significant impact on the system behavior.
-
-    Args:
-        Foundation: Foundation class for validation of symbols and frameworks.
+    Inherits from:
+        - **Foundation**: basic class for validation of symbols and frameworks and allow to use the attributes `name`, `description`, `idx`, `sym`, `alias`, `fwk`, and `cat`.
 
     Attributes:
-        # Identification and Classification
         name (str): User-friendly name of the sensitivity analysis.
         description (str): Brief summary of the sensitivity analysis.
-        _idx (int): Index/precedence of the sensitivity analysis.
-        _sym (str): Symbol representation (LaTeX or alphanumeric).
-        _alias (str): Python-compatible alias for use in code.
-        _fwk (str): Frameworks context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
-        _cat (str): Category of analysis (SYM, NUM).
-
-        # Expression Management
-        _pi_expr (str): LaTeX expression to analyze.
-        _sym_func (Callable): Sympy function of the sensitivity.
-        _exe_func (Callable): Executable function for numerical evaluation.
-        _variables (Dict[str, Variable]): Variable symbols in the expression.
-        _var_names (List[str]): List of variable names extracted from the expression.
-        _schema (Schema): Dimensional framework schema.
-        _coefficient (Coefficient): Specifications of the dimensionless coefficient to analyse.
-        _symbols (Dict[str, Any]): Python symbols for the variables.
-        _aliases (Dict[str, Any]): Variable aliases for use in code.
-
-        # Analysis Configuration
-        _var_bounds (List[List[float]]): Min/max bounds for each variable.
-        _var_values (Dict[str, float]): Values for symbolic analysis.
-        _var_ranges (np.ndarray): Sample value range for numerical analysis.
-        _var_domains (np.ndarray): Sample domain for numerical analysis.
-        _experiments (int): Number of samples for analysis.
-
-        # Results
-        _results (Dict[str, Any]): Analysis results.
+        idx (int): Index/precedence of the sensitivity analysis.
+        sym (str): Symbol representation (LaTeX or alphanumeric).
+        alias (str): Python-compatible alias for use in code.
+        fwk (str): Frameworks context (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM).
     """
 
+    # Identification and Classification
     # Category attribute
     # :attr: _cat
     _cat: str = AnaliticMode.SYM.value
-    """Category of sensitivity analysis (SYM, NUM)."""
+    """Category of the sensitivity analysis (SYM, NUM)."""
 
     # Expression properties
     # :attr: _pi_expr
@@ -174,7 +143,7 @@ class Sensitivity(Foundation):
     """Analysis results."""
 
     def __post_init__(self) -> None:
-        """*__post_init__()* Initializes the sensitivity analysis. Validates basic properties, sets default values, and processes the expression if provided.
+        """Post Initialization behaviour for sensitivity analysis. Validates basic properties, sets default values, and processes the expression if provided.
         """
         # Initialize from base class
         super().__post_init__()
@@ -197,21 +166,28 @@ class Sensitivity(Foundation):
             self._parse_expression(self._pi_expr)
 
     def _validate_sym_expr(self, val: Any) -> None:
-        """*_validate_sym_expr()* Check that the symbolic expression is a SymPy expression.
+        """Confirm that the input symbolic expression is a `SymPy` expression.
 
         Args:
-            val (Any): Value to validate.
+            val (Any): Possible expression/value to validate.
 
         Raises:
-            ValueError: If value is not a valid SymPy expression.
+            ValueError: If value is not a valid `SymPy` expression.
         """
         if not isinstance(val, sp.Expr):
-            _msg = "'sym_func' must be a SymPy expression, "
+            _msg = "'sym_func' must be a 'SymPy' expression, "
             _msg += f"got {type(val).__name__}"
             raise ValueError(_msg)
 
     def _validate_exec_func(self, val: Any) -> None:
-        """Validate executable function is callable or dict of callables."""
+        """Confirm executable function is type `Callable` or `dict` of `Callable`.
+
+        Args:
+            val (Any): Possible executable function/value to validate.
+
+        Raises:
+            ValueError: If value is not a callable or dict of callables.
+        """
         if callable(val):
             return
         if isinstance(val, dict):
@@ -223,7 +199,7 @@ class Sensitivity(Foundation):
         raise ValueError(_msg)
 
     def _validate_analysis_ready(self) -> None:
-        """*_validate_analysis_ready()* Checks if the analysis can be performed.
+        """Confirm if the sensitivity analysis is ready to be performed.
 
         Raises:
             ValueError: If the variables are missing.
@@ -238,7 +214,7 @@ class Sensitivity(Foundation):
             raise ValueError("No expression has been defined for analysis.")
 
     def set_coefficient(self, coef: Coefficient) -> None:
-        """*set_coefficient()* Configure analysis from a coefficient.
+        """Configure the sensitivity analysis from a coefficient.
 
         Args:
             coef (Coefficient): Dimensionless coefficient to analyze.
@@ -247,16 +223,17 @@ class Sensitivity(Foundation):
             ValueError: If the coefficient doesn't have a valid expression.
         """
         if not coef.pi_expr:
-            raise ValueError("Coefficient does not have a valid expression.")
+            _msg = "Coefficient does not have a valid expression."
+            raise ValueError(_msg)
 
         # Set expression
         self._pi_expr = coef.pi_expr
-        # parse coefficient expresion
+        # parse coefficient expression
         if coef._pi_expr:
             self._parse_expression(self._pi_expr)
 
     def _parse_expression(self, expr: str) -> None:
-        """*_parse_expression()* Parse the LaTeX expression into a sympy function.
+        """Parse the `LaTeX` expression into a valid `SymPy` function.
 
         Args:
             expr (str): LaTeX expression to parse.
@@ -322,7 +299,7 @@ class Sensitivity(Foundation):
 
     def analyze_symbolically(self,
                              vals: Dict[str, float]) -> Dict[str, float]:
-        """*analyze_symbolically()* Perform symbolic sensitivity analysis.
+        """Perform the symbolic sensitivity analysis for the coefficient.
 
         Args:
             vals (Dict[str, float]): Dictionary mapping variable names to values.
@@ -375,7 +352,7 @@ class Sensitivity(Foundation):
                             vals: List[str],
                             bounds: List[List[float]],
                             iters: int = -1) -> Dict[str, Any]:
-        """*analyze_numerically()* Perform numerical sensitivity analysis.
+        """Perform the numerical sensitivity analysis for the coefficient.
 
         Args:
             vals (List[str]): List of variable names to analyze.
@@ -456,7 +433,7 @@ class Sensitivity(Foundation):
 
     @property
     def cat(self) -> str:
-        """*cat* Get the analysis category.
+        """Get the analysis category.
 
         Returns:
             str: Category (SYM, NUM).
@@ -467,7 +444,7 @@ class Sensitivity(Foundation):
     @validate_type(str, allow_none=False)
     @validate_choices(PYDASA_CFG.analitic_modes, case_sensitive=False)
     def cat(self, val: str) -> None:
-        """*cat* Set the analysis category.
+        """Set the analysis category.
 
         Args:
             val (str): Category value.
@@ -479,7 +456,7 @@ class Sensitivity(Foundation):
 
     @property
     def pi_expr(self) -> Optional[str]:
-        """*pi_expr* Get the expression to analyze.
+        """Get the coefficient expression to analyze.
 
         Returns:
             Optional[str]: LaTeX expression.
@@ -491,7 +468,7 @@ class Sensitivity(Foundation):
     @validate_emptiness()
     @validate_pattern(LATEX_RE, allow_alnum=True)
     def pi_expr(self, val: str) -> None:
-        """*pi_expr* Set the expression to analyze.
+        """Set the coefficient expression to analyze.
 
         Args:
             val (str): LaTeX expression.
@@ -507,7 +484,7 @@ class Sensitivity(Foundation):
 
     @property
     def sym_func(self) -> Optional[sp.Expr]:
-        """*sym_func* Get the symbolic expression.
+        """Get the symbolic expression.
 
         Returns:
             Optional[sp.Expr]: SymPy symbolic expression.
@@ -518,7 +495,7 @@ class Sensitivity(Foundation):
     @validate_type(sp.Expr, allow_none=False)
     @validate_custom(lambda self, val: self._validate_sym_expr(val))
     def sym_func(self, val: sp.Expr) -> None:
-        """*sym_func* Set the symbolic expression.
+        """Set the symbolic expression.
 
         Args:
             val (sp.Expr): SymPy symbolic expression.
@@ -530,7 +507,7 @@ class Sensitivity(Foundation):
 
     @property
     def exe_func(self) -> Optional[Union[Callable, Dict[str, Callable]]]:
-        """*exe_func* Get the executable function.
+        """Get the executable function.
 
         Returns:
             Optional[Union[Callable, Dict[str, Callable]]]: Executable function for numerical evaluation.
@@ -540,7 +517,7 @@ class Sensitivity(Foundation):
     @exe_func.setter
     @validate_custom(lambda self, val: self._validate_exec_func(val))
     def exe_func(self, val: Union[Callable, Dict[str, Callable]]) -> None:
-        """*exe_func* Set the executable function(s).
+        """Set the executable function(s).
 
         Args:
             val (Union[Callable, Dict[str, Callable]]): Executable function or
@@ -553,10 +530,10 @@ class Sensitivity(Foundation):
 
     @property
     def variables(self) -> Dict[str, Variable]:
-        """*variables* Get the variable symbols dictionary.
+        """Get the coefficient's variable dictionary.
 
         Returns:
-            Dict[str, Variable]: Variables symbols dictionary.
+            Dict[str, Variable]: Variables dictionary.
         """
         return self._variables
 
@@ -565,10 +542,10 @@ class Sensitivity(Foundation):
     @validate_emptiness()
     @validate_dict_types(str, Variable)
     def variables(self, val: Dict[str, Variable]) -> None:
-        """*variables* Set the variable symbols dictionary.
+        """Set the coefficient's variable dictionary.
 
         Args:
-            val (Dict[str, Variable]): Variables symbols dictionary.
+            val (Dict[str, Variable]): Variables dictionary.
 
         Raises:
             ValueError: If variables dictionary is invalid.
@@ -577,7 +554,7 @@ class Sensitivity(Foundation):
 
     @property
     def schema(self) -> Schema:
-        """*schema* Get the dimensional schema.
+        """Get the dimensional schema.
 
         Returns:
             Schema: Current dimensional schema.
@@ -587,7 +564,7 @@ class Sensitivity(Foundation):
     @schema.setter
     @validate_type(Schema, allow_none=False)
     def schema(self, val: Schema) -> None:
-        """*schema* Set the dimensional schema.
+        """Set the dimensional schema.
 
         Args:
             val (Schema): New dimensional schema.
@@ -600,7 +577,7 @@ class Sensitivity(Foundation):
 
     @property
     def symbols(self) -> Dict[sp.Symbol, sp.Symbol]:
-        """*symbols* Get the Python symbols for the variables.
+        """Get the Python symbols for the variables.
 
         Returns:
             Dict[sp.Symbol, sp.Symbol]: Dictionary mapping variable names to sympy symbols.
@@ -609,7 +586,7 @@ class Sensitivity(Foundation):
 
     @property
     def aliases(self) -> Dict[str, sp.Symbol]:
-        """*aliases* Get the Python aliases for the variables.
+        """Get the Python aliases for the variables.
 
         Returns:
             Dict[str, sp.Symbol]: Python-compatible variable names.
@@ -618,7 +595,7 @@ class Sensitivity(Foundation):
 
     @property
     def var_names(self) -> List[str]:
-        """*var_names* Get the list of variable names extracted from the expression.
+        """Get the list of variable names extracted from the expression.
 
         Returns:
             List[str]: Ordered list of variable names.
@@ -627,7 +604,7 @@ class Sensitivity(Foundation):
 
     @property
     def coefficient(self) -> Optional[Coefficient]:
-        """*coefficient* Get the dimensionless coefficient specification.
+        """Get the dimensionless coefficient specification.
 
         Returns:
             Optional[Coefficient]: Coefficient specification.
@@ -637,7 +614,7 @@ class Sensitivity(Foundation):
     @coefficient.setter
     @validate_type(Coefficient, allow_none=True)
     def coefficient(self, val: Optional[Coefficient]) -> None:
-        """*coefficient* Set the dimensionless coefficient specification.
+        """Set the dimensionless coefficient specification.
 
         Args:
             val (Optional[Coefficient]): Coefficient specification.
@@ -649,7 +626,7 @@ class Sensitivity(Foundation):
 
     @property
     def latex_to_py(self) -> Dict[str, str]:
-        """*latex_to_py* Get the mapping from LaTeX symbols to Python compatible names.
+        """Get the mapping from LaTeX symbols to Python compatible names.
 
         Returns:
             Dict[str, str]: LaTeX to Python symbol mapping.
@@ -658,7 +635,7 @@ class Sensitivity(Foundation):
 
     @property
     def py_to_latex(self) -> Dict[str, str]:
-        """*py_to_latex* Get the mapping from Python compatible names to LaTeX symbols.
+        """Get the mapping from Python compatible names to LaTeX symbols.
 
         Returns:
             Dict[str, str]: Python to LaTeX symbol mapping.
@@ -667,7 +644,7 @@ class Sensitivity(Foundation):
 
     @property
     def var_bounds(self) -> List[List[float]]:
-        """*var_bounds* Get the min/max bounds for each variable.
+        """Get the min/max bounds for each variable.
 
         Returns:
             List[List[float]]: Bounds for each variable.
@@ -678,7 +655,7 @@ class Sensitivity(Foundation):
     @validate_type(list, allow_none=False)
     @validate_emptiness()
     def var_bounds(self, val: List[List[float]]) -> None:
-        """*var_bounds* Set the min/max bounds for each variable.
+        """Set the min/max bounds for each variable.
 
         Args:
             val (List[List[float]]): Bounds for each variable [min, max].
@@ -690,7 +667,7 @@ class Sensitivity(Foundation):
 
     @property
     def var_values(self) -> Dict[str, float]:
-        """*var_values* Get the values for symbolic analysis.
+        """Get the values for symbolic analysis.
 
         Returns:
             Dict[str, float]: Variable values for symbolic analysis.
@@ -701,7 +678,7 @@ class Sensitivity(Foundation):
     @validate_type(dict, allow_none=False)
     @validate_emptiness()
     def var_values(self, val: Dict[str, float]) -> None:
-        """*var_values* Set the values for symbolic analysis.
+        """Set the values for symbolic analysis.
 
         Args:
             val (Dict[str, float]): Variable values for symbolic analysis.
@@ -713,7 +690,7 @@ class Sensitivity(Foundation):
 
     @property
     def var_domains(self) -> Optional[np.ndarray]:
-        """*var_domains* Get the sample domain for numerical analysis.
+        """Get the sample domain for numerical analysis.
 
         Returns:
             Optional[np.ndarray]: Sample domain (inputs) or None if not computed.
@@ -724,7 +701,7 @@ class Sensitivity(Foundation):
 
     @property
     def var_ranges(self) -> Optional[np.ndarray]:
-        """*var_ranges* Get the sample value range for numerical analysis.
+        """Get the sample value range for numerical analysis.
 
         Returns:
             Optional[np.ndarray]: Sample value range (results) or None if not computed.
@@ -735,7 +712,7 @@ class Sensitivity(Foundation):
 
     @property
     def results(self) -> Dict[str, Any]:
-        """*results* Get the analysis results.
+        """Get the analysis results.
 
         Returns:
             Dict[str, Any]: Analysis results dictionary.
@@ -744,8 +721,7 @@ class Sensitivity(Foundation):
 
     @property
     def experiments(self) -> int:
-        """*experiments* Get the number of experiments for analysis.
-
+        """Get the number of experiments for analysis.
         Returns:
             int: Number of experiments.
         """
@@ -755,7 +731,7 @@ class Sensitivity(Foundation):
     @validate_type(int, allow_none=False)
     @validate_index(allow_zero=False)
     def experiments(self, val: int) -> None:
-        """*experiments* Set the number of experiments for analysis.
+        """Set the number of experiments for analysis.
 
         Args:
             val (int): Number of experiments (must be >= 1).
@@ -766,7 +742,7 @@ class Sensitivity(Foundation):
         self._experiments = val
 
     def clear(self) -> None:
-        """*clear()* Reset all attributes to default values.
+        """Reset all attributes to default values.
 
         Resets all sensitivity analysis properties to their initial state.
         """
@@ -795,7 +771,7 @@ class Sensitivity(Foundation):
         self._results = {}
 
     def to_dict(self) -> Dict[str, Any]:
-        """*to_dict()* Convert sensitivity analysis to dictionary representation.
+        """Convert the sensitivity analysis into a valid Python dictionary representation.
 
         Returns:
             Dict[str, Any]: Dictionary representation of sensitivity analysis.
@@ -847,7 +823,7 @@ class Sensitivity(Foundation):
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> Sensitivity:
-        """*from_dict()* Create sensitivity analysis from dictionary representation.
+        """Creates a sensitivity analysis instance from dictionary representation.
 
         Args:
             data (Dict[str, Any]): Dictionary representation of sensitivity analysis.

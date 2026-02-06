@@ -13,31 +13,31 @@ Fundamental Dimensional Units (FDUs)
 
 The ``Dimension`` class in ``fundamental.py`` represents a single *FDU* with:
 
-    - **Symbol** (``_sym``): Represents LaTeX or alphanumeric notation (e.g., "M", "L", "T").
-    - **Index** (``_idx``): Determines precedence in the dimensional matrix (defines row order).
-    - **Unit** (``_unit``): Specifies basic measurement unit (e.g., "m", "s", "kg").
-    - **Framework** (``_fwk``): Identifies context (``PHYSICAL``, ``COMPUTATION``, ``SOFTWARE``, ``CUSTOM``).
-    - **Alias** (``_alias``): Provides Python-compatible name for code execution.
+1. **Symbol** (``_sym``): Represents LaTeX or alphanumeric notation (e.g., "M", "L", "T").
+2. **Index** (``_idx``): Determines precedence in the dimensional matrix (defines row order).
+3. **Unit** (``_unit``): Specifies basic measurement unit (e.g., "m", "s", "kg").
+4. **Framework** (``_fwk``): Identifies context (``PHYSICAL``, ``COMPUTATION``, ``SOFTWARE``, ``CUSTOM``).
+5. **Alias** (``_alias``): Provides Python-compatible name for code execution.
 
 Schema Responsibilities
 -----------------------
 
 The ``Schema`` class in ``vaschy.py`` manages the dimensional framework by:
 
-    1. **Maintaining FDU Collections** by storing *FDUs* in precedence order (``_fdu_lt``) and providing symbol-to-object mapping (``_fdu_map``).
-    2. **Establishing Matrix Structure** by defining row order in the dimensional matrix through FDU precedence.
-    3. **Validating Expressions** by generating regex patterns for matching and validating dimensional expressions.
-    4. **Enforcing Consistency** by ensuring all *FDUs* within a framework follow Görtler's principles of Measurability, Consistency, and Clarity.
+1. **Maintaining FDU Collections** by storing *FDUs* in precedence order (``_fdu_lt``) and providing symbol-to-object mapping (``_fdu_map``).
+2. **Establishing Matrix Structure** by defining row order in the dimensional matrix through FDU precedence.
+3. **Validating Expressions** by generating regex patterns for matching and validating dimensional expressions.
+4. **Enforcing Consistency** by ensuring all *FDUs* within a framework follow Görtler's principles of Measurability, Consistency, and Clarity.
 
 Supported Frameworks
 ---------------------
 
 PyDASA provides three predefined frameworks:
 
-    1. **PHYSICAL Framework:** Provides standard physical quantities using *L*, *M*, *T*, *A*, *K*, *mol*, *cd* as default for engineering and scientific applications.
-    2. **COMPUTATION Framework:** Defines computational quantities for performance analysis, including Time (*T*), Data (*D*), and Operations (*O*).
-    3. **SOFTWARE Framework:** Supports software-specific dimensions for architectural analysis (experimental).
-    4. **CUSTOM Framework:** Allows user-defined *FDUs* for domain-specific applications requiring explicit *FDU* definitions.
+1. **PHYSICAL Framework:** Provides standard physical quantities using *L*, *M*, *T*, *A*, *K*, *mol*, *cd* as default for engineering and scientific applications.
+2. **COMPUTATION Framework:** Defines computational quantities for performance analysis, including Time (*T*), Data (*D*), and Operations (*O*).
+3. **SOFTWARE Framework:** Supports software-specific dimensions for architectural analysis (experimental).
+4. **CUSTOM Framework:** Allows user-defined *FDUs* for domain-specific applications requiring explicit *FDU* definitions.
 
 Creating Custom Frameworks
 ---------------------------

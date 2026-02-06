@@ -3,16 +3,10 @@
 Module basic.py
 ===========================================
 
-This module provides base classes with common validation logic used across FDU, Parameter, and Variable classes to eliminate code duplication.
+This module provides base classes with common validation logic used across different classes to minimize code duplication in **PyDASA**.
 
-Classes:
-    **Foundation**: enforces common validation logic.
-    **IdxBasis**: enforces index/precedence validation logic.
-    **SymBasis**: enforces symbol and framework validation logic.
-
-*IMPORTANT:* Based on the theory from:
-
-    # H.Gorter, *Dimensionalanalyse: Eine Theoririe der physikalischen Dimensionen mit Anwendungen*
+**IMPORTANT**
+    - Based on the theory from H. Görtler, *Dimensionalanalyse: Eine Theoririe der physikalischen Dimensionen mit Anwendungen*
 """
 # native python modules
 # forward references + postpone eval type hints
@@ -39,15 +33,10 @@ from pydasa.validations.decorators import validate_index
 
 @dataclass
 class SymBasis(ABC):
-    """**SymBasis** Foundation class for entities with symbols and framework functionalities.
+    """Abstract Class to manage the entity's symbolic, sorting, and dimensional domain/framework functionalities in **PyDASA**.
 
-    Args:
-        ABC (ABC): Abstract base class.
-
-    Attributes:
-        _sym (str): Symbol representation.
-        _alias (str): Python-compatible alias for use in code.
-        _fwk (str): Frameworks context.
+    Inherits from:
+        - **ABC**: Python Abstract Base Class to indicate that this class is not meant to be instantiated directly.
     """
 
     # :attr: _sym
@@ -63,7 +52,7 @@ class SymBasis(ABC):
     """Python-compatible alias for symbol, used in executable code. e.g.: `\\rho_{1}` -> `rho_1`."""
 
     def __post_init__(self) -> None:
-        """*__post_init__()* Post-initialization processing with symbol and framework validation.
+        """Post initialization processing and validation for symbolic attributes.
         """
         # super().__post_init__()
         # Validate the symbol and framework
@@ -76,7 +65,7 @@ class SymBasis(ABC):
 
     @property
     def sym(self) -> str:
-        """*sym* Get the symbol.
+        """Get the entity's symbol.
 
         Returns:
             str: Symbol value.
@@ -88,7 +77,7 @@ class SymBasis(ABC):
     @validate_emptiness()
     @validate_pattern(LATEX_RE, allow_alnum=True)
     def sym(self, val: str) -> None:
-        """*sym* Set the symbol with validation.
+        """Set the entity's symbol with validation.
 
         Args:
             val (str): Symbol value.
@@ -100,7 +89,7 @@ class SymBasis(ABC):
 
     @property
     def fwk(self) -> str:
-        """*fwk* Get the framework.
+        """Get the entity's framework.
 
         Returns:
             str: Frameworks value.
@@ -111,7 +100,7 @@ class SymBasis(ABC):
     @validate_type(str)
     @validate_choices(PYDASA_CFG.frameworks)
     def fwk(self, val: str) -> None:
-        """*fwk* Set the framework with validation.
+        """Set the entity's framework with validation.
 
         Args:
             val (str): Frameworks value.
@@ -123,7 +112,7 @@ class SymBasis(ABC):
 
     @property
     def alias(self) -> Optional[str]:
-        """*alias* Get the Python variable synonym.
+        """Get the Python variable synonym.
 
         Returns:
             Optional[str]: Python variable name. e.g.: `\\rho_{1}` -> `rho_1`.
@@ -134,7 +123,7 @@ class SymBasis(ABC):
     @validate_type(str)
     @validate_emptiness()
     def alias(self, val: str) -> None:
-        """*alias* Set the Python variable synonym.
+        """Set the Python variable synonym.
 
         Args:
             val (str): Python variable name. e.g.: `\\rho_{1}` -> `rho_1`.
@@ -145,9 +134,7 @@ class SymBasis(ABC):
         self._alias = val
 
     def clear(self) -> None:
-        """*clear()* Reset symbol and framework attributes to default values.
-
-        Resets the entity's symbol-related properties to their initial state.
+        """Reset symbol, alias, and framework attributes to default values.
         """
         # Reset symbol attributes
         self._sym = ""
@@ -157,13 +144,10 @@ class SymBasis(ABC):
 
 @dataclass
 class IdxBasis(SymBasis):
-    """**IdxBasis** Foundation class for entities with index/precedence functionality.
+    """Basic class to manage index/precedence functionalities in **PyDASA** entities.
 
-    Args:
-        SymBasis (SymBasis): Inherits symbol and framework validation.
-
-    Attributes:
-        _idx (int): Index/precedence value
+    Inherits from:
+        - **SymBasis**: Inherits symbol and framework validation.
     """
 
     # :attr: _idx
@@ -171,7 +155,7 @@ class IdxBasis(SymBasis):
     """Unique identifier/index for ordering in dimensional matrix."""
 
     def __post_init__(self) -> None:
-        """*__post_init__()* Post-initialization processing with symbol and framework validation.
+        """Post initialization processing and validation for index and precedence.
         """
         super().__post_init__()
         if self._idx != -1:
@@ -179,7 +163,7 @@ class IdxBasis(SymBasis):
 
     @property
     def idx(self) -> int:
-        """*idx* Get the index/precedence value.
+        """Get the index/precedence value.
 
         Returns:
             int: Index value.
@@ -190,7 +174,7 @@ class IdxBasis(SymBasis):
     @validate_type(int, allow_none=False)
     @validate_index()
     def idx(self, val: int) -> None:
-        """*idx* Set the index/precedence value.
+        """Set the index/precedence value.
 
         Args:
             val (int): Index value (must be non-negative).
@@ -201,9 +185,7 @@ class IdxBasis(SymBasis):
         self._idx = val
 
     def clear(self) -> None:
-        """*clear()* Reset index and inherited attributes to default values.
-
-        Resets the entity's index and symbol-related properties to their initial state.
+        """Reset index and inherited symbol attributes to default values.
         """
         # Reset parent class attributes
         super().clear()
@@ -214,16 +196,12 @@ class IdxBasis(SymBasis):
 
 @dataclass
 class Foundation(IdxBasis):
-    """**Foundation** Foundation class for all dimensional analysis entities.
+    """Basic class to manage common attributes and validation logic for dimensional analysis entities in **PyDASA**.
 
-    Provides common validation logic and attributes shared by FDU, Variable, and Coeffcient classes.
+    Provides common validation logic and attributes shared by dimensional framework/domain, Variable, and Coeffcient classes.
 
-    Args:
-        IdxBasis (IdxBasis): Inherits index, symbol, and framework validation.
-
-    Attributes:
-        name (str): User-friendly name
-        description (str): Brief summary or description
+    Inherits from:
+        - **IdxBasis**: Inherits index, symbol, and framework validation.
     """
 
     # :attr: _name
@@ -235,14 +213,14 @@ class Foundation(IdxBasis):
     """Brief summary or description of the entity."""
 
     def __post_init__(self) -> None:
-        """*__post_init__()* Post-initialization processing with description capitalization.
+        """Post initialization and processing for name and description attributes.
         """
         if self.description:
             self.description = self.description.strip()
 
     @property
     def name(self) -> str:
-        """*name* Get the name.
+        """Get the entity's name.
 
         Returns:
             str: Name value.
@@ -252,7 +230,7 @@ class Foundation(IdxBasis):
     @name.setter
     @validate_type(str, allow_none=False)
     def name(self, val: str) -> None:
-        """*name* Set the name with validation.
+        """Set the entity's name with validation.
 
         Args:
             val (str): Name value.
@@ -263,9 +241,7 @@ class Foundation(IdxBasis):
         self._name = val.strip()
 
     def clear(self) -> None:
-        """*clear()* Reset all attributes to default values.
-
-        Resets the entity's properties to their initial state.
+        """Reset name, description, and inherited attributes to default values.
         """
         # Reset parent class attributes
         super().clear()
@@ -275,13 +251,10 @@ class Foundation(IdxBasis):
         self.description = ""
 
     def __str__(self) -> str:
-        """*__str__()* Detailed string representation with all attributes.
-
-        Returns a comprehensive view of all non-private attributes, suitable for
-        detailed inspection and logging.
+        """Return string representation with all non-private attributes for detailed inspection and logging.
 
         Returns:
-            str: Detailed string representation with all attributes.
+            str: Detailed string representation.
         """
         _attr_lt = []
         for attr, value in vars(self).items():
@@ -299,7 +272,7 @@ class Foundation(IdxBasis):
         return _str
 
     def __repr__(self) -> str:
-        """*__repr__()* Detailed string representation.
+        """Return the entity's str representation.
 
         Returns:
             str: String representation.

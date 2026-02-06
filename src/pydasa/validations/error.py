@@ -3,7 +3,7 @@
 Module error.py
 ===========================================
 
-General error handling module/function for the PyDASA Data Structures and Algorithms in PyDASA package.
+General error handling utilities for **PyDASA**.
 """
 # native python modules
 import inspect
@@ -13,7 +13,7 @@ from typing import Any
 
 
 def handle_error(ctx: str, func: str, exc: Exception) -> None:
-    """*handle_error()* generic function to handle errors iacross the whole PyDASA library.
+    """Generic function to handle errors across the whole **PyDASA** library.
 
     Args:
         ctx (str): The context (e.g., package/class) where the error occurred.
@@ -49,7 +49,7 @@ def handle_error(ctx: str, func: str, exc: Exception) -> None:
 
 
 def inspect_var(var: Any) -> str:
-    """*inspect_var() inspect a variable an gets its name in the source code.
+    """generic function to inspect a variable an gets its name in the source code.
 
     Args:
         var (Any): The variable to inspect.

@@ -3,19 +3,16 @@
 Module decorators.py
 ===========================================
 
-Decorator-based validation system for PyDASA attributes.
-
-This module provides reusable decorators for property setters, eliminating
-the need for separate validation methods and reducing boilerplate code.
+Decorator-based validation system for **PyDASA** property setters, reducing boilerplate code with reusable validation logic.
 
 Functions:
-    **validate_type**: Validates value against expected type(s)
-    **validate_emptiness**: Ensures string values are non-empty
-    **validate_choices**: Validates value is in allowed set of choices
-    **validate_range**: Validates numeric value is within specified range
-    **validate_index**: Validates integer values with negativity control
-    **validate_pattern**: Validates string matches regex pattern(s) or is alphanumeric
-    **validate_custom**: Custom validation logic
+    - **validate_type**: Validates value against expected type(s).
+    - **validate_emptiness**: Ensures string values are non-empty.
+    - **validate_choices**: Validates value is in allowed set of choices.
+    - **validate_range**: Validates numeric value is within specified range.
+    - **validate_index**: Validates integer values with negativity control.
+    - **validate_pattern**: Validates string matches regex pattern(s) or is alphanumeric.
+    - **validate_custom**: Custom validation logic.
 """
 
 # native python modules
@@ -31,7 +28,7 @@ import numpy as np
 def validate_type(*expected_types: type,
                   allow_none: bool = True,
                   allow_nan: bool = False) -> Callable:
-    """*validate_type()* Decorator to validate argument type against expected type(s).
+    """Decorator to validate argument type against expected type(s).
 
     Args:
         *expected_types (type): One or more expected types for validation.
@@ -46,7 +43,8 @@ def validate_type(*expected_types: type,
     Returns:
         Callable: Decorated function with type validation.
 
-    Example:
+    Example::
+
         @property
         def unit(self) -> str:
             return self._unit
@@ -98,7 +96,7 @@ def validate_type(*expected_types: type,
 
 
 def validate_emptiness(strip: bool = True) -> Callable:
-    """*validate_emptiness()* Decorator to ensure values are non-empty.
+    """Decorator to ensure values are non-empty.
 
     Handles strings, dictionaries, lists, tuples, and other collections.
     For strings, optionally strips whitespace before checking.
@@ -112,7 +110,8 @@ def validate_emptiness(strip: bool = True) -> Callable:
     Returns:
         Callable: Decorated function with non-empty validation.
 
-    Example:
+    Example::
+
         @unit.setter
         @validate_type(str)
         @validate_emptiness()
@@ -153,7 +152,7 @@ def validate_emptiness(strip: bool = True) -> Callable:
 def validate_choices(choices: Union[dict, set, list, tuple, Type[Enum]],
                      allow_none: bool = False,
                      case_sensitive: bool = False) -> Callable:
-    """*validate_choices()* Decorator to validate value is in allowed set of choices.
+    """Decorator to validate value is in allowed set of choices.
 
     Args:
         choices (Union[dict, set, list, tuple, Type[Enum]]): Dictionary, set, list, tuple, or Enum type of allowed values.
@@ -166,7 +165,8 @@ def validate_choices(choices: Union[dict, set, list, tuple, Type[Enum]],
     Returns:
         Callable: Decorated function with choice validation.
 
-    Example:
+    Example::
+
         from pydasa.core.setup import Frameworks
 
         @fwk.setter
@@ -239,7 +239,7 @@ def validate_choices(choices: Union[dict, set, list, tuple, Type[Enum]],
 
 def validate_index(allow_zero: bool = True,
                    allow_negative: bool = False) -> Callable:
-    """*validate_index()* Decorator to validate integer values with negativity and zero control.
+    """Decorator to validate integer values with negativity and zero control.
 
     Args:
         allow_zero (bool, optional): Whether zero is allowed. Defaults to True.
@@ -253,7 +253,8 @@ def validate_index(allow_zero: bool = True,
     Returns:
         Callable: Decorated function with integer validation.
 
-    Example:
+    Example::
+
         # Non-negative integers only
         @idx.setter
         @validate_index(allow_negative=False)
@@ -317,7 +318,8 @@ def validate_range(min_value: Optional[float] = None,
     Returns:
         Callable: Decorated function with range validation.
 
-    Example:
+    Example::
+
         # Static range
         @age.setter
         @validate_type(int)
@@ -408,7 +410,8 @@ def validate_pattern(pattern: Optional[Union[str, list, tuple]] = None,
     Returns:
         Callable: Decorated function with pattern validation.
 
-    Examples:
+    Examples::
+
         # Simple pattern matching
         @code.setter
         @validate_pattern(r'^[A-Z]\\d{3}$')
@@ -493,7 +496,7 @@ def validate_pattern(pattern: Optional[Union[str, list, tuple]] = None,
 
 
 def validate_list_types(*elm_types: type) -> Callable:
-    """*validate_list_types()* Decorator to validate list contains only specified element types. It asumes the list exists.
+    """Decorator to validate list contains only specified element types. It asumes the list exists.
 
     Args:
         *elm_types (type): One or more expected types for list elements.
@@ -505,7 +508,8 @@ def validate_list_types(*elm_types: type) -> Callable:
     Returns:
         Callable: Decorated function with list type validation.
 
-    Example:
+    Example::
+
         @dim_col.setter
         @validate_type(list, allow_none=False)
         @validate_emptiness()
@@ -534,7 +538,7 @@ def validate_list_types(*elm_types: type) -> Callable:
 
 def validate_dict_types(key_type: type,
                         val_types: type | Tuple[type, ...]) -> Callable:
-    """*validate_dict_types()* Decorator to validate dict has correct key and value types. It asumes the dict exists.
+    """Decorator to validate dict has correct key and value types. It asumes the dict exists.
 
     Args:
         key_type (type): Expected type for dictionary keys.
@@ -546,7 +550,8 @@ def validate_dict_types(key_type: type,
     Returns:
         Callable: Decorated function with dict type validation.
 
-    Example:
+    Example::
+
         @variables.setter
         @validate_type(dict, allow_none=False)
         @validate_emptiness()
@@ -597,7 +602,7 @@ def validate_dict_types(key_type: type,
 
 
 def validate_custom(validator_func: Callable[[Any, Any], None]) -> Callable:
-    """*validate_custom()* Decorator for custom validation logic. Allows implementing custom validation logic by providing a validator function.
+    """Decorator for custom validation logic. Allows implementing custom validation logic by providing a validator function.
 
     The validator function should raise ValueError if validation fails.
     NOTE: this is too abstract and should be used sparingly.
@@ -611,7 +616,8 @@ def validate_custom(validator_func: Callable[[Any, Any], None]) -> Callable:
     Returns:
         Callable: Decorated function with custom validation.
 
-    Example:
+    Example::
+
         def check_range_consistency(self, value):
             '''Ensure minimum does not exceed maximum.'''
             if value is not None and self._max is not None and value > self._max:

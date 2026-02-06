@@ -13,11 +13,13 @@ Manage Symbolic and Numerical Variables
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 1. **Define dimensional parameters** with complete specifications:
-    1. **Specify** symbolic representation (name, LaTeX symbol).
-    2. **Define** dimensional formula (e.g., "L*T^-1" for velocity).
-    3. **Establish** numerical ranges (min, max, mean, step)
-    4. **Assign** classification (input, output, control).
-    5. **Configure** statistical distributions and dependencies.
+    - **Specify** symbolic representation (name, LaTeX symbol).
+    - **Define** dimensional formula (e.g., "L*T^-1" for velocity).
+    - **Establish** numerical ranges (min, max, mean, step)
+    - **Assign** classification (input, output, control).
+    - **Configure** statistical distributions and dependencies.
+2. **Support progressive enhancement** of variable definitions from symbolic to numerical to probabilistic within a unified class structure.
+3. **Compose variables** from modular perspectives addressing conceptual, symbolic, numerical, and probabilistic aspects.
 
 Integrate System of Units of Measurement
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -30,10 +32,10 @@ Discover Dimensionless Coefficients
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 1. **Generate dimensionless numbers** using the Buckingham Pi theorem:
-    1. **Build relevance list** by identifying mutually independent parameters influencing the phenomenon.
-    2. **Construct dimensional matrix** by arranging FDUs (rows) and variables (columns) into core and residual matrices.
-    3. **Transform to identity matrix** by applying linear transformations to the core matrix.
-    4. **Generate Pi coefficients** by combining residual and unity matrices to produce dimensionless groups.
+    - **Build relevance list** by identifying mutually independent parameters influencing the phenomenon.
+    - **Construct dimensional matrix** by arranging FDUs (rows) and variables (columns) into core and residual matrices.
+    - **Transform to identity matrix** by applying linear transformations to the core matrix.
+    - **Generate Pi coefficients** by combining residual and unity matrices to produce dimensionless groups.
 2. **Classify coefficients** by repeating vs. non-repeating parameters.
 3. **Manage metadata:** names, symbols, formulas, and parameter relationships.
 
@@ -45,6 +47,7 @@ Analyze and Simulate Coefficient Behavior
 3. **Run Monte Carlo simulations** to quantify uncertainty propagation.
 4. **Perform sensitivity analysis** to identify dominant parameters.
 5. **Generate behavioral data** for dimensionless relationships.
+
 Export, Integrate, and Visualize Data
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

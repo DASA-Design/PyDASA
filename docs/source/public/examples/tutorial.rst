@@ -33,7 +33,7 @@ We'll analyze pipe flow, which depends on:
 
 This will generate three key dimensionless numbers:
 
-- **Reynolds Number (Re)** - Flow regime predictor
+- **Reynolds Number (:math:`Re`)** - Flow regime predictor
 - **Darcy Friction Factor (f)** - Pressure loss coefficient
 - **Relative Roughness (ε/D)** - Surface roughness effect
 
@@ -317,7 +317,7 @@ Compute partial derivatives at mean values:
     symbolic_results = sensitivity.analyze_symbolic(val_type="mean")
     
     # Display for Reynolds Number
-    Re_sensitivity = symbolic_results["Re"]
+    Re_sensitivity = symbolic_results["SEN_{Re}"]
     
     print("Reynolds Number Sensitivity:")
     for var, sens_val in Re_sensitivity.items():

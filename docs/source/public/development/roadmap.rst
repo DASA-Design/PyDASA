@@ -1,16 +1,17 @@
 Development Roadmap
-===================
+========================
 
 **Emoji Convention:**
     - 📋 TODO
-    - 🔶👨‍💻 WORKING
+    - 👨‍💻 WORKING
     - ✅ DONE
     - ⚠️ ATTENTION REQUIRED
 
-**Current Version:** 0.6.4
+Overview
+----------
 
 ✅ Core Modules (Implemented & Tested)
----------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 1. **core/**: Foundation classes, configuration, I/O.
 2. **dimensional/**: Buckingham Pi theorem, dimensional matrix solver.
@@ -20,7 +21,8 @@ Development Roadmap
 6. **serialization/**: LaTeX and formula parsing.
 
 👨‍💻 Currently Working
-----------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
 
 1. **Documentation**: Improving API reference, tutorials, and user guides.
 2. **Code Reduction**: Refactoring to eliminate redundancy, improve maintainability, readability, and performance.
@@ -28,13 +30,13 @@ Development Roadmap
 4. **Testing**: Improving and expanding test coverage, especially for context/ and structs/ modules.
 
 📋 Pending Development
------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 1. **context/**: Implement Unit conversion system (stub implementation).
 2. **structs/**: Implement Data structures (partial test coverage).
 3. **Documentation**: Complete API reference completion and additional tutorials.
 
 For Developers
---------------
+----------------
 
 If you're interested in contributing to **PyDASA** or understanding its internal structure, start with the :doc:`../design/architecture` document. See also the :doc:`contributing` section for our contribution guidelines.

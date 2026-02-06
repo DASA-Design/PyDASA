@@ -47,6 +47,7 @@ PyDASA requires Python 3.10 or higher and the following dependencies:
 * scipy >= 1.13.0
 * sympy >= 1.12
 * SALib >= 1.4.5
+
 .. * antlr4-python3-runtime == 4.11
 .. * matplotlib >= 3.8.0
 .. * pandas >= 2.1.0

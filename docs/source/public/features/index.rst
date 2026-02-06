@@ -10,8 +10,8 @@ Learn the fundamentals of dimensional analysis and how **PyDASA** implements the
 
 * :doc:`frameworks` - Defining and using fundamental dimensional frameworks
 * :doc:`variables` - Managing relevant variables across different workflows.
+* :doc:`matrices` - Understanding and manipulating dimensional matrices representing your systems.
 * :doc:`coefficients` - Resulting dimensionless coefficients and their interpretation.
-* :doc: `matrices` - Understanding and manipulating dimensional matrices representing your systems.
 
 Available Workflows
 -------------------
@@ -26,9 +26,10 @@ These advanced analytic capabilities allow you to perform in-depth dimensional a
     :maxdepth: 1
     :hidden:
 
-    variables
-    coefficients
     frameworks
+    variables
+    matrices
+    coefficients
+    sensitivity
     analysis
     simulation
-    sensitivity

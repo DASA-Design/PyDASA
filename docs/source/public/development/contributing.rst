@@ -1,7 +1,7 @@
 Contributing to PyDASA
 ======================
 
-Contributions are welcome! ⚠️ We use `Conventional Commits <https://www.conventionalcommits.org/>`_ ⚠️ for automatic versioning and changelog generation to maintain a clean and predictable release process.
+⚠️⚠️⚠️ Contributions are welcome! We use `Conventional Commits <https://www.conventionalcommits.org/>`_ for automatic versioning and changelog generation to maintain a clean and predictable release process. ⚠️⚠️⚠️
 
 Commit Message Format
 ---------------------

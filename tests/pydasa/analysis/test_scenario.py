@@ -117,7 +117,7 @@ class TestSensitivity(unittest.TestCase):
 
         # Set variables and relevant list
         self.dim_model.variables = self.variables
-        self.dim_model.relevant_lt = self.variables
+        self.dim_model.relevance_lt = self.variables
 
         # Create and solve matrix to get dimensionless coefficients
         self.dim_model.create_matrix()
@@ -165,7 +165,7 @@ class TestSensitivity(unittest.TestCase):
         """*test_dimensional_model_setup()* tests dimensional model initialization."""
         assert self.dim_model is not None
         assert len(self.dim_model.variables) == 6
-        assert len(self.dim_model.relevant_lt) == 6
+        assert len(self.dim_model.relevance_lt) == 6
 
     def test_dimensional_matrix_solution(self) -> None:
         """*test_dimensional_matrix_solution()* tests matrix solving."""
@@ -846,7 +846,7 @@ class TestSensitivity(unittest.TestCase):
         with pytest.raises(ValueError) as excinfo:
             sens._validate_sym_expr("not_an_expr")
 
-        assert "SymPy expression" in str(excinfo.value)
+        assert "'sym_func' must be a 'SymPy' expression" in str(excinfo.value)
 
         with pytest.raises(ValueError):
             sens._validate_sym_expr(123)

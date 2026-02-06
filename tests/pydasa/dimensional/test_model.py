@@ -112,8 +112,8 @@ class TestMatrix(unittest.TestCase):
         assert isinstance(model._schema, Schema)
         assert isinstance(model._variables, dict)
         assert len(model._variables) == 0
-        assert isinstance(model._relevant_lt, dict)
-        assert len(model._relevant_lt) == 0
+        assert isinstance(model._relevance_lt, dict)
+        assert len(model._relevance_lt) == 0
         assert model._n_var == 0
         assert model._n_relevant == 0
         assert model._n_in == 0
@@ -139,7 +139,7 @@ class TestMatrix(unittest.TestCase):
         values = self.test_variables.values()
         relevant_count = len([v for v in values if v.relevant])
         assert len(model._variables) == relevant_count
-        assert len(model._relevant_lt) == relevant_count
+        assert len(model._relevance_lt) == relevant_count
         assert model._n_relevant == relevant_count
 
     def test_initialization_with_custom_framework(self) -> None:
@@ -291,7 +291,7 @@ class TestMatrix(unittest.TestCase):
         model = self.create_test_model(self.test_framework,
                                        self.test_variables)
         # Get sorted variables
-        sorted_vars = list(model._relevant_lt.values())
+        sorted_vars = list(model._relevance_lt.values())
 
         # Check indices are sequential
         for i, var in enumerate(sorted_vars):
@@ -351,7 +351,7 @@ class TestMatrix(unittest.TestCase):
         assert model._dim_mtx_trans is not None
 
         # Check matrix shape
-        n_vars = len(model._relevant_lt)
+        n_vars = len(model._relevance_lt)
         assert model._dim_mtx.shape[1] == n_vars
 
     def test_matrix_dimensions(self) -> None:
@@ -362,7 +362,7 @@ class TestMatrix(unittest.TestCase):
         model.create_matrix()
 
         n_fdu = len(model._schema.fdu_symbols)
-        n_var = len(model._relevant_lt)
+        n_var = len(model._relevance_lt)
 
         assert model._dim_mtx.shape == (n_fdu, n_var)           # type: ignore
         assert model._dim_mtx_trans.shape == (n_var, n_fdu)     # type: ignore
@@ -476,10 +476,10 @@ class TestMatrix(unittest.TestCase):
     # ========================================================================
 
     def test_relevant_lt_property(self) -> None:
-        """Test relevant_lt property getter."""
+        """Test relevance_lt property getter."""
         model = self.create_test_model(self.test_framework,
                                        self.test_variables)
-        relevant_list = model.relevant_lt
+        relevant_list = model.relevance_lt
 
         assert isinstance(relevant_list, dict)
         relevant_count = len([v for v in self.test_variables.values() if v.relevant])
@@ -547,7 +547,7 @@ class TestMatrix(unittest.TestCase):
         model.clear()
 
         assert len(model._variables) == 0
-        assert len(model._relevant_lt) == 0
+        assert len(model._relevance_lt) == 0
         assert model._n_var == 0
         assert model._n_relevant == 0
         assert isinstance(model._dim_mtx, np.ndarray) and model._dim_mtx.size == 0
@@ -680,10 +680,10 @@ class TestMatrix(unittest.TestCase):
         # Should only count relevant variables
         relevant_count = len([v for v in self.test_variables.values() if v.relevant])
         assert model._n_relevant == relevant_count
-        assert len(model._relevant_lt) == relevant_count
+        assert len(model._relevance_lt) == relevant_count
 
-        # All variables in relevant_lt should have relevant=True
-        for var in model._relevant_lt.values():
+        # All variables in relevance_lt should have relevant=True
+        for var in model._relevance_lt.values():
             assert var.relevant is True
 
     # ========================================================================

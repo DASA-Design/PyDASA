@@ -79,7 +79,7 @@ class Matrix(Foundation):
 
         # Variable Management
         _variables (Dict[str, Variable]): All variables in the model.
-        _relevant_lt (Dict[str, Variable]): Relevant variables for analysis.
+        _relevance_lt (Dict[str, Variable]): Relevant variables for analysis.
         _output (Optional[Variable]): Output variable for analysis.
 
         # Variable Statistics
@@ -150,8 +150,8 @@ class Matrix(Foundation):
     Keys are variable symbols (str), values are Variable instances.
     """
 
-    # :attr: _relevant_lt
-    _relevant_lt: Dict[str, Variable] = field(default_factory=dict)
+    # :attr: _relevance_lt
+    _relevance_lt: Dict[str, Variable] = field(default_factory=dict)
     """Dictionary of relevant parameters/variables for dimensional analysis.
 
     Filtered subset of _variables where Variable.relevant == True. Keys are variable symbols (str), values are Variable instances.
@@ -296,10 +296,10 @@ class Matrix(Foundation):
         self._update_variable_stats()
 
         # Identify and sort relevant variables
-        self._relevant_lt = {
+        self._relevance_lt = {
             k: v for k, v in self._variables.items() if v.relevant
         }
-        self._relevant_lt = self._sort_by_category(self._relevant_lt)
+        self._relevance_lt = self._sort_by_category(self._relevance_lt)
 
         # Find the output variable
         self._find_output_variable()
@@ -397,7 +397,7 @@ class Matrix(Foundation):
 
         Finds the first variable with cat == "OUT" in the relevant list.
         """
-        values = self._relevant_lt.values()
+        values = self._relevance_lt.values()
         self._output = next((v for v in values if v.cat == "OUT"), None)
 
     def _extract_fdus(self) -> List[str]:
@@ -409,7 +409,7 @@ class Matrix(Foundation):
             List[str]: List of unique FDU symbols used, in precedence order.
         """
         # Collect all dimension strings
-        var_dims = [v.std_dims for v in self._relevant_lt.values()]
+        var_dims = [v.std_dims for v in self._relevance_lt.values()]
 
         # Extract FDU symbols using regex
         fdus = [
@@ -434,12 +434,12 @@ class Matrix(Foundation):
             ValueError: If no relevant variables exist.
             ValueError: If variables have invalid or missing dimensional columns.
         """
-        if not self._relevant_lt:
+        if not self._relevance_lt:
             raise ValueError("No relevant variables to create matrix from.")
 
         # Validate that all variables have dimensional columns
         invalid_vars = []
-        for var in self._relevant_lt.values():
+        for var in self._relevance_lt.values():
             if not var._dim_col or len(var._dim_col) == 0:
                 invalid_vars.append(f"{var._sym} (dims='{var._dims}')")
 
@@ -452,13 +452,13 @@ class Matrix(Foundation):
 
         # Get dimensions
         n_fdu = len(self._schema.fdu_symbols)
-        n_var = len(self._relevant_lt)
+        n_var = len(self._relevance_lt)
 
         # Initialize empty matrix
         self._dim_mtx = np.zeros((n_fdu, n_var), dtype=float)
 
         # Fill matrix with dimension columns
-        for var in self._relevant_lt.values():
+        for var in self._relevance_lt.values():
             # Ensure dimension column has correct length
             dim_col = var._dim_col
 
@@ -515,7 +515,7 @@ class Matrix(Foundation):
         self._coefficients.clear()
 
         # Get variable symbols in order
-        var_syms = [var for var in self._relevant_lt.keys()]
+        var_syms = [var for var in self._relevance_lt.keys()]
 
         # Create coefficient for each nullspace vector
         for i, vector in enumerate(self._nullspace):
@@ -527,7 +527,7 @@ class Matrix(Foundation):
             coef_vars = {}
             for j, val in enumerate(vector_np):
                 if j < len(var_syms) and isinstance(val, (int, float)):
-                    coef_vars[var_syms[j]] = self._relevant_lt[var_syms[j]]
+                    coef_vars[var_syms[j]] = self._relevance_lt[var_syms[j]]
 
             # Create Pi coefficient
             pi_sym = f"\\Pi_{{{i}}}"
@@ -537,7 +537,7 @@ class Matrix(Foundation):
                 _alias=f"Pi_{i}",
                 _fwk=self._fwk,
                 _cat=CoefCardinality.COMPUTED.value,
-                _variables=self._relevant_lt,
+                _variables=self._relevance_lt,
                 _dim_col=vector_np.tolist(),
                 _pivot_lt=self._pivot_cols,
                 _name=f"Pi-{i}",
@@ -584,7 +584,8 @@ class Matrix(Foundation):
             ValueError: If expression is invalid or references non-existent coefficients.
             ValueError: If expression creates dimensionally inconsistent result.
 
-        Example:
+        Example:::
+
             >>> # Create Reynolds number as ratio of two Pi groups
             >>> Re = model.derive_coefficient(
             ...     expr="\\Pi_{0} / \\Pi_{1}",
@@ -613,9 +614,9 @@ class Matrix(Foundation):
         _coef_symbols = re.findall(PI_COEF_RE, expr)
         _base_coef = self.coefficients[_coef_symbols[0]]
 
-        # Use the relevant_lt (all relevant variables) instead of just base coef variables
+        # Use the relevance_lt (all relevant variables) instead of just base coef variables
         # This ensures control variables are included even if not in all Pi groups
-        _new_vars = self._relevant_lt.copy() if hasattr(self, '_relevant_lt') and self._relevant_lt else _base_coef.variables.copy()
+        _new_vars = self._relevance_lt.copy() if hasattr(self, '_relevance_lt') and self._relevance_lt else _base_coef.variables.copy()
 
         # Validate all coefficients use same variables
         for sym in _coef_symbols[1:]:
@@ -699,7 +700,7 @@ class Matrix(Foundation):
 
         # Reset Matrix-specific attributes
         self._variables = {}
-        self._relevant_lt = {}
+        self._relevance_lt = {}
         self._output = None
         self._n_var = 0
         self._n_relevant = 0
@@ -775,19 +776,19 @@ class Matrix(Foundation):
             self._prepare_analysis()
 
     @property
-    def relevant_lt(self) -> Dict[str, Variable]:
-        """*relevant_lt* Get dictionary of relevant variables.
+    def relevance_lt(self) -> Dict[str, Variable]:
+        """*relevance_lt* Get dictionary of relevant variables.
 
         Returns:
             Dict[str, Variable]: Dictionary of relevant variables.
         """
-        return self._relevant_lt
+        return self._relevance_lt
 
-    @relevant_lt.setter
+    @relevance_lt.setter
     @validate_type(dict, allow_none=False)
     @validate_dict_types(str, Variable)
-    def relevant_lt(self, val: Dict[str, Variable]) -> None:
-        """*relevant_lt* Set the dictionary of relevant variables, otherwise known as 'relevance list'.
+    def relevance_lt(self, val: Dict[str, Variable]) -> None:
+        """*relevance_lt* Set the dictionary of relevant variables, otherwise known as 'relevance list'.
 
         Args:
             val (Dict[str, Variable]): Dictionary of relevant variables.
@@ -797,8 +798,8 @@ class Matrix(Foundation):
             ValueError: If any of the dictionary variables are invalid.
         """
         # Set relevant variables and prepare for analysis
-        # self._relevant_lt = [p for p in val if p.relevant]
-        self._relevant_lt = {
+        # self._relevance_lt = [p for p in val if p.relevant]
+        self._relevance_lt = {
             k: v for k, v in self._variables.items() if v.relevant
         }
 
@@ -975,9 +976,18 @@ class Matrix(Foundation):
                     attr_value = {k: v.to_dict() for k, v in attr_value.items()}
             # Handle lists
             elif isinstance(attr_value, list):
-                # Check if list contains objects with to_dict
-                if attr_value and hasattr(attr_value[0], 'to_dict'):
-                    attr_value = [item.to_dict() if hasattr(item, 'to_dict') else item for item in attr_value]
+                # Convert list items: SymPy matrices to lists, numpy arrays to lists
+                converted_list = []
+                for item in attr_value:
+                    if isinstance(item, sp.Matrix):
+                        converted_list.append([[float(val) for val in row] for row in item.tolist()])
+                    elif isinstance(item, np.ndarray):
+                        converted_list.append(item.tolist())
+                    elif hasattr(item, 'to_dict'):
+                        converted_list.append(item.to_dict())
+                    else:
+                        converted_list.append(item)
+                attr_value = converted_list
 
             # Skip callables (can't be serialized)
             if callable(attr_value) and not isinstance(attr_value, type):

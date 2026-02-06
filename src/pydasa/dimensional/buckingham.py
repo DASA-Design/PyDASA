@@ -29,6 +29,7 @@ from numpy.typing import NDArray
 from pydasa.core.basic import Foundation
 from pydasa.elements.parameter import Variable
 from pydasa.elements.specs.numerical import BoundsSpecs
+from pydasa.dimensional.vaschy import Schema
 # import global variables
 from pydasa.core.setup import PYDASA_CFG
 from pydasa.core.setup import CoefCardinality
@@ -527,6 +528,18 @@ class Coefficient(Foundation, BoundsSpecs):
             attr_name = f.name
             attr_value = getattr(self, attr_name)
 
+            # Convert Schema object to dict
+            if hasattr(attr_value, 'to_dict') and hasattr(attr_value, '__class__'):
+                if attr_value.__class__.__name__ == 'Schema':
+                    attr_value = attr_value.to_dict()
+
+            # Convert Variable dictionary to dict representation
+            if isinstance(attr_value, dict) and attr_value:
+                first_val = next(iter(attr_value.values()), None)
+                if first_val is not None and hasattr(first_val, '__class__'):
+                    if first_val.__class__.__name__ == 'Variable':
+                        attr_value = {k: v.to_dict() for k, v in attr_value.items()}
+
             # Skip numpy arrays (not JSON serializable without special handling)
             if isinstance(attr_value, np.ndarray):
                 # Convert to list for JSON compatibility
@@ -575,6 +588,19 @@ class Coefficient(Foundation, BoundsSpecs):
             else:
                 # Use as-is for unknown keys (will be validated by dataclass)
                 _data[key] = value
+
+        # Convert schema dict back to Schema object if needed
+        for schema_key in ["schema", "_schema"]:
+            if schema_key in _data and isinstance(_data[schema_key], dict):
+                _data[schema_key] = Schema.from_dict(_data[schema_key])
+
+        # Convert variables dict back to Variable objects if needed
+        for var_key in ["variables", "_variables"]:
+            if var_key in _data and isinstance(_data[var_key], dict):
+                _data[var_key] = {
+                    k: Variable.from_dict(v) if isinstance(v, dict) else v
+                    for k, v in _data[var_key].items()
+                }
 
         # Convert lists back to numpy arrays for range attributes
         for _data_key in ["_data", "data"]:

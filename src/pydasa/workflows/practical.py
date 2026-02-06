@@ -461,7 +461,8 @@ class MonteCarloSimulation(Foundation, WorkflowBase):
             iters (Optional[int]): Number of iterations (experiments) to run.
                 If None, uses self._experiments value. Defaults to None.
 
-        Example:
+        Example::
+
             >>> mc_handler = MonteCarloSimulation(...)
             >>> mc_handler.run_simulation(iters=10000)
         """

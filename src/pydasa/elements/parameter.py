@@ -30,6 +30,7 @@ from pydasa.elements.specs import NumericalSpecs
 from pydasa.elements.specs import StatisticalSpecs
 # pattern interpreter imports
 from pydasa.serialization.parser import latex_to_python
+from pydasa.dimensional.vaschy import Schema
 
 
 @dataclass
@@ -165,6 +166,11 @@ class Variable(ConceptualSpecs, SymbolicSpecs, NumericalSpecs, StatisticalSpecs)
             attr_name = f.name
             attr_value = getattr(self, attr_name)
 
+            # Convert Schema object to dict
+            if hasattr(attr_value, 'to_dict') and hasattr(attr_value, '__class__'):
+                if attr_value.__class__.__name__ == 'Schema':
+                    attr_value = attr_value.to_dict()
+
             # Skip numpy arrays (not JSON serializable without special handling)
             if isinstance(attr_value, np.ndarray):
                 # Convert to list for JSON compatibility
@@ -213,6 +219,11 @@ class Variable(ConceptualSpecs, SymbolicSpecs, NumericalSpecs, StatisticalSpecs)
             else:
                 # Use as-is for unknown keys (will be validated by dataclass)
                 _data[key] = value
+
+        # Convert schema dict back to Schema object if needed
+        for schema_key in ["schema", "_schema"]:
+            if schema_key in _data and isinstance(_data[schema_key], dict):
+                _data[schema_key] = Schema.from_dict(_data[schema_key])
 
         # Convert lists back to numpy arrays for range attributes
         for _data_key in ["data", "_data"]:

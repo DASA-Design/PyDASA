@@ -174,7 +174,7 @@ class TestMonteCarlo(unittest.TestCase):
 
         # Set variables and relevant list
         self.dim_model.variables = self.variables
-        self.dim_model.relevant_lt = self.variables
+        self.dim_model.relevance_lt = self.variables
 
         # Create and solve matrix to get dimensionless coefficients
         self.dim_model.create_matrix()
@@ -239,7 +239,7 @@ class TestMonteCarlo(unittest.TestCase):
         """*test_dimensional_model_setup()* tests dimensional model initialization."""
         assert self.dim_model is not None
         assert len(self.dim_model.variables) == 6
-        assert len(self.dim_model.relevant_lt) == 6
+        assert len(self.dim_model.relevance_lt) == 6
 
     def test_dimensional_matrix_solution(self) -> None:
         """*test_dimensional_matrix_solution()* tests matrix solving."""
@@ -736,8 +736,8 @@ class TestMonteCarlo(unittest.TestCase):
         """*test_data_property_getter()* tests data property getter."""
         coef = list(self.coefficients.values())[0]
         mc_sim = MonteCarlo(_coefficient=coef,
-                           _variables=self.variables,
-                           _experiments=N_EXP)
+                            _variables=self.variables,
+                            _experiments=N_EXP)
         mc_sim.distributions = self.dist_specs
 
         # Before running simulation, should raise error
@@ -821,8 +821,8 @@ class TestMonteCarlo(unittest.TestCase):
         """*test_count_property_getter()* tests count property getter."""
         coef = list(self.coefficients.values())[0]
         mc_sim = MonteCarlo(_coefficient=coef,
-                           _variables=self.variables,
-                           _experiments=N_EXP)
+                            _variables=self.variables,
+                            _experiments=N_EXP)
         mc_sim.distributions = self.dist_specs
 
         # Before running simulation, should raise error
@@ -851,8 +851,8 @@ class TestMonteCarlo(unittest.TestCase):
         """*test_inherited_statistics_properties()* tests inherited BoundsSpecs properties."""
         coef = list(self.coefficients.values())[0]
         mc_sim = MonteCarlo(_coefficient=coef,
-                           _variables=self.variables,
-                           _experiments=N_EXP)
+                            _variables=self.variables,
+                            _experiments=N_EXP)
         mc_sim.distributions = self.dist_specs
 
         # Run simulation

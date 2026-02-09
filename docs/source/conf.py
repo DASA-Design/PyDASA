@@ -101,7 +101,7 @@ autoapi_options = [
     "undoc-members",
     "show-inheritance",
     "show-module-summary",
-    # "special-members",  # Show stuff like __init__, __post_init__
+    "special-members",  # Show stuff like __init__, __post_init__
     "private-members",
     # "imported-members",
 ]

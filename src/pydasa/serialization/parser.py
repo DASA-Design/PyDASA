@@ -86,7 +86,7 @@ def create_latex_mapping(expr: str) -> Tuple[Dict[Symbol, Symbol],  # symbol_map
                                              Dict[str, str],     # latex_to_py
                                              Dict[str, str]      # py_to_latex
                                              ]:
-    """Construct a mapping between LaTeX symbols and Python symbols.
+    """Construct a mapping between LaTeX symbols and Python  SymPy's symbols preserving the original format and names.
 
     Args:
         expr (str): The LaTeX expression to parse.
@@ -101,29 +101,26 @@ def create_latex_mapping(expr: str) -> Tuple[Dict[Symbol, Symbol],  # symbol_map
     # Get LaTeX <-> Python variable mappings
     latex_to_py, py_to_latex = extract_latex_vars(expr)
 
-    # Parse to get LaTeX symbols
-    sym_expr = parse_latex(expr)
-
-    # Create mapping for sympy substitution
+    # Create SymPy symbols from regex extraction (this is the source of truth)
+    # We don't rely on parse_latex's free_symbols because it treats multi-letter
+    # subscripts like \rho_{req} as multiplication: rho_r * e * q
     symbol_map = {}         # For internal substitution
     py_symbol_map = {}      # For lambdify
 
-    for latex_sym in sym_expr.free_symbols:
-        latex_name = str(latex_sym)
+    # Create symbols for each variable found by regex
+    for latex_var, py_var in latex_to_py.items():
+        # Create SymPy symbol with Python-compatible name
+        sym = symbols(py_var)
+        py_symbol_map[py_var] = sym
 
-        # Find corresponding Python name
-        for latex_var, py_var in latex_to_py.items():
-            # Check for various forms of equivalence
-            con1 = (latex_name == latex_var)
-            con2 = (latex_name == py_var)
-            con3 = (latex_name.replace("_{", "_").replace("}", "") == py_var)
-            if con1 or con2 or con3:
-                # Create symbol for this variable
-                sym = symbols(py_var)
-                # Store mappings
-                symbol_map[latex_sym] = sym  # For substitution
-                py_symbol_map[py_var] = sym  # For lambdify args
-                break
+        # Also create mapping from LaTeX symbol string for substitution
+        # Parse just this variable to get its SymPy representation
+        try:
+            latex_sym = parse_latex(latex_var)
+            symbol_map[latex_sym] = sym
+        except Exception:
+            # If parsing fails, use the py_var as key
+            symbol_map[symbols(py_var)] = sym
 
     return symbol_map, py_symbol_map, latex_to_py, py_to_latex
 

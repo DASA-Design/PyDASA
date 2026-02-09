@@ -437,7 +437,17 @@ class Matrix(Foundation):
         if not self._relevance_lt:
             raise ValueError("No relevant variables to create matrix from.")
 
-        # Validate that all variables have dimensional columns
+        # Prepare dimensional columns for variables that need it
+        for var in self._relevance_lt.values():
+            # If variable has no dimensional column but has dimensions, prepare it
+            if (not var._dim_col or len(var._dim_col) == 0) and var._dims:
+                # Assign schema if not already set
+                if not var._schema or var._schema.fwk != self._fwk:
+                    var._schema = self._schema
+                # Prepare dimensional columns
+                var._prepare_dims()
+
+        # Validate that all relevant variables now have dimensional columns
         invalid_vars = []
         for var in self._relevance_lt.values():
             if not var._dim_col or len(var._dim_col) == 0:

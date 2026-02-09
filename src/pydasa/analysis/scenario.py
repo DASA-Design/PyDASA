@@ -226,9 +226,13 @@ class Sensitivity(Foundation):
             _msg = "Coefficient does not have a valid expression."
             raise ValueError(_msg)
 
+        # Store coefficient reference
+        self._coefficient = coef
+
         # Set expression
         self._pi_expr = coef.pi_expr
-        # parse coefficient expression
+
+        # Parse coefficient expression using standard LaTeX parser
         if coef._pi_expr:
             self._parse_expression(self._pi_expr)
 

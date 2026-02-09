@@ -16,11 +16,11 @@ Contains:
 
 
 # NOTE: OG REGEX!
-# LATEX_RE: str = r"([a-zA-Z]+)(?:_\{\d+\})?"
+# LATEX_RE: str = r"\\?[a-zA-Z]+(?:_\{[a-zA-Z0-9_]+\})?"
 # :attr: LATEX_RE
-LATEX_RE: str = r"\\?[a-zA-Z]+(?:_\{\d+\})?"
+LATEX_RE: str = r"\\?[a-zA-Z]+(?:_\{[a-zA-Z0-9_]+\})?"
 """
-LaTeX regex pattern to match LaTeX symbols (e.g., '\\alpha', '\\beta_{1}') in *PyDASA*.
+LaTeX regex pattern to match LaTeX symbols (e.g., '\\alpha') with optional subscripts (e.g., '\\mu_{1}', '\\lambda_{s}') in *PyDASA*.
 """
 
 # NOTE: OG REGEX!
@@ -81,5 +81,3 @@ IGNORE_EXPR = {
 """
 Set of LaTeX expressions to ignore during parsing in *PyDASA*.
 """
-
-# 

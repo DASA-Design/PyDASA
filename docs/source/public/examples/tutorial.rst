@@ -60,7 +60,7 @@ Step 1.2: Define Variables
 Define variables as dictionaries with all required attributes. Each variable needs:
 
 - ``_idx`` - Unique index
-- ``_sym`` - Symbol (use LaTeX for Greek letters like ``"\\rho"``)
+- ``_sym`` - Symbol (use LaTeX for Greek letters like ``"\\rho_{1}"``)
 - ``_fwk`` - Framework (``"PHYSICAL"`` uses M, L, T dimensions)
 - ``_cat`` - Category: ``"IN"`` (input), ``"OUT"`` (output), or ``"CTRL"`` (control)
 - ``relevant`` - Must be ``True`` to include in analysis
@@ -71,10 +71,10 @@ Define variables as dictionaries with all required attributes. Each variable nee
 
     variables_dict = {
         # Fluid density: ρ [M/L^3]
-        "\\rho": {
+        "\\rho_{1}": {
             "_idx": 0,
-            "_sym": "\\rho",
-            "_alias": "rho",
+            "_sym": "\\rho_{1}",
+            "_alias": "rho_1",
             "_fwk": "PHYSICAL",
             "_cat": "IN",
             "_name": "Density",
@@ -220,9 +220,9 @@ Step 1.4: Run Analysis
 .. code-block:: text
 
     Number of dimensionless groups: 4
-    \Pi_{0}: \mu/(\rho*v*D)
+    \Pi_{0}: \mu/(\rho_{1}*v*D)
     \Pi_{1}: L/D
-    \Pi_{2}: P/(\rho*v**2)
+    \Pi_{2}: P/(\rho_{1}*v**2)
     \Pi_{3}: \varepsilon/D
 
 Step 1.5: Derive Meaningful Coefficients
@@ -369,7 +369,7 @@ Use variance-based FAST method for confidence intervals:
     FAST Sensitivity for Reynolds Number:
     Variable        First-Order (S1)     Total-Order (ST)
     -------------------------------------------------------
-    \rho            0.333333             0.333333
+    \rho_{1}        0.333333             0.333333
     v               0.333333             0.333333
     D               0.333333             0.333333
     \mu             0.000000             0.000000
@@ -378,8 +378,8 @@ Use variance-based FAST method for confidence intervals:
 
 - **S1** (First-Order): Direct effect of variable
 - **ST** (Total-Order): Total effect including interactions
-- ρ, v, D each contribute equally (~33%) to Reynolds number
-- μ has zero variance (kept constant in this setup)
+- \rho_{1}, v, D each contribute equally (~33.0 %) to Reynolds number
+- \mu has zero variance (kept constant in this setup)
 
 ----
 
@@ -419,7 +419,7 @@ Define probability distributions for each variable:
             var._dist_params = {"a": a, "b": b}
             var._dist_func = lambda a=a, b=b: random.uniform(a, b)
             
-        elif var_sym == "\\rho":
+        elif var_sym == "\\rho_{1}":
             # Density variation around water at 20°C
             a, b = 980.0, 1020.0
             var._dist_type = "uniform"

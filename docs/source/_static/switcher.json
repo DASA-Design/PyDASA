@@ -1,14 +1,14 @@
 [
-  {
-    "version": "latest",
-    "url": "https://pydasa.readthedocs.io/en/latest/"
-  },
-  {
-    "version": "stable",
-    "url": "https://pydasa.readthedocs.io/en/stable/"
-  },
-  {
-    "version": "v0.4.10",
-    "url": "https://pydasa.readthedocs.io/en/v0.4.10/"
-  }
+    {
+        "version": "latest",
+        "url": "https://pydasa.readthedocs.io/en/latest/"
+    },
+    {
+        "version": "stable",
+        "url": "https://pydasa.readthedocs.io/en/stable/"
+    }
+    // {
+    //   "version": "v0.4.10",
+    //   "url": "https://pydasa.readthedocs.io/en/v0.4.10/"
+    // }
 ]

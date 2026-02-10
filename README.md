@@ -6,7 +6,7 @@
 
 </div>
 
-**PyDASA** (_Dimensional Analysis for Scientific Applications and Software Architecture_) is an open-source Python library for dimensional analysis of complex phenomena across physical, chemical, computational, and software domains using the Buckingham Π-theorem.
+_Dimensional Analysis for Scientific Applications and Software Architecture_ (**PyDASA**) is an open-source Python library for dimensional analysis of complex phenomena across physical, chemical, computational, and software domains using the Buckingham Π-theorem.
 
 ## The Need (Epic User Story)
 
@@ -273,10 +273,10 @@ Flow regime: TURBULENT
 ### Discover Dimensionless Coefficients
 
 - **Generate dimensionless numbers** using the Buckingham Π-theorem:
-    1. **Build relevance list** by identifying mutually independent parameters influencing the phenomenon.
-    2. **Construct dimensional matrix** by arranging FDUs (rows) and variables (columns) into core and residual matrices.
-    3. **Transform to identity matrix** by applying linear transformations to the core matrix.
-    4. **Generate Pi coefficients** by combining residual and unity matrices to produce dimensionless groups.
+  1. **Build relevance list** by identifying mutually independent parameters influencing the phenomenon.
+  2. **Construct dimensional matrix** by arranging FDUs (rows) and variables (columns) into core and residual matrices.
+  3. **Transform to identity matrix** by applying linear transformations to the core matrix.
+  4. **Generate Pi coefficients** by combining residual and unity matrices to produce dimensionless groups.
 - **Classify coefficients** by repeating vs. non-repeating parameters.
 - **Manage metadata:** names, symbols, formulas, and parameter relationships.
 
@@ -317,9 +317,10 @@ Flow regime: TURBULENT
 
 ### 👨‍💻 Currently Working
 
-- **Documentation**: Improving API reference, tutorials, and user guides.
-- **Code Reduction**: Refactoring to eliminate redundancy, improve maintainability, readability, and performance.
-- **Data Structures**: Designing implementation for unit of measure and dimensional management systems to enable consistent unit conversion across frameworks.
+- **Documentation**: Expand API reference and tutorial coverage for all modules.
+- **Refactoring**: Eliminate redundancy and improve code maintainability across modules.
+- **Workflows**: Debug and enhance internal components to support more complex analyses and simulations.
+- **Unit System**: Implement dimensional unit conversion structures and mechanisms.
 
 ### 📋 Pending Development
 
@@ -388,10 +389,10 @@ git commit -m "feat(module): add new feature"
 1. Make changes with conventional commit messages.
 2. Create PR and merge to `main`.
 3. GitHub Actions automatically:
-    - Analyzes commit messages.
-    - Bumps version (MAJOR.MINOR.PATCH)..
-    - Updates `_version.py` and `pyproject.toml`.
-    - Creates GitHub release with changelog.
-    - Publishes to PyPI.
+   - Analyzes commit messages.
+   - Bumps version (MAJOR.MINOR.PATCH)..
+   - Updates `_version.py` and `pyproject.toml`.
+   - Creates GitHub release with changelog.
+   - Publishes to PyPI.
 
 For more details, visit our [Contributing Guide](https://pydasa.readthedocs.io/en/latest/development/contributing.html).

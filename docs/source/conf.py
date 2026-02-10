@@ -102,7 +102,7 @@ autoapi_options = [
     "show-inheritance",
     "show-module-summary",
     "special-members",  # Show stuff like __init__, __post_init__
-    "private-members",
+    # "private-members",
     # "imported-members",
 ]
 

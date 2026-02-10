@@ -134,36 +134,6 @@ class MonteCarloSimulation(Foundation, WorkflowBase):
         if self._shared_cache is None:
             self._shared_cache = {}
 
-    def configure_distributions(self) -> None:
-        """*configure_distributions()* Configures sampling distributions for all variables. Sets up distribution specifications (type, parameters, functions) for each variable that will be used during Monte Carlo simulation.
-
-        Raises:
-            ValueError: If variables are not defined.
-            ValueError: If distribution specifications are invalid.
-        """
-        if len(self._distributions) == 0:
-            self._config_distributions()
-
-    def configure_simulations(self) -> None:
-        """*configure_simulations()* Configures Monte Carlo simulation objects for each coefficient. Creates MonteCarlo instances for each coefficient with appropriate distributions and dependencies. Requires distributions to be configured first.
-
-        Raises:
-            ValueError: If distributions are not configured.
-            ValueError: If coefficients or variables are not defined.
-        """
-        if len(self._simulations) == 0:
-            self._config_simulations()
-
-    def create_simulations(self) -> None:
-        """*create_simulations()* Configures distributions and simulations if not already set. This is a convenience method that orchestrates the full configuration process. It calls configure_distributions() and configure_simulations() in sequence.
-
-        Raises:
-            ValueError: If variables or coefficients are not defined.
-            ValueError: If distribution specifications are invalid.
-        """
-        self.configure_distributions()
-        self.configure_simulations()
-
     # ========================================================================
     # Helper Methods
     # ========================================================================
@@ -204,11 +174,12 @@ class MonteCarloSimulation(Foundation, WorkflowBase):
     # Configuration Methods
     # ========================================================================
 
-    def _config_distributions(self) -> None:
-        """*_config_distributions()* Creates the Monte Carlo distributions for each variable.
+    def configure_distributions(self) -> None:
+        """*configure_distributions()* Set up distribution specs (type, params, functions) for all variables.
 
         Raises:
-            ValueError: If the distribution specifications are invalid.
+            ValueError: If variables are not defined.
+            ValueError: If distribution specifications are invalid.
         """
         # Clear existing distributions
         self._distributions.clear()
@@ -287,10 +258,15 @@ class MonteCarloSimulation(Foundation, WorkflowBase):
         return deps
 
     def _init_shared_cache(self) -> None:
-        """*_init_shared_cache()* Initialize shared cache for all variables."""
+        """*_init_shared_cache()* Initialize shared cache for all variables.
+
+        Raises:
+            ValueError: If experiments is not positive.
+        """
         # Only initialize if experiments is positive
         if self._experiments < 0:
-            return
+            _msg = f"Cannot initialize shared cache: experiments must be positive. Got: {self._experiments}"
+            raise ValueError(_msg)
 
         # Initialize cache for each variable once
         for var_sym in self._variables.keys():
@@ -298,13 +274,14 @@ class MonteCarloSimulation(Foundation, WorkflowBase):
                                                   np.nan,
                                                   dtype=np.float64)
 
-    def _config_simulations(self) -> None:
-        """*_config_simulations()* Sets up Monte Carlo simulation objects for each coefficient to be analyzed.
-
-        Creates a MonteCarlo instance for each coefficient with appropriate distributions and dependencies.
+    def configure_simulations(self) -> None:
+        """*configure_simulations()* Create MonteCarlo objects for each coefficient with distributions and dependencies.
 
         Raises:
-            ValueError: If coefficients or variables are not properly configured.
+            ValueError: If distributions are not configured.
+            ValueError: If coefficients or variables are not defined.
+            ValueError: If coefficient variables are invalid.
+            RuntimeError: If simulation creation fails for a coefficient.
         """
         # Validate prerequisites
         if not self._coefficients:
@@ -377,17 +354,31 @@ class MonteCarloSimulation(Foundation, WorkflowBase):
     # Simulation Execution Methods
     # ========================================================================
 
-    def run(self, iters: Optional[int] = None) -> None:
-        """*run()* Runs the Monte Carlo simulations.
+    def create_simulations(self) -> None:
+        """*create_simulations()* Convenience method to configure distributions and simulations in sequence.
+        """
+        self.configure_distributions()
+        self.configure_simulations()
+
+    def run_simulation(self,
+                       iters: Optional[int] = None,
+                       mode: Optional[str] = None) -> None:
+        """*run_simulation()* Configure and execute Monte Carlo simulations for all coefficients.
 
         Args:
-            iters (Optional[int]): Number of iterations (experiments) to run.
-                If None, uses self._experiments value. Defaults to None.
+            iters (Optional[int], optional): Number of iterations (experiments) to run. If None, uses self._experiments value. Defaults to None.
+            mode (Optional[str], optional): Simulation mode to set before running. If None, uses existing self._cat value. Defaults to None.
 
         Raises:
             ValueError: If simulations are not configured.
             ValueError: If a required simulation is not found.
+            ValueError: If the number of experiments is not positive.
+            RuntimeError: If a simulation fails during execution.
         """
+        # Create simulations if not already configured
+        self.create_simulations()
+
+        # Run the simulations
         # Validate simulations exist
         if not self._simulations:
             _msg = "No simulations configured. Call create_simulations() first."
@@ -397,6 +388,9 @@ class MonteCarloSimulation(Foundation, WorkflowBase):
         if iters is not None:
             self._experiments = iters
 
+        if mode is not None:
+            self.cat = mode  # Use the property setter for validation
+
         #  Validate experiments
         if self._experiments < 1:
             _msg = f"Experiments must be positive. Got: {iters}"
@@ -404,16 +398,7 @@ class MonteCarloSimulation(Foundation, WorkflowBase):
 
         # Initialize shared cache BEFORE running simulations
         if not self._shared_cache:
-            for var_sym in self._variables.keys():
-                self._shared_cache[var_sym] = np.full((self._experiments, 1),
-                                                      np.nan,
-                                                      dtype=np.float64)
-
-        # print("----------")
-        # print(f"_shared_cache keys: {self._shared_cache.keys()}")
-        # # Assign shared cache to ALL simulations
-        # for sim in self._simulations.values():
-        #     sim._simul_cache = self._shared_cache
+            self._init_shared_cache()
 
         results = {}
 
@@ -426,15 +411,11 @@ class MonteCarloSimulation(Foundation, WorkflowBase):
                 raise ValueError(_msg)
 
             try:
-                # print("-----------------------------------")
-                # print(f"_shared_cache status:\n {self._shared_cache}")
-                # print("-----------------------------------")
-
-                # ✅ Use shared cache
+                # Use shared cache
                 sim._simul_cache = self._shared_cache
 
                 # Run the simulation
-                sim.run(self._experiments)
+                sim.run(self._experiments, mode=self._cat)
 
                 # Store comprehensive results
                 res = {
@@ -451,26 +432,6 @@ class MonteCarloSimulation(Foundation, WorkflowBase):
                 raise RuntimeError(_msg) from e
 
         self._results = results
-
-    def run_simulation(self, iters: Optional[int] = None) -> None:
-        """*run_simulation()* Convenience method to configure and run Monte Carlo simulations.
-
-        This method combines create_simulations() and run() into a single call. It automatically sets up distributions and simulations if needed, then runs the simulation.
-
-        Args:
-            iters (Optional[int]): Number of iterations (experiments) to run.
-                If None, uses self._experiments value. Defaults to None.
-
-        Example::
-
-            >>> mc_handler = MonteCarloSimulation(...)
-            >>> mc_handler.run_simulation(iters=10000)
-        """
-        # Create simulations if not already configured
-        self.create_simulations()
-
-        # Run the simulations
-        self.run(iters=iters)
 
     # ========================================================================
     # Getter Methods

@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pydasa"
 dynamic = ["version"]
-description = "PyDASA (Dimensional Analysis for Scientific Applications and Software Architecture) is an open-source Python library for dimensional analysis of complex phenomena across physical, chemical, computational, and software domains using the Buckingham Pi-theorem."
+description = "PyDASA is a Python library for dimensional analysis using the Buckingham Pi theorem across scientific and engineering domains."
 readme = "README.md"
 requires-python = ">=3.10"
 license = "GPL-3.0-or-later"

@@ -317,8 +317,8 @@ class MonteCarlo(Foundation, BoundsSpecs):
 
         # Preallocate full array space with NaN only if experiments > 0
         n_sym = len(self._symbols)
+        # Only allocate if we have variables and valid experiment count
         if n_sym > 0 and self._experiments > 0:
-            # Only allocate if we have variables and valid experiment count
             if not self._data:  # Check if dict is empty
                 # Allocate space for all variables that appear in the expression
                 # Use _latex_to_py if available (from parsed expression), otherwise use _variables
@@ -575,8 +575,6 @@ class MonteCarlo(Foundation, BoundsSpecs):
                     dep_val = dep_val[-1]
                 chace_deps.append(dep_val)
 
-        # print(f"chace_deps: {chace_deps}")
-
         # if the distribution function is defined
         if var._dist_func is not None:
             # If the variable is independent
@@ -586,7 +584,6 @@ class MonteCarlo(Foundation, BoundsSpecs):
             # If the variable has dependencies
             elif len(var.depends) == len(chace_deps):
                 raw_data = var.sample(*chace_deps)
-                # print(f"raw_data: {raw_data}")
 
                 # Handle array-like results
                 if isinstance(raw_data, _type):
@@ -601,102 +598,20 @@ class MonteCarlo(Foundation, BoundsSpecs):
                 else:
                     data = raw_data
 
-        # print(f"dependencies keys {var.depends}")
-        # print(f"memory: {memory}")
-
         # Store sample in memory
         memory[var.sym] = float(data)
 
         # return sampled data
         return data
 
-    # def run_OLD(self, iters: Optional[int] = None) -> None:
-    #     """*run()* Execute the Monte Carlo simulation.
-
-    #     Args:
-    #         iters (int, optional): Number of iterations to run. If None, uses _experiments.
-
-    #     Raises:
-    #         ValueError: If simulation is not ready or encounters errors during execution.
-    #     """
-    #     # Validate simulation readiness
-    #     self._validate_readiness()
-
-    #     # Set iterations if necessary
-    #     if iters is not None:
-    #         self._experiments = iters
-
-    #     # Clear previous results, inputs, and intermediate values
-    #     self._reset_memory()
-
-    #     # Create lambdify function using Python symbols
-    #     aliases = [self._aliases[v] for v in self._var_symbols]
-    #     self._exe_func = lambdify(aliases, self._sym_func, "numpy")
-
-    #     if self._exe_func is None:
-    #         raise ValueError("Failed to create executable function")
-
-    #     # Run experiment loop
-    #     for _iter in range(self._experiments):
-    #         try:
-    #             # Dict to store sample memory for the iteration
-    #             memory: Dict[str, float] = {}
-
-    #             # run through all variables
-    #             for var in self._variables.values():
-    #                 # Check for cached value
-    #                 cached_val = self._get_cached_value(var.sym, _iter)
-
-    #                 # if no cached value, generate new sample
-    #                 if cached_val is None or np.isnan(cached_val):
-    #                     # Generate sample for the variable
-    #                     val = self._generate_sample(var, memory)
-    #                     # Store the sample in the iteration values
-    #                     memory[var.sym] = val
-    #                     self._set_cached_value(var.sym, _iter, val)
-
-    #                 # otherwise use cached value
-    #                 else:
-    #                     # Use cached value
-    #                     memory[var.sym] = cached_val
-
-    #             # Prepare sorted/ordered values from memory for evaluation
-    #             sorted_vals = [memory[var] for var in self._latex_to_py]
-
-    #             # FIXME hotfix for queue functions
-    #             _type = (list, tuple, np.ndarray)
-    #             # Handle adjusted values
-    #             if any(isinstance(v, _type) for v in sorted_vals):
-    #                 sorted_vals = [
-    #                     v[-1] if isinstance(v, _type) else v for v in sorted_vals]
-
-    #             # Evaluate the coefficient
-    #             result = float(self._exe_func(*sorted_vals))
-
-    #             # Handle array results
-    #             if isinstance(result, _type):
-    #                 result = result[-1]
-    #                 sorted_vals = [v[-1] for v in result]
-
-    #             # Save simulation inputs and results
-    #             self._data[_iter, :] = sorted_vals
-    #             self._results[_iter] = result
-
-    #         except Exception as e:
-    #             _msg = f"Error during simulation run {_iter}: {str(e)}"
-    #             raise ValueError(_msg)
-
-    #     # Calculate statistics
-    #     self._calculate_statistics()
-
     def run(self,
             iters: Optional[int] = None,
-            mode: Union[str, SimulationMode] = SimulationMode.DIST) -> None:
+            mode: str = SimulationMode.DIST.value) -> None:
         """*run()* Execute the Monte Carlo simulation.
 
         Args:
             iters (int, optional): Number of iterations to run. If None, uses _experiments.
-            mode (str | SimulationMode, optional): Simulation mode. Either 'DIST' to sample from distributions, or 'DATA' to use pre-existing Variable._data. Defaults to 'DIST'.
+            mode (str, optional): Simulation mode. Either 'DIST' to sample from distributions, or 'DATA' to use pre-existing Variable._data. Defaults to 'DIST'.
 
         Raises:
             ValueError: If simulation is not ready or encounters errors during execution.

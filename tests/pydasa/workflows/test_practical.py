@@ -138,8 +138,8 @@ class TestMonteCarloSimulation(unittest.TestCase):
         assert handler.name == "Test Handler"
         assert handler.description == "Test Monte Carlo Handler"
 
-    def test_config_distributions(self) -> None:
-        """*test_config_distributions()* tests distribution configuration."""
+    def test_configure_distributions(self) -> None:
+        """*test_configure_distributions()* tests distribution configuration."""
         # Create handler
         handler = MonteCarloSimulation(
             _variables=self.test_variables,
@@ -147,7 +147,7 @@ class TestMonteCarloSimulation(unittest.TestCase):
         )
 
         # Configure distributions
-        handler._config_distributions()
+        handler.configure_distributions()
 
         # Test distributions created
         assert len(handler._distributions) > 0
@@ -163,15 +163,16 @@ class TestMonteCarloSimulation(unittest.TestCase):
         # Create handler
         handler = MonteCarloSimulation(
             _fwk="CUSTOM",
+            _experiments=100,
             _variables=self.test_variables,
             _coefficients=self.test_coefficients
         )
 
         # Configure distributions first
-        handler._config_distributions()
+        handler.configure_distributions()
 
         # Configure simulations
-        handler._config_simulations()
+        handler.configure_simulations()
 
         # Test simulations created
         assert len(handler._simulations) > 0
@@ -187,7 +188,7 @@ class TestMonteCarloSimulation(unittest.TestCase):
         )
 
         # Configure distributions
-        handler._config_distributions()
+        handler.configure_distributions()
 
         # Clear handler
         handler.clear()
@@ -204,13 +205,14 @@ class TestMonteCarloSimulation(unittest.TestCase):
         """*test_reset()* tests resetting simulation state while preserving configuration."""
         # Create handler with data
         handler = MonteCarloSimulation(
+            _experiments=100,
             _variables=self.test_variables,
             _coefficients=self.test_coefficients
         )
 
         # Configure distributions and simulations
         handler.create_simulations()
-        
+
         # Store original counts
         original_var_count = len(handler._variables)
         original_coef_count = len(handler._coefficients)
@@ -223,7 +225,7 @@ class TestMonteCarloSimulation(unittest.TestCase):
         assert len(handler._distributions) == 0
         assert len(handler._results) == 0
         assert len(handler._shared_cache) == 0
-        
+
         # Test configuration preserved
         assert len(handler._variables) == original_var_count
         assert len(handler._coefficients) == original_coef_count
@@ -253,6 +255,7 @@ class TestMonteCarloSimulation(unittest.TestCase):
         # Create handler
         handler = MonteCarloSimulation(
             _fwk="CUSTOM",
+            _experiments=100,
             _variables=self.test_variables,
             _coefficients=self.test_coefficients
         )
@@ -275,7 +278,7 @@ class TestMonteCarloSimulation(unittest.TestCase):
         handler = MonteCarloSimulation(_variables=self.test_variables)
 
         # Configure distributions
-        handler._config_distributions()
+        handler.configure_distributions()
 
         # Get existing distribution
         dist = handler.get_distribution("U")
@@ -331,6 +334,7 @@ class TestMonteCarloSimulation(unittest.TestCase):
         """*test_simulations_share_same_cache()* tests all simulations reference same cache object."""
         handler = MonteCarloSimulation(
             _fwk="CUSTOM",
+            _experiments=100,
             _variables=self.test_variables,
             _coefficients=self.test_coefficients
         )
@@ -352,7 +356,7 @@ class TestMonteCarloSimulation(unittest.TestCase):
             _experiments=5
         )
         handler.create_simulations()
-        handler.run(iters=5)
+        handler.run_simulation(iters=5)
 
         # Extract results
         all_results = {pi: sim.extract_results() for pi, sim in handler._simulations.items()}
@@ -395,6 +399,7 @@ class TestMonteCarloSimulation(unittest.TestCase):
         """*test_run_simulation_convenience_method()* tests run_simulation() combines create and run."""
         handler = MonteCarloSimulation(
             _fwk="CUSTOM",
+            _experiments=5,
             _variables=self.test_variables,
             _coefficients=self.test_coefficients
         )
@@ -415,6 +420,7 @@ class TestMonteCarloSimulation(unittest.TestCase):
         """*test_create_simulations_method()* tests new create_simulations() method name."""
         handler = MonteCarloSimulation(
             _fwk="CUSTOM",
+            _experiments=100,
             _variables=self.test_variables,
             _coefficients=self.test_coefficients
         )
@@ -427,16 +433,17 @@ class TestMonteCarloSimulation(unittest.TestCase):
         assert len(handler._simulations) > 0
 
     def test_run_method(self) -> None:
-        """*test_run_method()* tests new run() method name with iters parameter."""
+        """*test_run_method()* tests run_simulation() method with iters parameter."""
         handler = MonteCarloSimulation(
             _fwk="CUSTOM",
+            _experiments=5,
             _variables=self.test_variables,
             _coefficients=self.test_coefficients
         )
 
-        # Setup and run with new method names
+        # Setup and run with method names
         handler.create_simulations()
-        handler.run(iters=5)
+        handler.run_simulation(iters=5)
 
         # Verify results generated
         assert len(handler._results) > 0
@@ -458,7 +465,7 @@ class TestMonteCarloSimulation(unittest.TestCase):
 
         # Configure and run simulations
         handler_original.create_simulations()
-        handler_original.run(iters=50)
+        handler_original.run_simulation(iters=50)
 
         # Serialize
         handler_dict = handler_original.to_dict()
@@ -498,12 +505,13 @@ class TestMonteCarloSimulation(unittest.TestCase):
             _fwk="CUSTOM",
             _name="Round Trip Handler",
             _cat="DIST",
+            _experiments=10,
             _variables=self.test_variables,
             _coefficients=self.test_coefficients
         )
 
         handler_original.create_simulations()
-        handler_original.run(iters=10)
+        handler_original.run_simulation(iters=10)
 
         # Get original results count
         original_results_count = len(handler_original._results)

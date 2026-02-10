@@ -760,7 +760,7 @@ class TestMonteCarlo(unittest.TestCase):
             "U": [1.0, 2.0, 3.0],
             "h": [0.1, 0.2, 0.3]
         }
-        mc_sim.data = test_data
+        mc_sim.data = test_data     # type: ignore
 
         # Verify data was converted to numpy arrays
         retrieved_data = mc_sim.data

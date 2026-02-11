@@ -799,23 +799,29 @@ Next Steps
 
 Now that you've completed the tutorial, explore:
 
+- Create other Physical phenomena (e.g., heat transfer, mass transfer).
+- Use **PyDASA** for engineering design and optimization in your projects.
+- Experiment with different sensitivity methods and Monte Carlo configurations.
+
 .. seealso::
 
     **Full Working Examples:**
     
     **Notebooks:**
     
-    - :download:`Reynolds-Moody Diagram Analysis <../../_static/examples/notebooks/PyDASA-Reynolds.ipynb>`
     - :download:`Online Tutorial Notebook <../../_static/examples/notebooks/PyDASA-Online-Tutorial.ipynb>`
+    - :download:`Online Customization Notebook <../../_static/examples/notebooks/PyDASA-Online-Custom.ipynb>`
+    - :download:`Reynolds-Moody Diagram Analysis <../../_static/examples/notebooks/PyDASA-Reynolds.ipynb>`
     - :download:`Yoly Example <../../_static/examples/notebooks/PyDASA-Yoly.ipynb>`
     
     **Code:**
     
     - :download:`reynolds_simple.py <../../_static/examples/code/reynolds_simple.py>`
+    - :download:`queueing.py <../../_static/examples/code/queueing.py>`
 
 **Documentation and User Guides:**
 
-To understand **PyDASA** capabilities and internal theckincal details check:
+To understand **PyDASA** capabilities and internal technical details check:
 
 - :doc:`../features/index` - Available features and workflows.
 - :doc:`../examples/index` - More practical examples using PyDASA.
@@ -823,4 +829,4 @@ To understand **PyDASA** capabilities and internal theckincal details check:
 
 **Questions or Issues?**
 
-To solve any doubt or bug, visit the `GitHub Issues Page <https://github.com/DASA-Design/PyDASA/issues>`_.
+Visit the `GitHub Issues Page <https://github.com/DASA-Design/PyDASA/issues>`_ for support.

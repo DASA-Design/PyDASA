@@ -211,20 +211,20 @@ html_theme_options = {
     # },
     "navbar_end": ["theme-switcher", "navbar-icon-links"],
     "show_prev_next": True,
+    "navbar_start": ["navbar-logo"],
 }
 
-# Add version switcher using local file path
-# This prevents fetching from URL which can cause BOM errors
-switcher_path = os.path.join(os.path.dirname(__file__), "_static", "switcher.json")
-if os.path.exists(switcher_path):
-    html_theme_options["switcher"] = {
-        "json_url": "_static/switcher.json",  # Use relative path, not URL
-        "version_match": version,
-    }
-    # Add version dropdown to navbar
-    html_theme_options["navbar_start"] = ["navbar-logo", "version-switcher"]
-else:
-    html_theme_options["navbar_start"] = ["navbar-logo"]
+# Version switcher disabled - uncomment below to re-enable
+# switcher_path = os.path.join(os.path.dirname(__file__), "_static", "switcher.json")
+# if os.path.exists(switcher_path):
+#     html_theme_options["switcher"] = {
+#         "json_url": "_static/switcher.json",  # Use relative path, not URL
+#         "version_match": version,
+#     }
+#     # Add version dropdown to navbar
+#     html_theme_options["navbar_start"] = ["navbar-logo", "version-switcher"]
+# else:
+#     html_theme_options["navbar_start"] = ["navbar-logo"]
 
 # multi-language and version configuration
 # Read the Docs will inject version information automatically

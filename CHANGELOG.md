@@ -5,6 +5,52 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.9][0.6.9] - 2026-02-10
+
+### Fixed
+
+- Updated switcher.json to remove deprecated version entry for v0.4.10
+- Improved documentation and method naming for clarity
+- Removed unused code
+
+### Changed
+
+- Continued development of custom dimensional framework tutorial
+
+## [0.6.8][0.6.8] - 2026-02-09
+
+### Added
+
+- Queueing module for customization with enhanced Sphinx documentation configuration
+
+### Changed
+
+- Updated variable symbol for density in tutorial documentation from `\rho` to `\rho_{1}` to reflect updated notation
+
+### Fixed
+
+- Improved documentation clarity and consistency
+- Enhanced LaTeX parsing logic
+
+## [0.6.7][0.6.7] - 2026-02-06
+
+### Fixed
+
+- Refactored documentation and improved clarity across PyDASA modules
+
+### Changed
+
+- Enhanced Sphinx documentation configuration
+- Enhanced documentation for dimensional analysis features in PyDASA
+- Renamed `relevant_lt` to `relevance_lt` for consistency and clarity
+
+## [0.6.6][0.6.6] - 2026-02-03
+
+### Fixed
+
+- Forced documentation update
+- Updated CHANGELOG for version 0.6.5 with new features, changes, fixes, and removals
+
 ## [0.6.5][0.6.5] - 2026-02-03
 
 ### Added
@@ -609,6 +655,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Experimentation phase before formal semantic versioning, establishing core dimensional analysis concepts and data structures.
 
+[0.6.9]: https://github.com/DASA-Design/PyDASA/compare/v0.6.8...v0.6.9
+[0.6.8]: https://github.com/DASA-Design/PyDASA/compare/v0.6.7...v0.6.8
+[0.6.7]: https://github.com/DASA-Design/PyDASA/compare/v0.6.6...v0.6.7
+[0.6.6]: https://github.com/DASA-Design/PyDASA/compare/v0.6.5...v0.6.6
 [0.6.5]: https://github.com/DASA-Design/PyDASA/compare/v0.6.4...v0.6.5
 [0.6.4]: https://github.com/DASA-Design/PyDASA/compare/v0.6.3...v0.6.4
 [0.6.3]: https://github.com/DASA-Design/PyDASA/compare/v0.6.2...v0.6.3

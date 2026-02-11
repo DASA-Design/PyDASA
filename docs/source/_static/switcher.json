@@ -1,14 +1,14 @@
 [
     {
+        "version": "v0.5.4",
+        "url": "https://pydasa.readthedocs.io/en/v0.5.4/",
+    },
+    {
         "version": "latest",
         "url": "https://pydasa.readthedocs.io/en/latest/",
     },
     {
         "version": "stable",
         "url": "https://pydasa.readthedocs.io/en/stable/",
-    },
-    {
-        "version": "v0.5.4",
-        "url": "https://pydasa.readthedocs.io/en/v0.5.4/",
     },
 ]

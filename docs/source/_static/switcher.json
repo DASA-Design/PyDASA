@@ -10,5 +10,9 @@
     {
         "version": "stable",
         "url": "https://pydasa.readthedocs.io/en/stable/"
+    },
+    {
+        "version": "stable",
+        "url": "https://pydasa.readthedocs.io/en/stable/"
     }
 ]

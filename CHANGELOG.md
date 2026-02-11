@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.10][0.6.10] - 2026-02-10
+
+### Fixed
+
+- Fixed switcher.json JSON syntax error in stable documentation builds (removed invalid JSON comments from v0.6.9)
+
+### Added
+
+- Added CHANGELOG entries for versions 0.6.6-0.6.9 from git history
+
 ## [0.6.9][0.6.9] - 2026-02-10
 
 ### Fixed
@@ -655,6 +665,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Experimentation phase before formal semantic versioning, establishing core dimensional analysis concepts and data structures.
 
+[0.6.10]: https://github.com/DASA-Design/PyDASA/compare/v0.6.9...v0.6.10
 [0.6.9]: https://github.com/DASA-Design/PyDASA/compare/v0.6.8...v0.6.9
 [0.6.8]: https://github.com/DASA-Design/PyDASA/compare/v0.6.7...v0.6.8
 [0.6.7]: https://github.com/DASA-Design/PyDASA/compare/v0.6.6...v0.6.7

@@ -108,7 +108,7 @@ class VarCardinality(str, Enum):
 
 
 class CoefCardinality(str, Enum):
-    """Enumerator for Dimensionless Coefficient/Numbers/Groups (DC/DN/DG) cardinality used to classify dimensionless coefficients in formulas and equations in **PyDASA.
+    """Enumerator for Dimensionless Coefficient/Numbers/Groups (DC/DN/DG) cardinality used to classify dimensionless coefficients in formulas and equations in **PyDASA**.
 
     Inherits from:
         - str (class): Python native str class.

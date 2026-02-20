@@ -582,10 +582,10 @@ class SCHashTable(Generic[T]):
         return _values_lt
 
     def entries(self) -> SingleLinkedList[T]:
-        """*entries() returns a list of tuples with the key and value of each entry in the hash table.
+        """*entries()* returns a list of tuples with the key and value of each entry in the hash table.
 
         Returns:
-            SingleLinkedList[T]: list of tuples with the key-value paor of each entry in the hash table. e.g. [(key1, value1), (key2, value2), ...].
+            SingleLinkedList[T]: list of tuples with the key-value pair of each entry in the hash table. e.g. [(key1, value1), (key2, value2), ...].
         """
         _entries_lt = SingleLinkedList(key=self.key)
         if self.hash_table is not None:

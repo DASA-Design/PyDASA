@@ -811,8 +811,6 @@ Now that you've completed the tutorial, explore:
     
     - :download:`Online Tutorial Notebook <../../_static/examples/notebooks/PyDASA-Online-Tutorial.ipynb>`
     - :download:`Online Customization Notebook <../../_static/examples/notebooks/PyDASA-Online-Custom.ipynb>`
-    - :download:`Reynolds-Moody Diagram Analysis <../../_static/examples/notebooks/PyDASA-Reynolds.ipynb>`
-    - :download:`Yoly Example <../../_static/examples/notebooks/PyDASA-Yoly.ipynb>`
     
     **Code:**
     

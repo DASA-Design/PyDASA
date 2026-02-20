@@ -311,7 +311,7 @@ Transform the Pi groups into operationally meaningful coefficients:
     # Derive Stall Coefficient: σ = Π₁ = W·λ/L
     sigma_coeff = engine.derive_coefficient(
         expr=f"{pi_keys[1]}",
-        symbol="\\sigma",
+        symbol="\\psi",
         name="Stall Coefficient",
         description="σ = W·λ/L - Service stall/blocking indicator",
         idx=-1
@@ -504,7 +504,7 @@ Step 3.1: Create Simulation Handler
 
     === Running Monte Carlo Simulation ===
     Simulation complete: 3150 experiments
-    Results for: ['\\Pi_{0}', '\\Pi_{1}', '\\Pi_{2}', '\\Pi_{3}', '\\delta', '\\sigma', '\\eta']
+    Results for: ['\\Pi_{0}', '\\Pi_{1}', '\\Pi_{2}', '\\Pi_{3}', '\\delta', '\\psi', '\\eta']
 
 Step 3.2: Extract Simulation Results
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -538,7 +538,7 @@ Step 3.2: Extract Simulation Results
         
         print(f"Occupancy (δ): Mean = {np.mean(delta_sim):.4e}, Range = [{np.min(delta_sim):.4e}, {np.max(delta_sim):.4e}]")
         print(f"Stall (σ): Mean = {np.mean(sigma_sim):.4e}, Range = [{np.min(sigma_sim):.4e}, {np.max(sigma_sim):.4e}]")
-        print(f"Effective-Utility (η): Mean = {np.mean(eta_sim):.4e}, Range = [{np.min(eta_sim):.4e}, {np.max(eta_sim):.4e}]")
+        print(f"Effective-Yield (η): Mean = {np.mean(eta_sim):.4e}, Range = [{np.min(eta_sim):.4e}, {np.max(eta_sim):.4e}]")
 
 **Expected Output:**
 
@@ -546,13 +546,13 @@ Step 3.2: Extract Simulation Results
 
     === Extracting Simulation Results ===
     Processing simulation: \delta
-    Processing simulation: \sigma
+    Processing simulation: \psi
     Processing simulation: \eta
 
     === Simulation Results Details ===
     Occupancy (δ): Mean = 4.2156e-01, Range = [9.9463e-02, 9.5238e-01]
     Stall (σ): Mean = 1.4532e+00, Range = [5.0271e-01, 7.1250e+00]
-    Effective-Utility (η): Mean = 7.5463e-01, Range = [6.2500e-02, 2.5000e+00]
+    Effective-Yield (η): Mean = 7.5463e-01, Range = [6.2500e-02, 2.5000e+00]
 
 ----
 
@@ -586,27 +586,27 @@ Create a 2×2 grid showing 3D space and three 2D projections:
     # Auxiliary lists for plot configuration
     plot_types = ["3D", "2D", "2D", "2D"]
     plot_titles = [
-        r"3D Space: $\boldsymbol{\delta}$ vs $\boldsymbol{\sigma}$ vs $\boldsymbol{\eta}$",
-        r"2D Plane: $\boldsymbol{\delta}$ vs $\boldsymbol{\sigma}$",
+        r"3D Space: $\boldsymbol{\delta}$ vs $\boldsymbol{\psi}$ vs $\boldsymbol{\eta}$",
+        r"2D Plane: $\boldsymbol{\delta}$ vs $\boldsymbol{\psi}$",
         r"2D Plane: $\boldsymbol{\delta}$ vs $\boldsymbol{\eta}$",
-        r"2D Plane: $\boldsymbol{\sigma}$ vs $\boldsymbol{\eta}$"
+        r"2D Plane: $\boldsymbol{\psi}$ vs $\boldsymbol{\eta}$"
     ]
 
     x_labels = [
         r"Occupancy ($\boldsymbol{\delta}$)",
         r"Occupancy ($\boldsymbol{\delta}$)",
         r"Occupancy ($\boldsymbol{\delta}$)",
-        r"Stall ($\boldsymbol{\sigma}$)"
+        r"Stall ($\boldsymbol{\psi}$)"
     ]
 
     y_labels = [
-        r"Stall ($\boldsymbol{\sigma}$)",
-        r"Stall ($\boldsymbol{\sigma}$)",
-        r"Effective-Utility ($\boldsymbol{\eta}$)",
-        r"Effective-Utility ($\boldsymbol{\eta}$)"
+        r"Stall ($\boldsymbol{\psi}$)",
+        r"Stall ($\boldsymbol{\psi}$)",
+        r"Effective-Yield ($\boldsymbol{\eta}$)",
+        r"Effective-Yield ($\boldsymbol{\eta}$)"
     ]
 
-    z_labels = [r"Effective-Utility ($\boldsymbol{\eta}$)", None, None, None]
+    z_labels = [r"Effective-Yield ($\boldsymbol{\eta}$)", None, None, None]
 
     # Data pairs for each subplot
     data_pairs = [
@@ -896,8 +896,6 @@ Now that you've mastered custom frameworks, explore:
     
     - :download:`Online Tutorial Notebook <../../_static/examples/notebooks/PyDASA-Online-Tutorial.ipynb>`
     - :download:`Online Customization Notebook <../../_static/examples/notebooks/PyDASA-Online-Custom.ipynb>`
-    - :download:`Reynolds-Moody Diagram Analysis <../../_static/examples/notebooks/PyDASA-Reynolds.ipynb>`
-    - :download:`Yoly Example <../../_static/examples/notebooks/PyDASA-Yoly.ipynb>`
     
     **Code:**
     

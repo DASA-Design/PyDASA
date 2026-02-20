@@ -43,5 +43,5 @@ jobs:
       - name: Test notebooks
         run: |
           pip install nbval
-          pytest --nbval-lax --nbval-current-env docs/source/_static/examples/notebooks/
+          pytest --nbval-lax --nbval-current-env tests/notebooks/
         continue-on-error: true

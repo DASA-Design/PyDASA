@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.18][0.6.18] - 2026-02-20
+
+### Fixed
+
+- ReadTheDocs dependency conflicts resolved through systematic version downgrades:
+  - Sphinx 9.0.4 → 8.1.3 (myst-parser compatibility)
+  - astroid 4.0.2 → 3.3.8 (sphinx-autoapi compatibility with Python 3.11)
+  - pylint 4.0.4 → 3.3.4 (astroid 3.x compatibility)
+  - isort 7.0.0 → 6.1.0 (pylint 3.3.4 compatibility)
+  - sphinx-autodoc-typehints 3.6.0 → 2.4.4 (Sphinx 8.x compatibility)
+- Removed duplicate git install line from requirements.txt
+
 ## [0.6.13][0.6.13] - 2026-02-20
 
 ### Fixed
@@ -692,6 +704,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Experimentation phase before formal semantic versioning, establishing core dimensional analysis concepts and data structures.
 
+[0.6.18]: https://github.com/DASA-Design/PyDASA/compare/v0.6.15...v0.6.18
 [0.6.15]: https://github.com/DASA-Design/PyDASA/compare/v0.6.13...v0.6.15
 [0.6.13]: https://github.com/DASA-Design/PyDASA/compare/v0.6.12...v0.6.13
 [0.6.12]: https://github.com/DASA-Design/PyDASA/compare/v0.6.11...v0.6.12

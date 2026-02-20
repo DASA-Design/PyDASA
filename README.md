@@ -2,11 +2,7 @@
 
 <div align="center">
 
-[![PyPI](https://img.shields.io/pypi/v/pydasa)](https://pypi.org/project/pydasa/)
-[![Python Version](https://img.shields.io/pypi/pyversions/pydasa)](https://pypi.org/project/pydasa/)
-[![License](https://img.shields.io/pypi/l/pydasa)](https://github.com/DASA-Design/PyDASA/blob/main/LICENSE)
-[![Documentation Status](https://readthedocs.org/projects/pydasa/badge/?version=latest)](https://pydasa.readthedocs.io/)
-[![codecov](https://codecov.io/gh/DASA-Design/PyDASA/graph/badge.svg)](https://codecov.io/gh/DASA-Design/PyDASA)
+![PyPI](https://img.shields.io/pypi/v/pydasa) ![Python Version](https://img.shields.io/pypi/pyversions/pydasa) ![License](https://img.shields.io/github/license/DASA-Design/PyDASA) ![Documentation Status](https://readthedocs.org/projects/pydasa/badge/?version=latest) ![Coverage](https://codecov.io/gh/DASA-Design/PyDASA/branch/main/graph/badge.svg)
 
 </div>
 

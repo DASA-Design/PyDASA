@@ -6,19 +6,24 @@
 PyDASA
 ======
 
-.. |pypi| image:: https://img.shields.io/pypi/v/pydasa
+.. |pypi| image:: https://img.shields.io/pypi/v/pydasa?cache=none
+   :target: https://pypi.org/project/pydasa/
    :alt: PyPI
 
 .. |pyversion| image:: https://img.shields.io/pypi/pyversions/pydasa
+   :target: https://pypi.org/project/pydasa/
    :alt: Python Version
 
 .. |license| image:: https://img.shields.io/github/license/DASA-Design/PyDASA
+   :target: https://github.com/DASA-Design/PyDASA/blob/main/LICENSE
    :alt: License
 
 .. |docs| image:: https://readthedocs.org/projects/pydasa/badge/?version=latest
+   :target: https://pydasa.readthedocs.io
    :alt: Documentation Status
 
 .. |coverage| image:: https://codecov.io/gh/DASA-Design/PyDASA/branch/main/graph/badge.svg
+   :target: https://codecov.io/gh/DASA-Design/PyDASA
    :alt: Coverage
 
 .. centered:: |pypi| |pyversion| |license| |docs| |coverage|

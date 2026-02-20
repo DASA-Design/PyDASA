@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.11][0.6.11] - 2026-02-20
+
+### Added
+
+- Comprehensive test coverage improvements across core modules (error.py, memory.py, functions.py, symbolic.py, simulation.py, conceptual.py)
+- Test coverage increased to 90-100\% across all enhanced modules
+
+### Fixed
+
+- Type safety improvements in test suite (`Optional[List[int]]` handling)
+- Enhanced error handling for edge cases in comparison and validation functions
+
 ## [0.6.10][0.6.10] - 2026-02-10
 
 ### Fixed
@@ -665,6 +677,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Experimentation phase before formal semantic versioning, establishing core dimensional analysis concepts and data structures.
 
+[0.6.11]: https://github.com/DASA-Design/PyDASA/compare/v0.6.10...v0.6.11
 [0.6.10]: https://github.com/DASA-Design/PyDASA/compare/v0.6.9...v0.6.10
 [0.6.9]: https://github.com/DASA-Design/PyDASA/compare/v0.6.8...v0.6.9
 [0.6.8]: https://github.com/DASA-Design/PyDASA/compare/v0.6.7...v0.6.8

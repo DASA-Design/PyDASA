@@ -44,9 +44,11 @@ setup(
     author="@SFAM",
     author_email="sa-artea@uniandes.edu.co",
     # NOTE keep check classifiers!!!
-    # license="GPL-3.0",
+    license="GPL-3.0-or-later",
     classifiers=[
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Development Status :: 3 - Alpha",
         "Operating System :: OS Independent",
         "Intended Audience :: Science/Research",

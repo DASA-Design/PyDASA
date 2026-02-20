@@ -692,6 +692,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Experimentation phase before formal semantic versioning, establishing core dimensional analysis concepts and data structures.
 
+[0.6.15]: https://github.com/DASA-Design/PyDASA/compare/v0.6.13...v0.6.15
 [0.6.13]: https://github.com/DASA-Design/PyDASA/compare/v0.6.12...v0.6.13
 [0.6.12]: https://github.com/DASA-Design/PyDASA/compare/v0.6.11...v0.6.12
 [0.6.11]: https://github.com/DASA-Design/PyDASA/compare/v0.6.10...v0.6.11

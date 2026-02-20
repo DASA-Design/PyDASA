@@ -43,8 +43,8 @@ setup(
     url="https://github.com/DASA-Design/PyDASA",
     author="@SFAM",
     author_email="sa-artea@uniandes.edu.co",
-    # NOTE keep check classifiers!!!
-    license="GPL-3.0-or-later",
+    # NOTE: license is defined in pyproject.toml to avoid conflict
+    # license="GPL-3.0-or-later",
     classifiers=[
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",

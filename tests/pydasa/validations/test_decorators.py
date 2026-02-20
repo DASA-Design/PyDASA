@@ -7,6 +7,8 @@ Tests for decorator-based validation system.
 """
 
 import unittest
+from enum import Enum
+import numpy as np
 # import re
 from pydasa.validations.decorators import (
     validate_type,
@@ -17,6 +19,7 @@ from pydasa.validations.decorators import (
     validate_pattern,
     validate_list_types,
     validate_dict_types,
+    validate_custom,
 )
 
 
@@ -47,6 +50,37 @@ class TestValidationDecorators(unittest.TestCase):
 
         obj.value = None  # None allowed by default
         self.assertIsNone(obj.value)
+
+        # Test np.nan handling
+        class TestNanClass:
+            @property
+            def value(self):
+                return self._value
+
+            @value.setter
+            @validate_type(float, allow_nan=True)
+            def value(self, val):
+                self._value = val
+
+        obj_nan = TestNanClass()
+        obj_nan.value = np.nan  # Should work with allow_nan=True
+        self.assertTrue(np.isnan(obj_nan.value))
+
+        # Test np.nan rejection
+        class TestNanRejectClass:
+            @property
+            def value(self):
+                return self._value
+
+            @value.setter
+            @validate_type(float, allow_nan=False)
+            def value(self, val):
+                self._value = val
+
+        obj_no_nan = TestNanRejectClass()
+        with self.assertRaises(ValueError) as ctx:
+            obj_no_nan.value = np.nan
+        self.assertIn("cannot be np.nan", str(ctx.exception))
 
     def test_validate_type_invalid(self):
         """Test validate_type with invalid type"""
@@ -99,6 +133,26 @@ class TestValidationDecorators(unittest.TestCase):
         obj.value = "test"
         self.assertEqual(obj.value, "test")
 
+        # Test strip=False behavior
+        class TestNoStripClass:
+            @property
+            def value(self):
+                return self._value
+
+            @value.setter
+            @validate_type(str)
+            @validate_emptiness(strip=False)
+            def value(self, val):
+                self._value = val
+
+        obj_no_strip = TestNoStripClass()
+        obj_no_strip.value = "  text  "  # Should pass with strip=False
+        self.assertEqual(obj_no_strip.value, "  text  ")
+
+        with self.assertRaises(ValueError) as ctx:
+            obj_no_strip.value = ""
+        self.assertIn("non-empty", str(ctx.exception))
+
     def test_validate_emptiness_invalid(self):
         """Test validate_emptiness with empty string"""
         class TestClass:
@@ -115,6 +169,55 @@ class TestValidationDecorators(unittest.TestCase):
         obj = TestClass()
         with self.assertRaises(ValueError) as ctx:
             obj.value = "   "
+        self.assertIn("non-empty", str(ctx.exception))
+
+        # Test empty collections
+        class TestListClass:
+            @property
+            def value(self):
+                return self._value
+
+            @value.setter
+            @validate_type(list)
+            @validate_emptiness()
+            def value(self, val):
+                self._value = val
+
+        obj_list = TestListClass()
+        with self.assertRaises(ValueError) as ctx:
+            obj_list.value = []
+        self.assertIn("non-empty", str(ctx.exception))
+
+        class TestDictClass:
+            @property
+            def value(self):
+                return self._value
+
+            @value.setter
+            @validate_type(dict)
+            @validate_emptiness()
+            def value(self, val):
+                self._value = val
+
+        obj_dict = TestDictClass()
+        with self.assertRaises(ValueError) as ctx:
+            obj_dict.value = {}
+        self.assertIn("non-empty", str(ctx.exception))
+
+        class TestTupleClass:
+            @property
+            def value(self):
+                return self._value
+
+            @value.setter
+            @validate_type(tuple)
+            @validate_emptiness()
+            def value(self, val):
+                self._value = val
+
+        obj_tuple = TestTupleClass()
+        with self.assertRaises(ValueError) as ctx:
+            obj_tuple.value = ()
         self.assertIn("non-empty", str(ctx.exception))
 
     def test_validate_choices_dict(self):
@@ -140,6 +243,44 @@ class TestValidationDecorators(unittest.TestCase):
             obj.value = "D"
         self.assertIn("Must be one of", str(ctx.exception))
 
+        # Test with Enum class
+        class Status(Enum):
+            ACTIVE = 1
+            INACTIVE = 2
+            PENDING = 3
+
+        class TestEnumClass:
+            @property
+            def value(self):
+                return self._value
+
+            @value.setter
+            @validate_choices(Status)
+            def value(self, val):
+                self._value = val
+
+        obj_enum = TestEnumClass()
+        obj_enum.value = Status.ACTIVE
+        self.assertEqual(obj_enum.value, Status.ACTIVE)
+
+        with self.assertRaises(ValueError):
+            obj_enum.value = "INVALID"
+
+        # Test allow_none=True
+        class TestNoneClass:
+            @property
+            def value(self):
+                return self._value
+
+            @value.setter
+            @validate_choices({"X", "Y", "Z"}, allow_none=True)
+            def value(self, val):
+                self._value = val
+
+        obj_none = TestNoneClass()
+        obj_none.value = None  # Should work
+        self.assertIsNone(obj_none.value)
+
     def test_validate_range_static(self):
         """Test validate_range with static min/max"""
         class TestClass:
@@ -162,6 +303,30 @@ class TestValidationDecorators(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             obj.value = 101
+
+        # Test exclusive bounds
+        class TestExclusiveClass:
+            @property
+            def value(self):
+                return self._value
+
+            @value.setter
+            @validate_type(int, float)
+            @validate_range(min_value=10, max_value=100, min_inclusive=False, max_inclusive=False)
+            def value(self, val):
+                self._value = val
+
+        obj_excl = TestExclusiveClass()
+        obj_excl.value = 50  # Should work
+        self.assertEqual(obj_excl.value, 50)
+
+        with self.assertRaises(ValueError) as ctx:
+            obj_excl.value = 10  # Exclusive minimum
+        self.assertIn("must be >", str(ctx.exception))
+
+        with self.assertRaises(ValueError) as ctx:
+            obj_excl.value = 100  # Exclusive maximum
+        self.assertIn("must be <", str(ctx.exception))
 
     def test_validate_range_dynamic(self):
         """Test validate_range with dynamic attributes"""
@@ -216,6 +381,38 @@ class TestValidationDecorators(unittest.TestCase):
         with self.assertRaises(ValueError) as ctx:
             obj.value = -1
         self.assertIn("non-negative", str(ctx.exception))
+
+        # Test allow_zero=False
+        class TestNoZeroClass:
+            @property
+            def value(self):
+                return self._value
+
+            @value.setter
+            @validate_index(allow_zero=False, allow_negative=False)
+            def value(self, val):
+                self._value = val
+
+        obj_no_zero = TestNoZeroClass()
+        with self.assertRaises(ValueError) as ctx:
+            obj_no_zero.value = 0
+        self.assertIn("cannot be zero", str(ctx.exception))
+
+        # Test non-integer type error
+        class TestIntTypeClass:
+            @property
+            def value(self):
+                return self._value
+
+            @value.setter
+            @validate_index(allow_negative=False)
+            def value(self, val):
+                self._value = val
+
+        obj_int_type = TestIntTypeClass()
+        with self.assertRaises(ValueError) as ctx:
+            obj_int_type.value = "5"
+        self.assertIn("must be an integer", str(ctx.exception))
 
     def test_validate_pattern(self):
         """Test validate_pattern decorator"""
@@ -542,3 +739,62 @@ class TestValidationDecorators(unittest.TestCase):
         with self.assertRaises(ValueError) as ctx:
             obj.value = {"a": 1, "b": "two"}
         self.assertIn("values must be int", str(ctx.exception))
+
+    def test_validate_custom(self):
+        """Test validate_custom decorator with custom validation logic"""
+        def check_positive(self, value):
+            """Ensure value is positive."""
+            if value is not None and value < 0:
+                raise ValueError(f"Value must be positive, got {value}")
+
+        class TestClass:
+            @property
+            def value(self):
+                return self._value
+
+            @value.setter
+            @validate_type(int, float)
+            @validate_custom(check_positive)
+            def value(self, val):
+                self._value = val
+
+        obj = TestClass()
+        obj.value = 10  # Should work
+        self.assertEqual(obj.value, 10)
+
+        obj.value = 0  # Should work (zero is not negative)
+        self.assertEqual(obj.value, 0)
+
+        with self.assertRaises(ValueError) as ctx:
+            obj.value = -5
+        self.assertIn("must be positive", str(ctx.exception))
+
+        # Test custom validator with range consistency
+        def check_range_consistency(self, value):
+            """Ensure min does not exceed max."""
+            if value is not None and hasattr(self, '_max') and self._max is not None:
+                if value > self._max:
+                    raise ValueError(f"min {value} > max {self._max}")
+
+        class TestRangeClass:
+            def __init__(self):
+                self._min = None
+                self._max = 100
+
+            @property
+            def min(self):
+                return self._min
+
+            @min.setter
+            @validate_type(int, float)
+            @validate_custom(check_range_consistency)
+            def min(self, val):
+                self._min = val
+
+        obj_range = TestRangeClass()
+        obj_range.min = 50  # Should work
+        self.assertEqual(obj_range.min, 50)
+
+        with self.assertRaises(ValueError) as ctx:
+            obj_range.min = 150  # Exceeds max
+        self.assertIn("min 150 > max 100", str(ctx.exception))

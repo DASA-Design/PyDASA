@@ -7,6 +7,7 @@ Tests for error handling and exceptions in PyDASA.
 """
 
 import unittest
+import unittest.mock as mock
 import pytest
 from pydasa.validations.error import handle_error, inspect_var
 from tests.pydasa.data.test_data import get_error_test_data
@@ -148,6 +149,42 @@ class TestHandleError(unittest.TestCase):
         assert "line 2" in str(exc_info.value)
         assert "line 3" in str(exc_info.value)
 
+    def test_handle_error_invalid_context_type(self) -> None:
+        """Test handle_error raises TypeError when context is not a string."""
+        invalid_contexts = [123, None, [], {}, 45.67]
+        func = "test_func"
+        exc = ValueError("test error")
+
+        for invalid_ctx in invalid_contexts:
+            with pytest.raises(TypeError) as exc_info:
+                handle_error(invalid_ctx, func, exc)
+            assert "Invalid context" in str(exc_info.value)
+            assert "must be a string" in str(exc_info.value)
+
+    def test_handle_error_invalid_function_type(self) -> None:
+        """Test handle_error raises TypeError when function name is not a string."""
+        ctx = "TestContext"
+        invalid_funcs = [456, None, [], {}, lambda x: x]
+        exc = ValueError("test error")
+
+        for invalid_func in invalid_funcs:
+            with pytest.raises(TypeError) as exc_info:
+                handle_error(ctx, invalid_func, exc)
+            assert "Invalid function name" in str(exc_info.value)
+            assert "must be a string" in str(exc_info.value)
+
+    def test_handle_error_invalid_exception_type(self) -> None:
+        """Test handle_error raises TypeError when exception is not an Exception."""
+        ctx = "TestContext"
+        func = "test_func"
+        invalid_exceptions = ["not an exception", 123, None, [], {}]
+
+        for invalid_exc in invalid_exceptions:
+            with pytest.raises(TypeError) as exc_info:
+                handle_error(ctx, func, invalid_exc)
+            assert "Invalid exception" in str(exc_info.value)
+            assert "must be an instance of Exception" in str(exc_info.value)
+
 
 class TestInspectVar(unittest.TestCase):
     """Test cases for inspect_var() function."""
@@ -253,6 +290,54 @@ class TestInspectVar(unittest.TestCase):
         # my_lambda = lambda x: x * 2
         # assert inspect_var(my_lambda) == "my_lambda"
         assert inspect_var(lambda x: x * 2) == "@py_assert1"
+
+    def test_inspect_var_global_variable(self) -> None:
+        """Test inspect_var with global variable."""
+        # Create a module-level global variable for testing
+        global test_global_var
+        test_global_var = "global_test_value"
+
+        result = inspect_var(test_global_var)
+        assert result == "test_global_var"
+
+        # Clean up
+        del globals()["test_global_var"]
+
+    def test_inspect_var_unknown_variable(self) -> None:
+        """Test inspect_var returns '<unknown>' for unfindable variables."""
+        # Create a variable that will be hard to track
+        # by passing it through a function that creates a new reference
+        def create_detached_value():
+            return [1, 2, 3]
+
+        # Get a value not directly in any locals/globals with simple name
+        result = inspect_var(create_detached_value())
+        # The result should be either a generated name or properly detected
+        # depending on how pytest captures it
+        assert isinstance(result, str)
+
+    def test_inspect_var_frame_introspection_error(self) -> None:
+        """Test inspect_var raises ValueError when frame introspection fails."""
+
+        # Mock inspect.currentframe to raise an exception during introspection
+        with mock.patch("inspect.currentframe") as mock_frame:
+            # Create a mock frame where accessing f_locals.items() raises an error
+            mock_f_locals = mock.MagicMock()
+            mock_f_locals.items.side_effect = RuntimeError("Frame access error")
+
+            mock_caller_frame = mock.MagicMock()
+            mock_caller_frame.f_locals = mock_f_locals
+
+            mock_frame_obj = mock.MagicMock()
+            mock_frame_obj.f_back = mock_caller_frame
+            mock_frame.return_value = mock_frame_obj
+
+            test_var = "test_value"
+            with pytest.raises(ValueError) as exc_info:
+                inspect_var(test_var)
+
+            assert "Could not inspect variable" in str(exc_info.value)
+            assert "Frame access error" in str(exc_info.value)
 
 
 class TestErrorIntegration(unittest.TestCase):

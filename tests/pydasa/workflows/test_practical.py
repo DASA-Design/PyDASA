@@ -158,6 +158,12 @@ class TestMonteCarloSimulation(unittest.TestCase):
             assert "dtype" in dist
             assert "params" in dist
 
+        # Test error: no variables defined
+        handler_no_vars = MonteCarloSimulation()
+        with pytest.raises(ValueError) as excinfo:
+            handler_no_vars.configure_distributions()
+        assert "no variables defined" in str(excinfo.value)
+
     def test_config_simulations(self) -> None:
         """*test_config_simulations()* tests simulation configuration."""
         # Create handler
@@ -178,6 +184,38 @@ class TestMonteCarloSimulation(unittest.TestCase):
         assert len(handler._simulations) > 0
         # Test one simulation per coefficient
         assert len(handler._simulations) == len(self.test_coefficients)
+
+        # Test error: no coefficients
+        handler_no_coefs = MonteCarloSimulation(
+            _fwk="CUSTOM",
+            _experiments=100,
+            _variables=self.test_variables
+        )
+        handler_no_coefs.configure_distributions()
+        with pytest.raises(ValueError) as excinfo:
+            handler_no_coefs.configure_simulations()
+        assert "no coefficients defined" in str(excinfo.value)
+
+        # Test error: no variables
+        handler_no_vars = MonteCarloSimulation(
+            _fwk="CUSTOM",
+            _experiments=100,
+            _coefficients=self.test_coefficients
+        )
+        with pytest.raises(ValueError) as excinfo:
+            handler_no_vars.configure_simulations()
+        assert "no variables defined" in str(excinfo.value)
+
+        # Test error: no distributions
+        handler_no_dist = MonteCarloSimulation(
+            _fwk="CUSTOM",
+            _experiments=100,
+            _variables=self.test_variables,
+            _coefficients=self.test_coefficients
+        )
+        with pytest.raises(ValueError) as excinfo:
+            handler_no_dist.configure_simulations()
+        assert "distributions not defined" in str(excinfo.value)
 
     def test_clear(self) -> None:
         """*test_clear()* tests clearing handler state completely."""
@@ -240,6 +278,13 @@ class TestMonteCarloSimulation(unittest.TestCase):
         handler.cat = "DATA"
         assert handler.cat == "DATA"
 
+        # Test invalid cat value
+        with pytest.raises(ValueError):
+            handler.cat = "INVALID"
+
+        # Reset to DIST for testing simulations
+        handler.cat = "DIST"
+
         # Test experiments property
         assert handler.experiments == -1
         handler.experiments = 2000
@@ -249,6 +294,28 @@ class TestMonteCarloSimulation(unittest.TestCase):
         with pytest.raises(ValueError) as excinfo:
             handler.experiments = 0
         assert "must be >= 1" in str(excinfo.value)
+
+        # Test is_configured property (initially False)
+        assert handler.is_configured is False
+
+        # Configure handler and test is_configured becomes True
+        handler._variables = self.test_variables
+        handler._coefficients = self.test_coefficients
+        handler.experiments = 5  # Set experiments before creating simulations
+        handler.create_simulations()
+        assert handler.is_configured is True
+
+        # Test has_results property
+        assert handler.has_results is False
+        handler.run_simulation(iters=5)
+        assert handler.has_results is True
+
+        # Test simulations property returns copy
+        sims_copy = handler.simulations
+        assert isinstance(sims_copy, dict)
+        assert len(sims_copy) == len(handler._simulations)
+        # Verify it's a copy, not the same object
+        assert id(sims_copy) != id(handler._simulations)
 
     def test_get_simulation(self) -> None:
         """*test_get_simulation()* tests getting simulation by name."""
@@ -416,6 +483,21 @@ class TestMonteCarloSimulation(unittest.TestCase):
         # Verify experiments were set
         assert handler._experiments == 5
 
+        # Test with explicit mode parameter (still DIST since we use distributions)
+        handler2 = MonteCarloSimulation(
+            _fwk="CUSTOM",
+            _cat="DIST",
+            _experiments=5,
+            _variables=self.test_variables,
+            _coefficients=self.test_coefficients
+        )
+        # Change mode before running to test mode parameter
+        original_mode = handler2._cat
+        handler2.run_simulation(iters=5, mode="DIST")
+        assert handler2._cat == "DIST"
+        # Verify mode parameter can change the category
+        assert original_mode == "DIST"
+
     def test_create_simulations_method(self) -> None:
         """*test_create_simulations_method()* tests new create_simulations() method name."""
         handler = MonteCarloSimulation(
@@ -572,3 +654,95 @@ class TestMonteCarloSimulation(unittest.TestCase):
         assert handler_restored.is_configured == handler_original.is_configured
         assert len(handler_restored._simulations) == len(handler_original._simulations)
         assert len(handler_restored._distributions) == len(handler_original._distributions)
+
+    def test_get_results(self) -> None:
+        """*test_get_results()* tests getting results by simulation name."""
+        # Create and run simulation
+        handler = MonteCarloSimulation(
+            _fwk="CUSTOM",
+            _experiments=5,
+            _variables=self.test_variables,
+            _coefficients=self.test_coefficients
+        )
+        handler.run_simulation(iters=5)
+
+        # Get results for existing simulation
+        results = handler.get_results("\\Pi_{0}")
+        assert results is not None
+        assert isinstance(results, dict)
+        assert "inputs" in results
+        assert "results" in results
+        assert "statistics" in results
+
+        # Test error: non-existing results
+        with pytest.raises(ValueError) as excinfo:
+            handler.get_results("invalid_name")
+        assert "do not exist" in str(excinfo.value)
+
+    def test_validation_errors(self) -> None:
+        """*test_validation_errors()* tests various validation error paths."""
+        # Test _validate_coefficient_vars with missing var_dims attribute
+        handler = MonteCarloSimulation(
+            _fwk="CUSTOM",
+            _variables=self.test_variables
+        )
+
+        # Create coefficient without var_dims
+        bad_coef = Coefficient(
+            _idx=0,
+            _sym="\\Pi_{bad}",
+            _fwk="CUSTOM"
+        )
+        # Remove var_dims if it exists
+        if hasattr(bad_coef, 'var_dims'):
+            delattr(bad_coef, 'var_dims')
+
+        with pytest.raises(ValueError) as excinfo:
+            handler._validate_coefficient_vars(bad_coef, "\\Pi_{bad}")
+        assert "missing var_dims attribute" in str(excinfo.value)
+
+        # Test _validate_coefficient_vars with None var_dims
+        bad_coef2 = Coefficient(
+            _idx=1,
+            _sym="\\Pi_{bad2}",
+            _fwk="CUSTOM"
+        )
+        bad_coef2.var_dims = None   # type: ignore
+
+        with pytest.raises(ValueError) as excinfo:
+            handler._validate_coefficient_vars(bad_coef2, "\\Pi_{bad2}")
+        assert "has None var_dims" in str(excinfo.value)
+
+        # Test _validate_coefficient_vars with wrong type
+        bad_coef3 = Coefficient(
+            _idx=2,
+            _sym="\\Pi_{bad3}",
+            _fwk="CUSTOM"
+        )
+        bad_coef3.var_dims = [1, 2, 3]  # type: ignore # List instead of dict
+
+        with pytest.raises(TypeError) as excinfo:
+            handler._validate_coefficient_vars(bad_coef3, "\\Pi_{bad3}")
+        assert "must be a dictionary" in str(excinfo.value)
+
+        # Test _init_shared_cache with negative experiments
+        handler_neg = MonteCarloSimulation(
+            _fwk="CUSTOM",
+            _experiments=-5,
+            _variables=self.test_variables
+        )
+
+        with pytest.raises(ValueError) as excinfo:
+            handler_neg._init_shared_cache()
+        assert "must be positive" in str(excinfo.value)
+
+        # Test _get_distributions with missing distributions
+        handler2 = MonteCarloSimulation(
+            _fwk="CUSTOM",
+            _variables=self.test_variables
+        )
+        handler2.configure_distributions()
+
+        with pytest.raises(ValueError) as excinfo:
+            handler2._get_distributions(["nonexistent_var"])
+        assert "Missing distributions" in str(excinfo.value)

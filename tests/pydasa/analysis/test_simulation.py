@@ -605,6 +605,57 @@ class TestMonteCarlo(unittest.TestCase):
             assert isinstance(lower, float)
             assert isinstance(upper, float)
 
+    def test_confidence_interval_error_paths(self) -> None:
+        """*test_confidence_interval_error_paths()* tests error handling in confidence intervals."""
+        if "\\Pi_{1}" not in self.coefficients:
+            pytest.skip("Pi_1 coefficient not found")
+
+        coef = self.coefficients["\\Pi_{1}"]
+
+        # Test 1: No results error (create without _experiments to avoid pre-allocation)
+        mc_sim_no_exp = MonteCarlo(_coefficient=coef,
+                                   _variables=self.variables)
+        # _experiments defaults to -1, so _results should remain empty
+        with pytest.raises(ValueError) as excinfo:
+            mc_sim_no_exp.get_confidence_interval()
+        assert "No results available" in str(excinfo.value)
+
+        # Create simulation with experiments for remaining tests
+        mc_sim = MonteCarlo(_coefficient=coef,
+                            _variables=self.variables,
+                            _experiments=N_EXP)
+        vars_in_coef = list(coef.var_dims.keys())
+        mc_sim._distributions = {
+            k: v for k, v in self.dist_specs.items()
+            if k in vars_in_coef
+        }
+
+        if not all(v in mc_sim._distributions for v in vars_in_coef):
+            pytest.skip("Missing distributions")
+
+        # Run simulation for subsequent tests
+        mc_sim.run()
+
+        # Test 2: Invalid confidence value (< 0)
+        with pytest.raises(ValueError) as excinfo:
+            mc_sim.get_confidence_interval(conf=-0.1)
+        assert "Confidence must be between 0 and 1" in str(excinfo.value)
+
+        # Test 3: Invalid confidence value (= 0)
+        with pytest.raises(ValueError) as excinfo:
+            mc_sim.get_confidence_interval(conf=0.0)
+        assert "Confidence must be between 0 and 1" in str(excinfo.value)
+
+        # Test 4: Invalid confidence value (> 1)
+        with pytest.raises(ValueError) as excinfo:
+            mc_sim.get_confidence_interval(conf=1.5)
+        assert "Confidence must be between 0 and 1" in str(excinfo.value)
+
+        # Test 5: Invalid confidence value (= 1)
+        with pytest.raises(ValueError) as excinfo:
+            mc_sim.get_confidence_interval(conf=1.0)
+        assert "Confidence must be between 0 and 1" in str(excinfo.value)
+
     # ========================================================================
     # Results Extraction Tests
     # ========================================================================
@@ -781,6 +832,27 @@ class TestMonteCarlo(unittest.TestCase):
         dists = mc_sim.distributions
         assert len(dists) > 0
 
+    def test_distributions_invalid_func(self) -> None:
+        """*test_distributions_invalid_func()* tests distribution validation with non-callable func."""
+        coef = list(self.coefficients.values())[0]
+        mc_sim = MonteCarlo(_coefficient=coef)
+
+        # Create invalid distribution specs with non-callable func
+        invalid_dists = {
+            "U": {
+                "dtype": "uniform",
+                "params": {"a": 0.5, "b": 1.5},
+                "func": "not_callable",  # String instead of callable
+                "depends": []
+            }
+        }
+
+        # Test that setting invalid distributions raises error
+        with pytest.raises(ValueError) as excinfo:
+            mc_sim.distributions = invalid_dists
+        assert "callable 'func' functions" in str(excinfo.value)
+        assert "Invalid entries" in str(excinfo.value)
+
     def test_dependencies_property(self) -> None:
         """*test_dependencies_property()* tests dependencies property."""
         coef = list(self.coefficients.values())[0]
@@ -903,6 +975,32 @@ class TestMonteCarlo(unittest.TestCase):
         # Test getting value
         cached = mc_sim._get_cached_value(var_sym, 0)
         assert cached == 5.0
+
+        # Test cache validation with valid location
+        is_valid = mc_sim._validate_cache_locations(var_sym, 0)
+        assert is_valid is True
+
+        # Test cache validation with invalid index (out of bounds)
+        is_valid = mc_sim._validate_cache_locations(var_sym, 999)
+        assert is_valid is False
+
+        # Test cache validation with negative index
+        is_valid = mc_sim._validate_cache_locations(var_sym, -1)
+        assert is_valid is False
+
+        # Test cache validation with non-existent variable
+        is_valid = mc_sim._validate_cache_locations("nonexistent_var", 0)
+        assert is_valid is False
+
+        # Test _set_cached_value with invalid location raises error
+        with pytest.raises(ValueError) as excinfo:
+            mc_sim._set_cached_value("nonexistent_var", 0, 1.0)
+        assert "Invalid cache location" in str(excinfo.value)
+
+        # Test _set_cached_value with invalid index raises error
+        with pytest.raises(ValueError) as excinfo:
+            mc_sim._set_cached_value(var_sym, 999, 1.0)
+        assert "Invalid cache location" in str(excinfo.value)
 
     # ========================================================================
     # Memory Management Tests

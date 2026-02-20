@@ -1050,3 +1050,126 @@ def get_simulation_test_data() -> dict:
             },
         }
     }
+
+
+# test data for from pydasa.structs.tools.hashing import mad_hash
+def get_hashing_test_data() -> dict:
+    """Get test data for hashing tests."""
+    return {
+        "MAD_PARAMS": {
+            "scale": 3,
+            "shift": 5,
+            "prime": 109345121,
+            "mcap": 11,
+        },
+        "ALTERNATIVE_PARAMS": {
+            "scale": 7,
+            "shift": 13,
+            "prime": 109345121,
+            "mcap": 23,
+        },
+        "INTEGER_KEYS": [0, 1, 42, 100, -42, -1, 999],
+        "STRING_KEYS": ["test", "a", "key1", "key2", "consistent", "example"],
+        "FLOAT_KEYS": [3.14, 2.718, 0.0, -1.5, 100.5],
+        "TUPLE_KEYS": [(1, 2), (1, 2, 3), ("a", "b"), ()],
+        "LIST_KEYS": [[1, 2, 3], ["a", "b"], [], [1]],
+        "SET_KEYS": [{1, 2, 3}, {"a", "b"}, set()],
+        "DICT_KEYS": [
+            {"a": 1, "b": 2},
+            {"x": 5},
+            {},
+        ],
+        "MIXED_KEYS": [0, 1, 100, "a", "test", 3.14, (1, 2), [3, 4], {"x": 5}],
+    }
+
+
+# test data for from pydasa.structs.tools.math import is_prime, next_prime, previous_prime, gfactorial
+def get_math_test_data() -> dict:
+    """Get test data for math utility tests."""
+    return {
+        "PRIME_NUMBERS": [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47],
+        "NON_PRIME_NUMBERS": [0, 1, 4, 6, 8, 9, 10, 12, 14, 15, 16, 18, 20, 21, 22],
+        "NEGATIVE_NUMBERS": [-1, -2, -5, -10],
+        "NEXT_PRIME_CASES": [
+            (0, 2),
+            (1, 2),
+            (2, 3),
+            (3, 5),
+            (10, 11),
+            (20, 23),
+            (50, 53),
+        ],
+        "PREVIOUS_PRIME_CASES": [
+            (0, 2),
+            (1, 2),
+            (3, 2),
+            (5, 3),
+            (10, 7),
+            (20, 19),
+            (50, 47),
+        ],
+        "FACTORIAL_INTEGERS": [
+            (0, 1),
+            (1, 1),
+            (5, 120),
+            (10, 3628800),
+        ],
+        "FACTORIAL_FLOATS": [
+            (0.5, 0.8862269254527580),
+            (-0.5, 1.7724538509055159),
+        ],
+        "FACTORIAL_PRECISION": [
+            (0.5, 2, 0.89),
+            (0.5, 4, 0.8862),
+        ],
+        "FACTORIAL_INVALID": [-1, -2, -5],
+    }
+
+
+# test data for from pydasa.structs.tools.memory import mem_slot
+def get_memory_test_data() -> dict:
+    """Get test data for memory utility tests."""
+    return {
+        "INVALID_INPUTS": [
+            123,
+            "not a class",
+            3.14,
+            None,
+            [],
+            {},
+        ],
+    }
+
+
+# test data for from pydasa.structs.types.functions import dflt_cmp_function_lt, dflt_cmp_function_ht
+def get_functions_test_data() -> dict:
+    """Get test data for functions.py tests."""
+    return {
+        "INT_PAIRS": [
+            (1, 2, -1),
+            (5, 5, 0),
+            (10, 3, 1),
+        ],
+        "FLOAT_PAIRS": [
+            (1.5, 2.5, -1),
+            (3.14, 3.14, 0),
+            (10.0, 5.0, 1),
+        ],
+        "STRING_PAIRS": [
+            ("apple", "banana", -1),
+            ("test", "test", 0),
+            ("zebra", "apple", 1),
+        ],
+        "DICT_PAIRS": [
+            ({"name": "Alice", "age": 25}, {"name": "Bob", "age": 30}, "age", -1),
+            ({"name": "Alice", "age": 25}, {"name": "Bob", "age": 25}, "age", 0),
+            ({"name": "Alice", "age": 30}, {"name": "Bob", "age": 25}, "age", 1),
+        ],
+        "INVALID_TYPE_PAIRS": [
+            (1, "string"),
+            (3.14, [1, 2]),
+            ("text", {"key": "value"}),
+        ],
+        "INVALID_KEYS": ["missing_key", "invalid", "nonexistent"],
+        "VALID_KEYS": ["name", "age", "value"],
+    }

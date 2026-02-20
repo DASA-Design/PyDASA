@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.19][0.6.19] - 2026-02-20
+
+### Fixed
+
+- Added missing license classifier to pyproject.toml for proper PyPI license badge display
+
 ## [0.6.18][0.6.18] - 2026-02-20
 
 ### Fixed
@@ -704,6 +710,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Experimentation phase before formal semantic versioning, establishing core dimensional analysis concepts and data structures.
 
+[0.6.19]: https://github.com/DASA-Design/PyDASA/compare/v0.6.18...v0.6.19
 [0.6.18]: https://github.com/DASA-Design/PyDASA/compare/v0.6.15...v0.6.18
 [0.6.15]: https://github.com/DASA-Design/PyDASA/compare/v0.6.13...v0.6.15
 [0.6.13]: https://github.com/DASA-Design/PyDASA/compare/v0.6.12...v0.6.13

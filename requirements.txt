@@ -3,7 +3,7 @@ alabaster==1.0.0
 annotated-types==0.7.0
 antlr4-python3-runtime==4.11.0
 anyio==4.12.0
-astroid==4.0.2
+astroid==3.3.8
 asttokens==3.0.1
 attrs==25.4.0
 autoapi==2.0.1
@@ -87,10 +87,9 @@ psutil==7.2.1
 pure_eval==0.2.3
 pydantic==2.12.5
 pydantic_core==2.41.5
--e git+https://github.com/DASA-Design/PyDASA.git@eb9dad32f1712ec1a4e891fb5986cad071396128#egg=pydasa
 pydata-sphinx-theme==0.16.1
 Pygments==2.19.2
-pylint==4.0.4
+pylint==3.3.4
 pyparsing==3.3.1
 pyproject_hooks==1.2.0
 pytest==9.0.1

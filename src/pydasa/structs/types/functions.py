@@ -13,29 +13,11 @@ Module for default global variables and comparison functions for use by all *PyD
 
 
 # python native modules
-from dataclasses import dataclass
+from dataclasses import is_dataclass
 from typing import Any
 
 # custom modules
-
-# import global variables
-
-# valid data types for the node
-# :data: VLD_DTYPE_LT
-VLD_DTYPE_LT: tuple = (
-    int,
-    float,
-    str,
-    bool,
-    dict,
-    list,
-    tuple,
-    set,
-    dataclass,
-)
-"""
-Native data types in Python that are comparable in the structures.
-"""
+from pydasa.structs.types.generics import VLD_DTYPE_LT
 
 
 def dflt_cmp_function_lt(elm1: Any, elm2: Any, key: str) -> int:
@@ -73,6 +55,16 @@ def dflt_cmp_function_lt(elm1: Any, elm2: Any, key: str) -> int:
     elif isinstance(elm1, VLD_DTYPE_LT) and isinstance(elm2, VLD_DTYPE_LT):
         val1, val2 = elm1, elm2
 
+    # if both elements are dataclasses
+    elif is_dataclass(elm1) and is_dataclass(elm2):
+        # Check if dataclasses support ordering
+        # Dataclasses with order=True have __lt__ and __gt__ methods
+        if not (hasattr(elm1, '__lt__') and hasattr(elm1, '__gt__')):
+            _msg = f"Dataclass {type(elm1).__name__} does not support sorting. "
+            _msg += "Use @dataclass(order=True) to enable comparisons."
+            raise TypeError(_msg)
+        val1, val2 = elm1, elm2
+
     # otherwise, raise error
     else:
         _msg = f"Elements of type {type(elm1)} are not comparable "
@@ -80,8 +72,13 @@ def dflt_cmp_function_lt(elm1: Any, elm2: Any, key: str) -> int:
         raise TypeError(_msg)
 
     # Simplified comparison: returns -1, 0, or 1
-    # quivalent to the comparison as if, elif, and else statements
-    return (val1 > val2) - (val1 < val2)
+    # Type checker can't verify all branches lead to comparable types
+    try:
+        return (val1 > val2) - (val1 < val2)  # type: ignore[operator]
+    except TypeError as e:
+        _msg = f"Cannot compare values of type {type(val1).__name__} "
+        _msg += f"and {type(val2).__name__}: {e}"
+        raise TypeError(_msg) from e
 
 
 def dflt_cmp_function_ht(ekey1: Any, entry2, key: str, ) -> int:
@@ -120,6 +117,16 @@ def dflt_cmp_function_ht(ekey1: Any, entry2, key: str, ) -> int:
     elif isinstance(ekey1, VLD_DTYPE_LT) and isinstance(ekey2, VLD_DTYPE_LT):
         val1, val2 = ekey1, ekey2
 
+    # if both keys are dataclasses
+    elif is_dataclass(ekey1) and is_dataclass(ekey2):
+        # Check if dataclasses support ordering
+        # Dataclasses with order=True have __lt__ and __gt__ methods
+        if not (hasattr(ekey1, '__lt__') and hasattr(ekey1, '__gt__')):
+            _msg = f"Dataclass {type(ekey1).__name__} does not support sorting. "
+            _msg += "Use @dataclass(order=True) to enable comparisons."
+            raise TypeError(_msg)
+        val1, val2 = ekey1, ekey2
+
     # otherwise, raise error
     else:
         _msg = f"Elements of type {type(ekey1)} are not comparable "
@@ -127,4 +134,10 @@ def dflt_cmp_function_ht(ekey1: Any, entry2, key: str, ) -> int:
         raise TypeError(_msg)
 
     # Simplified comparison: returns -1, 0, or 1
-    return (val1 > val2) - (val1 < val2)
+    # Type checker can't verify all branches lead to comparable types
+    try:
+        return (val1 > val2) - (val1 < val2)  # type: ignore[operator]
+    except TypeError as e:
+        _msg = f"Cannot compare values of type {type(val1).__name__} "
+        _msg += f"and {type(val2).__name__}: {e}"
+        raise TypeError(_msg) from e

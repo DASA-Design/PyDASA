@@ -12,43 +12,56 @@ Module with utility functions for handling memory allocation in the Data Structu
 """
 # python native modules
 import sys
-from typing import Type
-
-# dataclases module handles the creation of classes with slots and fields
+from typing import Type, Callable, cast, Any
 import dataclasses
 
 # import global variables
 from pydasa.structs.types.generics import T
 
 
-def mem_slot(cls: Type[T]) -> Type[T]:
-    """*mem_slot()* is a decorator that converts a class into a dataclass with slots.
+def alloc_slots() -> Callable[[Type[T]], Type[T]]:
+    """Decorator that converts a class into a dataclass with slots for memory optimization.
 
-    Args:
-        cls (Type[T]): class to convert into a dataclass with slots.
+    This decorator uses Python 3.10+ native slots support in dataclasses to reduce memory usage
+    by preventing the creation of `__dict__` for each instance.
 
     Raises:
-        TypeError: if the cls is not a class type.
-        RuntimeError: if the Python version is less than 3.10.
+        TypeError: If the decorated object is not a class type.
+        RuntimeError: If the Python version is less than 3.10.
 
     Returns:
-        Type[T]: A dataclass with slots.
-    """
-    # TODO check validity of this decorator
-    # TODO integrate with the dataclass decorator?
-    if not isinstance(cls, type):
-        raise TypeError(f"Invalid class: {cls}, class must be a type")
+        Callable: Decorated class as a dataclass with slots.
 
-    # Check Python version for native slots support
-    if sys.version_info >= (3, 10):
-        # Use native slots support
-        if dataclasses.is_dataclass(cls):
-            # Already a dataclass, need to recreate with slots
-            return dataclasses.dataclass(cls, slots=True)
-        else:
-            return dataclasses.dataclass(cls, slots=True)
-    else:   # type: ignore[unreachable]
-        _msg = "mem_slot requires Python 3.10+ for native support. "
-        _msg += f"Current version: {sys.version_info.major}."
-        _msg += f"{sys.version_info.minor}"
-        raise RuntimeError(_msg)
+    Example::
+
+        # Simple usage - all fields slotted, no dynamic attributes
+        @alloc_slots()
+        class Point:
+            x: int
+            y: int
+
+        # Works with existing dataclasses
+        @alloc_slots()
+        @dataclass
+        class Vector:
+            x: float
+            y: float
+            z: float
+    """
+    def decorator(cls: Type[T]) -> Type[T]:
+        # Validate input is a class type
+        if not isinstance(cls, type):
+            raise TypeError(f"Invalid class: {cls}, class must be a type")
+
+        # Check Python version for native slots support
+        if sys.version_info < (3, 10):
+            _msg = "alloc_slots requires Python 3.10+ for native support. "
+            _msg += f"Current version: {sys.version_info.major}."
+            _msg += f"{sys.version_info.minor}"
+            raise RuntimeError(_msg)
+
+        # Convert to dataclass with slots (standard implementation)
+        result_cls: Any = dataclasses.dataclass(cls, slots=True)
+        return cast(Type[T], result_cls)
+
+    return decorator

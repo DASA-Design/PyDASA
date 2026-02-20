@@ -20,7 +20,7 @@ Classes:
 # dataclass imports
 from __future__ import annotations
 from dataclasses import dataclass
-from typing import Optional, List
+from typing import Optional
 
 # custom modules
 from pydasa.core.basic import Foundation
@@ -84,20 +84,6 @@ class ConceptualSpecs(Foundation):
         # If no schema provided, create default or use global
         if self._schema is None and self._fwk != Frameworks.CUSTOM.value:
             self._schema = Schema(_fwk=self._fwk)
-
-    def _validate_in_list(self, value: str, prec_lt: List[str]) -> bool:
-        """*_validate_in_list()* Validates if a value exists in a list of allowed values.
-
-        Args:
-            value (str): Value to validate.
-            prec_lt (List[str]): List of allowed values.
-
-        Returns:
-            bool: True if the value is in the list, False otherwise.
-        """
-        if value in [None, ""]:
-            return False
-        return value in prec_lt
 
     # Property getters and setters
     # Identification and Classification

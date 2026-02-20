@@ -42,3 +42,47 @@ class TestConceptualSpecs(unittest.TestCase):
             with pytest.raises(ValueError) as excinfo:
                 spec.cat = invalid_cat
             assert "Invalid cat" in str(excinfo.value)
+
+    def test_schema_getter_and_setter(self) -> None:
+        """Test schema property getter and setter."""
+        from pydasa.dimensional.vaschy import Schema
+
+        # Test default schema is None after init with CUSTOM framework
+        spec = Variable(_fwk="CUSTOM")
+        assert spec.schema is None
+
+        # Test setting a schema
+        test_schema = Schema(_fwk="PHYSICAL")
+        spec.schema = test_schema
+        assert spec.schema == test_schema
+
+        # Test setting to None
+        spec.schema = None
+        assert spec.schema is None
+
+    def test_schema_initialization_in_post_init(self) -> None:
+        """Test that schema is auto-created for non-CUSTOM frameworks."""
+        # When framework is PHYSICAL and no schema provided, it should create one
+        spec = Variable(_fwk="PHYSICAL")
+        assert spec.schema is not None
+        assert spec.schema._fwk == "PHYSICAL"
+
+        # When framework is CUSTOM, no auto-schema
+        spec_custom = Variable(_fwk="CUSTOM")
+        assert spec_custom.schema is None
+
+    def test_clear_method(self) -> None:
+        """Test clear() method resets conceptual attributes."""
+        from pydasa.dimensional.vaschy import Schema
+
+        # Create a variable with non-default values
+        spec = Variable(_cat="OUT", _fwk="PHYSICAL")
+        spec.schema = Schema(_fwk="COMPUTATION")
+        spec.relevant = True
+
+        # Clear and verify reset to defaults
+        spec.clear()
+
+        assert spec.cat == "IN"  # Default category
+        assert spec.schema is None
+        assert spec.relevant is False

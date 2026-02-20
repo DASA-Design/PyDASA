@@ -28,6 +28,23 @@ NOTE: used for type hinting only in generics dataclasses.
 """
 
 
+# valid data types for the node
+# :data: VLD_DTYPE_LT
+VLD_DTYPE_LT: tuple = (
+    int,
+    float,
+    str,
+    bool,
+    dict,
+    list,
+    tuple,
+    set,
+)
+"""
+Native data types in Python that are comparable in the structures.
+"""
+
+
 # default key for comparing dictionaries
 # :data: DFLT_DICT_KEY
 DFLT_DICT_KEY: str = "_idx"

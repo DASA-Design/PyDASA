@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.26][0.6.26] - 2026-02-21
+
+### Fixed
+
+- Updated license format in pyproject.toml for improved PyPI display
+
+## [0.6.25][0.6.25] - 2026-02-21
+
+### Fixed
+
+- Updated license format in pyproject.toml and added GPLv3+ classifier for proper PyPI badge display
+
+## [0.6.24][0.6.24] - 2026-02-21
+
+### Fixed
+
+- Updated setuptools requirement to >=61.0.0 for PEP 639 compliance
+
+## [0.6.23][0.6.23] - 2026-02-21
+
+### Fixed
+
+- Corrected typo in setup.py comments and adjusted formatting for clarity
+
 ## [0.6.22][0.6.22] - 2026-02-20
 
 ### Fixed
@@ -19,6 +43,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed license classifier from pyproject.toml to comply with PEP 639 (license expression supersedes classifiers)
 - Removed duplicate license field from setup.py to avoid conflict with pyproject.toml
 - Updated coverage badge format to new codecov.io URL structure
+
+## [0.6.20][0.6.20] - 2026-02-20
+
+### Fixed
+
+- Removed duplicate license classifier from pyproject.toml and updated setup.py to reference it properly
 
 ## [0.6.19][0.6.19] - 2026-02-20
 
@@ -37,6 +67,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - isort 7.0.0 → 6.1.0 (pylint 3.3.4 compatibility)
   - sphinx-autodoc-typehints 3.6.0 → 2.4.4 (Sphinx 8.x compatibility)
 - Removed duplicate git install line from requirements.txt
+
+## [0.6.17][0.6.17] - 2026-02-20
+
+### Fixed
+
+- Downgraded isort version from 7.0.0 to 6.1.0 for compatibility with pylint 3.3.4
+
+## [0.6.16][0.6.16] - 2026-02-20
+
+### Fixed
+
+- Downgraded astroid to 3.3.8 and pylint to 3.3.4 for compatibility with sphinx-autoapi
+
+## [0.6.15][0.6.15] - 2026-02-20
+
+### Fixed
+
+- Downgraded Sphinx version from 9.0.4 to 8.1.3 for compatibility with myst-parser
+
+## [0.6.14][0.6.14] - 2026-02-20
+
+### Fixed
+
+- Updated CHANGELOG, setup.py and requirements.txt for version consistency
 
 ## [0.6.13][0.6.13] - 2026-02-20
 

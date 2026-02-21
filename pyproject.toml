@@ -8,7 +8,7 @@ dynamic = ["version"]
 description = "PyDASA is a Python library for dimensional analysis using the Buckingham Pi theorem across scientific and engineering domains."
 readme = "README.md"
 requires-python = ">=3.10"
-license = {text = "GPL-3.0-or-later"}
+license = "GPL-3.0-or-later"
 authors = [
     {name = "@SFAM", email = "sa-artea@uniandes.edu.co"}
 ]
@@ -16,7 +16,6 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
-    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     "Development Status :: 3 - Alpha",
     "Operating System :: OS Independent",
     "Intended Audience :: Science/Research",

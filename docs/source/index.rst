@@ -18,7 +18,7 @@ PyDASA
    :target: https://github.com/DASA-Design/PyDASA/blob/main/LICENSE
    :alt: License
 
-.. |docs| image:: https://readthedocs.org/projects/pydasa/badge/?version=latest
+.. |docs| image:: https://readthedocs.org/projects/pydasa/badge/?version=stable
    :target: https://pydasa.readthedocs.io
    :alt: Documentation Status
 

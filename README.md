@@ -2,7 +2,7 @@
 
 <div align="center">
 
-[![PyPI](https://img.shields.io/pypi/v/pydasa?cache=none)](https://pypi.org/project/pydasa/) [![Python Version](https://img.shields.io/pypi/pyversions/pydasa)](https://pypi.org/project/pydasa/) [![License](https://img.shields.io/github/license/DASA-Design/PyDASA)](https://github.com/DASA-Design/PyDASA/blob/main/LICENSE) [![Documentation Status](https://readthedocs.org/projects/pydasa/badge/?version=latest)](https://pydasa.readthedocs.io)[![codecov](https://codecov.io/github/DASA-Design/PyDASA/graph/badge.svg?token=UZFT3CURK1)](https://codecov.io/github/DASA-Design/PyDASA)
+[![PyPI](https://img.shields.io/pypi/v/pydasa)](https://pypi.org/project/pydasa/) [![Python Version](https://img.shields.io/pypi/pyversions/pydasa)](https://pypi.org/project/pydasa/) [![License](https://img.shields.io/github/license/DASA-Design/PyDASA)](https://github.com/DASA-Design/PyDASA/blob/main/LICENSE) [![Documentation Status](https://readthedocs.org/projects/pydasa/badge/?version=latest)](https://pydasa.readthedocs.io)[![codecov](https://codecov.io/github/DASA-Design/PyDASA/graph/badge.svg?token=UZFT3CURK1)](https://codecov.io/github/DASA-Design/PyDASA)
 
 </div>
 

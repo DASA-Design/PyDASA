@@ -43,18 +43,18 @@ setup(
     url="https://github.com/DASA-Design/PyDASA",
     author="@SFAM",
     author_email="sa-artea@uniandes.edu.co",
-    # NOTE: license is defined in pyproject.toml to avoid conflict
+    # NOTE: theee tags are defined in pyproject.toml to avoid conflict
     # license="GPL-3.0-or-later",
-    classifiers=[
-        "Programming Language :: Python :: 3.10",
-        "Programming Language :: Python :: 3.11",
-        "Programming Language :: Python :: 3.12",
-        "Development Status :: 3 - Alpha",
-        "Operating System :: OS Independent",
-        "Intended Audience :: Science/Research",
-        "Intended Audience :: Developers",
-        "Topic :: Scientific/Engineering",
-    ],
+    # classifiers=[
+    #     "Programming Language :: Python :: 3.10",
+    #     "Programming Language :: Python :: 3.11",
+    #     "Programming Language :: Python :: 3.12",
+    #     "Development Status :: 3 - Alpha",
+    #     "Operating System :: OS Independent",
+    #     "Intended Audience :: Science/Research",
+    #     "Intended Audience :: Developers",
+    #     "Topic :: Scientific/Engineering",
+    # ],
     # install_requires=[
     #     "antlr4-python3-runtime==4.11",
     #     "numpy>=1.26.4",

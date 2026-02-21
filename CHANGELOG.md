@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.21][0.6.21] - 2026-02-20
+
+### Fixed
+
+- Removed license classifier from pyproject.toml to comply with PEP 639 (license expression supersedes classifiers)
+- Removed duplicate license field from setup.py to avoid conflict with pyproject.toml
+- Updated coverage badge format to new codecov.io URL structure
+
 ## [0.6.19][0.6.19] - 2026-02-20
 
 ### Fixed
@@ -710,6 +718,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Experimentation phase before formal semantic versioning, establishing core dimensional analysis concepts and data structures.
 
+[0.6.21]: https://github.com/DASA-Design/PyDASA/compare/v0.6.19...v0.6.21
 [0.6.19]: https://github.com/DASA-Design/PyDASA/compare/v0.6.18...v0.6.19
 [0.6.18]: https://github.com/DASA-Design/PyDASA/compare/v0.6.15...v0.6.18
 [0.6.15]: https://github.com/DASA-Design/PyDASA/compare/v0.6.13...v0.6.15

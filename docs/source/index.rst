@@ -22,7 +22,7 @@ PyDASA
    :target: https://pydasa.readthedocs.io
    :alt: Documentation Status
 
-.. |coverage| image:: https://codecov.io/gh/DASA-Design/PyDASA/branch/main/graph/badge.svg
+.. |coverage| image:: https://codecov.io/gh/DASA-Design/PyDASA/graph/badge.svg
    :target: https://codecov.io/gh/DASA-Design/PyDASA
    :alt: Coverage
 

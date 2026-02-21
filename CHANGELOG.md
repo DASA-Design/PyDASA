@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.22][0.6.22] - 2026-02-20
+
+### Fixed
+
+- Updated setuptools requirement to >=61.0.0 for proper PEP 639 license expression support
+- This fixes PyPI license badge displaying "invalid"
+
 ## [0.6.21][0.6.21] - 2026-02-20
 
 ### Fixed
@@ -718,6 +725,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Experimentation phase before formal semantic versioning, establishing core dimensional analysis concepts and data structures.
 
+[0.6.22]: https://github.com/DASA-Design/PyDASA/compare/v0.6.21...v0.6.22
 [0.6.21]: https://github.com/DASA-Design/PyDASA/compare/v0.6.19...v0.6.21
 [0.6.19]: https://github.com/DASA-Design/PyDASA/compare/v0.6.18...v0.6.19
 [0.6.18]: https://github.com/DASA-Design/PyDASA/compare/v0.6.15...v0.6.18

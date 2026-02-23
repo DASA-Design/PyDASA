@@ -83,10 +83,9 @@ Acknowledgements
 The theoretical foundation of dimensional analysis in **PyDASA** draws upon the classical work:
 
 .. card::
-
     **Dimensionsanalyse: Theorie der physikalischen Dimensionen mit Anwendungen**
     ^^^
-    :Author: H. Görtler
+    :Author: Henry Görtler
     :Series: Ingenieurwissenschaftliche Bibliothek (Engineering Science Library)
     :Publisher: Springer-Verlag
     :Year: 1975
@@ -98,7 +97,6 @@ This comprehensive treatise provides the rigorous mathematical foundation for th
 Also, **PyDASA** was inspired by the work of Mokbel Karam and Tony Saad in **BuckinghamPy** presented in:
 
 .. card::
-
     **BuckinghamPy: A Python software for dimensional analysis**
     ^^^
     :Authors: Mokbel Karam, Tony Saad

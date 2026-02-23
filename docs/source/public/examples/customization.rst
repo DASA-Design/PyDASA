@@ -34,9 +34,9 @@ We'll analyze a queueing system with:
 
 This will generate three key dimensionless coefficients:
 
-- **Occupancy (δ = L/K)** - Queue capacity utilization
+- **Occupancy (θ = L/K)** - Queue capacity utilization
 - **Stall (σ = W·λ/L)** - Service blocking indicator
-- **Efective-Utility (η = K·λ/(c·μ))** - Resource utilization effectiveness
+- **Effective-Yield (η = K·λ/(c·μ))** - Resource utilization effectiveness
 
 ----
 
@@ -94,8 +94,7 @@ Create a schema with only **two** fundamental dimensional units (FDUs):
     ]
 
     # Create schema
-    schema = Schema(_fwk="CUSTOM", _fdu_lt=fdu_list, _idx=0)
-    schema._setup_fdus()
+    schema = Schema(_fwk="CUSTOM", _fdu_lt=fdu_list)
 
     print("=== Simplified Custom Framework Created ===")
     print(f"Framework: {schema.fwk}")
@@ -311,7 +310,7 @@ Transform the Pi groups into operationally meaningful coefficients:
     # Derive Stall Coefficient: σ = Π₁ = W·λ/L
     sigma_coeff = engine.derive_coefficient(
         expr=f"{pi_keys[1]}",
-        symbol="\\psi",
+        symbol="\\sigma",
         name="Stall Coefficient",
         description="σ = W·λ/L - Service stall/blocking indicator",
         idx=-1
@@ -332,22 +331,22 @@ Transform the Pi groups into operationally meaningful coefficients:
     eta_val = eta_coeff.calculate_setpoint()
 
     # Occupancy Coefficient: L/K
-    print(f"Occupancy: δ=(L/K) = {delta_val:.4f}")
+    print(f"Occupancy: θ = L/K = {delta_val:.4f}")
 
     # Stall Coefficient: σ = W·λ/L
     print(f"Stall: σ = W·λ/L = {sigma_val:.4f}")
 
-    # Efective-Utility Coefficient: η = K·λ/(c·μ)
-    print(f"Efective-Utility: η = K·λ/(c·μ) = {eta_val:.4f}")
+    # Effective-Yield Coefficient: η = K·λ/(c·μ)
+    print(f"Effective-Yield: η = K·λ/(c·μ) = {eta_val:.4f}")
 
 **Expected Output:**
 
 .. code-block:: text
 
     === Deriving Operational Coefficients ===
-    Occupancy: δ=(L/K) = 0.0995
+    Occupancy: θ = L/K = 0.0995
     Stall: σ = W·λ/L = 0.5027
-    Efective-Utility: η = K·λ/(c·μ) = 2.5000
+    Effective-Yield: η = K·λ/(c·μ) = 2.5000
 
 ----
 
@@ -380,7 +379,7 @@ Create a systematic grid of configurations:
     print("=== Generating Grid Data ===")
 
     # Grid parameters
-    K_values = [5, 10, 20]          # Capacity values
+    K_values = [4, 8, 16]          # Capacity values
     c_values = [1.0, 2.0, 4.0]      # Server counts
     mu_values = [200.0, 500.0, 1000.0]  # Service rates
 
@@ -413,7 +412,7 @@ For each configuration, sweep arrival rate until utilization threshold:
 
     # Generate data
     for idx, (K, c, mu) in enumerate(cfg_lt, 1):
-        print(f"\t-*- Config {idx}/{len(cfg_lt)}: K={K}, c={c}, μ={mu} -*-")
+        print(f"\t-- Config {idx}/{len(cfg_lt)}: K={K}, c={c}, μ={mu} --")
         lambda_t = lambda_zero
         rho_t = 0.0
         
@@ -446,10 +445,10 @@ For each configuration, sweep arrival rate until utilization threshold:
 
     === Generating Grid Data ===
     Total configurations: 27
-        -*- Config 1/27: K=5, c=1.0, μ=200.0 -*-
-        -*- Config 2/27: K=5, c=1.0, μ=500.0 -*-
+        -- Config 1/27: K=4, c=1.0, μ=200.0 --
+        -- Config 2/27: K=4, c=1.0, μ=500.0 --
     ...
-        -*- Config 27/27: K=20, c=4.0, μ=1000.0 -*-
+        -- Config 27/27: K=16, c=4.0, μ=1000.0 --
     Generated 3150 data points
     Data injected into PyDASA engine!
 
@@ -504,7 +503,7 @@ Step 3.1: Create Simulation Handler
 
     === Running Monte Carlo Simulation ===
     Simulation complete: 3150 experiments
-    Results for: ['\\Pi_{0}', '\\Pi_{1}', '\\Pi_{2}', '\\Pi_{3}', '\\delta', '\\psi', '\\eta']
+    Results for: ['\\Pi_{0}', '\\Pi_{1}', '\\Pi_{2}', '\\Pi_{3}', '\\delta', '\\sigma', '\\eta']
 
 Step 3.2: Extract Simulation Results
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -528,7 +527,7 @@ Step 3.2: Extract Simulation Results
     # Get data arrays
     print("\n=== Simulation Results Details ===")
     if len(derived_keys) > 0:
-        delta_sim = pi_data[derived_keys[0]]
+        theta_sim = pi_data[derived_keys[0]]
         sigma_sim = pi_data[derived_keys[1]]
         eta_sim = pi_data[derived_keys[2]]
         lambda_data = np.array(pi_data["\\lambda"])
@@ -536,7 +535,7 @@ Step 3.2: Extract Simulation Results
         c_data = np.array(pi_data["c"])
         K_data = np.array(pi_data["K"])
         
-        print(f"Occupancy (δ): Mean = {np.mean(delta_sim):.4e}, Range = [{np.min(delta_sim):.4e}, {np.max(delta_sim):.4e}]")
+        print(f"Occupancy (θ): Mean = {np.mean(theta_sim):.4e}, Range = [{np.min(theta_sim):.4e}, {np.max(theta_sim):.4e}]")
         print(f"Stall (σ): Mean = {np.mean(sigma_sim):.4e}, Range = [{np.min(sigma_sim):.4e}, {np.max(sigma_sim):.4e}]")
         print(f"Effective-Yield (η): Mean = {np.mean(eta_sim):.4e}, Range = [{np.min(eta_sim):.4e}, {np.max(eta_sim):.4e}]")
 
@@ -545,12 +544,12 @@ Step 3.2: Extract Simulation Results
 .. code-block:: text
 
     === Extracting Simulation Results ===
-    Processing simulation: \delta
-    Processing simulation: \psi
+    Processing simulation: \theta
+    Processing simulation: \sigma
     Processing simulation: \eta
 
     === Simulation Results Details ===
-    Occupancy (δ): Mean = 4.2156e-01, Range = [9.9463e-02, 9.5238e-01]
+    Occupancy (θ): Mean = 4.2156e-01, Range = [9.9463e-02, 9.5238e-01]
     Stall (σ): Mean = 1.4532e+00, Range = [5.0271e-01, 7.1250e+00]
     Effective-Yield (η): Mean = 7.5463e-01, Range = [6.2500e-02, 2.5000e+00]
 
@@ -586,22 +585,22 @@ Create a 2×2 grid showing 3D space and three 2D projections:
     # Auxiliary lists for plot configuration
     plot_types = ["3D", "2D", "2D", "2D"]
     plot_titles = [
-        r"3D Space: $\boldsymbol{\delta}$ vs $\boldsymbol{\psi}$ vs $\boldsymbol{\eta}$",
-        r"2D Plane: $\boldsymbol{\delta}$ vs $\boldsymbol{\psi}$",
-        r"2D Plane: $\boldsymbol{\delta}$ vs $\boldsymbol{\eta}$",
-        r"2D Plane: $\boldsymbol{\psi}$ vs $\boldsymbol{\eta}$"
+        r"3D Space: $\boldsymbol{\theta}$ vs $\boldsymbol{\sigma}$ vs $\boldsymbol{\eta}$",
+        r"2D Plane: $\boldsymbol{\theta}$ vs $\boldsymbol{\sigma}$",
+        r"2D Plane: $\boldsymbol{\theta}$ vs $\boldsymbol{\eta}$",
+        r"2D Plane: $\boldsymbol{\sigma}$ vs $\boldsymbol{\eta}$"
     ]
 
     x_labels = [
-        r"Occupancy ($\boldsymbol{\delta}$)",
-        r"Occupancy ($\boldsymbol{\delta}$)",
-        r"Occupancy ($\boldsymbol{\delta}$)",
-        r"Stall ($\boldsymbol{\psi}$)"
+        r"Occupancy ($\boldsymbol{\theta}$)",
+        r"Occupancy ($\boldsymbol{\theta}$)",
+        r"Occupancy ($\boldsymbol{\theta}$)",
+        r"Stall ($\boldsymbol{\sigma}$)"
     ]
 
     y_labels = [
-        r"Stall ($\boldsymbol{\psi}$)",
-        r"Stall ($\boldsymbol{\psi}$)",
+        r"Stall ($\boldsymbol{\sigma}$)",
+        r"Stall ($\boldsymbol{\sigma}$)",
         r"Effective-Yield ($\boldsymbol{\eta}$)",
         r"Effective-Yield ($\boldsymbol{\eta}$)"
     ]
@@ -610,9 +609,9 @@ Create a 2×2 grid showing 3D space and three 2D projections:
 
     # Data pairs for each subplot
     data_pairs = [
-        (delta_sim, sigma_sim, eta_sim),    # 3D plot
-        (delta_sim, sigma_sim, None),       # delta vs sigma
-        (delta_sim, eta_sim, None),         # delta vs eta
+        (theta_sim, sigma_sim, eta_sim),    # 3D plot
+        (theta_sim, sigma_sim, None),       # theta vs sigma
+        (theta_sim, eta_sim, None),         # theta vs eta
         (sigma_sim, eta_sim, None)          # sigma vs eta
     ]
 

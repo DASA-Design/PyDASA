@@ -16,7 +16,8 @@ from sympy.parsing.latex import parse_latex
 from sympy import Symbol, symbols
 
 # import global variables
-from pydasa.validations.patterns import LATEX_RE
+# from pydasa.validations.patterns import LATEX_RE
+from pydasa.validations.patterns import LATEX_VAR_TOKEN_RE
 from pydasa.validations.patterns import PI_POW_RE
 from pydasa.validations.patterns import PI_COEF_RE
 from pydasa.validations.patterns import BASIC_OPS_RE
@@ -57,8 +58,8 @@ def extract_latex_vars(expr: str) -> Tuple[Dict[str, str], Dict[str, str]]:
                 - The first dictionary maps LaTeX variable names to their Python equivalents.
                 - The second dictionary maps Python variable names to their LaTeX equivalents.
     """
-    # Extract latex variable names with regex
-    matches = re.findall(LATEX_RE, expr)
+    # Extract latex variable names with regex (supports nested subscripts)
+    matches = [m.group(0) for m in re.finditer(LATEX_VAR_TOKEN_RE, expr)]
 
     # Filter out ignored LaTeX commands
     matches = [m for m in matches if m not in IGNORE_EXPR]
@@ -108,7 +109,9 @@ def create_latex_mapping(expr: str) -> Tuple[Dict[Symbol, Symbol],  # symbol_map
     py_symbol_map = {}      # For lambdify
 
     # Create symbols for each variable found by regex
-    for latex_var, py_var in latex_to_py.items():
+    # Iterate over a snapshot to avoid mutating the dict mid-loop
+    fallback_aliases: Dict[str, Any] = {}
+    for latex_var, py_var in list(latex_to_py.items()):
         # Create SymPy symbol with Python-compatible name
         sym = symbols(py_var)
         py_symbol_map[py_var] = sym
@@ -118,9 +121,18 @@ def create_latex_mapping(expr: str) -> Tuple[Dict[Symbol, Symbol],  # symbol_map
         try:
             latex_sym = parse_latex(latex_var)
             symbol_map[latex_sym] = sym
+            # Safety net: register SymPy-rendered string in py_symbol_map
+            # (_aliases) so _aliases lookups don't fail if .subs() doesn't
+            # fully resolve the symbol (e.g. 'M_{a*(c*t_{A*S})}' -> sym).
+            # Do NOT add to latex_to_py — that would pollute variable lookups.
+            fallback_key = str(latex_sym)
+            if fallback_key not in py_symbol_map:
+                fallback_aliases[fallback_key] = sym
         except Exception:
             # If parsing fails, use the py_var as key
             symbol_map[symbols(py_var)] = sym
+
+    py_symbol_map.update(fallback_aliases)
 
     return symbol_map, py_symbol_map, latex_to_py, py_to_latex
 

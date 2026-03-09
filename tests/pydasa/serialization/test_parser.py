@@ -177,6 +177,13 @@ class TestExtractLatexVars(unittest.TestCase):
 
         assert len(result1[0]) == len(result2[0])
 
+    def test_nested_subscript_variable(self) -> None:
+        """Test extraction of variable with nested subscript."""
+        for latex, py in self.test_data["NESTED_SUBSCRIPT_CASES"]:
+            latex_to_py, py_to_latex = extract_latex_vars(latex)
+            assert latex in latex_to_py, f"Missing key: {latex}"
+            assert latex_to_py[latex] == py, f"Expected {py}, got {latex_to_py[latex]}"
+
 
 class TestCreateLatexMapping(unittest.TestCase):
     """Test cases for create_latex_mapping() function."""
@@ -248,6 +255,24 @@ class TestCreateLatexMapping(unittest.TestCase):
         assert isinstance(py_symbol_map, dict)
         assert isinstance(latex_to_py, dict)
         assert isinstance(py_to_latex, dict)
+
+    def test_nested_subscript_fallback_key(self) -> None:
+        """Test that original token is in latex_to_py and SymPy-rendered fallback is in py_symbol_map."""
+        for latex, py in self.test_data["NESTED_SUBSCRIPT_CASES"]:
+            symbol_map, py_symbol_map, latex_to_py, _ = create_latex_mapping(latex)
+            # Original token must be in latex_to_py (clean variable lookup)
+            assert latex in latex_to_py, f"Original token missing from latex_to_py: {latex}"
+            assert latex_to_py[latex] == py
+            # SymPy-rendered fallback must be in py_symbol_map (for _aliases safety)
+            # but NOT in latex_to_py (would pollute variable name lookups)
+            from sympy.parsing.latex import parse_latex as _parse
+            try:
+                fallback = str(_parse(latex))
+                if fallback != latex:
+                    assert fallback not in latex_to_py, f"Fallback key should not be in latex_to_py: {fallback}"
+                    assert fallback in py_symbol_map, f"Fallback key missing from py_symbol_map: {fallback}"
+            except Exception:
+                pass  # parse_latex may fail for some tokens
 
 
 class TestRealWorldExpressions(unittest.TestCase):

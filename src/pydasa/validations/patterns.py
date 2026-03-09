@@ -23,6 +23,19 @@ LATEX_RE: str = r"\\?[a-zA-Z]+(?:_\{[a-zA-Z0-9_]+\})?"
 LaTeX regex pattern to match LaTeX symbols (e.g., '\\alpha') with optional subscripts (e.g., '\\mu_{1}', '\\lambda_{s}') in *PyDASA*.
 """
 
+# :attr: LATEX_VAR_TOKEN_RE
+LATEX_VAR_TOKEN_RE: str = (
+    r"(\\[A-Za-z]+|[A-Za-z][A-Za-z0-9]*)"
+    r"(?:_(?:[A-Za-z0-9]+|\{(?:[^{}]|\{[^{}]*\})+\}))?"
+)
+"""
+Regex pattern to match LaTeX-like variable tokens with optional subscripts,
+including one nested brace level inside subscripts.
+
+Examples:
+    '\\alpha', '\\mu_{1}', 'M_{buf_{AS}}'
+"""
+
 # NOTE: OG REGEX!
 # DFLT_POW_RE: str = r"\-?\d+"   # r'\^(-?\d+)'
 # :attr: DFLT_POW_RE

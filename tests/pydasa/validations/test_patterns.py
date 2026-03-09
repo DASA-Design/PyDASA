@@ -97,23 +97,35 @@ class TestPatterns(unittest.TestCase):
         except re.error as e:
             pytest.fail(f"DFLT_POW_RE failed to compile: {e}")
 
+    # LATEX_VAR_TOKEN_RE Tests
+    def test_latex_var_token_re_exists(self) -> None:
+        """Test that LATEX_VAR_TOKEN_RE exists and is a string."""
+        assert hasattr(pat, 'LATEX_VAR_TOKEN_RE')
+        assert isinstance(pat.LATEX_VAR_TOKEN_RE, str)
+
+    def test_latex_var_token_re_matches_nested_subscripts(self) -> None:
+        """Test that LATEX_VAR_TOKEN_RE matches variables with nested subscripts."""
+        pattern = re.compile(pat.LATEX_VAR_TOKEN_RE)
+        for case in self.test_data["VALID_LATEX_VAR_TOKEN"]:
+            assert pattern.search(case), f"Failed to match: {case}"
+
     # Cross-Pattern Tests
     def test_all_patterns_exist(self) -> None:
         """Test that all expected pattern variables exist."""
-        expected_patterns = ['LATEX_RE', 'DFLT_POW_RE']
+        expected_patterns = ['LATEX_RE', 'DFLT_POW_RE', 'LATEX_VAR_TOKEN_RE']
         for pattern_name in expected_patterns:
             assert hasattr(pat, pattern_name), f"Missing pattern: {pattern_name}"
 
     def test_all_patterns_are_strings(self) -> None:
         """Test that all pattern variables are strings."""
-        pattern_names = ['LATEX_RE', 'DFLT_POW_RE']
+        pattern_names = ['LATEX_RE', 'DFLT_POW_RE', 'LATEX_VAR_TOKEN_RE']
         for pattern_name in pattern_names:
             pattern_value = getattr(pat, pattern_name)
             assert isinstance(pattern_value, str), f"{pattern_name} is not a string"
 
     def test_all_patterns_compile(self) -> None:
         """Test that all regex patterns compile without errors."""
-        pattern_names = ['LATEX_RE', 'DFLT_POW_RE']
+        pattern_names = ['LATEX_RE', 'DFLT_POW_RE', 'LATEX_VAR_TOKEN_RE']
         for pattern_name in pattern_names:
             pattern_str = getattr(pat, pattern_name)
             try:
@@ -124,7 +136,7 @@ class TestPatterns(unittest.TestCase):
 
     def test_patterns_are_not_empty(self) -> None:
         """Test that all patterns are non-empty strings."""
-        pattern_names = ['LATEX_RE', 'DFLT_POW_RE']
+        pattern_names = ['LATEX_RE', 'DFLT_POW_RE', 'LATEX_VAR_TOKEN_RE']
         for pattern_name in pattern_names:
             pattern_str = getattr(pat, pattern_name)
             assert len(pattern_str) > 0, f"Pattern {pattern_name} is empty"
@@ -134,3 +146,6 @@ class TestPatterns(unittest.TestCase):
         """Test that pattern module has proper documentation."""
         assert pat.__doc__ is not None
         assert len(pat.__doc__) > 0
+
+
+

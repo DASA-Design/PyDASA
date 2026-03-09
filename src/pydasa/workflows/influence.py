@@ -223,7 +223,9 @@ class SensitivityAnalysis(Foundation, WorkflowBase):
             # Get variable values
             values = {}
             for var_sym in analysis._latex_to_py.keys():
-                # Ensure symbol is a string
+                # Skip SymPy-mangled fallback keys — only look up real variables
+                if var_sym not in self._variables:
+                    continue
                 values[var_sym] = self._get_variable_value(var_sym, val_type)
             # Perform analysis
             result = analysis.analyze_symbolically(values)
@@ -260,6 +262,9 @@ class SensitivityAnalysis(Foundation, WorkflowBase):
             vals = []
             bounds = []
             for var_sym in analysis._latex_to_py.keys():
+                # Skip SymPy-mangled fallback keys — only look up real variables
+                if var_sym not in self._variables:
+                    continue
                 var = self._variables[var_sym]
                 min_val = var.std_min if var.std_min is not None else (var.min if var.min is not None else -0.1)
                 max_val = var.std_max if var.std_max is not None else (var.max if var.max is not None else -10.0)

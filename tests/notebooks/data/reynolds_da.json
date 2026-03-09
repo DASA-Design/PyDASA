@@ -1224,9 +1224,9 @@
             "fdu_sym_regex": "[TML]"
         },
         "working_fdus": [
-            "T",
+            "M",
             "L",
-            "M"
+            "T"
         ],
         "variables": {
             "\\rho": {

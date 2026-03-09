@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.27][0.6.27] - 2026-03-09
+
+### Fixed
+
+- Enhanced LaTeX variable extraction to support nested subscripts (e.g. `M_{act_{AS}}`, `M_{buf_{AS}}`)
+  - Added `LATEX_VAR_TOKEN_RE` regex to `patterns.py` with one-level nested brace support
+  - Replaced `LATEX_RE` with `LATEX_VAR_TOKEN_RE` in `extract_latex_vars()` in `parser.py`
+  - SymPy-mangled fallback keys (e.g. `M_{a*(c*t_{A*S})}`) now registered in `py_symbol_map` only, preventing pollution of `_latex_to_py` variable name lookups
+  - Fixed `RuntimeError: dictionary changed size during iteration` in `create_latex_mapping()` by collecting fallback keys in a separate dict and merging after the loop
+- Fixed `KeyError` in `SensitivityAnalysis.analyze_symbolic()` and `analyze_numeric()` caused by SymPy-mangled fallback keys being iterated as variable names in `influence.py`
+
+### Changed
+
+- Updated tutorial notebooks for clarity and consistency
+- Refactored notebook code structure for improved readability
+
 ## [0.6.26][0.6.26] - 2026-02-21
 
 ### Fixed
@@ -779,6 +795,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Experimentation phase before formal semantic versioning, establishing core dimensional analysis concepts and data structures.
 
+[0.6.27]: https://github.com/DASA-Design/PyDASA/compare/v0.6.26...v0.6.27
+[0.6.26]: https://github.com/DASA-Design/PyDASA/compare/v0.6.25...v0.6.26
+[0.6.25]: https://github.com/DASA-Design/PyDASA/compare/v0.6.24...v0.6.25
+[0.6.24]: https://github.com/DASA-Design/PyDASA/compare/v0.6.23...v0.6.24
+[0.6.23]: https://github.com/DASA-Design/PyDASA/compare/v0.6.22...v0.6.23
 [0.6.22]: https://github.com/DASA-Design/PyDASA/compare/v0.6.21...v0.6.22
 [0.6.21]: https://github.com/DASA-Design/PyDASA/compare/v0.6.19...v0.6.21
 [0.6.19]: https://github.com/DASA-Design/PyDASA/compare/v0.6.18...v0.6.19

@@ -146,6 +146,3 @@ class TestPatterns(unittest.TestCase):
         """Test that pattern module has proper documentation."""
         assert pat.__doc__ is not None
         assert len(pat.__doc__) > 0
-
-
-

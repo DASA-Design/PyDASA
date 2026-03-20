@@ -76,20 +76,20 @@
             "name": "Data",
             "description": "Information processed by a system."
         },
-        "E": {
+        "S": {
             "unit": "req",
-            "name": "Effort",
+            "name": "Structure",
             "description": "Measure of computational effort/complexity."
         },
-        "C": {
-            "unit": "node",
-            "name": "Connectivity",
-            "description": "Measure of interconnections between components."
+        "E": {
+            "unit": "err",
+            "name": "Entropy",
+            "description": "Measure of disorder or errors in a system."
         },
         "A": {
-            "unit": "process",
-            "name": "Capacity",
-            "description": "Maximum amount of data that can be stored/processed."
+            "unit": "func",
+            "name": "Connectivity",
+            "description": "Measure of interconnections between components."
         }
         }
     },

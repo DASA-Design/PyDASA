@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.28][0.6.28] - 2026-03-19
+
+### Fixed
+
+- Updated data metrics in default.json configuration, renaming 'Effort' to 'Structure' and 'Connectivity' to 'Entropy' for improved terminology clarity
+
 ## [0.6.27][0.6.27] - 2026-03-09
 
 ### Fixed
@@ -795,6 +801,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Experimentation phase before formal semantic versioning, establishing core dimensional analysis concepts and data structures.
 
+[0.6.28]: https://github.com/DASA-Design/PyDASA/compare/v0.6.27...v0.6.28
 [0.6.27]: https://github.com/DASA-Design/PyDASA/compare/v0.6.26...v0.6.27
 [0.6.26]: https://github.com/DASA-Design/PyDASA/compare/v0.6.25...v0.6.26
 [0.6.25]: https://github.com/DASA-Design/PyDASA/compare/v0.6.24...v0.6.25

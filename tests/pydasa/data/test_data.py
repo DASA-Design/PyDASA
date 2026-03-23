@@ -32,7 +32,10 @@ def get_config_test_data():
         "DC_CAT_KEYS": ["COMPUTED", "DERIVED"],
         "SENS_ANSYS_KEYS": ["SYM", "NUM"],
         "VALID_LATEX": ["alpha", "\\alpha", "beta_1", "\\beta_{1}", "\\Pi_{0}"],
-        "VALID_LATEX_VAR_TOKEN": ["M_{buf_{AS}}", "M_{a*(c*t_{A*S})}", "\\alpha", "\\mu_{1}"],
+        "VALID_LATEX_VAR_TOKEN": [
+            "M_{buf_{AS}}", "M_{a*(c*t_{A*S})}", "\\alpha", "\\mu_{1}",
+            "M_{a*(c*t_{R_{PACS}})}", "M_{a*(c*t_{R_{P*(A*(C*S))}})}"
+        ],
         "VALID_DIMENSIONS": ["M", "L*T", "M*L^-1*T^-2", "L^2*T^-1", "T^-1"],
         "INVALID_DIMENSIONS": ["X", "M*X", "M**2", "M^2.5", "M L", ""],
         "PHYSICAL_DIMS": [
@@ -162,8 +165,13 @@ def get_latex_test_data():
         },
         "COMPLEX_EXPR": "\\alpha + \\beta_{1} + \\gamma_{2}",
         "NESTED_SUBSCRIPT_CASES": [
+            # 1-level nesting
             ("M_{act_{AS}}", "M_act_AS"),
             ("M_{buf_{AS}}", "M_buf_AS"),
+            # 2-level nesting
+            ("M_{a*(c*t_{R_{PACS}})}", "M_a*(c*t_R_PACS)"),
+            # 3-level nesting (the real-world failure case)
+            ("M_{a*(c*t_{R_{P*(A*(C*S))}})}", "M_a*(c*t_R_P*(A*(C*S)))"),
         ],
         "PHYSICS_EXPR": "\\frac{U * y_{2}}{d} + \\frac{P * d^{2}}{\\mu_{1} * U}",
         "DIMENSIONAL_CASES": [

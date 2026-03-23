@@ -318,3 +318,20 @@ class TestRealWorldExpressions(unittest.TestCase):
         py_vars = list(latex_to_py.values())
         assert any("d" in v for v in py_vars)
         assert any("P" in v for v in py_vars)
+
+    def test_deeply_nested_subscript_real_world(self) -> None:
+        """Test extraction from deeply nested subscript (real-world failure case)."""
+        expr = "M_{a*(c*t_{R_{P*(A*(C*S))}})}"
+        latex_to_py, py_to_latex = extract_latex_vars(expr)
+
+        assert expr in latex_to_py, f"Token not found in latex_to_py: {expr}"
+        assert latex_to_py[expr] == "M_a*(c*t_R_P*(A*(C*S)))"
+
+    def test_deeply_nested_create_mapping(self) -> None:
+        """Test create_latex_mapping handles deeply nested subscripts end-to-end."""
+        expr = "M_{a*(c*t_{R_{P*(A*(C*S))}})}"
+        symbol_map, py_symbol_map, latex_to_py, py_to_latex = create_latex_mapping(expr)
+
+        assert expr in latex_to_py
+        py_name = latex_to_py[expr]
+        assert py_name in py_symbol_map, f"Python name '{py_name}' missing from py_symbol_map"

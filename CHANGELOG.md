@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.29][0.6.29] - 2026-03-23
+
+### Fixed
+
+- Extended `LATEX_VAR_TOKEN_RE` regex in `patterns.py` to support up to 5 levels of nested braces in subscripts (previously only 1 level)
+  - Now `MonteCarlo.run()` can handle expressions contain deeply nested subscript variables
+  - Added composable brace-nesting helpers (`_BRACE_L0`..`_BRACE_L4`) for readable regex construction
+- Added deep nesting test cases to `test_data.py`, `test_patterns.py`, and `test_parser.py`
+
 ## [0.6.28][0.6.28] - 2026-03-19
 
 ### Fixed
@@ -801,6 +810,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Experimentation phase before formal semantic versioning, establishing core dimensional analysis concepts and data structures.
 
+[0.6.29]: https://github.com/DASA-Design/PyDASA/compare/v0.6.28...v0.6.29
 [0.6.28]: https://github.com/DASA-Design/PyDASA/compare/v0.6.27...v0.6.28
 [0.6.27]: https://github.com/DASA-Design/PyDASA/compare/v0.6.26...v0.6.27
 [0.6.26]: https://github.com/DASA-Design/PyDASA/compare/v0.6.25...v0.6.26

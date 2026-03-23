@@ -24,16 +24,25 @@ LaTeX regex pattern to match LaTeX symbols (e.g., '\\alpha') with optional subsc
 """
 
 # :attr: LATEX_VAR_TOKEN_RE
+# Brace nesting helpers – each level wraps the previous one so that
+# the overall pattern supports up to 5 levels of nested braces inside
+# subscripts (e.g. M_{a*(c*t_{R_{P*(A*(C*S))}})}).
+_BRACE_L0: str = r"[^{}]*"
+_BRACE_L1: str = r"(?:[^{}]|\{" + _BRACE_L0 + r"\})*"
+_BRACE_L2: str = r"(?:[^{}]|\{" + _BRACE_L1 + r"\})*"
+_BRACE_L3: str = r"(?:[^{}]|\{" + _BRACE_L2 + r"\})*"
+_BRACE_L4: str = r"(?:[^{}]|\{" + _BRACE_L3 + r"\})*"
+
 LATEX_VAR_TOKEN_RE: str = (
     r"(\\[A-Za-z]+|[A-Za-z][A-Za-z0-9]*)"
-    r"(?:_(?:[A-Za-z0-9]+|\{(?:[^{}]|\{[^{}]*\})+\}))?"
+    r"(?:_(?:[A-Za-z0-9]+|\{" + _BRACE_L4 + r"\}))?"
 )
 """
 Regex pattern to match LaTeX-like variable tokens with optional subscripts,
-including one nested brace level inside subscripts.
+supporting up to 5 levels of nested braces inside subscripts.
 
 Examples:
-    '\\alpha', '\\mu_{1}', 'M_{buf_{AS}}'
+    '\\alpha', '\\mu_{1}', 'M_{buf_{AS}}', 'M_{a*(c*t_{R_{P*(A*(C*S))}})}'
 """
 
 # NOTE: OG REGEX!

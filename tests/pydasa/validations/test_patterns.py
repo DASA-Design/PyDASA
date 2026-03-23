@@ -109,6 +109,20 @@ class TestPatterns(unittest.TestCase):
         for case in self.test_data["VALID_LATEX_VAR_TOKEN"]:
             assert pattern.search(case), f"Failed to match: {case}"
 
+    def test_latex_var_token_re_fullmatch_deep_nesting(self) -> None:
+        """Test that LATEX_VAR_TOKEN_RE captures the full token for deeply nested subscripts."""
+        pattern = re.compile(pat.LATEX_VAR_TOKEN_RE)
+        deep_cases = [
+            "M_{a*(c*t_{R_{PACS}})}",
+            "M_{a*(c*t_{R_{P*(A*(C*S))}})}",
+        ]
+        for case in deep_cases:
+            match = pattern.search(case)
+            assert match is not None, f"Failed to match: {case}"
+            assert match.group(0) == case, (
+                f"Partial match for {case}: got '{match.group(0)}'"
+            )
+
     # Cross-Pattern Tests
     def test_all_patterns_exist(self) -> None:
         """Test that all expected pattern variables exist."""

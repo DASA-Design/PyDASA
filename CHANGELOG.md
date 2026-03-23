@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.6.29][0.6.29] - 2026-03-23
+## [0.7.0][0.6.29] - 2026-03-23
 
 ### Fixed
 
@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Now `MonteCarlo.run()` can handle expressions contain deeply nested subscript variables
   - Added composable brace-nesting helpers (`_BRACE_L0`..`_BRACE_L4`) for readable regex construction
 - Added deep nesting test cases to `test_data.py`, `test_patterns.py`, and `test_parser.py`
+- Forcing version 0.7.0
 
 ## [0.6.28][0.6.28] - 2026-03-19
 

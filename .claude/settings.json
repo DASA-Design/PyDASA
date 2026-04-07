@@ -3,7 +3,11 @@
     "allow": [
       "Bash(echo \"---EXIT:$?\")",
       "Bash(unzip -l software-architecture-documentation.skill)",
-      "Edit(/.claude/skills/code/**)"
+      "Edit(/.claude/skills/code/**)",
+      "Bash(pip list:*)",
+      "Bash(pyreverse --help)",
+      "Bash(python tools/generate_diagrams.py)",
+      "Bash(python tools/generate_diagrams.py --overview)"
     ],
     "additionalDirectories": [
       "c:\\Users\\Felipe\\OneDrive\\Documents\\GitHub\\DASA-Design\\PyDASA\\.claude"

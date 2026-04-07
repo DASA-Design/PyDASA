@@ -76,7 +76,7 @@ Experiment journal for PyDASA development. Tracks what was tried, what worked, w
 
 **Next step:** Compare with third-party model reports. Analysis will check alignments and inconsistencies between the two sets.
 
-**Decision:** pending — waiting for third-party reports to compare
+**Decision:** accepted — reports are accurate with real issues and insights. Prose needs improvement (addressed in skill update). Skills are now calibrated for future analysis and state reports.
 
 ---
 
@@ -101,5 +101,32 @@ Experiment journal for PyDASA development. Tracks what was tried, what worked, w
 - Third-party's narrative style is better for comprehension even if less accurate
 
 **Decision:** accepted as baseline. Reports skill needs updating: add prose summaries per section, end with actionable proposals. Future reports should balance accuracy (Opus strength) with readability (third-party strength).
+
+---
+
+## 2026-04-06 | iadevops - Moving from PoC to active use
+
+**Stage:** planning
+
+**What changed:**
+- The iadevops branch is no longer just a PoC for Claude Code integration — it is now the working branch for code improvement
+- Infrastructure is configured and validated (CLAUDE.md, commands, skills, devlog, lab, reports)
+- Three independent reports + one comparison analysis give a clear status view of the codebase
+
+**Plan — Phase 1: Code improvement (iadevops branch)**
+Goal: reduce bugs, fix inconsistencies, enforce architectural conformance at divergence points.
+
+Based on findings from reports:
+1. Fix confirmed bugs (FDU set ordering in model.py, Dimension roundtrip in fundamental.py, dead logic in basic.py)
+2. Address god objects (Matrix 900+ lines, MonteCarlo 700+, Sensitivity 800+) — decompose or extract
+3. Eliminate duplication (to_dict/from_dict across 4 classes, _error_handler across 5 struct classes)
+4. Clean up dead code and unused imports
+5. Fill documentation gaps (10 empty __init__.py, stub architecture page, parser.py wrong module name)
+6. Enforce architectural conformance where code diverges from design principles
+
+**Plan — Phase 2: Roadmap features (after code improvement)**
+Goal: unit conversion + management (the `context/` package that is currently all stubs).
+
+**Decision:** accepted — start Phase 1 on iadevops branch
 
 ---

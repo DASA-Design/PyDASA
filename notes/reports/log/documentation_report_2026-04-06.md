@@ -9,6 +9,8 @@
 
 ## 1. Internal Documentation Coverage
 
+PyDASA's internal documentation is strong where it matters most: the core domain modules that users interact with daily. Nearly every public class and method carries a complete docstring with arguments, return types, and raised exceptions documented. The main gaps are cosmetic -- ten empty `__init__.py` files that act as package entry points but say nothing about what's inside, and a handful of stubs in the `context/` module that hasn't been built yet. A new contributor opening `structs/__init__.py` or `analysis/__init__.py` will see a blank file and have no idea what the package contains without reading every source file in the directory. These are easy fixes with outsized impact on navigability.
+
 ### 1.1 Module-Level Summary Table
 
 | Module | Module Docstring | Classes Documented | Functions Documented | Type Hints (return) | Docstring Style | Grade |
@@ -80,6 +82,8 @@
 
 ## 2. Docstring Quality
 
+The docstrings in PyDASA's core modules are well above average for a scientific Python library. A developer looking at any class in `elements/`, `dimensional/`, `analysis/`, or `workflows/` will find enough context to understand what it does, what it expects, and what can go wrong -- without needing to read the implementation. The weak spots are concentrated in the `structs/` and `context/` subpackages and in the absence of inline usage examples. The six standout examples below represent the quality target the rest of the codebase should match.
+
 ### 2.1 Best Examples (Well-Documented)
 
 **1. `elements/parameter.py` -- `Variable` class (lines 37-95)**
@@ -102,8 +106,10 @@ The quickstart guide is thorough: 6 steps, working code examples with realistic 
 
 ### 2.2 Worst Gaps
 
+These are the specific places where a user or contributor will run into missing or misleading documentation.
+
 **1. `dimensional/vaschy.py:545` -- `Schema.reset()` has NO docstring**
-This is a public method on a core class exposed in `__all__`. It is the only public method in the core domain modules that completely lacks a docstring.
+This is a public method on a core class exposed in `__all__`. It is the only public method in the core domain modules that completely lacks a docstring. A user calling `schema.reset()` has no way to know what gets cleared, what state persists, or whether it's safe to call mid-workflow without reading the source.
 
 **2. `core/setup.py:144-150` -- `AnaliticMode.description` property missing docstring**
 The `description` property on `AnaliticMode` and `SimulationMode` enums lacks a docstring (unlike the identical property on `Frameworks`, `VarCardinality`, and `CoefCardinality` which all have proper docstrings). File: `core/setup.py`, lines 145 and 165.
@@ -112,22 +118,22 @@ The `description` property on `AnaliticMode` and `SimulationMode` enums lacks a 
 The only `__post_init__` in the entire codebase without `-> None` return annotation. File: `core/setup.py`, line 189.
 
 **4. 10 empty `__init__.py` files with no module docstring**
-`dimensional/__init__.py`, `analysis/__init__.py`, `workflows/__init__.py`, `validations/__init__.py`, `structs/__init__.py`, `structs/lists/__init__.py`, `structs/tables/__init__.py`, `structs/tools/__init__.py`, `structs/types/__init__.py`, `context/__init__.py` are all 1-line empty files. Per the skill standard, every module should have a top-level docstring explaining its role in the package.
+`dimensional/__init__.py`, `analysis/__init__.py`, `workflows/__init__.py`, `validations/__init__.py`, `structs/__init__.py`, `structs/lists/__init__.py`, `structs/tables/__init__.py`, `structs/tools/__init__.py`, `structs/types/__init__.py`, `context/__init__.py` are all 1-line empty files. Per the skill standard, every module should have a top-level docstring explaining its role in the package. Without these, someone browsing the package tree (or reading auto-generated API docs) gets no orientation for what each subpackage does.
 
 **5. `context/` module is entirely stub**
-`context/conversion.py` (line 5: `# TODO: Add description of the module.`), `context/system.py` (line 8: `# TODO: Add description of the module.`), and `context/units.py` (line 15: `# TODO complete implementation of Measurement class`) are all unfinished TODOs with incomplete module docstrings.
+`context/conversion.py` (line 5: `# TODO: Add description of the module.`), `context/system.py` (line 8: `# TODO: Add description of the module.`), and `context/units.py` (line 15: `# TODO complete implementation of Measurement class`) are all unfinished TODOs with incomplete module docstrings. A user who discovers these files will not know whether they are safe to import or experiment with.
 
 **6. `_version.py` has no module docstring**
 Only inline comments; no `"""..."""` docstring. File: `src/pydasa/_version.py`.
 
 **7. `serialization/parser.py` -- module docstring title mismatch**
-The module docstring says `Module latex.py` but the file is named `parser.py`. File: `src/pydasa/serialization/parser.py`, line 3.
+The module docstring says `Module latex.py` but the file is named `parser.py`. This is confusing for anyone trying to understand the serialization subsystem. File: `src/pydasa/serialization/parser.py`, line 3.
 
 ### 2.3 Style Consistency
 
 **Style: Google (consistent)**
 
-The entire codebase uses Google-style docstrings with `Args:`, `Returns:`, `Raises:`, and occasional `Example:` blocks. This is consistent across all 52 files. The Sphinx configuration in `conf.py` includes `sphinx.ext.napoleon` (line 36) which supports Google-style parsing.
+The entire codebase uses Google-style docstrings with `Args:`, `Returns:`, `Raises:`, and occasional `Example:` blocks. This is consistent across all 52 files. The Sphinx configuration in `conf.py` includes `sphinx.ext.napoleon` (line 36), a Sphinx extension that parses Google-style (and NumPy-style) docstrings and converts them into proper reStructuredText for the generated documentation site.
 
 **Minor style inconsistencies:**
 
@@ -143,13 +149,15 @@ The entire codebase uses Google-style docstrings with `Args:`, `Returns:`, `Rais
 
 ## 3. Public Documentation (ReadTheDocs)
 
+The public-facing documentation site is well-structured and covers the core workflows thoroughly. A new user can go from installation to a working dimensional analysis in under 15 minutes by following the quickstart. The gaps are in peripheral features: the data structures, I/O functions, and base classes that power users and contributors need are documented only through auto-generated API pages, which lack the explanatory context of the hand-written user guide. The architecture page being a stub is the most visible problem -- it's a published page with a TODO placeholder that undermines confidence in the project's maturity.
+
 > **Note:** WebFetch was denied, so this analysis is based entirely on the local RST/configuration files that generate the ReadTheDocs site. The published site structure is inferred from `docs/source/index.rst`, `conf.py`, and `.readthedocs.yaml`.
 
 ### 3.1 What Is Published and Accessible
 
 The ReadTheDocs site is configured at `https://pydasa.readthedocs.io` and builds using:
-- **Sphinx** with `pydata_sphinx_theme` (file: `docs/source/conf.py`, line 203)
-- **autoapi.extension** for auto-generated API docs (file: `conf.py`, line 29)
+- **Sphinx** with `pydata_sphinx_theme` (file: `docs/source/conf.py`, line 203) -- a modern, responsive theme used by pandas, NumPy, and other scientific Python projects
+- **autoapi** (`autoapi.extension`, file: `conf.py`, line 29) -- a Sphinx extension that automatically generates API reference pages by scanning the source code, so every public class and function gets a documentation page without manual RST files
 - **Build config:** Ubuntu 22.04, Python 3.11, PDF and EPUB formats enabled (file: `.readthedocs.yaml`)
 - **Fail on warning:** false (file: `.readthedocs.yaml`, line 16)
 
@@ -197,7 +205,7 @@ The autoapi configuration (`conf.py`, lines 93-117) scans the entire `src/` dire
 
 Since autoapi scans the full source tree, **all public classes and functions should appear** in the generated API reference. The `autodoc_type_aliases` dict (lines 60-69) explicitly handles cross-references for the 8 core classes: `Matrix`, `Variable`, `Schema`, `Coefficient`, `Dimension`, `WorkflowBase`, `Sensitivity`, `MonteCarlo`.
 
-**Potential gap:** The `ArrayList`, `SingleLinkedList`, `Node`, `SLNode`, `DLNode`, `MapEntry`, `Bucket`, `SCHashTable` structs are in `__all__` but not in `autodoc_type_aliases`. They will still appear via autoapi but may have unresolved cross-references in the generated docs.
+**Potential gap:** The `ArrayList`, `SingleLinkedList`, `Node`, `SLNode`, `DLNode`, `MapEntry`, `Bucket`, `SCHashTable` structs are in `__all__` but not in `autodoc_type_aliases`. They will still appear via autoapi but may have unresolved cross-references in the generated docs. This means links like `:class:\`ArrayList\`` in docstrings may not render as clickable hyperlinks on the site.
 
 ### 3.4 Examples and Tutorials
 
@@ -218,6 +226,8 @@ Present and complete at `public/context/installation.rst`:
 ---
 
 ## 4. Gaps Between Code and Docs
+
+This section is the most actionable part of the report. The core workflow -- define variables, build a schema, run an analysis -- is well-covered in both code and docs. The gaps cluster around supporting features that users discover after they've completed the quickstart and want to do more: save their work, extend a workflow, or understand the internal data structures. A user who finishes the Reynolds tutorial and wants to serialize their results to JSON will find `load` and `save` in the API reference but no guidance on how or when to use them.
 
 ### 4.1 Public Classes/Functions in `__init__.__all__` Lacking Documentation
 
@@ -306,6 +316,34 @@ All 16 entries in `__all__` (file: `src/pydasa/__init__.py`, lines 88-106) have 
 
 4. **Consistent style throughout.** Google-style docstrings are used uniformly across 52 files. The decorator validation system has excellent documentation with multiple examples.
 
-5. **The Sphinx/ReadTheDocs pipeline is well-configured.** autoapi, napoleon, intersphinx, viewcode, and type hints are all integrated. The `pydata_sphinx_theme` gives a modern, navigable site structure.
+5. **The Sphinx/ReadTheDocs pipeline is well-configured.** The documentation build uses autoapi (auto-generates API pages from source code), napoleon (converts Google-style docstrings to reStructuredText), intersphinx (creates cross-reference links to external projects like Python, NumPy, and SciPy docs), and viewcode (adds "source" links so readers can jump from docs to implementation). The `pydata_sphinx_theme` gives a modern, navigable site structure.
 
 6. **Feature documentation is detailed.** The user guide pages for Variables, Coefficients, Matrices, Frameworks, and the three workflows contain substantive explanations with code examples -- not just API stubs.
+
+---
+
+## 6. Proposals
+
+### 6.1 Fill the ten empty `__init__.py` files first
+
+This is the single highest-impact, lowest-effort improvement. Each file needs only a 2-4 line module docstring explaining what the subpackage contains and how it fits into the library. These docstrings flow directly into the auto-generated API reference via autoapi, so writing them once improves both the developer experience (reading source) and the public site (browsing API docs). Prioritize `workflows/__init__.py`, `analysis/__init__.py`, and `dimensional/__init__.py` since those are the packages new users encounter first.
+
+### 6.2 Add a "Serialization & I/O" page to the user guide
+
+The `load()` and `save()` functions are top-level exports, but no user-facing page explains when to use them, what format they produce, or how to round-trip a full analysis. A short page with two code examples -- save after analysis, load and resume -- would close one of the most practical gaps. Users who finish the quickstart tutorial and want to persist their results currently have to discover `load`/`save` through the API reference and guess at usage.
+
+### 6.3 Write the architecture page using existing docstrings as source material
+
+The stub at `design/architecture.rst` is the most visible gap on the published site. The good news is that the module and class docstrings already contain enough information to assemble this page without new research. A diagram showing the dependency flow (Variable -> Schema -> Matrix -> Coefficient, then the three workflow classes) combined with a paragraph per module extracted from the existing module docstrings would be sufficient. This does not need to be exhaustive -- it needs to replace the TODO.
+
+### 6.4 Add inline `Example:` blocks to the five most-used classes
+
+The docstrings are thorough on Args/Returns/Raises but almost none include usage examples. Adding a short `Example:` block to `Variable`, `Schema`, `Matrix`, `Coefficient`, and `AnalysisEngine` would make the API reference self-contained. These examples can be adapted from the existing quickstart RST -- no new content needed, just reformatting into docstring examples. As a bonus, these can be validated automatically with `doctest`, catching regressions when the API changes.
+
+### 6.5 Document `WorkflowBase` for contributors building custom workflows
+
+The customization tutorial (`customization.rst`) shows how to define a custom dimensional framework, but not how to build a custom workflow. `WorkflowBase` is exported in `__all__` and is the extension point for anyone who wants to create a new analysis pipeline. A short contributor-facing page explaining the base class contract (what to override, what's provided for free, how the three built-in workflows use it) would make the library genuinely extensible without requiring source reading.
+
+### 6.6 Embed Jupyter notebooks in the docs for interactive examples
+
+The quickstart already references notebooks (line 246) but none are embedded in the documentation. Converting the Reynolds tutorial into a Jupyter notebook and including it via `nbsphinx` or `myst-nb` would let users download and run examples directly. This is particularly valuable for a scientific library where users expect to experiment with parameters interactively. The existing code examples are already notebook-ready -- they just need cell boundaries and output captures.

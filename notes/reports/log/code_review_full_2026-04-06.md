@@ -8,6 +8,8 @@
 
 ## 1. Abstractions
 
+The library's central classes have grown organically and several have become "god objects" (classes that absorb too many unrelated responsibilities into a single file). `Matrix`, `MonteCarlo`, and `Sensitivity` each exceed 600 lines and mix orchestration logic with low-level computation. This will bite you when you need to test any single behavior in isolation, because setting up one of these objects drags in every dependency the class touches. The four-way inheritance in `Variable` works today, but the MRO (method resolution order) is fragile enough that adding a fifth mixin or reordering parents could silently change which `clear()` runs. The two list implementations (`ArrayList` and `SingleLinkedList`) are essentially the same class written twice with different backing stores and no shared base, which means every bug fix has to be applied in two places.
+
 | File:Lines | Element | Finding | Severity |
 |------------|---------|---------|----------|
 | `dimensional/model.py:60-997` | `Matrix` | God object: owns variable management, matrix construction, RREF solving, nullspace computation, coefficient generation, coefficient derivation, serialization, and property re-declarations that shadow parent (`idx`, `sym`, `alias`, `fwk`). Over 900 lines with at least 5 distinct responsibilities. | warning |
@@ -22,6 +24,8 @@
 ---
 
 ## 2. Dependencies
+
+The dependency graph follows a clean top-down pattern: workflows call analysis/dimensional modules, which call elements, which call core. That layering is sound. The problems are in the details. A few imports create fragile transitive chains (importing `Path` through `io.py` instead of from `pathlib` directly), one circular import is held together by a `TYPE_CHECKING` guard that works only because MRO guarantees a specific initialization order, and `SALib` is loaded unconditionally even though it is only needed by one method. These are the kind of issues that stay invisible until someone reorganizes imports or adds a new subclass, at which point they surface as confusing `ImportError` or `AttributeError` at import time.
 
 ### Internal dependency graph (simplified)
 
@@ -62,13 +66,14 @@ serialization/parser -> sympy.parsing.latex, validations/patterns
 | `core/setup.py:41` | `core/io.py` | Imports `Path` from `io` instead of `pathlib` directly: `from pydasa.core.io import Path, load`. `Path` is not defined in `io.py` -- it is re-exported implicitly from the `from pathlib import Path` at io.py:17. This creates a fragile transitive dependency. |
 | `elements/specs/symbolic.py:31-32` | `dimensional/vaschy` | Uses `TYPE_CHECKING` guard to avoid circular import. Correct pattern, but the runtime `self._schema` access works only because `ConceptualSpecs` sets it first via MRO. Fragile if class hierarchy changes. |
 | `analysis/scenario.py:21-22` | `SALib` | `SALib.sample.fast_sampler` and `SALib.analyze.fast` are imported unconditionally. SALib is a heavy dependency used only in `analyze_numerically()`. Could be lazy-imported. |
-| `analysis/simulation.py:28` | `scipy.stats` | Imported at module level but never used anywhere in the file. Unused import. |
 | `structs/tables/scht.py:27` | `random` | Used only in `__post_init__` for MAD hash parameters. Acceptable but noted. |
 | `dimensional/fundamental.py:28` | `validations/error` | Imported as `error`, asserted, but never called anywhere in the `Dimension` class. Unused import. |
 
 ---
 
 ## 3. Good Ideas
+
+The library has several design decisions worth preserving and imitating. The decorator-based validation system in `validations/decorators.py` is the standout -- it turns 20+ repetitive property setters into clean one-line declarations, and it is the single biggest reason the codebase stays readable despite its size. The four-perspective decomposition of `Variable` (conceptual, symbolic, numerical, statistical) maps directly onto how a researcher thinks about a physical quantity, which means the API teaches the domain model rather than fighting it. The JSON-driven configuration is another smart call: adding a new fundamental dimension unit to the framework is a config edit, not a code change. These patterns should be protected during refactoring.
 
 | File:Lines | Pattern | Why it works |
 |------------|---------|--------------|
@@ -85,6 +90,8 @@ serialization/parser -> sympy.parsing.latex, validations/patterns
 ---
 
 ## 4. Risks
+
+Most of these risks are low-probability but high-consequence: they sit in initialization paths or data-ordering logic where a failure corrupts everything downstream rather than raising an obvious error. The most dangerous one is the set-ordering bug in `_extract_fdus()` -- it silently randomizes column order in the dimensional matrix, which means the same code can produce different (wrong) results across Python runs without any error message. The broken singleton in `core/setup.py` is also worth understanding: there are two `PyDASAConfig` instances in play, and if anyone modifies one through `get_instance()`, the other (the module-level `PYDASA_CFG`) stays stale. This has not caused a bug yet only because the config is frozen -- but the structural problem remains.
 
 | File:Lines | Risk | Impact | Likelihood |
 |------------|------|--------|------------|
@@ -103,6 +110,8 @@ serialization/parser -> sympy.parsing.latex, validations/patterns
 
 ## 5. Bugs and Complications
 
+Three confirmed bugs deserve immediate attention. The `if not self._sym` guard in `SymBasis.__post_init__` and `Dimension.__post_init__` has the condition inverted -- it tries to strip empty strings (which does nothing) instead of stripping non-empty strings (which is the intent). The `Dimension.from_dict()` key mismatch means any save/load roundtrip silently drops the dimension's name. The set-ordering bug in `_extract_fdus()` can produce different dimensional matrices on different runs because Python sets do not preserve insertion order. Beyond those, the complications section documents copy-paste patterns (serialization, error handling, string formatting) that are not broken today but will diverge over time as fixes get applied to one copy but not the others.
+
 | File:Lines | Type | Description |
 |------------|------|-------------|
 | `core/basic.py:59-64` | bug | `SymBasis.__post_init__`: `if not self._sym: self._sym = self._sym.strip()` -- when `_sym` is `""` (falsy), it strips `""` which is still `""`. The condition should be `if self._sym:` (truthy) to strip non-empty strings. Same bug for `_fwk` (line 61) and `_alias` (line 63). |
@@ -110,7 +119,6 @@ serialization/parser -> sympy.parsing.latex, validations/patterns
 | `dimensional/fundamental.py:127-128` | bug | `from_dict` reads `_name` with key `"_name"` but `to_dict` writes it as `"name"` (line 106, key has no underscore prefix). Roundtrip `to_dict -> from_dict` will lose the name field. |
 | `dimensional/model.py:420-422` | bug | `_extract_fdus()` converts `fdus` list to a set (`{fdus[i] for i in ...}`), destroying the precedence ordering that downstream code depends on. Should use `dict.fromkeys(fdus)` or an ordered dedup approach. |
 | `analysis/simulation.py:501` | dead code | `self._sym_func = self._sym_func` is a self-assignment with no effect. |
-| `analysis/simulation.py:28` | dead code | `from scipy import stats` is imported but `stats` is never referenced in the module. |
 | `dimensional/fundamental.py:27-33` | dead code | `handle_error` imported as `error`, asserted, but never called in `Dimension`. |
 | `structs/lists/sllt.py:547` | complication | `IndexError("Index", pos2, "is out of range")` passes a tuple of 3 values to `IndexError`, producing a confusing error representation like `('Index', 5, 'is out of range')` instead of a clean message string. Compare with line 548 which uses the same wrong pattern. The `arlt.py` version (line 405) correctly uses an f-string. |
 | `structs/tables/htme.py:53-60` | complication | Docstrings for `_key` and `_value` are in Spanish ("Es la llave del registro del mapa" / "Es el valor del registro del mapa") while the rest of the codebase is in English. |
@@ -122,6 +130,8 @@ serialization/parser -> sympy.parsing.latex, validations/patterns
 ---
 
 ## 6. Technical Debt
+
+The debt falls into three buckets. First, the `context/` package is entirely unimplemented -- three stub files with TODO comments and no code. This means unit conversion is not available to users, and the commented-out imports in `__init__.py` confirm it was planned but never started. Second, there are roughly a dozen small TODOs scattered through the codebase, most of which are quick fixes (better error messages, moving a constant to config). Third, several module docstrings still reference old filenames from before a rename, which will confuse anyone navigating via docstrings or generated documentation.
 
 | File:Lines | Debt Type | Description | Effort |
 |------------|-----------|-------------|--------|
@@ -180,3 +190,19 @@ These patterns should be protected during any refactoring:
 - **Dynamic regex generation from FDU symbols** (`dimensional/vaschy.py:273-304`) -- self-updating validation that stays in sync with the schema.
 - **`WorkflowBase._convert_to_objects()` and `_convert_to_schema()`** (`workflows/basic.py:91-177`) -- flexible input normalization for notebook ergonomics.
 - **Nested brace regex for LaTeX subscripts** (`validations/patterns.py:27-39`) -- pragmatic, well-documented solution to a genuinely hard parsing problem.
+
+---
+
+## 8. Proposals
+
+**Extract a `SerializableMixin` and kill the serialization duplication.** The four near-identical `to_dict()`/`from_dict()` implementations across `Coefficient`, `Variable`, `Schema`, and `Matrix` are the single largest source of copy-paste in the codebase. A shared mixin in `core/` that handles the common pattern -- iterate `vars()`, strip leading underscores from keys, detect Schema fields by type rather than class name string, convert numpy scalars, skip callables -- would eliminate roughly 160 lines of duplicated code and, more importantly, guarantee that a serialization fix applied once propagates everywhere. Start by writing the mixin against the `Coefficient.to_dict()` version (the most complete), then replace the others one class at a time with tests confirming roundtrip equality after each swap.
+
+**Split `Matrix` into a builder and a solver.** `Matrix` at 900+ lines is doing two jobs that have different reasons to change: constructing the dimensional matrix from variables and FDUs (a data assembly task), and performing RREF, nullspace, and coefficient derivation (a linear algebra task). Separating these into `MatrixBuilder` (responsible for column ordering, FDU extraction, variable registration) and `MatrixSolver` (responsible for reduction and coefficient generation) would make each independently testable and would localize the `_extract_fdus()` set-ordering bug to the builder, where a targeted unit test could prevent regressions. The builder could live in a `lab/` prototype first to validate the interface before touching production code.
+
+**Add roundtrip serialization tests as a regression gate.** The `Dimension.from_dict()` key mismatch bug (`"name"` vs `"_name"`) shows that serialization is not covered by the existing test suite. A parametrized test that runs `obj.to_dict()` then `Class.from_dict(d)` for each serializable class, and asserts field-level equality, would have caught this and will catch future drift. This is low effort (one test function with a fixture per class) and high value, especially once the `SerializableMixin` refactor begins.
+
+**Introduce an abstract base for list structures.** `ArrayList` and `SingleLinkedList` share about 80% of their public API and internal logic, but have no common ancestor. Defining an `AbstractList` (or a `Protocol`) in `structs/` that declares the shared interface -- `append`, `prepend`, `insert`, `remove`, `get`, `index_of`, `swap`, `sublist`, `concat`, `clone`, plus the `_error_handler` and `_validate_type` utilities -- would let you write one set of behavioral tests that runs against both implementations. It would also make the `_error_handler` copy-paste problem disappear, since the handler can live on the base class once.
+
+**Lazy-import SALib and consider lazy-importing scipy.** `SALib` is a heavy dependency pulled in at import time by `analysis/scenario.py`, but it is only used inside `analyze_numerically()`. Moving the import into that method body means users who never call numerical sensitivity analysis do not pay the startup cost. The same logic applies to `scipy.stats` in `simulation.py` -- it is used only in the confidence interval calculation on line 777. Lazy imports in these two files would noticeably improve `import pydasa` time for notebook users who only need the dimensional modeling workflow.
+
+**Decide on the `context/` package: build it or remove it.** Three stub files (`conversion.py`, `system.py`, `units.py`) and the commented-out imports in `__init__.py` have been sitting untouched. If unit conversion is on the roadmap, a `lab/` spike using `pint` (which already handles dimensional consistency and unit registries) would clarify whether a custom implementation is needed or whether wrapping `pint` is sufficient. If unit conversion is not planned for the near term, removing the stubs and TODOs would reduce confusion for contributors who encounter them and wonder whether they are supposed to be working.

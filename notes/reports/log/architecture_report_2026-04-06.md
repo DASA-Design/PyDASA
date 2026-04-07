@@ -34,15 +34,17 @@ The intended audience includes scientific researchers, engineering practitioners
 
 ### 1.3 Chapter Roadmap
 
-This report is structured following the Attribute-Driven Design (ADD) method of Bass, Clements, and Kazman (3rd edition). Section 2 derives functional requirements from the implemented code. Section 3 presents the utility tree of quality attribute scenarios. Section 4 documents design principles and their trade-offs. Section 5 provides architectural views (context, internal structure, data flow, process, configuration). Section 6 covers implementation details including dependencies, CI/CD pipeline, and the release process. Section 7 identifies limitations and future work.
+This report follows the ADD (Attribute-Driven Design) method of Bass, Clements, and Kazman (3rd edition), a systematic approach for designing software architectures by prioritizing the quality attributes that matter most. Section 2 derives functional requirements from the implemented code. Section 3 presents the utility tree (a prioritized hierarchy of quality attribute scenarios used to identify which non-functional concerns most influence design decisions). Section 4 documents design principles and their trade-offs. Section 5 provides architectural views (context, internal structure, data flow, process, configuration). Section 6 covers implementation details including dependencies, CI/CD pipeline, and the release process. Section 7 identifies limitations and future work. Section 8 proposes concrete architectural opportunities.
 
 ---
 
 ## 2. Functional Requirements
 
+This section catalogues every capability that PyDASA currently provides, traced back to the source files that implement it. A researcher reading this list should be able to locate the code behind any feature and understand the scope of what the library can and cannot do today.
+
 The following functional requirements are derived from the actual implementation in the `src/pydasa/` source tree. Each requirement maps to one implemented capability.
 
-**FR-1: Dimensional Framework Definition.** The system shall support four dimensional frameworks (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM), each defining a set of Fundamental Dimensional Units (FDUs) with symbols, units, names, and precedence ordering. The CUSTOM framework shall allow user-defined FDU sets.
+**FR-1: Dimensional Framework Definition.** The system shall support four dimensional frameworks (PHYSICAL, COMPUTATION, SOFTWARE, CUSTOM), each defining a set of FDUs (Fundamental Dimensional Units -- the irreducible base dimensions such as Length, Mass, and Time) with symbols, units, names, and precedence ordering. The CUSTOM framework shall allow user-defined FDU sets.
 *Traced to:* `core/setup.py` (Frameworks enum), `dimensional/vaschy.py` (Schema class), `core/cfg/default.json`.
 
 **FR-2: Variable Definition.** The system shall represent variables with dimensional formulas (e.g., `L*T^-1`), LaTeX symbol notation, category classification (IN, OUT, CTRL), numerical bounds (original and standardized units), and statistical distribution specifications. Variables shall validate dimensional expressions against the active Schema's regex patterns at construction time.
@@ -51,7 +53,7 @@ The following functional requirements are derived from the actual implementation
 **FR-3: Dimensional Matrix Construction.** The system shall construct a dimensional matrix (FDUs x Variables) from a set of relevant variables, sorting variables by category (IN, OUT, CTRL), filtering by relevance flag, and extracting working FDUs from variable dimension strings.
 *Traced to:* `dimensional/model.py` (Matrix.create_matrix).
 
-**FR-4: Matrix Solving via Buckingham Pi Theorem.** The system shall compute the Row-Reduced Echelon Form (RREF) of the dimensional matrix using SymPy, identify pivot columns, compute the nullspace, and generate one dimensionless Coefficient (Pi group) per nullspace vector.
+**FR-4: Matrix Solving via Buckingham Pi Theorem.** The system shall compute the RREF (Row-Reduced Echelon Form -- the canonical simplified form of a matrix where each leading entry is 1 and is the only nonzero entry in its column) of the dimensional matrix using SymPy, identify pivot columns, compute the nullspace, and generate one dimensionless Coefficient (Pi group) per nullspace vector.
 *Traced to:* `dimensional/model.py` (Matrix.solve_matrix, Matrix._generate_coefficients).
 
 **FR-5: Coefficient Derivation.** The system shall derive new dimensionless coefficients from algebraic expressions over existing Pi groups, supporting multiplication, division, exponentiation, addition, subtraction, and numeric constant multipliers. Derived coefficients shall be marked with category DERIVED.
@@ -63,7 +65,7 @@ The following functional requirements are derived from the actual implementation
 **FR-7: Symbolic Sensitivity Analysis.** The system shall perform symbolic sensitivity analysis by computing partial derivatives of dimensionless coefficient expressions with respect to each variable, evaluating them at specified operating points using SymPy differentiation and lambdify.
 *Traced to:* `analysis/scenario.py` (Sensitivity.analyze_symbolically).
 
-**FR-8: Numerical Sensitivity Analysis.** The system shall perform numerical sensitivity analysis using the Fourier Amplitude Sensitivity Test (FAST) via SALib, sampling variable ranges and computing first-order and total-order sensitivity indices.
+**FR-8: Numerical Sensitivity Analysis.** The system shall perform numerical sensitivity analysis using FAST (Fourier Amplitude Sensitivity Test -- a variance-based method that decomposes output variance into contributions from each input) via SALib, sampling variable ranges and computing first-order and total-order sensitivity indices.
 *Traced to:* `analysis/scenario.py` (Sensitivity.analyze_numerically).
 
 **FR-9: Monte Carlo Simulation.** The system shall execute Monte Carlo simulations for dimensionless coefficients, sampling variable values from user-defined probability distributions (uniform, normal, triangular, exponential, lognormal, custom), computing coefficient values for each sample, and aggregating statistical results (mean, median, standard deviation, min, max). A shared cache mechanism shall avoid redundant variable sampling across coefficients.
@@ -85,7 +87,9 @@ The following functional requirements are derived from the actual implementation
 
 ## 3. Critical Quality Attributes (Utility Tree)
 
-The following utility tree identifies the Architecturally Significant Requirements (ASRs) that shaped PyDASA's design. Primary quality attributes are marked with an asterisk (*).
+A utility tree ranks the non-functional requirements that most influence how a system is built. Each leaf is an ASR (Architecturally Significant Requirement) -- a concrete scenario written as "stimulus, response, measure" so it can be tested. The bracketed labels (e.g., `[H/M]`) encode importance to the business and difficulty of implementation (High, Medium, Low). This tree explains *why* PyDASA's modules are shaped the way they are: every structural decision in Section 4 traces back to at least one scenario here.
+
+Primary quality attributes are marked with an asterisk (*). The three primaries -- Interoperability, Maintainability, and Testability -- were chosen because PyDASA must integrate with the broader scientific Python ecosystem, support multiple dimensional domains without code duplication, and maintain correctness guarantees through its mathematical pipeline. Performance is secondary because typical analysis problems involve small matrices (fewer than 10 variables).
 
 ```
 Utility
@@ -172,17 +176,19 @@ Utility
                   with a message specifying the constraint.
 ```
 
-The primary quality attributes (Interoperability, Maintainability, Testability) were chosen because PyDASA must integrate with the broader scientific Python ecosystem, support multiple dimensional domains without code duplication, and maintain correctness guarantees through its mathematical pipeline. Performance is secondary because typical analysis problems involve small matrices (fewer than 10 variables).
-
 ---
 
 ## 4. Design Principles
 
+Each principle below represents a deliberate trade-off. The pattern is: state the principle, explain what problem it solves, describe what would go wrong without it, and acknowledge the cost. Researchers extending PyDASA should read this section to understand which constraints are load-bearing and which are pragmatic choices open to revision.
+
 ### 4.1 Schema Generality
 
-**Principle.** The dimensional analysis engine is parameterized by a Schema object that defines the active set of Fundamental Dimensional Units. All downstream processing (regex validation, matrix construction, coefficient generation) derives its configuration from the Schema rather than hardcoded constants.
+**Principle.** The dimensional analysis engine is parameterized by a Schema object that defines the active set of FDUs (Fundamental Dimensional Units). All downstream processing (regex validation, matrix construction, coefficient generation) derives its configuration from the Schema rather than hardcoded constants.
 
-The trade-off is increased initialization complexity: every Schema instantiation triggers FDU setup, regex compilation, precedence validation, and symbol map construction. A simpler design could hardcode the seven SI base dimensions, but this would preclude the COMPUTATION, SOFTWARE, and CUSTOM frameworks that distinguish PyDASA from single-domain tools.
+Without this, PyDASA would be locked to the seven SI base dimensions. Any researcher working in computational science or software architecture would need a separate tool or would have to fork the codebase. Schema generality is what makes the COMPUTATION, SOFTWARE, and CUSTOM frameworks possible using the same pipeline code.
+
+The trade-off is increased initialization complexity: every Schema instantiation triggers FDU setup, regex compilation, precedence validation, and symbol map construction. A simpler design could hardcode the seven SI base dimensions, but this would preclude the multi-domain capability that distinguishes PyDASA from single-domain tools.
 
 *Traced to:* `dimensional/vaschy.py` (Schema), `core/cfg/default.json`.
 
@@ -190,15 +196,19 @@ The trade-off is increased initialization complexity: every Schema instantiation
 
 **Principle.** All domain entities (Dimension, Variable, Coefficient, Matrix) perform comprehensive validation during `__post_init__()`, using a decorator-based validation system on property setters. Invalid state is rejected at construction time rather than during computation.
 
-The trade-off is verbosity in the validation decorator stack (e.g., a single property setter may carry `@validate_type`, `@validate_emptiness`, `@validate_choices`, and `@validate_pattern`), and a performance cost at object construction time. The benefit is that once an object is constructed, downstream code can trust its invariants without defensive checks.
+This prevents a common failure mode in numerical libraries: a user creates an object with subtly wrong data (e.g., a mismatched dimension string), runs a long computation, and only discovers the error in the results -- or worse, gets a silently wrong answer. By catching errors at construction, PyDASA ensures that once an object exists, downstream code can trust its invariants without defensive checks.
+
+The trade-off is verbosity in the validation decorator stack (e.g., a single property setter may carry `@validate_type`, `@validate_emptiness`, `@validate_choices`, and `@validate_pattern`), and a performance cost at object construction time.
 
 *Traced to:* `validations/decorators.py` (9 reusable decorators), `core/basic.py` (SymBasis, IdxBasis, Foundation).
 
 ### 4.3 Compositional Variable Design
 
-**Principle.** The Variable class is composed from four independent specification classes, each representing a distinct philosophical perspective: ConceptualSpecs (identity), SymbolicSpecs (notation), NumericalSpecs (values), and StatisticalSpecs (distributions). These are combined via Python multiple inheritance in a single dataclass.
+**Principle.** The Variable class is composed from four independent specification classes, each representing a distinct concern: ConceptualSpecs (identity and classification), SymbolicSpecs (dimensional formulas and notation), NumericalSpecs (value bounds and setpoints), and StatisticalSpecs (probability distributions). These are combined via Python multiple inheritance in a single dataclass.
 
-The trade-off is the complexity of the MRO (Method Resolution Order) and the need for explicit `clear()` delegation across all four parent classes. The benefit is that each perspective can evolve independently: modifying how distributions work (StatisticalSpecs) does not require touching dimensional formula logic (SymbolicSpecs).
+Without this decomposition, Variable would be a single monolithic class where changes to distribution logic could inadvertently break dimensional parsing. The four-spec design means a researcher can extend how distributions work (StatisticalSpecs) without touching dimensional formula logic (SymbolicSpecs), and vice versa.
+
+The trade-off is the complexity of the MRO (Method Resolution Order -- the sequence Python uses to look up methods in a multi-inheritance class hierarchy) and the need for explicit `clear()` delegation across all four parent classes.
 
 *Traced to:* `elements/parameter.py` (Variable), `elements/specs/` package.
 
@@ -206,7 +216,9 @@ The trade-off is the complexity of the MRO (Method Resolution Order) and the nee
 
 **Principle.** All core entities expose `to_dict()` / `from_dict()` serialization, NumPy arrays for matrix operations, SymPy expressions for symbolic computation, and LaTeX strings for typesetting. The library uses standard scientific Python types (NDArray, sp.Matrix, sp.Expr) as its internal representations rather than custom wrappers.
 
-The trade-off is a dependency on four heavyweight libraries (numpy, scipy, sympy, matplotlib), even for users who only need the dimensional matrix computation. The benefit is zero-friction integration with pandas DataFrames, matplotlib rendering, and scipy statistical functions.
+This means a researcher can feed PyDASA output directly into pandas, matplotlib, or scipy without writing adapter code. If the library used custom matrix types or proprietary expression objects, every integration would require a conversion step, discouraging adoption in existing workflows.
+
+The trade-off is a dependency on four heavyweight libraries (numpy, scipy, sympy, matplotlib), even for users who only need the dimensional matrix computation.
 
 *Traced to:* `dimensional/model.py` (_dim_mtx as NDArray, _sym_mtx as sp.Matrix), `dimensional/buckingham.py` (_data as NDArray), `serialization/parser.py` (parse_latex wrapping sympy.parsing.latex).
 
@@ -214,13 +226,17 @@ The trade-off is a dependency on four heavyweight libraries (numpy, scipy, sympy
 
 **Principle.** The dimensional analysis pipeline is decomposed into explicit, independently invocable stages: variable preparation, matrix construction, RREF solving, coefficient generation, and optional derivation. Each stage has a dedicated method on the Matrix class (`_prepare_analysis()`, `create_matrix()`, `solve_matrix()`, `_generate_coefficients()`, `derive_coefficient()`). Workflow classes (AnalysisEngine, SensitivityAnalysis, MonteCarloSimulation) compose these stages.
 
-The trade-off is that users must understand the stage ordering if they bypass the convenience methods (`run_analysis()`, `run_simulation()`). The benefit is that intermediate results (the dimensional matrix, the RREF, the pivot columns) are inspectable for educational, debugging, and reporting purposes.
+This matters for education and debugging. A student learning the Buckingham Pi theorem can inspect the dimensional matrix after construction, examine the RREF to understand pivot selection, and step through coefficient generation one nullspace vector at a time. If the pipeline were a single opaque function, none of these intermediate results would be accessible.
+
+The trade-off is that users must understand the stage ordering if they bypass the convenience methods (`run_analysis()`, `run_simulation()`).
 
 *Traced to:* `dimensional/model.py` (Matrix), `workflows/phenomena.py` (AnalysisEngine.run_analysis).
 
 ### 4.6 Configuration-Driven Behavior
 
 **Principle.** Framework definitions, FDU metadata, variable categories, coefficient categories, and analysis modes are defined in external JSON configuration (`core/cfg/default.json`) and loaded at module initialization through a frozen singleton (`PyDASAConfig`). Enums provide type-safe access to configuration values.
+
+Without external configuration, adding a new dimensional framework would require editing Python source files, which couples domain knowledge (what FDUs exist in software architecture) to implementation details (how the Schema class works). JSON configuration separates the two: a domain expert can define a new framework without writing Python code.
 
 The trade-off is that the frozen-singleton pattern makes runtime reconfiguration impossible without restarting the Python process. The benefit is immutability and consistency: once the configuration is loaded, all modules share the same canonical definitions.
 
@@ -229,6 +245,8 @@ The trade-off is that the frozen-singleton pattern makes runtime reconfiguration
 ---
 
 ## 5. Architecture Views
+
+This section presents five complementary diagrams of the system. No single view tells the whole story: the context diagram shows what PyDASA talks to; the module graph shows how the code is organized internally; the data flow traces a single analysis from input to output; the process diagrams show the step-by-step logic of each workflow; and the configuration view explains how a JSON file controls runtime behavior across all dimensional frameworks.
 
 ### 5.1 Diagram Index
 
@@ -381,6 +399,8 @@ Dependency flow summary:
 ```
 
 ### 5.4 Data Flow Diagram
+
+This trace follows a single dimensional analysis from start to finish. Each numbered step shows what data enters, what transformation occurs, and what data leaves. It corresponds to the most common user workflow: define variables, build the matrix, solve it, and collect the resulting Pi groups.
 
 ```
 [Diagram Placeholder: Information Flow Diagram]
@@ -624,6 +644,8 @@ END
 
 ### 5.8 Configuration / Schema View
 
+This view shows how a single JSON file drives all framework-specific behavior. The key insight is that PHYSICAL, COMPUTATION, SOFTWARE, and CUSTOM frameworks share the same Python classes; the only difference is the FDU list loaded from configuration. This is the mechanism behind Schema Generality (Section 4.1).
+
 ```
 [Diagram Placeholder: Configuration Schema Diagram]
 
@@ -708,6 +730,8 @@ Framework-specific behavior summary:
 ---
 
 ## 6. Implementation Details
+
+This section is a reference for anyone building, testing, or deploying PyDASA. It lists every dependency and its role, describes the build system, and walks through the CI/CD pipeline so that a new contributor can understand how code moves from a commit to a published release.
 
 ### 6.1 Dependencies
 
@@ -813,6 +837,8 @@ Read the Docs configuration (`.readthedocs.yaml`):
 
 ## 7. Limitations and Future Work
 
+This section is an honest inventory of what does not yet work, what has not been validated, and where the API may change. A researcher evaluating PyDASA for a project should read this to understand the current boundaries.
+
 ### 7.1 Functional Gaps
 
 **Unit Conversion System (context/ package).** The `context/` package contains three stub modules: `conversion.py` (12 lines, TODO comment), `system.py` (17 lines, TODO comment), and `units.py` (15 lines, TODO comment). These are intended to provide unit conversion (e.g., km to m, kByte to bit), measurement system management, and a Measurement class. The `__init__.py` for `context/` is empty. The corresponding imports in `__init__.py` are commented out (`UnitStandarizer`, `MeasureSystem`, `Unit`). Current workaround: users must manually provide values in standardized units and set both original and standardized unit fields on Variables.
@@ -848,6 +874,34 @@ pip install pydasa==0.7.0
 ```
 
 The version string is stored in `src/pydasa/_version.py` and dynamically read by setuptools. The Git tag `v0.7.0` marks the corresponding commit.
+
+---
+
+## 8. Proposals
+
+### 8.1 Implement the Unit Conversion Module as a Schema-Aware Layer
+
+The `context/` package stubs (`conversion.py`, `system.py`, `units.py`) outline a unit conversion system, but the current architecture does not define where conversion fits in the pipeline. The natural integration point is between user input and Variable construction: a Measurement object would hold a value and its original unit, and a UnitConverter would translate it to the standardized unit expected by the active Schema before the Variable's dimensional column is built. This converter should be Schema-aware, meaning it queries the active framework's FDU definitions to determine valid unit families. Without Schema awareness, unit conversion would need its own parallel registry of dimensions, creating a maintenance burden and a source of inconsistency. The frozen PyDASAConfig singleton could be extended with a `unit_definitions` section in `default.json`, keeping conversion tables alongside the FDU definitions they serve.
+
+### 8.2 Split the Matrix Class into Builder and Solver
+
+The Matrix class currently handles both construction (assembling the dimensional matrix from variable columns) and solving (RREF, nullspace, coefficient generation). These are conceptually distinct responsibilities with different change drivers: construction logic changes when the Variable model changes, while solving logic changes when alternative solvers are introduced (e.g., NumPy-based numeric RREF for performance, or alternative nullspace algorithms). Extracting a MatrixSolver that takes a constructed NDArray and returns nullspace vectors would let researchers swap solvers without touching the variable-assembly code. It would also make benchmarking easier, since the solver could be tested with synthetic matrices that bypass the Variable pipeline entirely.
+
+### 8.3 Introduce a Result Object for Analysis Outputs
+
+Currently, AnalysisEngine returns `Dict[str, Coefficient]`, SensitivityAnalysis returns nested dictionaries, and MonteCarloSimulation stores results internally. A unified AnalysisResult dataclass (with `to_dict()`, `to_dataframe()`, and `to_latex()` methods) would give all three workflows a consistent output contract. This would reduce the amount of glue code researchers write when composing results from multiple analysis types into a single report, and it would provide a natural place to attach metadata (framework used, timestamp, PyDASA version) for reproducibility.
+
+### 8.4 Move Custom Data Structures to a Private Namespace
+
+The public API currently exports ArrayList, SingleLinkedList, Node, SLNode, DLNode, MapEntry, Bucket, and SCHashTable. These are general-purpose data structures that do not relate to dimensional analysis. Exposing them in `__all__` inflates the API surface and may confuse researchers who expect every exported symbol to be relevant to their analysis workflow. Moving these to a `pydasa._structs` or `pydasa.structs` namespace (without exporting them from the top-level `__init__.py`) would clarify the boundary between the domain API and internal utilities, and would free the project to refactor or remove these structures without breaking the public contract.
+
+### 8.5 Add Convergence Diagnostics to Monte Carlo Simulation
+
+The Monte Carlo workflow currently requires users to guess an appropriate experiment count. Adding a convergence monitor that tracks running statistics (mean, standard deviation) and halts when successive batches change by less than a user-specified tolerance would make the simulation self-tuning. The shared cache architecture already batches variable sampling per coefficient, so the monitor could hook into the per-batch loop without restructuring the simulation pipeline. This would directly address the "Monte Carlo Convergence" gap identified in Section 7.2 and reduce the risk of researchers publishing under-sampled or wastefully over-sampled results.
+
+### 8.6 Support Sobol Sensitivity Indices Alongside FAST
+
+The numerical sensitivity analysis currently relies exclusively on SALib's FAST implementation. FAST is efficient but limited to first-order and total-order indices; it cannot decompose higher-order interactions between variables. SALib already provides Sobol analysis with second-order indices, and the current Sensitivity class architecture (which wraps SALib problem definitions and lambdified functions) could accommodate a second analysis method with minimal changes. A `method` parameter on `analyze_numerically()` selecting between FAST and Sobol would give researchers a choice between speed and interaction detail, matching the existing `AnaliticMode` pattern of offering SYM and NUM as switchable modes.
 
 ---
 

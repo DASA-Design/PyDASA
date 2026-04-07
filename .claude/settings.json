@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(echo \"---EXIT:$?\")",
+      "Bash(unzip -l software-architecture-documentation.skill)",
+      "Edit(/.claude/skills/code/**)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\Felipe\\OneDrive\\Documents\\GitHub\\DASA-Design\\PyDASA\\.claude"
+    ]
+  }
+}

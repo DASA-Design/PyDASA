@@ -7,7 +7,8 @@
       "Bash(pip list:*)",
       "Bash(pyreverse --help)",
       "Bash(python tools/generate_diagrams.py)",
-      "Bash(python tools/generate_diagrams.py --overview)"
+      "Bash(python tools/generate_diagrams.py --overview)",
+      "Bash(python -m sphinx -b html docs/source docs/build/html)"
     ],
     "additionalDirectories": [
       "c:\\Users\\Felipe\\OneDrive\\Documents\\GitHub\\DASA-Design\\PyDASA\\.claude"

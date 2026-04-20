@@ -145,7 +145,7 @@ The `run_analysis()` method will process the variables, build the dimensional ma
 
 ```
 Number of dimensionless groups: 1
-    \Pi_{0}: \frac{\mu}{\rho*v*L}
+    \Pi_{0}: \frac{\mu}{\rho*v*D}
 ```
 
 **If errors occur**: Check variable definitions (dimensions, categories, relevance flags)
@@ -176,8 +176,8 @@ Then, the output will be:
 
 ```
 Number of dimensionless groups: 1
-        \Pi_{0}: \frac{\mu}{\rho*v*L}
-        Variables: ['\\rho', 'v', 'L', '\\mu']
+        \Pi_{0}: \frac{\mu}{\rho*v*D}
+        Variables: ['\\rho', 'v', 'D', '\\mu']
         Exponents: [-1, -1, -1, 1]
 ```
 
@@ -252,7 +252,7 @@ Flow regime: TURBULENT
 
 ### Manage Dimensional Domain
 
-- **Manage Fundamental Dimensions** beyond traditional physical units (L, M, T) .to include computational (T, S, N) and software architecture domains (T, D, E, C, A).
+- **Manage Fundamental Dimensions** beyond traditional physical units (L, M, T) to include computational (T, S, N) and software architecture domains (T, D, S, E, A).
 - **Switch between frameworks** for different problem domains.
 
 ### Manage Symbolic and Numerical Variables
@@ -294,6 +294,29 @@ Flow regime: TURBULENT
 - **Structure results** for integration with visualization libraries.
 - **Provide standardized outputs** for dimensionless charts and parameter influence plots.
 
+## Acknowledgements
+
+The theoretical foundation of **PyDASA** draws upon the classical work of Henry Görtler in _Dimensionsanalyse: Theorie der physikalischen Dimensionen mit Anwendungen_ (Springer-Verlag, 1975), which provides the rigorous mathematical basis for dimensional homogeneity and the Buckingham Π-theorem.
+
+**PyDASA** was also inspired by the work of Mokbel Karam and Tony Saad in [_BuckinghamPy: A Python software for dimensional analysis_](https://doi.org/10.1016/j.softx.2021.100851) (SoftwareX, 2021). We are grateful for their contribution to making dimensional analysis more accessible through computational tools, which motivated our development of **PyDASA** with expanded and customizable capabilities for scientific and engineering applications.
+
+## Citation
+
+If you use **PyDASA** in your research, please cite it. Citation metadata is available in [`CITATION.cff`](CITATION.cff) at the root of this repository, and GitHub renders a "Cite this repository" button in the sidebar that provides both APA and BibTeX formats.
+
+**Quick BibTeX:**
+
+```bibtex
+@software{martin_pydasa_2026,
+  author  = {Martin, Felipe},
+  title   = {PyDASA: Dimensional Analysis for Scientific Applications and Software Architecture},
+  year    = {2026},
+  version = {0.7.0},
+  url     = {https://github.com/DASA-Design/PyDASA},
+  orcid   = {https://orcid.org/0009-0007-5881-3951}
+}
+```
+
 ## Documentation
 
 ⚠️ **For advanced features, tutorials, and API reference, please visit the [PyDASA Documentation](https://pydasa.readthedocs.io).** ⚠️
@@ -301,9 +324,9 @@ Flow regime: TURBULENT
 ### Development Status
 
 **Emoji Convention:**
-    - 📋 TODO
-    - 🔶👨‍💻 WORKING
     - ✅ DONE
+    - 👨‍💻 WORKING
+    - 📋 TODO
     - ⚠️ ATTENTION REQUIRED
 
 ### ✅ Core Modules (Implemented & Tested)
@@ -343,7 +366,7 @@ Contributions are welcome! We use [Conventional Commits](https://www.conventiona
 - `feat`: New feature (triggers MINOR version bump).
 - `fix`: Bug fix (triggers PATCH version bump).
 - `docs`: Documentation changes only.
-- `refactor`: Code refactoring without feature changes..
+- `refactor`: Code refactoring without feature changes.
 - `test`: Adding or updating tests.
 - `perf`: Performance improvements.
 - `chore`: Other changes that don't modify src or test files.
@@ -390,7 +413,7 @@ git commit -m "feat(module): add new feature"
 2. Create PR and merge to `main`.
 3. GitHub Actions automatically:
    - Analyzes commit messages.
-   - Bumps version (MAJOR.MINOR.PATCH)..
+   - Bumps version (MAJOR.MINOR.PATCH).
    - Updates `_version.py` and `pyproject.toml`.
    - Creates GitHub release with changelog.
    - Publishes to PyPI.

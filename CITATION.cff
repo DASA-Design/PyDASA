@@ -1,0 +1,47 @@
+cff-version: 1.2.0
+message: "If you use PyDASA in your research, please cite it as below."
+title: "PyDASA: Dimensional Analysis for Scientific Applications and Software Architecture"
+abstract: "An open-source Python library for dimensional analysis of complex phenomena across physical, chemical, computational, and software domains using the Buckingham Pi theorem."
+type: software
+authors:
+  - family-names: "Martin"
+    given-names: "Felipe"
+    orcid: "https://orcid.org/0009-0007-5881-3951"
+    affiliation: "Universidad de los Andes, DISC, Bogotá D.C., Colombia"
+    email: "sa-artea@uniandes.edu.co"
+version: "0.7.0"
+date-released: "2026-03-23"
+license: "GPL-3.0-or-later"
+repository-code: "https://github.com/DASA-Design/PyDASA"
+url: "https://pydasa.readthedocs.io"
+keywords:
+  - "dimensional analysis"
+  - "Buckingham Pi theorem"
+  - "scientific computing"
+  - "sensitivity analysis"
+  - "Monte Carlo simulation"
+  - "software architecture"
+  - "python"
+references:
+  - type: book
+    title: "Dimensionsanalyse: Theorie der physikalischen Dimensionen mit Anwendungen"
+    authors:
+      - family-names: "Görtler"
+        given-names: "Henry"
+    publisher:
+      name: "Springer-Verlag"
+    year: 1975
+    isbn: "978-3642808739"
+    notes: "Theoretical foundation for PyDASA's dimensional analysis methods."
+  - type: article
+    title: "BuckinghamPy: A Python software for dimensional analysis"
+    authors:
+      - family-names: "Karam"
+        given-names: "Mokbel"
+      - family-names: "Saad"
+        given-names: "Tony"
+    journal: "SoftwareX"
+    volume: 16
+    year: 2021
+    doi: "10.1016/j.softx.2021.100851"
+    notes: "Inspired the development of PyDASA."

@@ -6,7 +6,7 @@
 
 </div>
 
-_Dimensional Analysis for Scientific Applications and Software Architecture_ (**PyDASA**) is a Python library for dimensional analysis of complex phenomena across physical, chemical, computational, and software domains using the Buckingham Π-theorem.
+_Python Dimensional Analysis Scientific Assistant_ (**PyDASA**) is a Python library for dimensional analysis of complex phenomena across physical, chemical, computational, and software domains using the Buckingham Π-theorem.
 
 ## The Need (Epic User Story)
 
@@ -309,7 +309,7 @@ If you use **PyDASA** in your research, please cite it. Citation metadata is ava
 ```bibtex
 @software{martin_pydasa_2026,
   author  = {Martin, Felipe},
-  title   = {PyDASA: Dimensional Analysis for Scientific Applications and Software Architecture},
+  title   = {PyDASA: Python Dimensional Analysis Scientific Assistant},
   year    = {2026},
   version = {0.7.0},
   url     = {https://github.com/DASA-Design/PyDASA},

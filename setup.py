@@ -35,7 +35,7 @@ def read_long_description() -> str:
 setup(
     name="pydasa",
     version=read_version(),
-    description="Python package for Dimensional Analysis for Scientific Applications and Software Architecture (PyDASA).",
+    description="Python Dimensional Analysis Scientific Assistant (PyDASA).",
     package_dir={"": "src"},
     packages=find_packages(where="src"),
     long_description=read_long_description(),

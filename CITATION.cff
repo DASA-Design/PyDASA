@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use PyDASA in your research, please cite it as below."
-title: "PyDASA: Dimensional Analysis for Scientific Applications and Software Architecture"
+title: "PyDASA: Python Dimensional Analysis Scientific Assistant"
 abstract: "An open-source Python library for dimensional analysis of complex phenomena across physical, chemical, computational, and software domains using the Buckingham Pi theorem."
 type: software
 authors:

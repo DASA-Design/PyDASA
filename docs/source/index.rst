@@ -28,7 +28,7 @@ PyDASA
 
 .. centered:: |pypi| |pyversion| |license| |docs| |coverage|
 
-**PyDASA** (Dimensional Analysis for Scientific Applications and Software Architecture) is an open-source Python library for dimensional analysis of complex phenomena across physical, chemical, computational, and software domains using the Buckingham Pi-theorem.
+**PyDASA** (Python Dimensional Analysis Scientific Assistant) is an open-source Python library for dimensional analysis of complex phenomena across physical, chemical, computational, and software domains using the Buckingham Pi-theorem.
 
 The Primary Need
 ---------------------------

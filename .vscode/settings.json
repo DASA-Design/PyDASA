@@ -30,5 +30,43 @@
         "htmlcov/index.html"
     ],
     "codeStatsViewer.maxLargestFilesSidebar": 10,
-    "ruff.enable": false
+    "ruff.enable": false,
+    // Pylance: analysis only (does not hide anything in the Explorer)
+    "python.analysis.exclude": [
+    "**/.claude",
+    "**/scratchpad",
+    "**/outputs",
+    "**/build",
+    "**/dist",
+    "**/*.egg-info",
+    "**/htmlcov",
+    "**/_build",
+    "**/site-packages",
+    "**/venv",
+    "**/env",
+    "**/.tox",
+    "**/.nox",
+    "**/*.ipynb_checkpoints"
+    ],
+    // Explorer and search: hide the same clutter from view
+    "files.exclude": {
+        "**/__pycache__": true,
+        "**/*.egg-info": true,
+        "**/.claude/settings.local.json": true
+    },
+    "search.exclude": {
+        "**/.claude": true,
+        "**/scratchpad": true,
+        "**/build": true,
+        "**/dist": true,
+        "**/htmlcov": true,
+        "**/*.egg-info": true
+    },
+    "files.watcherExclude": {
+        "**/.claude/**": true,
+        "**/scratchpad/**": true,
+        "**/__pycache__/**": true,
+        "**/.venv/**": true,
+        "**/node_modules/**": true
+    }
 }

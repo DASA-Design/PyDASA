@@ -3,6 +3,13 @@
 on:
   push:
     branches: [dev, main]
+    paths-ignore:
+      - '.vscode/**'
+      - '.ruff_cache/**'
+      - '.claude/**'
+      - 'notes/**'
+      - 'lab/**'
+      - 'tools/**'
   pull_request:
     branches: [dev, main]
 

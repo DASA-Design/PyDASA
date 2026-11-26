@@ -7,6 +7,13 @@ on:
       - dev  # Temporary: test on dev branch
     tags:
       - 'v*'  # Trigger on version tags
+    paths-ignore:
+      - '.vscode/**'
+      - '.ruff_cache/**'
+      - '.claude/**'
+      - 'notes/**'
+      - 'lab/**'
+      - 'tools/**'
 
 permissions:
   contents: write
